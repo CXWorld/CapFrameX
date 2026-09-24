@@ -1,3 +1,4 @@
+using CapFrameX.Contracts.Localization;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -13,7 +14,8 @@ namespace CapFrameX.Test.Localization
 	public class LocalizationCatalogTest
 	{
 		private static readonly Regex XamlKey = new Regex(@"\{loc:Tr\s+([A-Za-z_][A-Za-z0-9_]*)\}", RegexOptions.Compiled);
-		private static readonly Regex CxLangCall = new Regex(@"CxLang\.T\s*\(([^;]+?)\)", RegexOptions.Compiled);
+		private static readonly Regex CxLangCall = new Regex(@"(?:CxLang\.(?:T|Format|TOrDefault)|new\s+LocalizedText)\s*\(([^;]+?)\)", RegexOptions.Compiled);
+		private static readonly Regex Placeholder = new Regex(@"\{(\d+)(?:[,:][^}]*)?\}", RegexOptions.Compiled);
 		private static readonly Regex StringLiteral = new Regex(@"""([A-Za-z_][A-Za-z0-9_]*)""", RegexOptions.Compiled);
 		private static readonly Regex ModeConverterParam = new Regex(@"Converter=\{StaticResource\s+ModeDescriptionConverter\},\s*ConverterParameter=([^\}]+)\}", RegexOptions.Compiled);
 		private static readonly Regex CatalogPrefixParam = new Regex(@"Converter=\{StaticResource\s+CatalogPrefixConverter\},\s*ConverterParameter=([A-Za-z0-9_]+)", RegexOptions.Compiled);
@@ -28,6 +30,17 @@ namespace CapFrameX.Test.Localization
 				"en.json is missing.");
 			foreach (var path in catalogs)
 			{
+				// Same parser and options as the app uses at startup, so a file that passes
+				// here cannot fail to load at runtime.
+				try
+				{
+					CxLang.ValidateCatalog(File.ReadAllText(path), Path.GetFileNameWithoutExtension(path));
+				}
+				catch (Exception ex)
+				{
+					Assert.Fail($"{Path.GetFileName(path)} cannot be loaded by the app: {ex.Message}");
+				}
+
 				var catalog = JObject.Parse(File.ReadAllText(path));
 				Assert.IsFalse(string.IsNullOrWhiteSpace((string)catalog["name"]),
 					Path.GetFileName(path) + " is missing the native language name.");
@@ -61,6 +74,13 @@ namespace CapFrameX.Test.Localization
 					pair.Key + ".json strings do not match en.json.");
 				CollectionAssert.AreEquivalent(PropertyNames(english, "overlay").ToList(), PropertyNames(pair.Value, "overlay").ToList(),
 					pair.Key + ".json overlay keys do not match en.json.");
+
+				var badPlaceholders = englishStrings
+					.Where(key => !Placeholders((string)english["strings"][key]).SetEquals(Placeholders((string)pair.Value["strings"][key])))
+					.OrderBy(key => key)
+					.ToList();
+				Assert.AreEqual(0, badPlaceholders.Count,
+					pair.Key + ".json uses different {0}/{1} placeholders than en.json for: " + string.Join(", ", badPlaceholders.Take(20)));
 
 				foreach (var pattern in PhrasePatterns(pair.Value))
 				{
@@ -168,6 +188,17 @@ namespace CapFrameX.Test.Localization
 					}
 				}
 			}
+		}
+
+		private static HashSet<string> Placeholders(string text)
+		{
+			var indices = new HashSet<string>(StringComparer.Ordinal);
+			if (string.IsNullOrEmpty(text))
+				return indices;
+			// "{{" and "}}" are escaped braces, not placeholders.
+			foreach (Match match in Placeholder.Matches(text.Replace("{{", string.Empty).Replace("}}", string.Empty)))
+				indices.Add(match.Groups[1].Value);
+			return indices;
 		}
 
 		private static HashSet<string> PropertyNames(JObject catalog, string section)

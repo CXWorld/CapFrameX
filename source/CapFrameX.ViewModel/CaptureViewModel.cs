@@ -58,7 +58,8 @@ namespace CapFrameX.ViewModel
         private IDisposable _disposableHeartBeat;
         private string _selectedProcessToCapture;
         private string _selectedProcessToIgnore;
-        private string _captureStateInfo = string.Empty;
+        // Built on demand so the text follows the interface language, including after a switch.
+        private Func<string> _captureStateInfo = () => string.Empty;
         private string _captureTimeString = "0";
         private string _captureDelayString = "0";
         private string _captureStartDelayString = "0";
@@ -116,14 +117,12 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public string CaptureStateInfo
+        public string CaptureStateInfo => _captureStateInfo();
+
+        private void SetCaptureStateInfo(Func<string> text)
         {
-            get { return TranslateCaptureState(_captureStateInfo); }
-            set
-            {
-                _captureStateInfo = value;
-                RaisePropertyChanged();
-            }
+            _captureStateInfo = text ?? (() => string.Empty);
+            RaisePropertyChanged(nameof(CaptureStateInfo));
         }
 
         public string CaptureDelayString
@@ -507,12 +506,13 @@ namespace CapFrameX.ViewModel
 
                     if (status.Status == ECaptureStatus.Processing)
                     {
-                        CaptureStateInfo = "Creating capture file..." + Environment.NewLine;
+                        SetCaptureStateInfo(() => CxLang.T("CaptureViewModel_CreatingCaptureFile") + Environment.NewLine);
                         _overlayService.SetCaptureServiceStatus("Processing data");
                     }
                     else if (status.Status == ECaptureStatus.StartedDelay)
                     {
-                        CaptureStateInfo = $"Capture starting with delay of {CaptureDelayString} seconds..." + Environment.NewLine;
+                        var delay = CaptureDelayString;
+                        SetCaptureStateInfo(() => CxLang.Format("CaptureViewModel_CaptureStartingWithDelay", delay) + Environment.NewLine);
                         _overlayService.SetCaptureServiceStatus("Capture starting in");
                     }
                     else
@@ -523,16 +523,18 @@ namespace CapFrameX.ViewModel
 
                     if (status.Status == ECaptureStatus.StartedTimer)
                     {
-                        CaptureStateInfo = $"Capturing in progress (Set Time: {CaptureTimeString} seconds)..." + Environment.NewLine
-                          + GetCaptureHotkeyHint($"Press {CaptureHotkeyString} to stop capture.");
+                        var captureTime = CaptureTimeString;
+                        SetCaptureStateInfo(() => CxLang.Format("CaptureViewModel_CapturingInProgressSetTime", captureTime) + Environment.NewLine
+                          + GetCaptureHotkeyHint(hotkey => CxLang.Format("CaptureViewModel_Press0ToStopCapture", hotkey)));
                     }
                     else if (status.Status == ECaptureStatus.StartedRemote)
                     {
-                        CaptureStateInfo = "Remote capturing in progress..." + Environment.NewLine;
+                        SetCaptureStateInfo(() => CxLang.T("CaptureViewModel_RemoteCapturingInProgress") + Environment.NewLine);
                     }
                     else if (status.Status == ECaptureStatus.Started)
                     {
-                        CaptureStateInfo = "Capturing in progress..." + Environment.NewLine + GetCaptureHotkeyHint($"Press {CaptureHotkeyString} to stop capture.");
+                        SetCaptureStateInfo(() => CxLang.T("CaptureViewModel_CapturingInProgress") + Environment.NewLine
+                          + GetCaptureHotkeyHint(hotkey => CxLang.Format("CaptureViewModel_Press0ToStopCapture", hotkey)));
                     }
                 }
             });
@@ -546,12 +548,13 @@ namespace CapFrameX.ViewModel
                     RaisePropertyChanged(nameof(CaptureTimeProcessLabel));
                     RaisePropertyChanged(nameof(GlobalCaptureTimeDescription));
                     RaisePropertyChanged(nameof(GameCaptureTimeDescription));
+                    RaisePropertyChanged(nameof(CaptureStateInfo));
                 }
             };
 
             _logger.LogDebug("{viewName} Ready", this.GetType().Name);
-            CaptureStateInfo = "Service ready..." + Environment.NewLine +
-                GetCaptureHotkeyHint($"Press {CaptureHotkeyString} to start capture of the running process.");
+            SetCaptureStateInfo(() => CxLang.T("CaptureViewModel_ServiceReady") + Environment.NewLine +
+                GetCaptureHotkeyHint(hotkey => CxLang.Format("CaptureViewModel_Press0ToStartCaptureOfRunningProcess", hotkey)));
             SelectedSoundMode = _appConfiguration.HotkeySoundMode;
             RestoreCaptureTime();
             CaptureDelayString = _appConfiguration.CaptureDelay.ToString(CultureInfo.InvariantCulture);
@@ -960,30 +963,16 @@ namespace CapFrameX.ViewModel
             return _processList.FindProcessByName(processName)?.DisplayName ?? processNameStripped;
         }
 
-        private static string TranslateCaptureState(string text)
+        /// <summary>
+        /// The hint built by <paramref name="hint"/> from the current hotkey, or the
+        /// "hotkey disabled" text when no hotkey is set.
+        /// </summary>
+        private string GetCaptureHotkeyHint(Func<string, string> hint)
         {
-            if (string.IsNullOrEmpty(text))
-                return text;
-            text = System.Text.RegularExpressions.Regex.Replace(text, "auto-detected\\.", CxLang.T("CaptureViewModel_AutoDetected"));
-            text = System.Text.RegularExpressions.Regex.Replace(
-                text,
-                "Press \"(.+?)\" to start capture\\.",
-                CxLang.T("CaptureViewModel_Press0ToStartCapture").Replace("{0}", "$1"));
-            text = text.Replace("Process list clear.", CxLang.T("CaptureViewModel_ProcessListClear"));
-            text = text.Replace("Start any game / application and press", CxLang.T("CaptureViewModel_StartAnyGameApplicationAnd"));
-            text = text.Replace("to start capture.", CxLang.T("CaptureViewModel_ToStartCapture"));
-            text = text.Replace("selected.", CxLang.T("CaptureViewModel_Selected"));
-            text = text.Replace("Multiple processes detected.", CxLang.T("CaptureViewModel_MultipleProcessesDetected"));
-            text = text.Replace("Select one or move unwanted processes to ignore list.", CxLang.T("CaptureViewModel_SelectOneOrMoveUnwanted"));
-            text = text.Replace("Capture hotkey disabled.", CxLang.T("CaptureViewModel_CaptureHotkeyDisabled"));
-            text = text.Replace("to stop capture.", CxLang.T("CaptureViewModel_ToStopCapture"));
-            text = text.Replace("Capturing in progress...", CxLang.T("CaptureViewModel_CapturingInProgress"));
-            return text;
-        }
-
-        private string GetCaptureHotkeyHint(string enabledHint)
-        {
-            return string.IsNullOrEmpty(CaptureHotkeyString) ? "Capture hotkey disabled." : enabledHint;
+            var hotkey = CaptureHotkeyString;
+            return string.IsNullOrEmpty(hotkey)
+                ? CxLang.T("CaptureViewModel_CaptureHotkeyDisabled")
+                : hint(hotkey);
         }
 
         private void UpdateCaptureStateInfo()
@@ -992,18 +981,22 @@ namespace CapFrameX.ViewModel
             {
                 if (!ProcessesToCapture.Any())
                 {
-                    CaptureStateInfo = "Process list clear." + Environment.NewLine + GetCaptureHotkeyHint($"Start any game / application and press \"{CaptureHotkeyString}\" to start capture.");
+                    SetCaptureStateInfo(() => CxLang.T("CaptureViewModel_ProcessListClear") + Environment.NewLine
+                        + GetCaptureHotkeyHint(hotkey => CxLang.Format("CaptureViewModel_StartAnyGameAndPress0", hotkey)));
                     _overlayService.SetCaptureServiceStatus("Scanning for process...");
                 }
                 else if (ProcessesToCapture.Count == 1 && !_captureManager.DelayCountdownRunning)
                 {
-                    CaptureStateInfo = $"\"{_currentGameNameToCapture}\" auto-detected." + Environment.NewLine + GetCaptureHotkeyHint($"Press \"{CaptureHotkeyString}\" to start capture.");
+                    var game = _currentGameNameToCapture;
+                    SetCaptureStateInfo(() => CxLang.Format("CaptureViewModel_0AutoDetected", game) + Environment.NewLine
+                        + GetCaptureHotkeyHint(hotkey => CxLang.Format("CaptureViewModel_Press0ToStartCapture", hotkey)));
                     _overlayService.SetCaptureServiceStatus($"\"{_currentGameNameToCapture}\" ready to capture...");
                 }
                 else if (ProcessesToCapture.Count > 1)
                 {
                     //Multiple processes detected, select the one to capture or move unwanted processes to ignore list.
-                    CaptureStateInfo = "Multiple processes detected." + Environment.NewLine + "Select one or move unwanted processes to ignore list.";
+                    SetCaptureStateInfo(() => CxLang.T("CaptureViewModel_MultipleProcessesDetected") + Environment.NewLine
+                        + CxLang.T("CaptureViewModel_SelectOneOrMoveUnwanted"));
                     _overlayService.SetCaptureServiceStatus("Multiple processes detected");
                 }
                 return;
@@ -1011,7 +1004,9 @@ namespace CapFrameX.ViewModel
 
             if (!_captureManager.DelayCountdownRunning)
             {
-                CaptureStateInfo = $"\"{_currentGameNameToCapture}\" selected." + Environment.NewLine + GetCaptureHotkeyHint($"Press \"{CaptureHotkeyString}\" to start capture.");
+                var game = _currentGameNameToCapture;
+                SetCaptureStateInfo(() => CxLang.Format("CaptureViewModel_0Selected", game) + Environment.NewLine
+                    + GetCaptureHotkeyHint(hotkey => CxLang.Format("CaptureViewModel_Press0ToStartCapture", hotkey)));
                 _overlayService.SetCaptureServiceStatus($"\"{_currentGameNameToCapture}\" ready to capture...");
             }
         }

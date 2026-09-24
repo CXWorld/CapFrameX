@@ -12,7 +12,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -107,8 +106,13 @@ namespace CapFrameX.ViewModel
 				if (!IsUpdateServerConfigured)
 					return CxLang.T("UpdateViewModel_NoUpdateServerIsConfigured");
 
+				if (_status.LocalizedMessage != null)
+					return _status.LocalizedMessage.Resolve();
+
+				// Messages without a catalog key (e.g. technical reasons for rejecting the
+				// release catalog) are shown in English.
 				if (!string.IsNullOrWhiteSpace(_status.Message))
-					return TranslateUpdateMessage(_status.Message);
+					return _status.Message;
 
 				switch (_status.State)
 				{
@@ -207,35 +211,6 @@ namespace CapFrameX.ViewModel
 		public ICommand InstallSelectedVersionCommand { get; }
 
 		private UpdatePackageInfo Package => _status.Package;
-
-		private static string TranslateUpdateMessage(string message)
-		{
-			if (string.IsNullOrEmpty(message))
-				return message ?? string.Empty;
-
-			var exact = CxLang.T(message);
-			if (!string.Equals(exact, message, StringComparison.Ordinal))
-				return exact;
-
-			if (message == "The update check was cancelled.")
-				return CxLang.T("UpdateViewModel_TheUpdateCheckWasCancelled");
-			if (message == "The update server could not be reached.")
-				return CxLang.T("UpdateViewModel_TheUpdateServerCouldNotBeReached");
-
-			var noChannel = Regex.Match(message, @"^No (.+) build is currently published\. (\d+) other versions are available\.$");
-			if (noChannel.Success)
-				return string.Format(CultureInfo.CurrentCulture, CxLang.T("UpdateViewModel_NoChannelBuildPublished"), noChannel.Groups[1].Value, noChannel.Groups[2].Value);
-
-			var upToDate = Regex.Match(message, @"^CapFrameX is up to date on the (.+) channel\. (\d+) versions are available\.$");
-			if (upToDate.Success)
-				return string.Format(CultureInfo.CurrentCulture, CxLang.T("UpdateViewModel_CapFrameXUpToDateOnChannel"), upToDate.Groups[1].Value, upToDate.Groups[2].Value);
-
-			var available = Regex.Match(message, @"^(.+) version (.+) is available\.$");
-			if (available.Success)
-				return string.Format(CultureInfo.CurrentCulture, CxLang.T("UpdateViewModel_VersionAvailable"), available.Groups[1].Value, available.Groups[2].Value);
-
-			return message;
-		}
 
 		public UpdateViewModel(IUpdateService updateService,
 			IAppConfiguration appConfiguration,

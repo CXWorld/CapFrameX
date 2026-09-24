@@ -291,8 +291,11 @@ namespace CapFrameX
                     using (StartupPerformanceLogger.Measure("Settings and application configuration loading"))
                     {
                         appConfiguration = Container.Resolve<IAppConfiguration>();
-                        CapFrameX.Contracts.Localization.CxLang.Instance.SetUiLanguage(appConfiguration.UiLanguage);
-                        CapFrameX.Contracts.Localization.CxLang.Instance.SetOverlayLanguage(appConfiguration.OverlayLanguage);
+                        var localization = CapFrameX.Contracts.Localization.CxLang.Instance;
+                        foreach (var error in localization.LoadErrors)
+                            Log.Logger.Warning("{localizationError}", error);
+                        localization.SetUiLanguage(appConfiguration.UiLanguage);
+                        localization.SetOverlayLanguage(appConfiguration.OverlayLanguage);
                     }
 
                     Container.RegisterInstance<IFrametimeStatisticProviderOptions>(appConfiguration);

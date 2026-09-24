@@ -20,26 +20,43 @@ namespace CapFrameX.Contracts.Localization
         public static CxLang Instance { get; } = new CxLang();
 
         private readonly Dictionary<string, Catalog> _catalogs = new Dictionary<string, Catalog>(StringComparer.OrdinalIgnoreCase);
-        private readonly ConcurrentDictionary<string, string> _overlayCache = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+        private readonly List<string> _loadErrors = new List<string>();
 
-        private string _uiLanguage = "en";
-        private string _overlayLanguage = "en";
+        private volatile string _uiLanguage = "en";
         private static readonly string[] AppPlaceholder = { "<APP>" };
-        private Phrase[] _overlayPhrases = Array.Empty<Phrase>();
         private IReadOnlyList<LanguageOption> _languages = Array.Empty<LanguageOption>();
+
+        // Everything the overlay translation needs, swapped as one reference. OSD threads read
+        // it once per call, so a language switch can never mix phrases, catalog and cache from
+        // two languages, and a result computed for the old language lands in the old cache.
+        private volatile OverlayState _overlay = OverlayState.English;
 
         public event PropertyChangedEventHandler PropertyChanged;
         public event Action OverlayLanguageChanged;
 
         private CxLang()
         {
-            Load();
-            ApplyOverlayLanguage("en");
+            // Nothing in here may throw: this runs in a static initializer, and a failure would
+            // take down every caller of CxLang, including the fatal error handler.
+            try
+            {
+                Load();
+            }
+            catch (Exception ex)
+            {
+                _loadErrors.Add("Localization catalogs could not be loaded: " + ex.Message);
+            }
+
+            if (_languages.Count == 0)
+                _languages = new[] { new LanguageOption("en", "English") };
         }
 
         public string UiLanguage => _uiLanguage;
-        public string OverlayLanguage => _overlayLanguage;
+        public string OverlayLanguage => _overlay.Language;
         public IReadOnlyList<LanguageOption> Languages => _languages;
+
+        /// <summary>Catalogs that were skipped because they could not be parsed. Empty when all loaded.</summary>
+        public IReadOnlyList<string> LoadErrors => _loadErrors;
 
         public string this[string key] => T(key);
 
@@ -56,10 +73,9 @@ namespace CapFrameX.Contracts.Localization
         public void SetOverlayLanguage(string language)
         {
             var next = Normalize(language);
-            if (next == _overlayLanguage)
+            if (next == _overlay.Language)
                 return;
-            _overlayLanguage = next;
-            ApplyOverlayLanguage(next);
+            _overlay = CreateOverlayState(next);
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(OverlayLanguage)));
             OverlayLanguageChanged?.Invoke();
         }
@@ -75,12 +91,76 @@ namespace CapFrameX.Contracts.Localization
             return key;
         }
 
+        /// <summary>
+        /// Looks up <paramref name="key"/> and formats it with <paramref name="args"/>. Enum
+        /// arguments are shown through their translation. If a translation has broken
+        /// placeholders, the English text is used instead of throwing.
+        /// </summary>
+        public static string Format(string key, params object[] args)
+        {
+            var template = T(key);
+            if (args == null || args.Length == 0)
+                return template;
+
+            var values = new object[args.Length];
+            for (int i = 0; i < args.Length; i++)
+                values[i] = args[i] is Enum enumValue ? TranslateEnum(enumValue) : args[i];
+
+            try
+            {
+                return string.Format(CultureInfo.CurrentCulture, template, values);
+            }
+            catch (FormatException)
+            {
+                if (Instance.TryGet("en", key, out var english))
+                {
+                    try
+                    {
+                        return string.Format(CultureInfo.CurrentCulture, english, values);
+                    }
+                    catch (FormatException)
+                    {
+                    }
+                }
+                return template;
+            }
+        }
+
+        /// <summary>
+        /// For code that must work even if localization itself is broken, such as the fatal
+        /// error handler. Never throws.
+        /// </summary>
+        public static string TOrDefault(string key, string fallback)
+        {
+            try
+            {
+                var value = T(key);
+                return string.IsNullOrEmpty(value) || value == key ? fallback : value;
+            }
+            catch
+            {
+                return fallback;
+            }
+        }
+
+        /// <summary>
+        /// Parses a catalog exactly like the app does at startup and throws if it is invalid,
+        /// including phrase patterns that are not valid regular expressions. Used by the tests.
+        /// </summary>
+        public static void ValidateCatalog(string json, string language)
+        {
+            var catalog = Catalog.Parse(json, language);
+            foreach (var (pattern, replacement) in catalog.RawPhrases)
+                _ = new Phrase(pattern, replacement);
+        }
+
         public string TranslateOverlayLabel(string label)
         {
             if (string.Equals(label, "<APP>", StringComparison.Ordinal))
             {
-                if (_catalogs.TryGetValue(_overlayLanguage, out var catalog)
-                    && catalog.Overlay.TryGetValue("<APP>", out var translated)
+                var state = _overlay;
+                if (state.Catalog != null
+                    && state.Catalog.Overlay.TryGetValue("<APP>", out var translated)
                     && !string.IsNullOrEmpty(translated))
                     return translated;
                 return label;
@@ -110,7 +190,8 @@ namespace CapFrameX.Contracts.Localization
 
         public string TranslateOverlay(string label)
         {
-            if (string.IsNullOrEmpty(label) || _overlayLanguage == "en")
+            var state = _overlay;
+            if (string.IsNullOrEmpty(label) || state.Catalog == null)
                 return label ?? string.Empty;
             try
             {
@@ -118,10 +199,10 @@ namespace CapFrameX.Contracts.Localization
                 {
                     var parts = label.Split(AppPlaceholder, StringSplitOptions.None);
                     for (int i = 0; i < parts.Length; i++)
-                        parts[i] = TranslateOverlayCore(parts[i]);
+                        parts[i] = TranslateOverlayCore(state, parts[i]);
                     return string.Join("<APP>", parts);
                 }
-                return TranslateOverlayCore(label);
+                return TranslateOverlayCore(state, label);
             }
             catch
             {
@@ -129,16 +210,15 @@ namespace CapFrameX.Contracts.Localization
             }
         }
 
-        private string TranslateOverlayCore(string label)
+        private static string TranslateOverlayCore(OverlayState state, string label)
         {
             if (string.IsNullOrEmpty(label))
                 return label ?? string.Empty;
-            if (_overlayCache.TryGetValue(label, out var cached))
+            if (state.Cache.TryGetValue(label, out var cached))
                 return cached;
 
             var result = label;
-            if (_catalogs.TryGetValue(_overlayLanguage, out var catalog)
-                && catalog.Overlay.TryGetValue(label, out var exact)
+            if (state.Catalog.Overlay.TryGetValue(label, out var exact)
                 && !string.IsNullOrEmpty(exact)
                 && exact.IndexOf("<APP>", StringComparison.Ordinal) < 0)
             {
@@ -146,12 +226,12 @@ namespace CapFrameX.Contracts.Localization
             }
             else
             {
-                foreach (var phrase in _overlayPhrases)
+                foreach (var phrase in state.Phrases)
                     result = phrase.Pattern.Replace(result, phrase.Replacement);
-                result = CapitalizeStart(result);
+                result = CapitalizeStart(result, state.Culture);
             }
 
-            _overlayCache[label] = result;
+            state.Cache[label] = result;
             return result;
         }
 
@@ -163,41 +243,30 @@ namespace CapFrameX.Contracts.Localization
                 && !string.IsNullOrEmpty(value);
         }
 
-        private void ApplyOverlayLanguage(string language)
+        private OverlayState CreateOverlayState(string language)
         {
-            _overlayCache.Clear();
-            if (!_catalogs.TryGetValue(language, out var catalog) || language == "en")
+            if (language == "en" || !_catalogs.TryGetValue(language, out var catalog))
+                return OverlayState.English;
+
+            var culture = CultureInfo.InvariantCulture;
+            if (!string.IsNullOrWhiteSpace(catalog.Culture))
             {
-                _overlayPhrases = Array.Empty<Phrase>();
-                return;
+                try
+                {
+                    culture = CultureInfo.GetCultureInfo(catalog.Culture);
+                }
+                catch (CultureNotFoundException)
+                {
+                }
             }
-            _overlayPhrases = catalog.GetOrBuildPhrases();
+            return new OverlayState(language, catalog, catalog.GetOrBuildPhrases(), culture);
         }
 
-        private string CapitalizeStart(string text)
+        private static string CapitalizeStart(string text, CultureInfo culture)
         {
             if (string.IsNullOrEmpty(text) || !char.IsLower(text[0]))
                 return text;
-            return char.ToUpper(text[0], OverlayCulture) + text.Substring(1);
-        }
-
-        private CultureInfo OverlayCulture
-        {
-            get
-            {
-                if (_catalogs.TryGetValue(_overlayLanguage, out var catalog)
-                    && !string.IsNullOrWhiteSpace(catalog.Culture))
-                {
-                    try
-                    {
-                        return CultureInfo.GetCultureInfo(catalog.Culture);
-                    }
-                    catch (CultureNotFoundException)
-                    {
-                    }
-                }
-                return CultureInfo.InvariantCulture;
-            }
+            return char.ToUpper(text[0], culture) + text.Substring(1);
         }
 
         private void Load()
@@ -209,11 +278,21 @@ namespace CapFrameX.Contracts.Localization
                 if (!match.Success)
                     continue;
                 var language = match.Groups[1].Value.ToLowerInvariant();
-                using var stream = assembly.GetManifestResourceStream(name);
-                if (stream == null)
-                    continue;
-                using var reader = new StreamReader(stream);
-                _catalogs[language] = Catalog.Parse(reader.ReadToEnd(), language);
+                try
+                {
+                    using var stream = assembly.GetManifestResourceStream(name);
+                    if (stream == null)
+                        continue;
+                    using var reader = new StreamReader(stream);
+                    var catalog = Catalog.Parse(reader.ReadToEnd(), language);
+                    catalog.GetOrBuildPhrases();
+                    _catalogs[language] = catalog;
+                }
+                catch (Exception ex)
+                {
+                    // One broken catalog must not take the others (or the app) down with it.
+                    _loadErrors.Add($"Localization catalog '{name}' was skipped: {ex.Message}");
+                }
             }
             _languages = _catalogs
                 .Select(pair => new LanguageOption(pair.Key, pair.Value.DisplayName))
@@ -230,11 +309,32 @@ namespace CapFrameX.Contracts.Localization
             return _catalogs.ContainsKey(language) ? language : "en";
         }
 
+        private sealed class OverlayState
+        {
+            public static readonly OverlayState English = new OverlayState("en", null, Array.Empty<Phrase>(), CultureInfo.InvariantCulture);
+
+            public OverlayState(string language, Catalog catalog, Phrase[] phrases, CultureInfo culture)
+            {
+                Language = language;
+                Catalog = catalog;
+                Phrases = phrases;
+                Culture = culture;
+            }
+
+            public string Language { get; }
+            /// <summary>Null for English, which is shown untranslated.</summary>
+            public Catalog Catalog { get; }
+            public Phrase[] Phrases { get; }
+            public CultureInfo Culture { get; }
+            public ConcurrentDictionary<string, string> Cache { get; } = new ConcurrentDictionary<string, string>(StringComparer.Ordinal);
+        }
+
         private sealed class Phrase
         {
             public Phrase(string pattern, string replacement)
             {
-                Pattern = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                // Patterns come from contributed catalogs and run on OSD threads, so bound them.
+                Pattern = new Regex(pattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant, TimeSpan.FromMilliseconds(50));
                 Replacement = replacement ?? string.Empty;
             }
 
@@ -301,8 +401,15 @@ namespace CapFrameX.Contracts.Localization
                 {
                     foreach (var item in phrases.EnumerateArray())
                     {
-                        var pattern = item.GetProperty("pattern").GetString();
-                        var replacement = item.GetProperty("replacement").GetString();
+                        if (item.ValueKind != JsonValueKind.Object
+                            || !item.TryGetProperty("pattern", out var patternElement)
+                            || patternElement.ValueKind != JsonValueKind.String)
+                            throw new FormatException("Every entry in \"phrases\" needs a string \"pattern\".");
+                        var pattern = patternElement.GetString();
+                        var replacement = item.TryGetProperty("replacement", out var replacementElement)
+                            && replacementElement.ValueKind == JsonValueKind.String
+                                ? replacementElement.GetString()
+                                : string.Empty;
                         if (!string.IsNullOrEmpty(pattern))
                             catalog.RawPhrases.Add((pattern, replacement));
                     }
@@ -322,7 +429,11 @@ namespace CapFrameX.Contracts.Localization
                 if (!root.TryGetProperty(name, out var element) || element.ValueKind != JsonValueKind.Object)
                     return;
                 foreach (var item in element.EnumerateObject())
+                {
+                    if (item.Value.ValueKind != JsonValueKind.String)
+                        throw new FormatException($"\"{name}.{item.Name}\" must be a string.");
                     target[item.Name] = item.Value.GetString() ?? string.Empty;
+                }
             }
         }
     }
