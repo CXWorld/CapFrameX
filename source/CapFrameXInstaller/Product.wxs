@@ -25,9 +25,12 @@
     <Property Id="DOTNETDESKTOPRUNTIMEX64FOUND" Secure="yes" />
     <!-- LAUNCHAPP=1 starts CapFrameX once the files are in place. The in-app updater passes it,
          because the app shuts itself down to let the installer replace it and would otherwise
-         stay closed. WixShellExecTarget is the path WixShellExec opens. -->
+         stay closed. WixShellExecTarget is the path WixShellExec opens; a Property element
+         cannot resolve [INSTALLFOLDER], so SetProperty formats it right before the launch. -->
     <Property Id="LAUNCHAPP" Secure="yes" />
-    <Property Id="WixShellExecTarget" Value="[INSTALLFOLDER]CapFrameX.exe" />
+    <SetProperty Id="WixShellExecTarget" Value="[INSTALLFOLDER]CapFrameX.exe"
+                 Before="LaunchCapFrameX" Sequence="execute"
+                 Condition="NOT Installed AND LAUNCHAPP=&quot;1&quot;" />
 
     <Launch Condition="Installed OR DOTNETDESKTOPRUNTIMEX64FOUND"
             Message="CapFrameX requires the .NET 10 Desktop Runtime (x64). Install it from https://dotnet.microsoft.com/download/dotnet/10.0 and run setup again." />
