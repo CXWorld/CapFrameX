@@ -14,6 +14,9 @@
 						ShowVersion="yes"
             LogoFile="../CapFrameX/Icons/CX_Installer_Banner.png"
             ThemeFile="theme.xml"/>
+			<!-- Since WiX v5 the BA runs in its own process and no longer inherits the bundle's
+			     icon, so the theme's Window/@IconFile points at this payload. -->
+			<Payload Name="cx_icon.ico" SourceFile="../CapFrameX/Icons/cx_icon_BUC.ico" />
 		</BootstrapperApplication>
 
 		<!-- "formatted" is what "string" meant in WiX v3; a v4+ "string" is a literal. -->
