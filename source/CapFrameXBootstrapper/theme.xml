@@ -17,7 +17,7 @@
     <Font Id="5" Height="-12" Weight="700" Foreground="000000">Segoe UI</Font>
     <Font Id="6" Height="-11" Weight="500" Foreground="FDFDFD" Background="0271F9">Segoe UI</Font>
 
-    <Window Width="500" Height="555" HexStyle="100a0000" FontId="0" Caption="#(loc.Caption)">
+    <Window Width="500" Height="555" HexStyle="100a0000" FontId="0" Caption="#(loc.Caption)" IconFile="cx_icon.ico">
         <ImageControl X="0" Y="0" Width="500" Height="80" ImageFile="logo.png" Visible="yes"/>
 
         <Page Name="Help">
