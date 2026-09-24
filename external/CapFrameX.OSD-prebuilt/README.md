@@ -9,6 +9,75 @@ the OSD is built from source instead and these files are ignored.
 
 ## Build provenance
 
+All five native DLLs were rebuilt on **2026-09-23** with VS 2026/v145 (MSVC
+19.51.36260.0), Windows SDK 10.0.26100.0 and Vulkan SDK 1.4.335.0 in `RelWithDebInfo`.
+Ninja builds for core x64, hook x64/x86 and Vulkan x64/x86 compile directly from the source state
+now committed as private OSD revision `08fa5f5ab87e6f518456e0213d1c41ae6fac656d`
+(`7a37adf` plus the chart corrections below).
+
+### One-pixel chart lines (2026-09-23, current)
+
+Charts now use a hard, one-physical-pixel line at every UI scale. The hook-free/D3D11
+renderer draws native LINELIST geometry with multisampling and line antialiasing disabled.
+It retains the cached R8 MAX coverage mask and composites each chart once, avoiding
+opacity accumulation where segments meet. D3D12/Vulkan use one aliased Direct2D path
+with flat caps and bevel joins. Text antialiasing is unaffected.
+
+Points snap to pixel centers. Time advances the chart in whole-pixel steps, and min/max
+selection uses one physical pixel per column, preserving spikes. The compositor scroll
+path explicitly uses nearest-neighbor sampling. Diagonals intentionally have pixel steps;
+there is no soft fringe or round extension of the line.
+
+All **18 selected CTests** passed: eight core tests on x64 (GPU and WARP raster,
+CPU raster, geometry, row alignment, graph source, framerate graph and HDR composite),
+four chart tests on x86, the D3D12 shader test on both architectures, and both Vulkan
+tests on both architectures. Raster tests check one-pixel horizontal/vertical lines,
+binary coverage, flat endpoints and constant opacity across fractional input positions.
+
+All five staged DLLs match their build outputs by SHA-256 and PE architecture. The
+Vulkan manifests remain byte-identical, and the signed managed bridge was retained.
+In-game appearance still needs runtime verification after restarting CapFrameX and the game.
+
+| Native DLL | SHA-256 |
+| --- | --- |
+| Core x64 | `71E0E8AC1B258415912C24D202F888EAAF1FCF41EB2E5704440334F706C02204` |
+| Hook x64 | `45A25C58959A88ED8D587C79BEE5A7D918B9E083BF94368C8ACA6049CB921FBD` |
+| Hook x86 | `69CE75A382FF18F80EEAF2D2F7ED93F506D1BFCC61A4ECE5A427865B8DE9A94D` |
+| Vulkan x64 | `9BA80B9F60715ADC30DE389B37BCA01DA2540381DA037B9EA484B5396E13690B` |
+| Vulkan x86 | `CBC2207409AEE0B52F12597C399D6A3454C0979F200F4B2C60509D9B145F33E5` |
+
+### Chart coverage and joins (2026-09-23, superseded)
+
+This earlier correction removed excess blending but retained soft, two-pixel lines.
+Its coverage-mask approach remains in the current build; its rounded geometry does not.
+
+The D3D12/Vulkan CPU renderer stroked each chart as one Direct2D path with round
+joins. Separate segments previously accumulated opacity at spikes and changed edge
+coverage when a straight line was subdivided.
+
+The hook-free/D3D11 GPU renderer used round segment geometry, combined coverage in
+one R8 mask per chart with MAX blending, then composited each chart once. This removed
+the old triangle strip's overlapping, narrowed spikes. Masks are reused between geometry
+uploads. Sample values, time mapping and column-extreme selection are retained.
+
+All **18 selected CTests** passed: eight core tests on x64 (GPU and WARP raster,
+CPU raster, geometry, row alignment, graph source, framerate graph and HDR composite),
+four chart tests on x86, the D3D12 shader test on both architectures, and both Vulkan
+tests on both architectures. All staged DLLs match their build outputs by SHA-256 and
+PE architecture. Both Vulkan manifests match the build outputs and remain byte-identical.
+The signed managed bridge was retained. No installed binaries or layer registrations
+were changed; these payloads are picked up by the next CapFrameX build.
+
+| Native DLL | SHA-256 |
+| --- | --- |
+| Core x64 | `6F4CCD94B8D5FD1D88923D12149303E9C596D94DCE171A8A72D460269DF6317C` |
+| Hook x64 | `DB7DFFD2EEE8122760CB8952E529DD8BC450FDDE5A76DA632A6079A989964797` |
+| Hook x86 | `C77695ECB4E3AB7A81A77400C8CDA6FAF65E200EED4EF1EC910C064617D43AE6` |
+| Vulkan x64 | `10DF0A828439DABFEE1A4E798D59A258A51A55F026225A99F9B3FCA929235275` |
+| Vulkan x86 | `6BE64FBD8BF56E41721AAEC5C5542379D03CC9D2A79B89883CF01BF0F1F9EFB9` |
+
+### Previous combined rebuild (2026-09-22)
+
 All five native DLLs were rebuilt on **2026-09-22** with VS 2026/v145 in `RelWithDebInfo`,
 every tree with `--clean-first`, from the source state now committed as private OSD revision
 `c8926eb549c66034ac72e62ff678eecd8c64bc20`: the compact value columns with their minimum
