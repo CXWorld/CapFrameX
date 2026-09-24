@@ -4,7 +4,7 @@
   // To translate CapFrameX into a new language:
   // 1. Copy this file and name it using your ISO language code (e.g. es.json).
   // 2. Set "name" to your native language name (e.g. "Español") and "culture" (e.g. "es-ES").
-  // 3. Translate the string values in "strings" and "overlay".
+  // 3. Translate "strings" (UI), "overlay" (OSD labels), and "phrases" (OSD sensors).
   // All Localization/*.json files are automatically embedded on build.
   // =========================================================================
   "name": "English",

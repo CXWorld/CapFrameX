@@ -26,6 +26,15 @@ namespace CapFrameX.MVVM.Localization
 
         public override object ProvideValue(IServiceProvider serviceProvider)
         {
+            var target = serviceProvider?.GetService(typeof(IProvideValueTarget)) as IProvideValueTarget;
+
+            // When evaluated inside a Style or ControlTemplate Setter, WPF passes an internal
+            // SharedDp object as the target. Returning this defers evaluation until the template
+            // is instantiated on a real visual element, allowing live language switching to work
+            // for templated controls.
+            if (target?.TargetObject != null && target.TargetObject.GetType().Name == "SharedDp")
+                return this;
+
             var binding = new Binding(nameof(CxLang.UiLanguage))
             {
                 Source = CxLang.Instance,
@@ -34,12 +43,7 @@ namespace CapFrameX.MVVM.Localization
                 ConverterParameter = Text ?? string.Empty
             };
 
-            // Only a real element can host the binding. Inside a template the target does not
-            // exist yet. A Binding object returned from here is written into the template as
-            // the property value and the page fails to load, so fall back to the translated text.
-            if (serviceProvider?.GetService(typeof(IProvideValueTarget)) is IProvideValueTarget target
-                && target.TargetObject is DependencyObject
-                && target.TargetProperty is DependencyProperty)
+            if (target?.TargetObject is DependencyObject && target.TargetProperty is DependencyProperty)
                 return binding.ProvideValue(serviceProvider);
 
             return CxLang.T(Text ?? string.Empty);
