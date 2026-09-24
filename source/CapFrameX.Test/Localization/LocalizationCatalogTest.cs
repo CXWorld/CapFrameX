@@ -39,7 +39,8 @@ namespace CapFrameX.Test.Localization
 				var text = File.ReadAllText(path);
 				parsed[Path.GetFileNameWithoutExtension(path)] = JObject.Parse(text, new JsonLoadSettings
 				{
-					DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error
+					DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error,
+					CommentHandling = CommentHandling.Ignore
 				});
 			}
 

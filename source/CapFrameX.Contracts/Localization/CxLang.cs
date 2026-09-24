@@ -286,7 +286,12 @@ namespace CapFrameX.Contracts.Localization
             public static Catalog Parse(string json, string language)
             {
                 var catalog = new Catalog();
-                using var doc = JsonDocument.Parse(json);
+                var options = new JsonDocumentOptions
+                {
+                    CommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true
+                };
+                using var doc = JsonDocument.Parse(json, options);
                 var root = doc.RootElement;
                 catalog.DisplayName = ReadString(root, "name") ?? language;
                 catalog.Culture = ReadString(root, "culture");

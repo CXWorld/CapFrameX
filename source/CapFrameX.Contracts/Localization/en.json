@@ -1,7 +1,18 @@
 {
+  // =========================================================================
+  // CapFrameX Localization Catalog (English Base)
+  // To translate CapFrameX into a new language:
+  // 1. Copy this file and name it using your ISO language code (e.g. es.json).
+  // 2. Set "name" to your native language name (e.g. "Español").
+  // 3. Translate the string values in "strings" and "overlay".
+  // =========================================================================
   "name": "English",
   "culture": "en-US",
   "strings": {
+
+    // =========================================================================
+    // AGGREGATION VIEW - Merging and averaging multiple benchmark sessions
+    // =========================================================================
     "AggregationView_Aggregate": "Aggregate",
     "AggregationView_AggregateAllEntries": "Aggregate all entries",
     "AggregationView_AggregateExcludingOutliers": "Aggregate excluding outliers",
@@ -24,10 +35,18 @@
     "AggregationView_ThirdMetricShownInAggregation": "Third metric shown in aggregation table",
     "AggregationView_Time": "Time",
     "AggregationView_UseAllEntriesForAggregation": "Use all entries for aggregation regardless of outliers",
+
+    // =========================================================================
+    // APPLICATION SHELL & GENERAL DIALOGS
+    // =========================================================================
     "AppHelper_ThereIsAlreadyAnInstance": "There is already an instance running...",
     "Appxaml_AnUnexpectedErrorOccuredDo": "An unexpected Error occured. Do you want to upload the CapFrameX Log for further analysis?",
     "Appxaml_FatalError": "Fatal Error",
     "BenchlabMetricsManager_W": "W",
+
+    // =========================================================================
+    // CAPTURE VIEW - Benchmark recording triggers, hotkeys, process monitoring
+    // =========================================================================
     "CaptureViewModel_AutoDetected": "auto-detected.",
     "CaptureViewModel_CaptureDurationSavedFor": "Capture duration saved for {0} ({1}). Click to use the global duration.",
     "CaptureViewModel_CaptureHotkeyDisabled": "Capture hotkey disabled.",
@@ -96,6 +115,10 @@
     "CaptureView_ThirdMetric": "Third metric",
     "CaptureView_ThirdMetricShownForHistory": "Third metric shown for history entries on the overlay",
     "CaptureView_UseGlobalDuration": "Use global duration",
+
+    // =========================================================================
+    // CLOUD VIEW - Sharing benchmarks on capframex.com
+    // =========================================================================
     "CloudView_AnyNewGameNameOr": "Any new game name or ignored process you add will be sent to us so that we can add it to our own list",
     "CloudView_AutoUpdateList": "Auto update list",
     "CloudView_Comment": "Comment",
@@ -126,6 +149,10 @@
     "CloudView_UploadYourRecordsToOur": "Upload your records to our server and receive an ID to share them",
     "CloudView_Uploading": "Uploading...",
     "CloudView_WhatIsTheProcessList": "What is the process list?",
+
+    // =========================================================================
+    // SETTINGS & NAVIGATION (COLORBAR) - Options, hardware detection, overlay
+    // =========================================================================
     "ColorbarView_AGGREGATION": "AGGREGATION",
     "ColorbarView_ANALYSIS": "ANALYSIS",
     "ColorbarView_ActiveSensorsWebSocketURL": "Active sensors WebSocket URL",
@@ -177,6 +204,7 @@
     "ColorbarView_ExposeTheLocalMCPEndpoint": "Expose the local MCP endpoint for tool integrations. Restart required.",
     "ColorbarView_FPSDecimals": "FPS decimals",
     "ColorbarView_FPSGraphFilter": "FPS graph filter",
+    // Dropdown hint for selecting capture file format (JSON vs JSON + CSV)
     "ColorbarView_FileMode": "File mode",
     "ColorbarView_GPU": "GPU",
     "ColorbarView_GraphExportResolution": "Graph export resolution",
@@ -185,6 +213,7 @@
     "ColorbarView_Hardware": "Hardware",
     "ColorbarView_Hardware2": "Hardware",
     "ColorbarView_HardwareInfoSource": "Hardware info source",
+    // Settings card title for hardware info source
     "ColorbarView_HardwareLabels": "Hardware labels",
     "ColorbarView_Height": "Height",
     "ColorbarView_Help": "Help",
@@ -197,6 +226,7 @@
     "ColorbarView_InstallAnyPublishedReleaseFrom": "Install any published release from",
     "ColorbarView_InstalledVersion": "Installed version",
     "ColorbarView_InterfaceLanguage": "Interface language",
+    // Description for "JSON + CSV" file mode option
     "ColorbarView_JSONCSVAdditionallySaves": "JSON + CSV additionally saves all PresentMon data of each record as a CSV file.",
     "ColorbarView_JSONRecordsAreSavedAs": "JSON:\nRecords are saved as JSON files with all needed data.\n\nJSON + CSV:\nFor each record a CSV file is created in addition to the JSON file. The CSV includes all PresentMon data and is intended for special analysis.",
     "ColorbarView_KeepCapFrameXRunningInThe": "Keep CapFrameX running in the notification area when minimized.",
@@ -285,6 +315,10 @@
     "ColorbarView_WebservicePort": "Webservice port",
     "ColorbarView_Width": "Width",
     "ColorbarView_WindowsBehavior": "Windows behavior",
+
+    // =========================================================================
+    // COMPARISON VIEW - Multi-run comparison graphs, bar charts, custom labels
+    // =========================================================================
     "ComparisonDataViewModel_Average": "Average",
     "ComparisonDataViewModel_FPS": "FPS",
     "ComparisonDataViewModel_FPS2": "FPS",
@@ -314,7 +348,9 @@
     "ComparisonDataView_SetComparisonContext": "Set comparison context",
     "ComparisonDataView_ShowContextLegend": "Show context legend:",
     "ComparisonDataView_ShowContextLegend2": "Show context legend",
+    // Chart Y-axis label: frames per second calculated from display change
     "ComparisonViewModel_DisplayFPS": "Display FPS",
+    // Chart Y-axis label: time between display change samples
     "ComparisonViewModel_DisplayTime": "Display time",
     "ComparisonViewModel_Distribution": "Distribution [%]",
     "ComparisonViewModel_FPS": "FPS",
@@ -323,7 +359,9 @@
     "ComparisonViewModel_FrameTimeMs2": "Frame time [ms]",
     "ComparisonViewModel_FrametimeMs": "Frametime [ms]",
     "ComparisonViewModel_GPUActiveTimeMs": "GPU active time [ms]",
+    // Chart Y-axis label: frames per second calculated from present calls
     "ComparisonViewModel_PresentFPS": "Present FPS",
+    // Chart Y-axis label: time between present calls
     "ComparisonViewModel_PresentFrametime": "Present frametime",
     "ComparisonViewModel_RecordingTimeS": "Recording time [s]",
     "ComparisonViewModel_RecordingTimeS2": "Recording time [s]",
@@ -394,6 +432,10 @@
     "ComparisonView_Values": "Values",
     "ComparisonView_Variances": "Variances",
     "ConditionalMessageDialog_Close": "Close",
+
+    // =========================================================================
+    // OVERLAY CONTROL - Hotkeys, toggle switches, active profile selection
+    // =========================================================================
     "ControlViewModel_SearchIn01Items": "Search in \"{0}\" ({1} items)",
     "ControlView_Aggregated": "Aggregated",
     "ControlView_Aggregated2": "Aggregated",
@@ -432,6 +474,10 @@
     "CreateFolderDialog_Cancel": "Cancel",
     "CreateFolderDialog_Create": "Create",
     "CreateFolderDialog_NewSubfolderName": "New subfolder name",
+
+    // =========================================================================
+    // ANALYSIS VIEW - Frametime graphs, FPS trends, L-shape curves, percentiles
+    // =========================================================================
     "DataView_01Percentile": "0.1% percentile",
     "DataView_02Percentile": "0.2% percentile",
     "DataView_1Percentile": "1% percentile",
@@ -571,6 +617,10 @@
     "DataView_TypeYourTitleHere": "Type your title here...",
     "DataView_Variances": "Variances",
     "DataView_YAxisScale": "Y-Axis scale",
+
+    // =========================================================================
+    // DEBUG MONITOR - Diagnostic logs and internal process status
+    // =========================================================================
     "DebugMonitorWindow_BufferFill": "Buffer Fill %:",
     "DebugMonitorWindow_BuffersInUse": "Buffers In Use:",
     "DebugMonitorWindow_BuffersLost": "Buffers Lost:",
@@ -584,6 +634,10 @@
     "DebugMonitorWindow_ProcessingDelay": "Processing Delay:",
     "DebugMonitorWindow_Status": "Status:",
     "DebugMonitorWindow_TotalBuffers": "Total Buffers:",
+
+    // =========================================================================
+    // ENUMS & METRICS - Metric descriptions, sensor types, capture file formats
+    // =========================================================================
     "ECaptureFileMode_Json": "JSON",
     "ECaptureFileMode_JsonCsv": "JSON + CSV",
     "EChartYAxisSetting_FullFit": "Full fit",
@@ -625,72 +679,105 @@
     "ELogMessageType_BasicInfo": "Basic Info",
     "ELogMessageType_Error": "Error",
     "EMetric_AdaptiveStd": "Adaptive STDEV",
+    // Compact / abbreviated label for EMetric_AdaptiveStd (used in tight table headers or OSD)
     "EMetric_AdaptiveStd_Short": "Adp STDEV",
     "EMetric_Average": "Average",
+    // Compact / abbreviated label for EMetric_Average (used in tight table headers or OSD)
     "EMetric_Average_Short": "Avg",
     "EMetric_CpuActiveAverage": "CPU Active Average",
+    // Compact / abbreviated label for EMetric_CpuActiveAverage (used in tight table headers or OSD)
     "EMetric_CpuActiveAverage_Short": "CPU Avg",
     "EMetric_CpuFpsPerWatt": "CPU FPS per 10 Watts",
+    // Compact / abbreviated label for EMetric_CpuFpsPerWatt (used in tight table headers or OSD)
     "EMetric_CpuFpsPerWatt_Short": "CPU FPS/10W",
     "EMetric_GpuActiveAverage": "GPU Active Average",
+    // Compact / abbreviated label for EMetric_GpuActiveAverage (used in tight table headers or OSD)
     "EMetric_GpuActiveAverage_Short": "GPU Avg",
     "EMetric_GpuActiveOnePercentLowAverage": "GPU Active 1% low average",
+    // Compact / abbreviated label for EMetric_GpuActiveOnePercentLowAverage (used in tight table headers or OSD)
     "EMetric_GpuActiveOnePercentLowAverage_Short": "GPU 1% Low Avg",
     "EMetric_GpuActiveP1": "GPU Active 1% percentile",
+    // Compact / abbreviated label for EMetric_GpuActiveP1 (used in tight table headers or OSD)
     "EMetric_GpuActiveP1_Short": "GPU P1",
     "EMetric_GpuFpsPerWatt": "GPU FPS per 10 Watts",
+    // Compact / abbreviated label for EMetric_GpuFpsPerWatt (used in tight table headers or OSD)
     "EMetric_GpuFpsPerWatt_Short": "GPU FPS/10W",
     "EMetric_Max": "Maximum",
+    // Compact / abbreviated label for EMetric_Max (used in tight table headers or OSD)
     "EMetric_Max_Short": "Max",
     "EMetric_Median": "Median",
+    // Compact / abbreviated label for EMetric_Median (used in tight table headers or OSD)
     "EMetric_Median_Short": "Med",
     "EMetric_Min": "Minimum",
+    // Compact / abbreviated label for EMetric_Min (used in tight table headers or OSD)
     "EMetric_Min_Short": "Min",
     "EMetric_None": "None",
+    // Compact / abbreviated label for EMetric_None (used in tight table headers or OSD)
     "EMetric_None_Short": "None",
     "EMetric_OnePercentLowAverage": "1% low average",
+    // Compact / abbreviated label for EMetric_OnePercentLowAverage (used in tight table headers or OSD)
     "EMetric_OnePercentLowAverage_Short": "1% Low Avg",
     "EMetric_OnePercentLowIntegral": "1% low integral",
+    // Compact / abbreviated label for EMetric_OnePercentLowIntegral (used in tight table headers or OSD)
     "EMetric_OnePercentLowIntegral_Short": "1% Low Int",
     "EMetric_P0dot1": "0.1% percentile",
+    // Compact / abbreviated label for EMetric_P0dot1 (used in tight table headers or OSD)
     "EMetric_P0dot1_Short": "P0.1",
     "EMetric_P0dot2": "0.2% percentile",
+    // Compact / abbreviated label for EMetric_P0dot2 (used in tight table headers or OSD)
     "EMetric_P0dot2_Short": "P0.2",
     "EMetric_P1": "1% percentile",
+    // Compact / abbreviated label for EMetric_P1 (used in tight table headers or OSD)
     "EMetric_P1_Short": "P1",
     "EMetric_P5": "5% percentile",
+    // Compact / abbreviated label for EMetric_P5 (used in tight table headers or OSD)
     "EMetric_P5_Short": "P5",
     "EMetric_P95": "95% percentile",
+    // Compact / abbreviated label for EMetric_P95 (used in tight table headers or OSD)
     "EMetric_P95_Short": "P95",
     "EMetric_P99": "99% percentile",
+    // Compact / abbreviated label for EMetric_P99 (used in tight table headers or OSD)
     "EMetric_P99_Short": "P99",
     "EMetric_ZerodotOnePercentLowAverage": "0.1% low average",
+    // Compact / abbreviated label for EMetric_ZerodotOnePercentLowAverage (used in tight table headers or OSD)
     "EMetric_ZerodotOnePercentLowAverage_Short": "0.1% Low Avg",
     "EMetric_ZerodotOnePercentLowIntegral": "0.1% low integral",
+    // Compact / abbreviated label for EMetric_ZerodotOnePercentLowIntegral (used in tight table headers or OSD)
     "EMetric_ZerodotOnePercentLowIntegral_Short": "0.1% Low Int",
     "EMetric_ZerodotTwoPercentLowAverage": "0.2% low average",
+    // Compact / abbreviated label for EMetric_ZerodotTwoPercentLowAverage (used in tight table headers or OSD)
     "EMetric_ZerodotTwoPercentLowAverage_Short": "0.2% Low Avg",
     "EMetric_ZerodotTwoPercentLowIntegral": "0.2% low integral",
+    // Compact / abbreviated label for EMetric_ZerodotTwoPercentLowIntegral (used in tight table headers or OSD)
     "EMetric_ZerodotTwoPercentLowIntegral_Short": "0.2% Low Int",
     "EOutlierHandling_Ignore": "Mark & use",
     "EOutlierHandling_Replace": "Mark & replace",
     "EOverlayEntryType_CPU": "CPU sensor",
+    // Compact / abbreviated label for EOverlayEntryType_CPU (used in tight table headers or OSD)
     "EOverlayEntryType_CPU_Short": "CPU",
     "EOverlayEntryType_CX": "Application info",
+    // Compact / abbreviated label for EOverlayEntryType_CX (used in tight table headers or OSD)
     "EOverlayEntryType_CX_Short": "App",
     "EOverlayEntryType_FanController": "Fan controller sensor",
+    // Compact / abbreviated label for EOverlayEntryType_FanController (used in tight table headers or OSD)
     "EOverlayEntryType_FanController_Short": "Fan",
     "EOverlayEntryType_GPU": "GPU sensor",
+    // Compact / abbreviated label for EOverlayEntryType_GPU (used in tight table headers or OSD)
     "EOverlayEntryType_GPU_Short": "GPU",
     "EOverlayEntryType_HDD": "Storage sensor",
+    // Compact / abbreviated label for EOverlayEntryType_HDD (used in tight table headers or OSD)
     "EOverlayEntryType_HDD_Short": "Storage",
     "EOverlayEntryType_Mainboard": "Mainboard sensor",
+    // Compact / abbreviated label for EOverlayEntryType_Mainboard (used in tight table headers or OSD)
     "EOverlayEntryType_Mainboard_Short": "Mainboard",
     "EOverlayEntryType_OnlineMetric": "Performance metric",
+    // Compact / abbreviated label for EOverlayEntryType_OnlineMetric (used in tight table headers or OSD)
     "EOverlayEntryType_OnlineMetric_Short": "Metric",
     "EOverlayEntryType_RAM": "Memory sensor",
+    // Compact / abbreviated label for EOverlayEntryType_RAM (used in tight table headers or OSD)
     "EOverlayEntryType_RAM_Short": "RAM",
     "EOverlayEntryType_Undefined": "Miscellaneous",
+    // Compact / abbreviated label for EOverlayEntryType_Undefined (used in tight table headers or OSD)
     "EOverlayEntryType_Undefined_Short": "Misc",
     "EOverlayTemplate_Basic": "Basic",
     "EOverlayTemplate_Detailed": "Detailed",
@@ -726,6 +813,10 @@
     "EReportSensorName_RamUsage": "RAM usage (GB)",
     "EReportSensorName_VRamUsage": "GPU VRAM usage (MB)",
     "EReportSensorName_VRamUsageGB": "GPU VRAM usage (GB)",
+
+    // =========================================================================
+    // EDITING DIALOG - Custom hardware names and benchmark run comments
+    // =========================================================================
     "EditingDialog_CustomCPUDescription": "Custom CPU description",
     "EditingDialog_CustomComment": "Custom comment",
     "EditingDialog_CustomGPUDescription": "Custom GPU description",
@@ -744,6 +835,10 @@
     "FrametimeGraphControl_CopyFrametimeValuesF": "Copy frametime values (f)",
     "FrametimeGraphControl_SavePlotAsPNG": "Save plot as PNG",
     "FrametimeGraphControl_SavePlotAsSVG": "Save plot as SVG",
+
+    // =========================================================================
+    // SYSTEM INFO VIEW - CPU, GPU, RAM, motherboard and driver details
+    // =========================================================================
     "InfoView_Available": "Available",
     "InfoView_Clock": "Clock",
     "InfoView_Clock2": "Clock",
@@ -770,6 +865,10 @@
     "MainWindow_Polling1s": "Polling: 1s",
     "MainWindow_Raw0x019C": "Raw 0x019C",
     "MessageDialog_Close": "Close",
+
+    // =========================================================================
+    // OVERLAY CONFIGURATION - OSD layout, grouped sensors, colors, font sizes
+    // =========================================================================
     "OverlayViewModel_InjectedIntoTheGameFor": "Injected into the game for in-swapchain graphs.",
     "OverlayViewModel_LearnedProfilesNoGame": "{0} learned compatibility profile(s); no game selected.",
     "OverlayViewModel_NoLearnedCompatibilityProfiles": "No learned compatibility profiles yet.",
@@ -944,6 +1043,10 @@
     "OverlayView_UsesDWMDirectCompositionWithoutGame": "Uses DWM/DirectComposition without game injection and is safe for anti-cheat protected titles.",
     "OverlayView_ValueFontSize": "Value font size",
     "OverlayView_Values": "Values",
+
+    // =========================================================================
+    // POWER MEASUREMENT (PMD / POWENETICS / BENCHLAB) - Real-time power metrics
+    // =========================================================================
     "PmdAnalysisChartManager_CPUPowerW": "CPU Power [W]",
     "PmdAnalysisChartManager_GPUPowerW": "GPU Power [W]",
     "PmdAnalysisChartManager_TimeS": "Time [s]",
@@ -1078,6 +1181,10 @@
     "RelatedMetric_Average": "Average",
     "RelatedMetric_Second": "Second",
     "RelatedMetric_Third": "Third",
+
+    // =========================================================================
+    // REPORT VIEW - Comprehensive tabular benchmark and sensor summary
+    // =========================================================================
     "ReportView_AdaptiveSTDEV": "Adaptive STDEV",
     "ReportView_AdaptiveSTDEV2": "Adaptive STDEV",
     "ReportView_AppLatencyMs": "App Latency (ms)",
@@ -1166,9 +1273,18 @@
     "ReportView_ShowAverageRow": "Show average row",
     "ReportView_ShowsAnAdditionalRowContaining": "Shows an additional row containing the averaged FPS metrics of all inserted records.",
     "ReportView_UsePMDValues": "Use PMD values",
+
+    // =========================================================================
+    // OVERLAY PROFILE DIALOGS - Reset confirmation and unsaved changes alerts
+    // =========================================================================
     "ResetOverlayConfigDialog_Cancel": "Cancel",
     "ResetOverlayConfigDialog_DoYouReallyWantTo": "Do you really want to reset the config. Previous settings will be lost!",
     "ResetOverlayConfigDialog_OK": "OK",
+
+    // =========================================================================
+    // SENSOR VIEW - Hardware sensors logging and real-time monitoring
+    // =========================================================================
+    // Multi-line button text: line 1 "Evaluate", line 2 "multiple entries"
     "SensorViewModel_EvaluateMultipleEntries": "Evaluate\nmultiple entries",
     "SensorViewModel_SensorStatisticsForMultipleSelected": "Sensor statistics for multiple selected records",
     "SensorViewModel_SensorStatisticsForSelectedRecord": "Sensor statistics for selected record",
@@ -1220,19 +1336,30 @@
     "SoundMode_Voice": "Voice",
     "SplashScreenWindow_CapFrameX": "CapFrameX",
     "SplashScreenWindow_Starting": "Starting...",
+
+    // =========================================================================
+    // STATUS BAR - Hook overlay status, capture indicators, HAGS status
+    // =========================================================================
     "StateViewModelSystemStatus_Off": "Off",
     "StateViewModelSystemStatus_On": "On",
     "StateViewModelSystemStatus_Partial": "Partial",
+    // Tooltip shown while waiting for game process detection hook
     "StateViewModel_WaitingForHookStatus": "Waiting for hook status.",
     "StateView_CaptureService": "Capture Service:",
+    // Status toggle (active): shown when benchmark capture is in progress
     "StateView_Capturing": "Capturing",
     "StateView_Hook": "Hook:",
+    // User account status: logged in to capframex.com
     "StateView_LoggedIn": "Logged in",
     "StateView_LoginStatus": "Login Status:",
+    // User account status: not logged in
     "StateView_NotLoggedIn": "Not logged in",
+    // Boolean toggle: status is disabled (e.g. HAGS)
     "StateView_Off": "Off",
+    // Boolean toggle: status is enabled (e.g. HAGS)
     "StateView_On": "On",
     "StateView_Overlay": "Overlay:",
+    // Status toggle (idle): shown when ready to record a benchmark
     "StateView_Ready": "Ready",
     "StateView_ResizableBar": "Resizable Bar:",
     "StateView_ResizableBarD3D": "Resizable Bar D3D:",
@@ -1242,6 +1369,10 @@
     "StateView_UpdateSystemInfoStatus": "Update system info status",
     "StateView_Version": "Version:",
     "StateView_WinGameMode": "Win Game Mode:",
+
+    // =========================================================================
+    // SYNCHRONIZATION & DISPLAY TIMING - Display change metrics and latency
+    // =========================================================================
     "SynchronizationViewModel_AverageInputLag": "Average input lag",
     "SynchronizationViewModel_DroppedFrames": "Dropped frames",
     "SynchronizationViewModel_FrametimeInputLagMs": "Frametime + input lag [ms]",
@@ -1283,36 +1414,51 @@
     "UnsavedOverlayProfileDialog_SaveAndExit": "Save and exit",
     "UnsavedOverlayProfileDialog_TheCurrentOverlayItemsProfile": "The current Overlay Items profile contains unsaved changes. Save them before closing CapFrameX?",
     "UnsavedOverlayProfileDialog_UnsavedOverlayProfile": "Unsaved overlay profile",
+
+    // =========================================================================
+    // AUTO-UPDATER & ROLLBACK - Update notifications and version installation
+    // =========================================================================
     "UpdateDialog_Cancel": "Cancel",
     "UpdateDialog_Close": "Close",
     "UpdateDialog_RELEASENOTES": "RELEASE NOTES",
     "UpdateDialog_TargetVersion": "Target version",
     "UpdateViewModel_CapFrameXHasNotCheckedFor": "CapFrameX has not checked for updates yet.",
     "UpdateViewModel_CapFrameXIsUpToDate": "CapFrameX is up to date.",
+    // {0}: channel name, {1}: count of versions available
     "UpdateViewModel_CapFrameXUpToDateOnChannel": "CapFrameX is up to date on the {0} channel. {1} versions are available.",
     "UpdateViewModel_CapFrameXUpdate": "CapFrameX update",
     "UpdateViewModel_DownloadSize0MB": "Download size: {0} MB",
+    // Dialog message when installing a beta release
     "UpdateViewModel_InstallConfirmationBeta": "This beta build is downloaded now and installed the next time CapFrameX starts. Beta builds may be less stable than regular releases.",
+    // Dialog message when installing a stable release
     "UpdateViewModel_InstallConfirmationRegular": "The update is downloaded now and installed the next time CapFrameX starts.",
+    // Dialog message when installing an older version (rollback)
     "UpdateViewModel_InstallConfirmationRollback": "The selected version replaces the current installation on the next launch. Captures and settings remain, but settings created by newer versions may not be understood by the older release.",
     "UpdateViewModel_InstallVersion": "INSTALL VERSION",
     "UpdateViewModel_LookingForUpdates": "Looking for updates...",
+    // {0}: channel name (e.g. Beta), {1}: count of other versions available
     "UpdateViewModel_NoChannelBuildPublished": "No {0} build is currently published. {1} other versions are available.",
     "UpdateViewModel_NoDescriptionWasProvidedFor": "No description was provided for this update.",
     "UpdateViewModel_NoUpdateServerIsConfigured": "No update server is configured.",
     "UpdateViewModel_RollBack": "ROLL BACK",
     "UpdateViewModel_RollBackCapFrameX": "Roll back CapFrameX",
     "UpdateViewModel_TheUpdateCheckFailed": "The update check failed.",
+    // Status message when update check is cancelled by user
     "UpdateViewModel_TheUpdateCheckWasCancelled": "The update check was cancelled.",
+    // Error message when update server connection fails
     "UpdateViewModel_TheUpdateServerCouldNotBeReached": "The update server could not be reached.",
     "UpdateViewModel_Update": "UPDATE",
+    // {0}: channel name, {1}: version string (e.g. 1.9.2)
     "UpdateViewModel_VersionAvailable": "{0} version {1} is available."
   },
+  // =========================================================================
+  // OVERLAY - Real-time On-Screen Display label overrides
+  // =========================================================================
   "overlay": {
-    "<APP>": "<APP>",
     "0.1% Low": "0.1% Low",
     "0.2% Low": "0.2% Low",
     "1% Low": "1% Low",
+    "<APP>": "<APP>",
     "Animation Error": "Animation Error",
     "Animation Error (ms)": "Animation Error (ms)",
     "App Resolution": "App Resolution",
@@ -1321,25 +1467,25 @@
     "Battery Life": "Battery Life",
     "Battery Life (%)": "Battery Life (%)",
     "Battery Life Remaining (min)": "Battery Life Remaining (min)",
+    "CPU Active Time Average (ms)": "CPU Active Time Average (ms)",
+    "CPU Info": "CPU Info",
+    "CPUBusy Avg": "CPUBusy Avg",
+    "CX CPU": "CX CPU",
     "CapFrameX CPU Usage (%)": "CapFrameX CPU Usage (%)",
     "Capture service ready...": "Capture service ready...",
     "Capture service status": "Capture service status",
     "Capture starting in": "Capture starting in",
     "Capture timer": "Capture timer",
     "Click-to-Screen-Response Latency (ms)": "Click-to-Screen-Response Latency (ms)",
-    "CPU Active Time Average (ms)": "CPU Active Time Average (ms)",
-    "CPU Info": "CPU Info",
-    "CPUBusy Avg": "CPUBusy Avg",
     "Custom CPU Name": "Custom CPU Name",
     "Custom GPU Name": "Custom GPU Name",
     "Custom RAM Description": "Custom RAM Description",
-    "CX CPU": "CX CPU",
     "Display 1 Resolution": "Display 1 Resolution",
     "Displaytime": "Displaytime",
     "Frame Generation": "Frame Generation",
+    "Frame Time Average (ms)": "Frame Time Average (ms)",
     "Frame generation status": "Frame generation status",
     "Frame generation technology": "Frame generation technology",
-    "Frame Time Average (ms)": "Frame Time Average (ms)",
     "Framerate": "Framerate",
     "Frametime": "Frametime",
     "Frametime Avg": "Frametime Avg",
@@ -1351,8 +1497,8 @@
     "GPUBusy Avg": "GPUBusy Avg",
     "GPUBusy Deviation": "GPUBusy Deviation",
     "Hook": "Hook",
-    "Mainboard Name": "Mainboard Name",
     "MB Info": "MB Info",
+    "Mainboard Name": "Mainboard Name",
     "Multiple processes detected": "Multiple processes detected",
     "Network Ping": "Network Ping",
     "OS": "OS",
@@ -1363,13 +1509,13 @@
     "P1%": "P1%",
     "PC Latency": "PC Latency",
     "PC Latency (ms)": "PC Latency (ms)",
-    "Ping": "Ping",
     "PMD CPU Power": "PMD CPU Power",
     "PMD CPU Power (W)": "PMD CPU Power (W)",
     "PMD GPU Power": "PMD GPU Power",
     "PMD GPU Power (W)": "PMD GPU Power (W)",
     "PMD Sys Power": "PMD Sys Power",
     "PMD System Power (W)": "PMD System Power (W)",
+    "Ping": "Ping",
     "Present Resolution": "Present Resolution",
     "Processing data": "Processing data",
     "RAM Info": "RAM Info",
@@ -1377,10 +1523,10 @@
     "Real-time 0.1% Low FPS": "Real-time 0.1% Low FPS",
     "Real-time 0.2% Low FPS": "Real-time 0.2% Low FPS",
     "Real-time 1% Low FPS": "Real-time 1% Low FPS",
-    "Real-time average FPS": "Real-time average FPS",
     "Real-time P0.1 FPS": "Real-time P0.1 FPS",
     "Real-time P0.2 FPS": "Real-time P0.2 FPS",
     "Real-time P1 FPS": "Real-time P1 FPS",
+    "Real-time average FPS": "Real-time average FPS",
     "Recording frametimes": "Recording frametimes",
     "Resolution": "Resolution",
     "Result:": "Result:",
@@ -1392,5 +1538,6 @@
     "System time": "System time",
     "Time": "Time"
   },
+  // Phrases: Regex replacements for OSD hardware labels (built on-demand)
   "phrases": []
 }
