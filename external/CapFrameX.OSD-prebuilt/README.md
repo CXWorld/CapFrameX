@@ -9,13 +9,53 @@ the OSD is built from source instead and these files are ignored.
 
 ## Build provenance
 
-All five native DLLs were rebuilt on **2026-09-23** with VS 2026/v145 (MSVC
+All five native DLLs were rebuilt on **2026-09-24** with VS 2026/v145 (MSVC
 19.51.36260.0), Windows SDK 10.0.26100.0 and Vulkan SDK 1.4.335.0 in `RelWithDebInfo`.
 Ninja builds for core x64, hook x64/x86 and Vulkan x64/x86 compile directly from the source state
-now committed as private OSD revision `08fa5f5ab87e6f518456e0213d1c41ae6fac656d`
-(`7a37adf` plus the chart corrections below).
+now committed as private OSD revision `77ca87dca3256827b541cc2c1ae07e0b54074cac` (`08fa5f5` plus the
+chart line change below; the benchmark app gained CPU timing afterwards and is not part of the DLLs).
 
-### One-pixel chart lines (2026-09-23, current)
+### Antialiased chart lines (2026-09-24, current)
+
+The aliased one-pixel line turned every gentle slope into visible stairs. Charts now draw a
+one-physical-pixel line with analytic antialiasing, identical on every path: the points are
+rasterized on the CPU into an 8-bit coverage mask (x snapped to the centre of its column, y exact,
+round-capped strokes with a one-pixel box filter across them, overlaps unioned with MAX). The
+D3D11 paths (hook-free window, in-game D3D11) upload the mask into an R8 texture and composite it
+once; D3D12/Vulkan composite the same mask through a Direct2D A8 opacity mask. Gamma-encoded SDR
+targets use `coverage^(1/2.2)`, so the faint edge pixels keep their linear-light brightness and
+the line stays continuous; linear (HDR) targets use the raw coverage. Snapping y to pixel centres
+as before would keep the stairs even with antialiasing, so y is no longer snapped.
+
+`OsdDebug.json` gains two optional knobs, read at every overlay activation (also inside the
+game process): `chartLineWidth` (physical pixels, 0.5..4, default 1) and `chartLineGamma`
+(1..3, default 2.2; 1 = raw coverage). Out-of-range values fall back to the defaults.
+
+All **18 selected CTests** passed, the same selection as below. The raster tests now check
+the coverage profile (one row on a pixel centre, an even split between two centres, one pixel
+of coverage per column at every phase), smooth slopes without steps, no accumulation at joins
+or retraced segments, and GPU/CPU composites against the shared mask.
+
+Measured per chart against the previous build (same benchmark, three alternating runs,
+medians; scrolling 5 s window, 60–500 FPS, 100–200 % zoom): a new chart generation costs the
+present thread 1.0–4.0 µs CPU (previously 2.8–5.0 µs) and 5.0–5.9 µs GPU (5.5–6.8 µs); the
+cached composite per game present is unchanged at 0.07–0.14 µs CPU and 0.05–0.17 µs GPU. The
+producer thread spends 12–64 µs on points and mask (5–17 µs on points and vertices). The
+Direct2D producer (D3D12/Vulkan) takes 97–213 µs per chart (146–371 µs).
+
+All five staged DLLs match their build outputs by SHA-256 and PE architecture. The
+Vulkan manifests remain byte-identical, and the signed managed bridge was retained.
+In-game appearance still needs runtime verification after restarting CapFrameX and the game.
+
+| Native DLL | SHA-256 |
+| --- | --- |
+| Core x64 | `DD11B9A47D5E71278C79F2762FA628AEEC6A345FECC86F19D37ECCFB9A658DBC` |
+| Hook x64 | `53EE6B7750DBE9AB0832A2455A5A8C10C2A1919457D28B0A0D4FC0760F3673ED` |
+| Hook x86 | `C6E88A8F51EDE3D636468358B23EBB6E6015A27BC3D586E5C5ACD5FA98EF1310` |
+| Vulkan x64 | `A51B0AE5E124C3ED661E4412D7370FF3F35C9DDF3A4702070C40DF2DB2341EC9` |
+| Vulkan x86 | `ABCE1172BBE5E8DB37A09C360CC47EBA275C49671D3CBB060DF1F059BB7E28EB` |
+
+### One-pixel chart lines (2026-09-23, superseded)
 
 Charts now use a hard, one-physical-pixel line at every UI scale. The hook-free/D3D11
 renderer draws native LINELIST geometry with multisampling and line antialiasing disabled.
