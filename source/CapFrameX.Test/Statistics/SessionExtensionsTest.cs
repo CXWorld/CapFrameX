@@ -95,6 +95,35 @@ namespace CapFrameX.Test.Statistics
             CollectionAssert.AreEqual(new[] { -2d }, values.ToArray());
         }
 
+        [TestMethod]
+        public void GetDisplayLayer_IsNullWithoutLayerData()
+        {
+            var session = CreateSession(new[] { 0d, 1d }, new[] { 10d, 10d });
+
+            Assert.IsNull(session.Runs.GetDisplayLayer());
+
+            session.Runs[0].CaptureData.LayerIndex = new[] { -1, -1 };
+            Assert.IsNull(session.Runs.GetDisplayLayer());
+        }
+
+        [TestMethod]
+        public void GetDisplayLayer_NamesTheOnlyLayer()
+        {
+            var session = CreateSession(new[] { 0d, 1d, 2d }, new[] { 10d, 10d, 10d });
+            session.Runs[0].CaptureData.LayerIndex = new[] { 1, -1, 1 };
+
+            Assert.AreEqual("Layer 1", session.Runs.GetDisplayLayer());
+        }
+
+        [TestMethod]
+        public void GetDisplayLayer_ListsSeveralLayersByShare()
+        {
+            var session = CreateSession(new[] { 0d, 1d, 2d, 3d, 4d }, new[] { 10d, 10d, 10d, 10d, 10d });
+            session.Runs[0].CaptureData.LayerIndex = new[] { 0, 1, 1, 1, -1 };
+
+            Assert.AreEqual("Layer 1 (75%), Layer 0 (25%)", session.Runs.GetDisplayLayer());
+        }
+
         private static Session CreateSession(double[] times, double[] frametimes)
         {
             var captureData = new SessionCaptureData(times.Length)

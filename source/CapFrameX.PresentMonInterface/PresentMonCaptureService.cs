@@ -20,17 +20,20 @@ namespace CapFrameX.PresentMonInterface
         // Temporary disabled ETW tracking
         // EtwBufferFillPct,EtwBuffersInUse,EtwTotalBuffers,EtwEventsLost,EtwBuffersLost
 
+        // VidPnSourceId, LayerIndex and PresentId come from --write_display_metadata. PresentMon only
+        // fills them for presents it sees in a multi-plane overlay flip event and writes 0 otherwise,
+        // so PresentId 0 marks a row without display layer data.
         public static readonly string COLUMN_HEADER_WITH_PC_LATENCY =
-            "Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
+            "Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,VidPnSourceId,LayerIndex,AllowsTearing,PresentMode," +
             "FrameType,TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
             "MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
-            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency";
+            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency,PresentId";
 
         public static readonly string COLUMN_HEADER_WITHOUT_PC_LATENCY =
-            "Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode," +
+            "Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,VidPnSourceId,LayerIndex,AllowsTearing,PresentMode," +
             "FrameType,TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency," +
             "MsUntilDisplayed,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy," +
-            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency";
+            "MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency,PresentId";
 
         private static readonly PresentMonColumnLayout ColumnLayoutWithPcLatency =
             new PresentMonColumnLayout(COLUMN_HEADER_WITH_PC_LATENCY, true);
@@ -46,7 +49,7 @@ namespace CapFrameX.PresentMonInterface
         // Graphics runtime/API of the presenting app (e.g. "DXGI", "D3D9") — index 3; used to
         // label the hook-free OSD's <APP> line (RTSS gets this from the 3D API, we get it from PresentMon).
         public static readonly int PresentRuntime_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "PresentRuntime");
-        // "Application" or a generated-frame source (--track_frame_type); index 8, before the
+        // "Application" or a generated-frame source (--track_frame_type); fixed index before the
         // optional PC latency column. Consumed by the hook-free feed diagnostics only.
         public static readonly int FrameType_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "FrameType");
         public static readonly int MsBetweenPresents_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenPresents");

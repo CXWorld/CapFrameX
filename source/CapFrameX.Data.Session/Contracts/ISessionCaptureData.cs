@@ -18,5 +18,6 @@
 		double[] AnimationError { get; set; }
         double[] GpuActive { get; set; }
 		double[] CpuActive { get; set; }
+		int[] LayerIndex { get; set; }
     }
 }

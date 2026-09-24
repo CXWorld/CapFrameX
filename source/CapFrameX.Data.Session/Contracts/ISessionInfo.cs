@@ -27,6 +27,7 @@ namespace CapFrameX.Data.Session.Contracts
 		string WinGameMode { get; set; }
 		string HAGS { get; set; }
 		string PresentationMode { get; set; }
+		string DisplayLayer { get; set; }
 		string ResolutionInfo { get; set; }
 	}
 }

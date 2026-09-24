@@ -24,6 +24,21 @@ namespace CapFrameX.Test.PresentMonInterface
             StringAssert.Contains(configuration.ConfigParameterToArguments(), "--no_track_input");
         }
 
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void ConfigParameterToArguments_WritesDisplayMetadata(bool redirected)
+        {
+            var configuration = new PresentMonServiceConfiguration
+            {
+                RedirectOutputStream = redirected,
+                ProcessName = "game.exe",
+                OutputFilename = "capture.csv"
+            };
+
+            StringAssert.Contains(configuration.ConfigParameterToArguments(), "--write_display_metadata");
+        }
+
         [TestMethod]
         public void ConfigParameterToArguments_DefaultsToTheShippedCircularBufferSize()
         {
