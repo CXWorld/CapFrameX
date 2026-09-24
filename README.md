@@ -85,7 +85,7 @@ Choose a renderer under **Overlay → OSD options**. The following describes 1.9
 | **CapFrameX in-game (Experimental)** | Enabled in 1.9.2 development builds, with DirectX and Vulkan integration, game compatibility profiles, and hook-free fallback routing. Unavailable in the stable v1.9.0 packages. |
 | **RTSS** | Uses [RivaTuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html), which must be installed separately. |
 
-Configure individual entries, colors, groups, and three profiles in **Overlay items**. OSD options include opacity, zoom, placement, a position hotkey, and PresentMon replay buffering. Existing renderer selections are preserved. If v1.9.0 migrated your in-game selection to hook-free, you can select in-game again in 1.9.2.
+Configure individual entries, colors, groups, and three profiles in **Overlay items**. OSD options include opacity, zoom, placement, a position hotkey, and PresentMon replay buffering. Existing renderer selections are preserved. If v1.9.0 migrated your in-game selection to hook-free, you can select in-game again since 1.9.1.
 
 ![CapFrameX 1.9.0 overlay entries](images/1.9.0/overlay.png)
 ![CapFrameX 1.9.0 renderer and OSD options](images/1.9.0/overlay-options.png)
