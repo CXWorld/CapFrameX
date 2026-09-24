@@ -364,7 +364,7 @@
 										<StackPanel Margin="24 20 18 22">
 											<TextBlock Style="{StaticResource SettingsPageTitle}" Text="Options"/>
 											<TextBlock Style="{StaticResource SettingsPageDescription}"
-													   Text="Configure charts, capture metrics, latency tracking and screenshots."/>
+													   Text="Configure charts, capture metrics and file format, latency tracking and screenshots."/>
 
 											<Border Style="{StaticResource SettingsCard}">
 												<StackPanel>
@@ -437,7 +437,7 @@
 											<Border Style="{StaticResource SettingsCard}">
 												<StackPanel>
 													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Capture metrics"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Choose the timing data stored and used for performance analysis."/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="Choose the timing data used for performance analysis and how captures are stored."/>
 													<Separator Margin="0 12 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 													<Grid Margin="0 8" ToolTipService.ShowDuration="25000">
 														<Grid.ColumnDefinitions>
@@ -501,6 +501,35 @@
 															</ComboBox.ToolTip>
 														</ComboBox>
 													</Grid>
+													<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
+													<Grid Margin="0 8">
+														<Grid.ColumnDefinitions>
+															<ColumnDefinition Width="*"/>
+															<ColumnDefinition Width="Auto"/>
+														</Grid.ColumnDefinitions>
+														<StackPanel VerticalAlignment="Center">
+															<TextBlock Style="{StaticResource SettingsOptionTitle}" Text="Capture file mode"/>
+															<TextBlock Style="{StaticResource SettingsDescription}" Text="JSON + CSV additionally saves all PresentMon data of each record as a CSV file."/>
+														</StackPanel>
+														<ComboBox Grid.Column="1" Width="130" Height="42" MaxDropDownHeight="140"
+																  VerticalAlignment="Center"
+																  materialDesign:HintAssist.Hint="File mode"
+																  materialDesign:HintAssist.IsFloating="True"
+																  ToolTipService.ShowDuration="25000"
+																  ItemsSource="{Binding Path=DataContext.CaptureFileModeItems, ElementName=ColorbarViewName}"
+																  SelectedItem="{Binding Path=DataContext.SelectedCaptureFileMode, ElementName=ColorbarViewName}">
+															<ComboBox.ToolTip>
+																<ToolTip MaxWidth="400">
+																	<TextBlock TextWrapping="Wrap" Text="JSON:&#10;Records are saved as JSON files with all needed data.&#10;&#10;JSON + CSV:&#10;For each record a CSV file is created in addition to the JSON file. The CSV includes all PresentMon data and is intended for special analysis."/>
+																</ToolTip>
+															</ComboBox.ToolTip>
+															<ComboBox.ItemTemplate>
+																<DataTemplate>
+																	<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+																</DataTemplate>
+															</ComboBox.ItemTemplate>
+														</ComboBox>
+													</Grid>
 												</StackPanel>
 											</Border>
 
@@ -561,41 +590,19 @@
 
 											<Border Style="{StaticResource SettingsCard}">
 												<StackPanel>
-													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Capture and analysis"/>
-													<TextBlock Style="{StaticResource SettingsDescription}" Text="Set the source of hardware labels and the capture file format."/>
-													<Grid Margin="0 14 0 0">
-														<Grid.ColumnDefinitions>
-															<ColumnDefinition Width="*"/>
-															<ColumnDefinition Width="18"/>
-															<ColumnDefinition Width="*"/>
-														</Grid.ColumnDefinitions>
-														<ComboBox Height="42" materialDesign:HintAssist.Hint="Hardware info source"
-																  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="140"
-																  ItemsSource="{Binding Path=DataContext.HardwareInfoSourceItems, ElementName=ColorbarViewName}"
-																  SelectedItem="{Binding Path=DataContext.SelectedHardwareInfoSource, ElementName=ColorbarViewName}">
-															<ComboBox.ItemTemplate>
-																<DataTemplate>
-																	<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
-																</DataTemplate>
-															</ComboBox.ItemTemplate>
-														</ComboBox>
-														<ComboBox Grid.Column="2" Height="42" materialDesign:HintAssist.Hint="Capture file mode"
-																  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="140"
-																  ToolTipService.ShowDuration="25000"
-																  ItemsSource="{Binding Path=DataContext.CaptureFileModeItems, ElementName=ColorbarViewName}"
-																  SelectedItem="{Binding Path=DataContext.SelectedCaptureFileMode, ElementName=ColorbarViewName}">
-															<ComboBox.ToolTip>
-																<ToolTip MaxWidth="400" Placement="Top">
-																	<TextBlock TextWrapping="Wrap" Text="JSON:&#10;Records are saved as JSON files with all needed data.&#10;&#10;JSON + CSV:&#10;For each record a CSV file is created in addition to the JSON file. The CSV includes all PresentMon data and is intended for special analysis."/>
-																</ToolTip>
-															</ComboBox.ToolTip>
-															<ComboBox.ItemTemplate>
-																<DataTemplate>
-																	<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
-																</DataTemplate>
-															</ComboBox.ItemTemplate>
-														</ComboBox>
-													</Grid>
+													<TextBlock Style="{StaticResource SettingsSectionTitle}" Text="Hardware labels"/>
+													<TextBlock Style="{StaticResource SettingsDescription}" Text="Choose whether the hardware names stored with captures are detected or entered manually."/>
+													<ComboBox Margin="0 14 0 0" Width="340" Height="42" HorizontalAlignment="Left"
+															  materialDesign:HintAssist.Hint="Hardware info source"
+															  materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="140"
+															  ItemsSource="{Binding Path=DataContext.HardwareInfoSourceItems, ElementName=ColorbarViewName}"
+															  SelectedItem="{Binding Path=DataContext.SelectedHardwareInfoSource, ElementName=ColorbarViewName}">
+														<ComboBox.ItemTemplate>
+															<DataTemplate>
+																<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+															</DataTemplate>
+														</ComboBox.ItemTemplate>
+													</ComboBox>
 												</StackPanel>
 											</Border>
 

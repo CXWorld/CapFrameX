@@ -58,6 +58,7 @@ namespace CapFrameX.Data
 		public string WinGameMode { get; private set; }
 		public string HAGS { get; private set; }
 		public string PresentationMode { get; private set; }
+		public string DisplayLayer { get; private set; }
 		public string Resolution { get; private set; }
 		internal bool UsesProcessListGameName { get; set; }
 
@@ -104,6 +105,7 @@ namespace CapFrameX.Data
 			WinGameMode = sessionInfo.WinGameMode;
 			HAGS = sessionInfo.HAGS;
 			PresentationMode = sessionInfo.PresentationMode;
+			DisplayLayer = sessionInfo.DisplayLayer;
 			Resolution = sessionInfo.ResolutionInfo;
 		}
 

@@ -40,6 +40,7 @@ namespace CapFrameX.Data.Session.Classes
 		public string WinGameMode { get; set; }
 		public string HAGS { get; set; }
 		public string PresentationMode { get; set; }
+		public string DisplayLayer { get; set; }
 		public string ResolutionInfo { get; set; }
 	}
 }

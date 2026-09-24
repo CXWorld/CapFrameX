@@ -22,6 +22,9 @@ namespace CapFrameX.Data.Session.Classes
         public double[] AnimationError { get; set; }
         public double[] GpuActive { get; set; }
         public double[] CpuActive { get; set; }
+        // Display layer PresentMon reported per frame (LayerIndex), -1 for frames without one.
+        // Empty when no frame of the capture has layer data.
+        public int[] LayerIndex { get; set; }
 
         public SessionCaptureData(int numberOfCapturePoints)
         {
@@ -41,6 +44,7 @@ namespace CapFrameX.Data.Session.Classes
             AnimationError = new double[numberOfCapturePoints];
             GpuActive = new double[numberOfCapturePoints];
             CpuActive = new double[numberOfCapturePoints];
+            LayerIndex = new int[0];
         }
 
         public IEnumerable<CaptureDataEntry> LineWise()
@@ -64,7 +68,8 @@ namespace CapFrameX.Data.Session.Classes
                     PcLatency = PcLatency != null ? PcLatency[i] : double.NaN,
                     AnimationError = AnimationError[i],
                     GpuActive = GpuActive[i],
-                    CpuActive = CpuActive[i]
+                    CpuActive = CpuActive[i],
+                    LayerIndex = LayerIndex != null && i < LayerIndex.Length ? LayerIndex[i] : -1
                 };
             }
         }
@@ -88,5 +93,6 @@ namespace CapFrameX.Data.Session.Classes
         public double AnimationError { get; set; }
         public double GpuActive { get; set; }
         public double CpuActive { get; set; }
+        public int LayerIndex { get; set; }
     }
 }
