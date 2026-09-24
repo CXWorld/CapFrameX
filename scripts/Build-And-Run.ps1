@@ -9,7 +9,7 @@ $ErrorActionPreference = "Stop"
 $env:MSBUILDDISABLENODEREUSE = "1"
 $env:DOTNET_CLI_USE_MSBUILD_SERVER = "0"
 
-$repositoryRoot = $PSScriptRoot
+$repositoryRoot = Split-Path -Parent $PSScriptRoot
 $vswherePath = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
 $installerPath = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\setup.exe"
 $appProject = Join-Path $repositoryRoot "source\CapFrameX\CapFrameX.csproj"

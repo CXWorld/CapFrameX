@@ -4,7 +4,7 @@
        outside this folder and must not inherit central package management from here. -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <!-- In-game rendering and its native payloads are enabled for 1.9.1 development. -->
+    <!-- In-game rendering and its native payloads are enabled for 1.9.2 development. -->
     <CfxEnableInGameOverlay Condition="'$(CfxEnableInGameOverlay)' == ''">true</CfxEnableInGameOverlay>
   </PropertyGroup>
 

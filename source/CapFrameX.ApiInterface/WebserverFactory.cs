@@ -46,7 +46,7 @@ namespace CapFrameX.Remote
                     m.WithController(() => new CaptureController(iocContainer.Resolve<CaptureManager>()));
                     m.WithController(() => new MetricsController(iocContainer.Resolve<IOnlineMetricService>()));
                     m.WithController(() => new VersionController(iocContainer.Resolve<IAppVersionProvider>()));
-                    m.WithController(() => new OSDController(iocContainer.Resolve<IOverlayService>()));
+                    m.WithController(() => new OSDController(iocContainer.Resolve<IOverlayService>(), iocContainer.Resolve<IRemoteOverlayDemand>()));
                 });
 
             if (config.McpEnabled)
@@ -55,7 +55,7 @@ namespace CapFrameX.Remote
             }
 
             server = server
-                .WithModule(new OSDWebsocketModule("/ws/osd", iocContainer.Resolve<IOverlayService>()))
+                .WithModule(new OSDWebsocketModule("/ws/osd", iocContainer.Resolve<IOverlayService>(), iocContainer.Resolve<IRemoteOverlayDemand>()))
                 .WithModule(new SensorWebsocketModule("/ws/sensors", iocContainer.Resolve<ISensorService>(), iocContainer.Resolve<ISensorConfig>(), (_, __) => true, (sensorConfig, isActive) => sensorConfig.WsSensorsEnabled = isActive))
                 .WithModule(new SensorWebsocketModule("/ws/activesensors", iocContainer.Resolve<ISensorService>(), iocContainer.Resolve<ISensorConfig>(), (sensor, sensorConfig) =>
                 {

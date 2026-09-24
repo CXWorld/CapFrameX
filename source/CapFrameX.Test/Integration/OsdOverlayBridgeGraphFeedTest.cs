@@ -145,6 +145,25 @@ namespace CapFrameX.Test.Integration
             Assert.IsFalse(harness.IsHidden, "The toggled state applies once a process appears.");
         }
 
+        [TestMethod]
+        public void EntriesWhileTheOverlayIsSwitchedOff_DoNotReachTheRenderer()
+        {
+            using var harness = new BridgeHarness();
+            harness.SetActive(true);
+            harness.Publish(false, false, false);
+            Assert.IsNotNull(harness.PendingEntries);
+            harness.ClearPendingEntries();
+
+            // A remote API client keeps the entries flowing while the overlay is switched off.
+            harness.SetActive(false);
+            harness.Publish(false, false, false);
+            Assert.IsNull(harness.PendingEntries, "The switched-off renderer must not receive entries.");
+
+            harness.SetActive(true);
+            harness.Publish(false, false, false);
+            Assert.IsNotNull(harness.PendingEntries);
+        }
+
         // Keep the real bridge, adapter and OsdHost queue in this regression. Simulate only the
         // worker's running state so no overlay window, native DLL or render thread is needed.
         private sealed class BridgeHarness : IDisposable
@@ -161,6 +180,10 @@ namespace CapFrameX.Test.Integration
             public IList PendingSamples { get; }
 
             public bool IsHidden => ReadField<bool>(_host, "_hidden");
+
+            public object PendingEntries => ReadField<object>(_host, "_pendingEntries");
+
+            public void ClearPendingEntries() => SetField(_host, "_pendingEntries", null);
 
             public BridgeHarness(IObservable<int> processCount = null)
             {

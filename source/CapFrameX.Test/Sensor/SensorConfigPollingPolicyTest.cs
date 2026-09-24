@@ -1,7 +1,13 @@
 using System;
 using System.IO;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Overlay;
+using CapFrameX.Monitoring.Contracts;
 using CapFrameX.Sensor;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 
 namespace CapFrameX.Test.Sensor
 {
@@ -148,15 +154,113 @@ namespace CapFrameX.Test.Sensor
                 hasLoggingPmc: true));
         }
 
+        [TestMethod]
+        public void RemoteOverlayDemand_KeepsThePollTimerRunningLikeAnActiveOverlay()
+        {
+            Assert.IsTrue(SensorService.SelectSensorPollTimerState(
+                overlayActive: false, remoteOverlayDemand: true, loggingActive: false,
+                useSensorLogging: false, websocketActive: false, evaluateAllSensors: false));
+
+            Assert.IsFalse(SensorService.SelectSensorPollTimerState(
+                overlayActive: false, remoteOverlayDemand: false, loggingActive: false,
+                useSensorLogging: true, websocketActive: false, evaluateAllSensors: false),
+                "With the overlay off and no other consumer the timer must stay idle.");
+        }
+
+        [TestMethod]
+        public void RemoteOverlayDemand_PollsHardwareOnlyForSelectedOverlaySensors()
+        {
+            Assert.IsTrue(SelectHardwarePolling(overlayActive: false, remoteDemand: true, hasOverlaySensors: true));
+            Assert.IsFalse(SelectHardwarePolling(overlayActive: false, remoteDemand: true, hasOverlaySensors: false),
+                "Remote clients read the overlay entries, which contain only the overlay sensors.");
+            Assert.IsFalse(SelectHardwarePolling(overlayActive: false, remoteDemand: false, hasOverlaySensors: true));
+            Assert.IsTrue(SelectHardwarePolling(overlayActive: true, remoteDemand: false, hasOverlaySensors: true));
+        }
+
+        [TestMethod]
+        public void RemoteOverlayDemand_PollsPmcOnlyForSelectedOverlayPmcSensors()
+        {
+            Assert.IsTrue(SelectPmcPolling(
+                overlayActive: false,
+                hasOverlayPmc: true,
+                loggingActive: false,
+                useSensorLogging: true,
+                hasLoggingPmc: false,
+                remoteDemand: true));
+
+            Assert.IsFalse(SelectPmcPolling(
+                overlayActive: false,
+                hasOverlayPmc: false,
+                loggingActive: false,
+                useSensorLogging: true,
+                hasLoggingPmc: true,
+                remoteDemand: true));
+        }
+
+        [TestMethod]
+        public void RunningService_ReadsTheRemoteOverlayDemandForEveryPollingDecision()
+        {
+            bool remoteActive = false;
+            var demand = new Mock<IRemoteOverlayDemand>();
+            demand.SetupGet(x => x.IsActive).Returns(() => remoteActive);
+            var service = CreateServiceWithoutHardware(demand.Object);
+
+            Assert.IsFalse(service.HasActiveSensorConsumer());
+            Assert.IsFalse(service.ShouldPollHardwareSensors());
+            Assert.IsFalse(service.ShouldPollPmcReaderSensors());
+
+            remoteActive = true;
+            Assert.IsTrue(service.HasActiveSensorConsumer());
+            Assert.IsTrue(service.ShouldPollHardwareSensors());
+            Assert.IsTrue(service.ShouldPollPmcReaderSensors());
+        }
+
+        // The constructor starts LibreHardwareMonitor and the PMC reader. The polling decisions
+        // read nothing but the configuration, the sensor selection and the remote demand.
+        private static SensorService CreateServiceWithoutHardware(IRemoteOverlayDemand demand)
+        {
+            var sensorConfig = new Mock<ISensorConfig>();
+            sensorConfig.SetupGet(x => x.HasSelectedOverlaySensors).Returns(true);
+            sensorConfig.SetupGet(x => x.HasSelectedPmcOverlaySensors).Returns(true);
+
+            var service = (SensorService)RuntimeHelpers.GetUninitializedObject(typeof(SensorService));
+            SetField(service, "_appConfiguration", new Mock<IAppConfiguration>().Object);
+            SetField(service, "_sensorConfig", sensorConfig.Object);
+            SetField(service, "_remoteOverlayDemand", demand);
+            service.IsSensorWebsocketActive = () => false;
+            return service;
+        }
+
+        private static void SetField(object target, string name, object value)
+        {
+            var field = target.GetType().GetField(name, BindingFlags.Instance | BindingFlags.NonPublic)
+                ?? throw new InvalidOperationException($"Missing field: {name}");
+            field.SetValue(target, value);
+        }
+
+        private static bool SelectHardwarePolling(bool overlayActive, bool remoteDemand, bool hasOverlaySensors)
+        {
+            return SensorService.SelectHardwarePollingState(
+                overlayActive,
+                remoteDemand,
+                hasOverlaySensors,
+                loggingActive: false,
+                useSensorLogging: true,
+                websocketActive: false,
+                evaluateAllSensors: false);
+        }
+
         private static bool SelectPmcPolling(
             bool overlayActive,
             bool hasOverlayPmc,
             bool loggingActive,
             bool useSensorLogging,
-            bool hasLoggingPmc)
+            bool hasLoggingPmc,
+            bool remoteDemand = false)
         {
             return SensorService.SelectPmcReaderPollingState(
                 overlayActive,
+                remoteDemand,
                 hasOverlayPmc,
                 loggingActive,
                 useSensorLogging,

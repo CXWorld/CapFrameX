@@ -31,6 +31,7 @@ namespace CapFrameX.Sensor
         private readonly ISensorConfig _sensorConfig;
         private readonly IRTSSService _rTSSService;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IRemoteOverlayDemand _remoteOverlayDemand;
         private readonly ILogger<SensorService> _logger;
         private readonly IDisposable _logDisposable;
         private readonly IDisposable _sensorPollTimerDisposable;
@@ -80,9 +81,11 @@ namespace CapFrameX.Sensor
 
         public SensorService(IAppConfiguration appConfig, ISensorConfig sensorConfig,
             IRTSSService rTSSService,
+            IRemoteOverlayDemand remoteOverlayDemand,
             ILogger<SensorService> logger)
         {
             _appConfiguration = appConfig;
+            _remoteOverlayDemand = remoteOverlayDemand;
             _sensorConfig = sensorConfig;
             _rTSSService = rTSSService;
             _logger = logger;
@@ -447,27 +450,35 @@ namespace CapFrameX.Sensor
                     ?? Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>());
         }
 
-        private bool HasActiveSensorConsumer()
+        internal bool HasActiveSensorConsumer()
         {
-            return IsOverlayActive
-                || (_isLoggingActive && UseSensorLogging)
-                || IsSensorWebsocketActive()
-                || _sensorConfig.EvaluateAllSensors;
+            return SelectSensorPollTimerState(
+                IsOverlayActive,
+                _remoteOverlayDemand.IsActive,
+                _isLoggingActive,
+                UseSensorLogging,
+                IsSensorWebsocketActive(),
+                _sensorConfig.EvaluateAllSensors);
         }
 
-        private bool ShouldPollHardwareSensors()
+        internal bool ShouldPollHardwareSensors()
         {
-            return (IsOverlayActive && _sensorConfig.HasSelectedOverlaySensors)
-                || (_isLoggingActive && UseSensorLogging)
-                || IsSensorWebsocketActive()
-                || _sensorConfig.EvaluateAllSensors;
+            return SelectHardwarePollingState(
+                IsOverlayActive,
+                _remoteOverlayDemand.IsActive,
+                _sensorConfig.HasSelectedOverlaySensors,
+                _isLoggingActive,
+                UseSensorLogging,
+                IsSensorWebsocketActive(),
+                _sensorConfig.EvaluateAllSensors);
         }
 
-        private bool ShouldPollPmcReaderSensors()
+        internal bool ShouldPollPmcReaderSensors()
         {
             bool websocketActive = IsSensorWebsocketActive();
             return SelectPmcReaderPollingState(
                 IsOverlayActive,
+                _remoteOverlayDemand.IsActive,
                 _sensorConfig.HasSelectedPmcOverlaySensors,
                 _isLoggingActive,
                 UseSensorLogging,
@@ -478,8 +489,42 @@ namespace CapFrameX.Sensor
                 _sensorConfig.EvaluateAllSensors);
         }
 
+        // The overlay entries, including the selected overlay sensors, have two consumers: the
+        // active overlay and remote API clients (IRemoteOverlayDemand), which read them with the
+        // overlay switched off.
+        internal static bool SelectSensorPollTimerState(
+            bool overlayActive,
+            bool remoteOverlayDemand,
+            bool loggingActive,
+            bool useSensorLogging,
+            bool websocketActive,
+            bool evaluateAllSensors)
+        {
+            return overlayActive
+                || remoteOverlayDemand
+                || (loggingActive && useSensorLogging)
+                || websocketActive
+                || evaluateAllSensors;
+        }
+
+        internal static bool SelectHardwarePollingState(
+            bool overlayActive,
+            bool remoteOverlayDemand,
+            bool hasSelectedOverlaySensors,
+            bool loggingActive,
+            bool useSensorLogging,
+            bool websocketActive,
+            bool evaluateAllSensors)
+        {
+            return ((overlayActive || remoteOverlayDemand) && hasSelectedOverlaySensors)
+                || (loggingActive && useSensorLogging)
+                || websocketActive
+                || evaluateAllSensors;
+        }
+
         internal static bool SelectPmcReaderPollingState(
             bool overlayActive,
+            bool remoteOverlayDemand,
             bool hasSelectedOverlayPmcSensors,
             bool loggingActive,
             bool useSensorLogging,
@@ -492,7 +537,7 @@ namespace CapFrameX.Sensor
             bool selectedLoggingConsumer = (loggingActive && useSensorLogging)
                 || (websocketActive && websocketActiveSensors);
 
-            return (overlayActive && hasSelectedOverlayPmcSensors)
+            return ((overlayActive || remoteOverlayDemand) && hasSelectedOverlayPmcSensors)
                 || (selectedLoggingConsumer && hasSelectedLoggingPmcSensors)
                 || (websocketActive && websocketAllSensors)
                 || evaluateAllSensors;

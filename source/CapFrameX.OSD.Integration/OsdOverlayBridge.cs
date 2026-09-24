@@ -324,7 +324,9 @@ namespace CapFrameX.OSD.Integration
 
         private void OnEntries()
         {
-            if (!_started) return;
+            // Entries keep flowing with the overlay switched off while a remote API client reads
+            // them (IRemoteOverlayDemand). The switched-off renderer does not need them.
+            if (!_started || !_active) return;
             // OnDictionaryUpdated is published after this processed display list is ready.
             var entries = _overlayService.CurrentOverlayEntries;
             UpdateFrameFeedRequirements(entries);

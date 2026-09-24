@@ -35,6 +35,7 @@ namespace CapFrameX.Overlay
         private readonly IRTSSService _rTSSService;
         private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly ILogEntryManager _logEntryManager;
+        private readonly IRemoteOverlayDemand _remoteOverlayDemand;
         private readonly EventLoopScheduler _overlayRefreshScheduler;
 
         private IDisposable _disposableCaptureTimer;
@@ -88,7 +89,8 @@ namespace CapFrameX.Overlay
             IRecordManager recordManager,
             IRTSSService rTSSService,
             IOverlayEntryCore overlayEntryCore,
-            ILogEntryManager logEntryManager)
+            ILogEntryManager logEntryManager,
+            IRemoteOverlayDemand remoteOverlayDemand)
         {
             _statisticProvider = statisticProvider;
             _overlayEntryProvider = overlayEntryProvider;
@@ -97,6 +99,7 @@ namespace CapFrameX.Overlay
             _recordManager = recordManager;
             _sensorService = sensorService;
             _logEntryManager = logEntryManager;
+            _remoteOverlayDemand = remoteOverlayDemand;
             _rTSSService = rTSSService;
             _overlayEntryCore = overlayEntryCore;
             _overlayRefreshScheduler = new EventLoopScheduler(start =>
@@ -196,57 +199,76 @@ namespace CapFrameX.Overlay
                 .ContinueWith(t =>
                {
                    int rtssFeedLogState = -1; // logs only when the RTSS-feed decision flips (avoids per-tick spam)
-                   _overlayActiveStreamDisposable = IsOverlayActiveStream
+                   EntryFeedMode? loggedFeedMode = null;
+                   _overlayActiveStreamDisposable = SelectEntryFeedModes(IsOverlayActiveStream, _remoteOverlayDemand.IsActiveStream)
                        .Where(_ => _isServiceAlive)
-                       .Select(isActive =>
+                       .Select(mode =>
                        {
-                           if (isActive)
+                           if (mode != loggedFeedMode)
                            {
-                               // Serialize profile changes and regular ticks on the refresh thread.
-                               // FromAsync defers each read until the previous one has completed.
-                               var entryUpdates = _refreshRequested
-                                   .StartWith(Unit.Default)
-                                   .ObserveOn(_overlayRefreshScheduler)
-                                   .Select(_ => Observable.FromAsync(() => _overlayEntryProvider.GetOverlayEntries()))
-                                   .Concat();
-
-                               if (!_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay)
-                               {
-                                   // Deferred instead of awaited inline: this selector runs on the
-                                   // thread that pushed the value — the WPF dispatcher for the
-                                   // overlay hotkey and for the checkbox — while the RTSS check
-                                   // enumerates processes and may start RTSS. FromAsync preserves
-                                   // the ordering (entries only flow once RTSS is up) without
-                                   // blocking the caller, which .Wait() did.
-                                   return Observable
-                                       .FromAsync(cancellationToken => InitializeRTSSAsync(cancellationToken))
-                                       .SelectMany(_ => entryUpdates);
-                               }
-
-                               return entryUpdates;
+                               loggedFeedMode = mode;
+                               _logger.LogInformation("Overlay entry feed: {mode}", mode);
                            }
-                           else
+
+                           if (mode == EntryFeedMode.Off)
                            {
                                _rTSSService.ReleaseOSD();
-                               return Observable.Empty<IOverlayEntry[]>();
+                               return Observable.Empty<(IOverlayEntry[] Entries, bool MayFeedRtss)>();
                            }
+
+                           // Serialize profile changes and regular ticks on the refresh thread.
+                           // FromAsync defers each read until the previous one has completed.
+                           var entryUpdates = _refreshRequested
+                               .StartWith(Unit.Default)
+                               .ObserveOn(_overlayRefreshScheduler)
+                               .Select(_ => Observable.FromAsync(() => _overlayEntryProvider.GetOverlayEntries()))
+                               .Concat();
+
+                           if (mode == EntryFeedMode.RemoteOnly)
+                           {
+                               // The overlay is off, but a remote API client still reads the
+                               // entries. RTSS is released as in the Off mode and never fed.
+                               _rTSSService.ReleaseOSD();
+                               return entryUpdates.Select(entries => (Entries: entries, MayFeedRtss: false));
+                           }
+
+                           var overlayUpdates = entryUpdates.Select(entries => (Entries: entries, MayFeedRtss: true));
+
+                           if (!_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay)
+                           {
+                               // Deferred instead of awaited inline: this selector runs on the
+                               // thread that pushed the value — the WPF dispatcher for the
+                               // overlay hotkey and for the checkbox — while the RTSS check
+                               // enumerates processes and may start RTSS. FromAsync preserves
+                               // the ordering (entries only flow once RTSS is up) without
+                               // blocking the caller, which .Wait() did.
+                               return Observable
+                                   .FromAsync(cancellationToken => InitializeRTSSAsync(cancellationToken))
+                                   .SelectMany(_ => overlayUpdates);
+                           }
+
+                           return overlayUpdates;
                        })
                        .Switch()
-                       .Subscribe(async entries =>
+                       .Subscribe(async update =>
                        {
+                           var entries = update.Entries;
                            CurrentOverlayEntries = entries;
                            OSDUpdateNotifier(entries);
                            // Both CapFrameX renderers read CurrentOverlayEntries from this event.
                            // Publishing the raw tick first could make them render the old profile.
                            _onDictionaryUpdated.OnNext(entries);
 
-                           bool feedRtss = !overlayOnAPIOnly && !_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay;
+                           // IsOverlayActive is checked as well: an update already in flight when
+                           // the overlay is switched off must not refill the released RTSS slot.
+                           bool feedRtss = update.MayFeedRtss && IsOverlayActive && !overlayOnAPIOnly
+                               && !_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay;
                            int feedState = feedRtss ? 1 : 0;
                            if (feedState != rtssFeedLogState)
                            {
                                rtssFeedLogState = feedState;
-                               _logger.LogInformation("RTSS feed {state} (apiOnly={api}, hookFree={hf}, hook={h})",
-                                   feedRtss ? "ON" : "OFF", overlayOnAPIOnly,
+                               _logger.LogInformation("RTSS feed {state} (overlay={active}, apiOnly={api}, hookFree={hf}, hook={h})",
+                                   feedRtss ? "ON" : "OFF", IsOverlayActive, overlayOnAPIOnly,
                                    _appConfiguration.EnableHookFreeOverlay, _appConfiguration.EnableHookOverlay);
                            }
                            if (feedRtss)
@@ -271,7 +293,7 @@ namespace CapFrameX.Overlay
                         refreshTicks,
                         (DateTime.UtcNow, new Dictionary<ISensorEntry, float>()))
                        .Where(_ => _isServiceAlive)
-                       .Where((_, idx) => idx == 0 || IsOverlayActive)
+                       .Where((_, idx) => idx == 0 || IsOverlayActive || _remoteOverlayDemand.IsActive)
                        .Subscribe(sensorData =>
                        {
                            if (sensorData.Item2.Any())
@@ -340,6 +362,56 @@ namespace CapFrameX.Overlay
         {
             return configuredOverlayActive &&
                 (isRTSSInstalled || enableHookFreeOverlay || enableHookOverlay);
+        }
+
+        internal enum EntryFeedMode
+        {
+            Off,
+            /// <summary>Overlay switched off, entries refreshed for remote API clients only.</summary>
+            RemoteOnly,
+            Overlay
+        }
+
+        /// <summary>
+        /// Combines the overlay switch with the remote API demand. Every overlay value is passed on,
+        /// repeats included, because pushing true again is how a renderer switch re-drives the RTSS
+        /// initialization. A demand change only passes when it changes the mode, so a client
+        /// connecting to an active overlay does not run that initialization again.
+        /// </summary>
+        internal static IObservable<EntryFeedMode> SelectEntryFeedModes(
+            IObservable<bool> overlayActive,
+            IObservable<bool> remoteDemand)
+        {
+            return Observable.Defer(() =>
+            {
+                bool? active = null;
+                bool demand = false;
+                EntryFeedMode? lastMode = null;
+
+                // Merge serializes both sources, so the state above is never touched concurrently.
+                return Observable.Merge(
+                        overlayActive.Select(value => (FromOverlay: true, Value: value)),
+                        remoteDemand.DistinctUntilChanged().Select(value => (FromOverlay: false, Value: value)))
+                    .Select(change =>
+                    {
+                        if (change.FromOverlay)
+                            active = change.Value;
+                        else
+                            demand = change.Value;
+
+                        if (active == null)
+                            return (EntryFeedMode?)null;
+
+                        var mode = active.Value ? EntryFeedMode.Overlay
+                            : demand ? EntryFeedMode.RemoteOnly
+                            : EntryFeedMode.Off;
+                        bool emit = change.FromOverlay || mode != lastMode;
+                        lastMode = mode;
+                        return emit ? mode : (EntryFeedMode?)null;
+                    })
+                    .Where(mode => mode.HasValue)
+                    .Select(mode => mode.Value);
+            });
         }
 
         internal static bool ShouldDefaultToHookFreeOverlay(bool isRTSSInstalled,
@@ -422,14 +494,13 @@ namespace CapFrameX.Overlay
 
         public void SetCaptureServiceStatus(string status)
         {
-            if (IsOverlayActive)
+            // Not gated on IsOverlayActive: remote API clients read the entry with the overlay
+            // off, and SetOverlayEntry only updates the RTSS entry list, like SetCaptureTimerValue.
+            var captureStatus = _overlayEntryProvider.GetOverlayEntry("CaptureServiceStatus");
+            if (captureStatus != null)
             {
-                var captureStatus = _overlayEntryProvider.GetOverlayEntry("CaptureServiceStatus");
-                if (captureStatus != null)
-                {
-                    captureStatus.Value = status;
-                    _rTSSService.SetOverlayEntry(captureStatus);
-                }
+                captureStatus.Value = status;
+                _rTSSService.SetOverlayEntry(captureStatus);
             }
         }
 

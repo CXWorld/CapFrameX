@@ -10,14 +10,18 @@ released on September 21, 2026.
 
 ## Capture compatibility
 
-The arguments in `PresentMonServiceConfiguration` retain the existing CSV layout:
-29 columns with PC latency tracking, or 28 without it. Frame-type tracking, app
-timing, QPC timestamps in milliseconds, and configurable circular buffers remain
-supported. No parser or metric-index changes are required for this update.
+`PresentMonServiceConfiguration` starts PresentMon with frame-type tracking, app
+timing, QPC timestamps in milliseconds, a configurable circular buffer and the
+`--write_display_metadata` argument added in 2.6.0. The CSV has 32 columns with PC
+latency tracking, or 31 without it: `VidPnSourceId` and `LayerIndex` follow
+`PresentFlags`, `PresentId` is the last column.
 
-Version 2.6.0 adds the optional `--write_display_metadata` argument, which inserts
-`VidPnSourceId` and `LayerIndex` and appends `PresentId`. CapFrameX leaves this
-argument disabled because its capture parser expects the layout above.
+CapFrameX stores `LayerIndex` per frame and summarizes it as "Display Layer" in the
+record details. PresentMon only fills the three columns for presents it sees in a
+`MMIOFlipMultiPlaneOverlay3_Info` event (version 8 or later, requires
+`--track_frame_type`) and writes 0 otherwise, so rows with `PresentId` 0 count as
+frames without layer data. Windows builds without that event version report none,
+and neither do the upstream `Tests/Gold` traces.
 
 ## Changes from 2.5.1
 
