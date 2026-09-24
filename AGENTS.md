@@ -51,7 +51,7 @@ fail silently when broken:
   `WOW6432Node`. The loader identifies a layer by the NAME in its manifest, so a manifest
   reachable by processes that cannot load its DLL does not merely fail: it shadows the correct
   registration (`error 193`, then `wrong bit-type`) and disables the layer for that bitness.
-  The installer does this with one component per bitness (`Win64="yes"` / `Win64="no"`).
+  The installer does this with one component per bitness (`Bitness="always64"` / `Bitness="always32"`).
 - **Never use HKCU.** It is user-controlled, so the loader ignores it entirely for targets
   started with elevated privileges, and it is not split by bitness, so it hits the shadowing
   problem above. Both look exactly like "this game does not use Vulkan": the layer never runs,
