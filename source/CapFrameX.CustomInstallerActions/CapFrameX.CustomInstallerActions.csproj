@@ -62,8 +62,8 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Xml" />
-    <Reference Include="WixToolset.Dtf.WindowsInstaller, Version=5.0.0.0, Culture=neutral, PublicKeyToken=a7d136314861246c, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\WixToolset.Dtf.WindowsInstaller.5.0.2\lib\net20\WixToolset.Dtf.WindowsInstaller.dll</HintPath>
+    <Reference Include="WixToolset.Dtf.WindowsInstaller, Version=6.0.0.0, Culture=neutral, PublicKeyToken=a7d136314861246c, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\WixToolset.Dtf.WindowsInstaller.6.0.2\lib\net20\WixToolset.Dtf.WindowsInstaller.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
@@ -79,7 +79,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\..\packages\WixToolset.Dtf.CustomAction.5.0.2\build\WixToolset.Dtf.CustomAction.targets" Condition="Exists('..\..\packages\WixToolset.Dtf.CustomAction.5.0.2\build\WixToolset.Dtf.CustomAction.targets')" />
+  <Import Project="..\..\packages\WixToolset.Dtf.CustomAction.6.0.2\build\WixToolset.Dtf.CustomAction.targets" Condition="Exists('..\..\packages\WixToolset.Dtf.CustomAction.6.0.2\build\WixToolset.Dtf.CustomAction.targets')" />
   <Target Name="EnsureWixToolsetInstalled" BeforeTargets="PrepareForBuild" Condition=" '$(WixCATargetsImported)' != 'true' ">
     <Error Text="The WixToolset.Dtf.CustomAction package is missing. Restore NuGet packages before building this project." />
   </Target>

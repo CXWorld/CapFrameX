@@ -10,7 +10,7 @@ CapFrameX is a Windows desktop application for frametime capture and analysis, b
 
 ### Prerequisites
 - Visual Studio 2026 (toolset v145; the native projects pin it)
-- WiX Toolset v3.14.1 ([wix314.exe](https://github.com/wixtoolset/wix3/releases/tag/wix3141rtm)) — **v3 only**, v4+ uses an incompatible SDK-style project format. It sets the `WIX` environment variable that the installer's `heat.exe` pre-build step needs, and installs the targets under `Program Files (x86)\MSBuild\Microsoft\WiX\v3.x\`. The separate Visual Studio extension only adds IDE integration and is not required for the msbuild command line.
+- WiX Toolset v6.0.2 — nothing to install. `CapFrameXInstaller` and `CapFrameXBootstrapper` are SDK-style projects (`<Project Sdk="WixToolset.Sdk/6.0.2">`); MSBuild restores the SDK and the `WixToolset.*.wixext` extensions from NuGet, so build them with `/restore`. The extension versions live in `source/Directory.Packages.props` and must match the SDK version. Stay on v6: WiX v7 requires accepting the Open Source Maintenance Fee EULA before it builds, which is the owner's decision. The HeatWave Visual Studio extension only adds IDE integration.
 - C++ MFC build tools
 
 ### Build the Main Application
@@ -28,9 +28,14 @@ msbuild source\CapFrameX.ADLX\CapFrameX.ADLX.vcxproj /p:SolutionDir=%CD%\ /p:Con
 
 ### Build Installer
 ```bash
-msbuild source\CapFrameXInstaller\CapFrameXInstaller.wixproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64
-msbuild source\CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64
+msbuild source\CapFrameXInstaller\CapFrameXInstaller.wixproj /restore /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64
+msbuild source\CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj /restore /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64
 ```
+Build the application (and the native DLLs) first: the MSI's file list is harvested at build time
+from `source\CapFrameX\bin\x64\<Configuration>\net10.0-windows` by the `<Files>` element in
+`Product.wxs`, whose `<Exclude>` entries replace the former `heat.exe` step and `filter.xslt`.
+The bundle stays a 32-bit Burn bundle (`InstallerPlatform=x86`), as WiX v3 bundles were; the chained
+MSI is x64. Its VC++ redistributables are remote payloads verified by their Authenticode signer.
 
 ### Run Tests
 Tests use MSTest framework:
@@ -180,7 +185,7 @@ Only the in-game hook and the Vulkan layer still read it at load:
 
 Vulkan games present through the driver's ICD, so the DXGI Present hook never fires. They are served by an implicit loader layer (`VK_LAYER_CAPFRAMEX_overlay`) staged one folder per bitness — `vulkan\cfx_osd_vklayer.dll` and `vulkan\x86\cfx_osd_vklayer.dll`, mirroring the hook's `hook\` / `hook\x86\` split. Both manifests are byte-identical; `library_path` inside them is relative, so only the folder decides which DLL the loader picks up. The x86 layer comes from its own CMake tree in the OSD repo (`vk_layer`, `cmake -B build-x86 -A Win32`).
 
-Registration is bitness-scoped and this is load-bearing: the loader identifies a layer by the NAME in its manifest, so a manifest reachable by processes that cannot load its DLL **shadows** the correct registration and disables the layer for that bitness. `CapFrameXInstaller` therefore ships one component per bitness — `Win64="yes"` for the 64-bit view, `Win64="no"` for `WOW6432Node`. The 32-bit one is anchored to `TARGETDIR`, not `INSTALLFOLDER`, because ICE80 rejects a 32-bit component in a directory below `ProgramFiles64Folder`.
+Registration is bitness-scoped and this is load-bearing: the loader identifies a layer by the NAME in its manifest, so a manifest reachable by processes that cannot load its DLL **shadows** the correct registration and disables the layer for that bitness. `CapFrameXInstaller` therefore ships one component per bitness — `Bitness="always64"` for the 64-bit view, `Bitness="always32"` for `WOW6432Node`. The 32-bit one is anchored to `TARGETDIR`, not `INSTALLFOLDER`, because ICE80 rejects a 32-bit component in a directory below `ProgramFiles64Folder`.
 
 **Never register the layer in HKCU** (the OSD repo's `register_layer.cmd` uses HKLM only and purges HKCU leftovers). HKCU is user-controlled, so the loader ignores it for targets started elevated — e.g. a game launched from a Visual Studio that debugs the admin-only `CapFrameX.exe` — and it is not split by bitness, so it also triggers the shadowing above. Both failure modes are silent and look exactly like "this game has no Vulkan": `VulkanActivityProbe` finds no renderer-state mapping, `VulkanLayerModuleProbe` finds no layer module, and `HookOverlayManager` correctly concludes DXGI and injects the hook into a Vulkan title — where the in-game arbiter denies its renderer lease and the status parks on `Initializing` until the hook-free fallback takes over.
 

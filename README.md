@@ -403,9 +403,8 @@ NuGet package versions are managed centrally in `source/Directory.Packages.props
 
 # Build requirements
 * MS Visual Studio 2026
-* WiX V3.14.1
-* WiX Toolset Visual Studio Extension (optional, IDE integration only)
-* WiX Toolset and VS Extension: http://wixtoolset.org/releases/
+* WiX Toolset v6.0.2 — nothing to install: the installer projects use the `WixToolset.Sdk` MSBuild SDK, which NuGet restores
+* HeatWave Visual Studio extension (optional, IDE integration only)
 * C++ MFC build tools
 
 # Build settings
