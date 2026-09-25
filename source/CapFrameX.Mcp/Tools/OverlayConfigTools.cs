@@ -202,7 +202,7 @@ namespace CapFrameX.Mcp.Tools
                 ValueAlignmentAndDigits = entry.ValueAlignmentAndDigits,
                 ValueFontSize = entry.ValueFontSize,
                 Color = entry.Color,
-                FormattedGroupName = SafeGet(() => entry.FormattedGroupName),
+                FormattedGroupName = SafeGet(() => FormatEnglishGroupName(entry)),
                 GroupNameFormat = entry.GroupNameFormat,
                 GroupColor = entry.GroupColor,
                 GroupFontSize = entry.GroupFontSize,
@@ -223,6 +223,14 @@ namespace CapFrameX.Mcp.Tools
         {
             try { return getter(); }
             catch { return null; }
+        }
+
+        private static string FormatEnglishGroupName(IOverlayEntry entry)
+        {
+            var name = entry?.GroupName ?? string.Empty;
+            return string.IsNullOrWhiteSpace(entry?.GroupNameFormat)
+                ? name
+                : string.Format(CultureInfo.InvariantCulture, entry.GroupNameFormat, name);
         }
 
         private static bool HasAnyEntryUpdate(params object[] values)
