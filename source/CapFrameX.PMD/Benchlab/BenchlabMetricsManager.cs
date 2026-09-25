@@ -1,5 +1,6 @@
 using CapFrameX.Contracts.Localization;
 using Prism.Mvvm;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace CapFrameX.PMD.Benchlab
 {
     public class BenchlabMetricsManager : BindableBase
     {
-        static string ZERO_WATT => "0.0 " + CxLang.T("BenchlabMetricsManager_W");
+        const string ZERO_WATT = "0.0 W";
 
         private string _systemPowerCur = ZERO_WATT;
         private string _gpuPowerCur = ZERO_WATT;
@@ -162,7 +163,13 @@ namespace CapFrameX.PMD.Benchlab
 
         public int PmdDataWindowSeconds { get; set; }
 
-        static string Show(string value) => CxLang.Instance.TranslateOverlay(value);
+        // The stored values carry a neutral " W" unit, so they can be compared with ZERO_WATT
+        // whatever the language. Only the unit is translated, in the interface language, when a
+        // view reads them; translating the whole string would cache every distinct reading.
+        static string Show(string value)
+            => value != null && value.EndsWith(" W", StringComparison.Ordinal)
+                ? value.Substring(0, value.Length - 1) + CxLang.T("BenchlabMetricsManager_W")
+                : value;
 
         public BenchlabMetricsManager(IBenchlabService benchlabService, int pmdMetricRefreshPeriod, int pmdDataWindowSeconds)
         {

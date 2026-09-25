@@ -8,8 +8,8 @@ using CapFrameX.Contracts.Localization;
 namespace CapFrameX.MVVM.Localization
 {
     /// <summary>
-    /// Binds a control to the current interface translation of an English string.
-    /// Usage: Text="{loc:Tr 'Running processes'}"
+    /// Binds a control to the current interface translation of a catalog key.
+    /// Usage: Text="{loc:Tr OverlayView_Description}"
     /// </summary>
     public class TrExtension : MarkupExtension
     {

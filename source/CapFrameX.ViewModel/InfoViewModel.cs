@@ -422,7 +422,7 @@ namespace CapFrameX.ViewModel
         private static string FormatValue(float? value, string format, string unit)
         {
             return value.HasValue
-                ? value.Value.ToString(format, CultureInfo.InvariantCulture) + CxLang.Instance.TranslateOverlay(unit)
+                ? value.Value.ToString(format, CultureInfo.InvariantCulture) + CxLang.Instance.TranslateUiText(unit)
                 : NoValue;
         }
 
@@ -460,10 +460,10 @@ namespace CapFrameX.ViewModel
             if (total.HasValue && total.Value > 0f)
             {
                 var totalText = total.Value.ToString("F0", CultureInfo.InvariantCulture);
-                return $"{usedText} / {totalText} {CxLang.Instance.TranslateOverlay("GB")}";
+                return $"{usedText} / {totalText} {CxLang.Instance.TranslateUiText("GB")}";
             }
 
-            return $"{usedText} {CxLang.Instance.TranslateOverlay("GB")}";
+            return $"{usedText} {CxLang.Instance.TranslateUiText("GB")}";
         }
 
         private void UpdateSystemStatus()

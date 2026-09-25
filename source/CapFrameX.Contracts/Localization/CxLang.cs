@@ -31,6 +31,11 @@ namespace CapFrameX.Contracts.Localization
         // two languages, and a result computed for the old language lands in the old cache.
         private volatile OverlayState _overlay = OverlayState.English;
 
+        // The same "overlay" and "phrases" rules in the interface language, for desktop views
+        // that show sensor units. Kept apart from _overlay so those views follow the UI
+        // language even when the overlay uses another one.
+        private volatile OverlayState _uiText = OverlayState.English;
+
         public event PropertyChangedEventHandler PropertyChanged;
         public event Action OverlayLanguageChanged;
 
@@ -66,6 +71,7 @@ namespace CapFrameX.Contracts.Localization
             if (next == _uiLanguage)
                 return;
             _uiLanguage = next;
+            _uiText = CreateOverlayState(next);
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(UiLanguage)));
         }
@@ -188,9 +194,16 @@ namespace CapFrameX.Contracts.Localization
             return value.ToString();
         }
 
-        public string TranslateOverlay(string label)
+        public string TranslateOverlay(string label) => TranslateWith(_overlay, label);
+
+        /// <summary>
+        /// Like <see cref="TranslateOverlay"/>, but in the interface language. For desktop views,
+        /// which must follow the UI language rather than the overlay language.
+        /// </summary>
+        public string TranslateUiText(string label) => TranslateWith(_uiText, label);
+
+        private static string TranslateWith(OverlayState state, string label)
         {
-            var state = _overlay;
             if (string.IsNullOrEmpty(label) || state.Catalog == null)
                 return label ?? string.Empty;
             try
