@@ -603,7 +603,14 @@ namespace CapFrameX.Overlay
             if (!HasStoredState)
                 return Enumerable.Empty<IOverlayEntry>();
 
-            return _storedOverlayEntries;
+            // Hand out copies: the caller disposes the entries it replaces, and a second revert
+            // must not bring back entries the first one already put in the list.
+            return _storedOverlayEntries.Select(entry => entry.Clone()).ToArray();
+        }
+
+        public void ClearStoredState()
+        {
+            _storedOverlayEntries = null;
         }
 
         private class CoreGroupInfo

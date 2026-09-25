@@ -770,7 +770,7 @@ namespace CapFrameX.ViewModel
 
         public ICommand ApplyOverlayTemplateCommand { get; }
 
-        public ICommand RevertOverlayTemplateCommand { get; }
+        public DelegateCommand RevertOverlayTemplateCommand { get; }
 
         public bool IsRTSSInstalled
             => _rTSSService.IsRTSSInstalled();
@@ -857,6 +857,14 @@ namespace CapFrameX.ViewModel
                 .ObserveOnDispatcher()
                 .Subscribe(ApplyReloadedOverlayEntries);
 
+            // The template revert state was taken from the profile that was active when the
+            // template was applied. Restored into another profile it would replace that profile's
+            // entries, so a switch discards it as soon as it starts. The hotkey requests the
+            // switch from a worker thread, hence the dispatcher.
+            _configSubject
+                .ObserveOnDispatcher()
+                .Subscribe(_ => DiscardTemplateRevertState());
+
             // The provider gates renderer-dependent items in place. A renderer change must not use
             // the profile-switch path: that reloads JSON and discards unsaved item edits.
             _appConfiguration.OnValueChanged
@@ -928,7 +936,10 @@ namespace CapFrameX.ViewModel
             ClearFilterCommand = new DelegateCommand(OnClearFilter);
             LaunchOverlayPreviewAppCommand = new DelegateCommand(OnLaunchOverlayPreviewApp);
             ApplyOverlayTemplateCommand = new DelegateCommand(OnApplyOverlayTemplate);
-            RevertOverlayTemplateCommand = new DelegateCommand(OnRevertOverlayTemplate);
+            // Without an applied template there is nothing to revert to; the stored state would be
+            // empty and the revert would clear the whole list.
+            RevertOverlayTemplateCommand = new DelegateCommand(OnRevertOverlayTemplate,
+                () => _overlayTemplateService.HasStoredState);
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();
@@ -1180,8 +1191,14 @@ namespace CapFrameX.ViewModel
 
         private void OnApplyOverlayTemplate()
         {
+            // An empty list (entries not loaded yet) would be stored as the revert state and pushed
+            // to the provider, wiping its entries.
+            if (!OverlayEntries.Any())
+                return;
+
             // Store current state before applying template
             _overlayTemplateService.StoreCurrentState(OverlayEntries);
+            RevertOverlayTemplateCommand.RaiseCanExecuteChanged();
             var clonedEntries = OverlayEntries.Select(entry => entry.Clone()).ToList();
 
             // Apply the selected template
@@ -1208,9 +1225,18 @@ namespace CapFrameX.ViewModel
             _overlayService.RequestRefresh();
         }
 
+        private void DiscardTemplateRevertState()
+        {
+            _overlayTemplateService.ClearStoredState();
+            RevertOverlayTemplateCommand.RaiseCanExecuteChanged();
+        }
+
         private void OnRevertOverlayTemplate()
         {
-            var storedOverlayEntries = _overlayTemplateService.GetStoredOverlayEntries();
+            if (!_overlayTemplateService.HasStoredState)
+                return;
+
+            var storedOverlayEntries = _overlayTemplateService.GetStoredOverlayEntries().ToList();
 
             OverlayEntries.ForEach(entry => entry.Dispose());
             OverlayEntries.Clear();
