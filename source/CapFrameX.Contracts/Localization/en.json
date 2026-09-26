@@ -377,9 +377,14 @@
     "ComparisonViewModel_FPS1S": "FPS [1/s]",
     "ComparisonViewModel_FrameTimeDistribution": "Frame Time Distribution [%]",
     "ComparisonViewModel_FrameTimeMs2": "Frame time [ms]",
+    "ComparisonViewModel_FramesIn01": "{0} frames in {1}s",
     "ComparisonViewModel_FrametimeMs": "Frametime [ms]",
     "ComparisonViewModel_Frametimes": "Frametimes",
     "ComparisonViewModel_GPUActiveTimeMs": "GPU active time [ms]",
+    "ComparisonViewModel_LegendDisplay": "Display",
+    "ComparisonViewModel_LegendGPUActive": "GPU active",
+    "ComparisonViewModel_LegendPresent": "Present",
+    "ComparisonViewModel_MetricFps01": "{0} FPS ({1})",
     // Chart Y-axis label: frames per second calculated from present calls
     "ComparisonViewModel_PresentFPS": "Present FPS",
     // Chart Y-axis label: time between present calls
