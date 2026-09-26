@@ -14,6 +14,7 @@
     // =========================================================================
     // AGGREGATION VIEW - Merging and averaging multiple benchmark sessions
     // =========================================================================
+    "AggregationViewModel_ErrorWhileCalculatingResult": "Error while calculating result. Please try again.",
     "AggregationView_Aggregate": "Aggregate",
     "AggregationView_AggregateAllEntries": "Aggregate all entries",
     "AggregationView_AggregateExcludingOutliers": "Aggregate excluding outliers",
@@ -42,7 +43,10 @@
     // =========================================================================
     "AppHelper_ThereIsAlreadyAnInstance": "There is already an instance running...",
     "Appxaml_AnUnexpectedErrorOccuredDo": "An unexpected Error occured. Do you want to upload the CapFrameX Log for further analysis?",
+    "Appxaml_EtwSessionConflictDetected": "ETW Session Conflict Detected",
     "Appxaml_FatalError": "Fatal Error",
+    "Appxaml_FrameViewEtwSessionDetected": "FrameViewService ETW session detected.\n\nThe NVIDIA FrameView SDK is currently running an ETW trace session that may conflict with PresentMon. If CapFrameX does not show performance metrics during capture, consider uninstalling the NVIDIA FrameView SDK.\n\nClick 'Yes' to continue and show this warning again next time.\nClick 'No' to continue and never show this warning again.",
+    "Appxaml_YourReportIdIs0": "Your Report-ID is {0}.\nPlease include this Id in your support inquiry. Visit https://www.capframex.com/support for further information.",
 
     // =========================================================================
     // BENCHLAB - Power unit label
@@ -91,6 +95,7 @@
     "CaptureView_CaptureSettings": "Capture settings",
     "CaptureView_CaptureTimeS": "Capture time [s]",
     "CaptureView_ClearLoggerOutput": "Clear logger output",
+    "CaptureView_EnterAValidDuration": "Enter a valid duration of 0 seconds or more (0 = no limit).",
     "CaptureView_Errors": "Errors",
     "CaptureView_HotkeyPressBackspaceDeleteOrEsc": "Hotkey combinable with up to two modifier keys (Ctrl, Shift or Alt). Press Backspace, Delete or Esc to clear.",
     "CaptureView_HotkeySound": "Hotkey sound",
@@ -129,6 +134,7 @@
     // =========================================================================
     // CLOUD VIEW - Sharing benchmarks on capframex.com
     // =========================================================================
+    "CloudViewModel_UploadSizeLimitExceeded0": "Size of selected sessions exceed limit of {0} bytes per upload",
     "CloudView_AnyNewGameNameOr": "Any new game name or ignored process you add will be sent to us so that we can add it to our own list",
     "CloudView_AutoUpdateList": "Auto update list",
     "CloudView_Comment": "Comment",
@@ -330,9 +336,13 @@
     // COMPARISON VIEW - Multi-run comparison graphs, bar charts, custom labels
     // =========================================================================
     "ComparisonDataViewModel_Average": "Average",
+    "ComparisonDataViewModel_CaptureTime0": "capture time: {0} s",
+    "ComparisonDataViewModel_CreationDate0": "creation date: {0}",
+    "ComparisonDataViewModel_CreationTime0": "creation time: {0}",
     "ComparisonDataViewModel_FPS": "FPS",
     "ComparisonDataViewModel_FPS2": "FPS",
     "ComparisonDataViewModel_FrametimeMs": "Frametime [ms]",
+    "ComparisonDataViewModel_NumberOfSamples0": "number of samples: {0}",
     "ComparisonDataViewModel_P01": "P0.1",
     "ComparisonDataViewModel_P1": "P1",
     "ComparisonDataViewModel_RecordingTimeS": "Recording time [s]",
@@ -368,13 +378,21 @@
     "ComparisonViewModel_FrameTimeDistribution": "Frame Time Distribution [%]",
     "ComparisonViewModel_FrameTimeMs2": "Frame time [ms]",
     "ComparisonViewModel_FrametimeMs": "Frametime [ms]",
+    "ComparisonViewModel_Frametimes": "Frametimes",
     "ComparisonViewModel_GPUActiveTimeMs": "GPU active time [ms]",
     // Chart Y-axis label: frames per second calculated from present calls
     "ComparisonViewModel_PresentFPS": "Present FPS",
     // Chart Y-axis label: time between present calls
     "ComparisonViewModel_PresentFrametime": "Present frametime",
+    "ComparisonViewModel_RecordAlreadyInList": "The list already contains this record and therefore cannot be inserted. Select a different record for the comparison.",
     "ComparisonViewModel_RecordingTimeS": "Recording time [s]",
     "ComparisonViewModel_RecordingTimeS2": "Recording time [s]",
+    "ComparisonViewModel_SortCPULabel": "CPU Label",
+    "ComparisonViewModel_SortCommentLabel": "Comment Label",
+    "ComparisonViewModel_SortFirstMetric": "First Metric",
+    "ComparisonViewModel_SortGPULabel": "GPU Label",
+    "ComparisonViewModel_SortSecondMetric": "Second Metric",
+    "ComparisonViewModel_SortThirdMetric": "Third Metric",
     "ComparisonViewModel_SourceDisplayChangesAverageFPS": "Source: Display changes (Average FPS: Presents)",
     "ComparisonViewModel_SourcePresents": "Source: Presents",
     "ComparisonViewModel_SourcePresentsDisplayDataUnavailable": "Source: Presents (display data unavailable)",
@@ -395,6 +413,7 @@
     "ComparisonView_FrameTimeDistribution": "Frame Time Distribution",
     "ComparisonView_Frametimes": "Frametimes",
     "ComparisonView_FurtherSettings": "Further Settings",
+    "ComparisonView_GPUBusyTimes": "GPU-Busy times:",
     "ComparisonView_Grouping": "Grouping:",
     "ComparisonView_Labels": "Labels",
     "ComparisonView_Legend": "Legend:",
@@ -402,6 +421,7 @@
     "ComparisonView_LineChartsLShapes": "Line charts/ L-shapes",
     "ComparisonView_MaximumTheSingleHighestValue": "Maximum:\n\nThe single highest value\n\n\nAverage:\n\nThe average of all values\n\n\nMedian:\n\nThe middle of all values sorted from low to high\n\n\nMinimum:\n\nThe single lowest value\n\n\nX% percentile:\n\nX% of all values are lower than this\n\n\nX% low average:\n\nThe average of the lowest X% of all values\n\n\nX% low integral:\n\nFor X% of total benchmark time, values are lower than this\n\n\nAdaptive STDEV:\n\nThe standard deviation of values compared to the moving average\n\n\nCPU/GPU FPS/10W:\n\nThe average framerate per 10W of power draw (multiplied by 10 to generate more comparable bar charts when using it with other FPS metrics)",
     "ComparisonView_MetricInfo": "Metric Info",
+    "ComparisonView_Metrics": "Metrics",
     "ComparisonView_OrderInWhichColorsAre": "Order in which\ncolors are applied\nto added records",
     "ComparisonView_Percentiles": "Percentiles (%)",
     "ComparisonView_Range": "Range:",
@@ -457,6 +477,7 @@
     "ControlView_CPU": "CPU",
     "ControlView_CPU2": "CPU",
     "ControlView_CPUDescription": "CPU description",
+    "ControlView_Captures": "Captures",
     "ControlView_ColumnOptions": "Column options",
     "ControlView_Comment": "Comment",
     "ControlView_Comment2": "Comment",
@@ -472,6 +493,7 @@
     "ControlView_GPU2": "GPU",
     "ControlView_GPUDescription": "GPU description",
     "ControlView_Game": "Game",
+    "ControlView_Loading": "Loading...",
     "ControlView_LoadingRecords": "Loading records...",
     "ControlView_MoveRecordingFileS": "Move recording file(s)",
     "ControlView_ObservedDirectoryMissingOpenThe": "Observed directory missing.\nOpen the folder chip above and select a folder.",
@@ -492,6 +514,38 @@
     // =========================================================================
     // ANALYSIS VIEW - Frametime graphs, FPS trends, L-shape curves, percentiles
     // =========================================================================
+    "DataThresholdViewModel_Frames": "Frames",
+    "DataThresholdViewModel_Time": "Time",
+    "DataViewModel_BarAdaptiveSTDEV": "Adaptive STDEV",
+    "DataViewModel_BarAverage": "Average",
+    "DataViewModel_BarAverageAnimationError": "Average |Animation Error|",
+    "DataViewModel_BarCpuFpsPer10W": "CPU FPS/10W",
+    "DataViewModel_BarGpuBusyAverage": "GPU-Busy Average",
+    "DataViewModel_BarGpuBusyOnePercentHighAverage": "Gpu-Busy 1% High Avg.",
+    "DataViewModel_BarGpuBusyOnePercentLowAverage": "Gpu-Busy 1% Low Avg.",
+    "DataViewModel_BarGpuBusyP1": "GPU-Busy P1",
+    "DataViewModel_BarGpuBusyP99": "GPU-Busy P99",
+    "DataViewModel_BarGpuFpsPer10W": "GPU FPS/10W",
+    "DataViewModel_BarMax": "Max",
+    "DataViewModel_BarMedian": "Median",
+    "DataViewModel_BarMin": "Min",
+    "DataViewModel_BarOnePercentHighAverage": "1% High Average",
+    "DataViewModel_BarOnePercentHighIntegral": "1% High Integral",
+    "DataViewModel_BarOnePercentLowAverage": "1% Low Average",
+    "DataViewModel_BarOnePercentLowIntegral": "1% Low Integral",
+    "DataViewModel_BarP99AnimationError": "P99 |Animation Error|",
+    "DataViewModel_BarPointOnePercentHighAverage": "0.1% High Average",
+    "DataViewModel_BarPointOnePercentHighIntegral": "0.1% High Integral",
+    "DataViewModel_BarPointOnePercentLowAverage": "0.1% Low Average",
+    "DataViewModel_BarPointOnePercentLowIntegral": "0.1% Low Integral",
+    "DataViewModel_FrametimesMs": "Frametimes (ms)",
+    "DataViewModel_LowFPS01": "Low FPS:  {0}s ({1}%)",
+    "DataViewModel_OutlierCleaned0": "{0} (outlier-cleaned)",
+    "DataViewModel_RemoveOutliersIsOnlyASimulation": "Remove outliers is only a function to simulate how the parameters would be like if there were no outliers.\nThis doesn't qualify as a conclusive evaluation of the benchmark run.",
+    "DataViewModel_Smooth01": "Smooth:  {0}s ({1}%)",
+    "DataViewModel_Stuttering01": "Stuttering:  {0}s ({1}%)",
+    "DataViewModel_VarianceAbove01": "> {0}ms ({1}%)",
+    "DataViewModel_VarianceBelow01": "< {0}ms ({1}%)",
     "DataView_01Percentile": "0.1% percentile",
     "DataView_02Percentile": "0.2% percentile",
     "DataView_1Percentile": "1% percentile",
@@ -612,6 +666,7 @@
     "DataView_ShowMaxCPUThreadUsage": "Show max CPU thread usage graph",
     "DataView_ShowNumberOfFramesAbove": "Show number of frames above or below thresholds",
     "DataView_ShowNumberOfFramesAbove2": "Show number of frames above or below thresholds",
+    "DataView_ShowOrHideTheSystemInfo": "Show or hide the system info of this capture",
     "DataView_ShowPCLatencyGraph": "Show PC latency graph",
     "DataView_ShowSeparatorLinesForThe": "Show separator lines for the different runs within the session",
     "DataView_ShowThresholdLinesForStuttering": "Show threshold lines for stuttering and low FPS in the frametime and FPS charts",
@@ -642,10 +697,13 @@
     "DebugMonitorWindow_CPUUsage2": "CPU Usage:",
     "DebugMonitorWindow_DebugMonitor": "Debug Monitor",
     "DebugMonitorWindow_ETWBufferStatus": "ETW Buffer Status",
+    "DebugMonitorWindow_Error": "Error",
     "DebugMonitorWindow_EventsLost": "Events Lost:",
     "DebugMonitorWindow_MemoryUsage": "Memory Usage:",
     "DebugMonitorWindow_MemoryUsage2": "Memory Usage:",
+    "DebugMonitorWindow_NotRunning": "Not Running",
     "DebugMonitorWindow_ProcessingDelay": "Processing Delay:",
+    "DebugMonitorWindow_Running": "Running",
     "DebugMonitorWindow_Status": "Status:",
     "DebugMonitorWindow_TotalBuffers": "Total Buffers:",
 
@@ -836,6 +894,13 @@
     "EditingDialog_CustomGPUDescription": "Custom GPU description",
 
     // =========================================================================
+    // OVERLAY DIAGNOSTICS - Extended OSD logging errors
+    // =========================================================================
+    "ExtendedOsdLoggingViewModel_CouldNotBeRead0": "Extended OSD logging could not be read: {0}",
+    "ExtendedOsdLoggingViewModel_CouldNotBeUpdated0": "Extended OSD logging could not be updated: {0}",
+    "ExtendedOsdLoggingViewModel_FolderCouldNotBeOpened0": "OSD log folder could not be opened: {0}",
+
+    // =========================================================================
     // CHART CONTEXT MENUS - Copy and export actions of the analysis charts
     // =========================================================================
     "FpsGraphControl_CopyFpsGPUBusyFps": "Copy fps + GPU-Busy fps values (f)",
@@ -855,11 +920,19 @@
     "FrametimeGraphControl_SavePlotAsSVG": "Save plot as SVG",
 
     // =========================================================================
+    // HOTKEY FIELDS - Placeholder and validation message of hotkey text boxes
+    // =========================================================================
+    "HotkeyValidationRule_HotkeyIsNotValid": "Hotkey is not valid.",
+    "HotkeyValidationRule_NotSet": "Not set",
+
+    // =========================================================================
     // SYSTEM INFO VIEW - CPU, GPU, RAM, motherboard and driver details
     // =========================================================================
+    "InfoViewModel_Detecting": "Detecting...",
     "InfoView_Available": "Available",
     "InfoView_Clock": "Clock",
     "InfoView_Clock2": "Clock",
+    "InfoView_Driver0": "Driver {0}",
     "InfoView_GRAPHICSCARD": "GRAPHICS CARD",
     "InfoView_HardwareAcceleratedGPUScheduling": "Hardware-accelerated GPU scheduling",
     "InfoView_InUse": "In use",
@@ -899,6 +972,11 @@
     "OverlayViewModel_LearnedProfilesNoGame": "{0} learned compatibility profile(s); no game selected.",
     "OverlayViewModel_NoLearnedCompatibilityProfiles": "No learned compatibility profiles yet.",
     "OverlayViewModel_NoLearnedProfileForProcess": "No learned compatibility profile for {0} yet ({1} in total).",
+    "OverlayViewModel_ProfileExhausted0": "{0}: compatibility could not be established; the next game launch probes again.",
+    "OverlayViewModel_ProfileNextLaunchStage01": "{0}: the next launch starts on {1}.",
+    "OverlayViewModel_ProfileNotVerified01": "{0}: last tried {1}, not verified yet.",
+    "OverlayViewModel_ProfileVerified012": "{0}: {1} (verified {2}).",
+    "OverlayViewModel_ProfilesUnavailable0": "Learned compatibility profiles unavailable ({0}).",
     "OverlayView_AddsDisplayTimesOffUses": "Adds display times. Off uses the hook's local frame times.",
     "OverlayView_AdjustThePlacementAndBackground": "Adjust the placement and background of CapFrameX overlay content.",
     "OverlayView_AllEntries": "All Entries",
@@ -1197,6 +1275,7 @@
     // =========================================================================
     // REPORT VIEW - Comprehensive tabular benchmark and sensor summary
     // =========================================================================
+    "ReportViewModel_AveragedValues": "Averaged values",
     "ReportView_AdaptiveSTDEV": "Adaptive STDEV",
     "ReportView_AdaptiveSTDEV2": "Adaptive STDEV",
     "ReportView_AppLatencyMs": "App Latency (ms)",
@@ -1345,6 +1424,7 @@
     // =========================================================================
     "Shell_CapFrameX": "CapFrameX",
     "Shell_Close": "Close",
+    "Shell_OverlayProfileCouldNotBeSaved": "The overlay profile could not be saved. CapFrameX will remain open so your changes are not lost.",
     "Shell_ShowMainWindow": "Show Main Window",
     "SoundMode_None": "None",
     "SoundMode_Simple": "Simple",
@@ -1358,6 +1438,8 @@
     "StateViewModelSystemStatus_Off": "Off",
     "StateViewModelSystemStatus_On": "On",
     "StateViewModelSystemStatus_Partial": "Partial",
+    "StateViewModel_NoInfoAvailable": "No info available",
+    "StateViewModel_Revision0": "Revision: {0}",
     // Tooltip shown while waiting for game process detection hook
     "StateViewModel_WaitingForHookStatus": "Waiting for hook status.",
     "StateView_CaptureService": "Capture Service:",
@@ -1390,6 +1472,7 @@
     // =========================================================================
     "SynchronizationViewModel_AverageInputLag": "Average input lag",
     "SynchronizationViewModel_DroppedFrames": "Dropped frames",
+    "SynchronizationViewModel_Expected": "Expected",
     "SynchronizationViewModel_FrametimeInputLagMs": "Frametime + input lag [ms]",
     "SynchronizationViewModel_FrametimeUntilDisplayedTimeMs": "Frametime + until displayed time [ms]",
     "SynchronizationViewModel_Frametimes": "Frametimes",
@@ -1397,11 +1480,13 @@
     "SynchronizationViewModel_InputLagHigh": "Input lag high",
     "SynchronizationViewModel_InputLagLow": "Input lag low",
     "SynchronizationViewModel_InputLagTimeDistribution": "Input lag time distribution",
+    "SynchronizationViewModel_LowerBound": "Lower bound",
     "SynchronizationViewModel_Samples": "Samples",
     "SynchronizationViewModel_Samples2": "Samples",
     "SynchronizationViewModel_SyncedFrames": "Synced frames",
     "SynchronizationViewModel_UntilDisplayedTimeDistribution": "Until displayed time distribution",
     "SynchronizationViewModel_UntilDisplayedTimes": "Until displayed times",
+    "SynchronizationViewModel_UpperBound": "Upper bound",
     "SynchronizationView_CopyHistogramData": "Copy histogram data",
     "SynchronizationView_CopyHistogramData2": "Copy histogram data",
     "SynchronizationView_CopyMetrics": "Copy metrics",
@@ -1416,6 +1501,7 @@
     "SynchronizationView_Ms": "ms",
     "SynchronizationView_Offset": "Offset",
     "SynchronizationView_OffsetForDisplayAndMouse": "Offset for display and mouse/keyboard/gamepad latency",
+    "SynchronizationView_RangeOpen": "(Range:",
     "SynchronizationView_SavePlotAsPNG": "Save plot as PNG",
     "SynchronizationView_SavePlotAsPNG2": "Save plot as PNG",
     "SynchronizationView_SavePlotAsSVG": "Save plot as SVG",

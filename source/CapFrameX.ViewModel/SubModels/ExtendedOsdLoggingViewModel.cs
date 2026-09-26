@@ -1,3 +1,4 @@
+using CapFrameX.Contracts.Localization;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -25,7 +26,7 @@ namespace CapFrameX.ViewModel.SubModels
             }
             catch (Exception ex)
             {
-                _error = $"Extended OSD logging could not be read: {ex.Message}";
+                _error = CxLang.Format("ExtendedOsdLoggingViewModel_CouldNotBeRead0", ex.Message);
                 Trace.TraceError("Failed to read extended OSD logging state: {0}", ex);
             }
         }
@@ -72,7 +73,7 @@ namespace CapFrameX.ViewModel.SubModels
             }
             catch (Exception ex)
             {
-                Error = $"OSD log folder could not be opened: {ex.Message}";
+                Error = CxLang.Format("ExtendedOsdLoggingViewModel_FolderCouldNotBeOpened0", ex.Message);
                 Trace.TraceError("Failed to open OSD log folder: {0}", ex);
             }
         }
@@ -93,7 +94,7 @@ namespace CapFrameX.ViewModel.SubModels
             catch (Exception ex)
             {
                 SetProperty(ref _isEnabled, previousValue, nameof(IsEnabled));
-                Error = $"Extended OSD logging could not be updated: {ex.Message}";
+                Error = CxLang.Format("ExtendedOsdLoggingViewModel_CouldNotBeUpdated0", ex.Message);
                 Trace.TraceError("Failed to update extended OSD logging: {0}", ex);
             }
             finally

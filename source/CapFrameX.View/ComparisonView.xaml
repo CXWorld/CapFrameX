@@ -474,7 +474,7 @@
 
 			<StackPanel Grid.Column="2" Margin="10 10 5 0" Orientation="Horizontal" Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 				ToolTip="{loc:Tr ComparisonView_SelectMetricsToBeShown}" IsEnabled="{Binding MetricAndLabelOptionsEnabled}">
-				<TextBlock Margin="0 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"> Metrics</TextBlock>
+				<TextBlock Margin="0 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr ComparisonView_Metrics}"/>
 				<materialDesign:PopupBox Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
 					<materialDesign:Card Width="Auto" Margin="0 0 0 0">
 						<StackPanel>
@@ -601,7 +601,7 @@
 
 			<StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="10 10 5 0" Orientation="Horizontal">
 				<ComboBox Width="Auto" Height="40" materialDesign:HintAssist.Hint="{loc:Tr ComparisonView_SortMethod}" materialDesign:HintAssist.HintOpacity=".8" materialDesign:HintAssist.IsFloating="True"
-					ItemsSource="{Binding SortMetricItemsSource}" SelectedItem="{Binding SelectedSortMetric}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+					ItemsSource="{Binding SortMetricItemsSource}" DisplayMemberPath="DisplayName" SelectedValuePath="Id" SelectedValue="{Binding SelectedSortMetric}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
 					Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
 				</ComboBox>
 				<ToggleButton Margin="5 0 0 0" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" BorderThickness="1" Background="Transparent"
@@ -645,7 +645,7 @@
 
                             <StackPanel HorizontalAlignment="Right" Margin="10 10 10 0" Orientation="Horizontal"
 							Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
-                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">GPU-Busy times:</TextBlock>
+                                <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr ComparisonView_GPUBusyTimes}"/>
                                 <ToggleButton Name="GPUActiveMetricsToggleButton" Margin="10 0 0 0"
 								  ToolTip="{loc:Tr ComparisonView_ShowGPUBusyTimesInstead}" IsChecked="{Binding ShowGpuActiveLineCharts}"/>
                             </StackPanel>

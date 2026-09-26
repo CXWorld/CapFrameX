@@ -370,12 +370,13 @@ namespace CapFrameX
                         return;
 
                     var result = MessageBox.Show(
-                        "FrameViewService ETW session detected.\n\n" +
-                        "The NVIDIA FrameView SDK is currently running an ETW trace session that may conflict with PresentMon. " +
-                        "If CapFrameX does not show performance metrics during capture, consider uninstalling the NVIDIA FrameView SDK.\n\n" +
-                        "Click 'Yes' to continue and show this warning again next time.\n" +
-                        "Click 'No' to continue and never show this warning again.",
-                        "ETW Session Conflict Detected",
+                        CxLang.TOrDefault("Appxaml_FrameViewEtwSessionDetected",
+                            "FrameViewService ETW session detected.\n\n" +
+                            "The NVIDIA FrameView SDK is currently running an ETW trace session that may conflict with PresentMon. " +
+                            "If CapFrameX does not show performance metrics during capture, consider uninstalling the NVIDIA FrameView SDK.\n\n" +
+                            "Click 'Yes' to continue and show this warning again next time.\n" +
+                            "Click 'No' to continue and never show this warning again."),
+                        CxLang.TOrDefault("Appxaml_EtwSessionConflictDetected", "ETW Session Conflict Detected"),
                         MessageBoxButton.YesNo,
                         MessageBoxImage.Warning);
 
@@ -455,7 +456,8 @@ namespace CapFrameX
                     var reportId = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
                     Log.Logger.Information("Uploading Logs. Report-ID is {reportId}", reportId);
-                    MessageBox.Show($"Your Report-ID is {reportId}.\nPlease include this Id in your support inquiry. Visit https://www.capframex.com/support for further information.");
+                    MessageBox.Show(string.Format(CxLang.TOrDefault("Appxaml_YourReportIdIs0",
+                        "Your Report-ID is {0}.\nPlease include this Id in your support inquiry. Visit https://www.capframex.com/support for further information."), reportId));
                     // UseShellExecute is required to open a URL in the default browser on .NET Core+
                     Process.Start(new ProcessStartInfo(string.Format(ConfigurationManager.AppSettings.Get("ContactFormUriTemplate"),
                         HttpUtility.UrlEncode($"Crashlog-Report: {reportId}"),

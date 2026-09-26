@@ -1032,19 +1032,19 @@ namespace CapFrameX.ViewModel
                     {
                         HookLearnedProfileSummary entry = entries[0];
                         if (entry.PendingStageName != null)
-                            text = $"{processName}: the next launch starts on {entry.PendingStageName}.";
+                            text = CxLang.Format("OverlayViewModel_ProfileNextLaunchStage01", processName, entry.PendingStageName);
                         else if (entry.Exhausted)
-                            text = $"{processName}: compatibility could not be established; the next game launch probes again.";
+                            text = CxLang.Format("OverlayViewModel_ProfileExhausted0", processName);
                         else if (entry.Verified)
-                            text = $"{processName}: {entry.StageName} (verified {entry.UpdatedUtc.ToLocalTime():g}).";
+                            text = CxLang.Format("OverlayViewModel_ProfileVerified012", processName, entry.StageName, entry.UpdatedUtc.ToLocalTime().ToString("g"));
                         else
-                            text = $"{processName}: last tried {entry.StageName}, not verified yet.";
+                            text = CxLang.Format("OverlayViewModel_ProfileNotVerified01", processName, entry.StageName);
                     }
                 }
             }
             catch (Exception ex)
             {
-                text = $"Learned compatibility profiles unavailable ({ex.Message}).";
+                text = CxLang.Format("OverlayViewModel_ProfilesUnavailable0", ex.Message);
             }
             HookLearnedProfileText = text;
         }

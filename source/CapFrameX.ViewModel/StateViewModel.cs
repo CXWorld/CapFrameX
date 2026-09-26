@@ -276,11 +276,11 @@ namespace CapFrameX.ViewModel
 			try
 			{
 				var version = _appVersionProvider.GetAppVersion();
-				info = $"Revision: {version.Revision}";
+				info = CxLang.Format("StateViewModel_Revision0", version.Revision);
 			}
 			catch
 			{
-				info = "No info available";
+				info = CxLang.T("StateViewModel_NoInfoAvailable");
 			}
 
 			return info;
