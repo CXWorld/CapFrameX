@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -124,9 +125,10 @@ namespace CapFrameX.Test.Localization
         private static CapFrameXConfiguration Configuration()
             => new CapFrameXConfiguration(NullLogger<CapFrameXConfiguration>.Instance, new MemorySettings());
 
+        // The view models read settings from background work while their constructor still runs.
         private sealed class MemorySettings : ISettingsStorage
         {
-            private readonly Dictionary<string, object> _values = new Dictionary<string, object>();
+            private readonly ConcurrentDictionary<string, object> _values = new ConcurrentDictionary<string, object>();
             public Task Load() => Task.CompletedTask;
             public T GetValue<T>(string key) => (T)_values[key];
             public void SetValue(string key, object value) => _values[key] = value;
