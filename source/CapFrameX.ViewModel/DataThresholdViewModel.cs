@@ -1,4 +1,5 @@
-﻿using CapFrameX.Statistics.NetStandard;
+﻿using CapFrameX.Contracts.Localization;
+using CapFrameX.Statistics.NetStandard;
 using LiveCharts;
 using LiveCharts.Wpf;
 using Prism.Commands;
@@ -173,7 +174,7 @@ namespace CapFrameX.ViewModel
             {
                 if (!ShowThresholdTimes)
                 {
-                    YAxisLabel = "Frames";
+                    YAxisLabel = CxLang.T("DataThresholdViewModel_Frames");
                     FPSThresholdCollection = new SeriesCollection
                     {
                         new ColumnSeries
@@ -189,7 +190,7 @@ namespace CapFrameX.ViewModel
                 }
                 else
                 {
-                    YAxisLabel = "Time";
+                    YAxisLabel = CxLang.T("DataThresholdViewModel_Time");
                     FPSThresholdCollection = new SeriesCollection
                     {
                         new ColumnSeries
@@ -209,7 +210,7 @@ namespace CapFrameX.ViewModel
             {
                 if (!ShowThresholdTimes)
                 {
-                    YAxisLabel = "Frames";
+                    YAxisLabel = CxLang.T("DataThresholdViewModel_Frames");
                     FPSThresholdCollectionCopy = new SeriesCollection
                     {
                         new ColumnSeries
@@ -225,7 +226,7 @@ namespace CapFrameX.ViewModel
                 }
                 else
                 {
-                    YAxisLabel = "Time";
+                    YAxisLabel = CxLang.T("DataThresholdViewModel_Time");
                     FPSThresholdCollectionCopy = new SeriesCollection
                     {
                         new ColumnSeries

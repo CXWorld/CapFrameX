@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Contracts.Cloud;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
@@ -408,7 +409,7 @@ namespace CapFrameX.ViewModel
 			var contentAsJson = JsonConvert.SerializeObject(sessions);
 			if(System.Text.Encoding.UTF8.GetByteCount(contentAsJson) > CLOUDUPLOAD_MAX_LENGTH)
             {
-				MessageBox.Show($"Size of selected sessions exceed limit of {CLOUDUPLOAD_MAX_LENGTH} bytes per upload");
+				MessageBox.Show(CxLang.Format("CloudViewModel_UploadSizeLimitExceeded0", CLOUDUPLOAD_MAX_LENGTH));
 				return;
             }
 			using (var client = new HttpClient() {

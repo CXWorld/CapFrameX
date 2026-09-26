@@ -1,4 +1,5 @@
 ﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard;
@@ -17,8 +18,7 @@ namespace CapFrameX.ViewModel
         {
             if (CheckListContains(recordInfo))
             {
-                MessageText = $"The list already contains this record and therefore cannot be inserted. " +
-                    $"Select a different record for the comparison.";
+                MessageText = CxLang.T("ComparisonViewModel_RecordAlreadyInList");
                 MessageDialogContentIsOpen = true;
                 return;
             }

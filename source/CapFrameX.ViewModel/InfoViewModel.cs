@@ -55,16 +55,16 @@ namespace CapFrameX.ViewModel
         private string _rawDriverVersion;
         private Dictionary<ISensorEntry, float> _lastSnapshot;
 
-        private string _cpuName = "Detecting...";
+        private string _cpuName = CxLang.T("InfoViewModel_Detecting");
         private string _cpuDetails = string.Empty;
         private VendorBadge _cpuVendorBadge;
-        private string _gpuName = "Detecting...";
+        private string _gpuName = CxLang.T("InfoViewModel_Detecting");
         private string _gpuDetails = string.Empty;
         private VendorBadge _gpuVendorBadge;
-        private string _mainboardName = "Detecting...";
+        private string _mainboardName = CxLang.T("InfoViewModel_Detecting");
         private string _mainboardDetails = string.Empty;
         private VendorBadge _mainboardVendorBadge;
-        private string _ramName = "Detecting...";
+        private string _ramName = CxLang.T("InfoViewModel_Detecting");
         private string _ramDetails = string.Empty;
         private VendorBadge _ramVendorBadge;
         private string _osVersion = string.Empty;

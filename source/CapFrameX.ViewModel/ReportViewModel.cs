@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
@@ -111,7 +112,7 @@ namespace CapFrameX.ViewModel
 
         public void RemoveReportEntry(ReportInfo selectedItem)
         {
-            if (selectedItem.Game.Equals("Averaged values"))
+            if (selectedItem.IsAverageRow)
                 return;
             else
             {
@@ -415,7 +416,7 @@ namespace CapFrameX.ViewModel
 
         private void AddAverageReportInfo(ObservableCollection<ReportInfo> reportInfoCollection)
         {
-            var averageInfo = reportInfoCollection.FirstOrDefault(x => x.Game == "Averaged values");
+            var averageInfo = reportInfoCollection.FirstOrDefault(x => x.IsAverageRow);
 
             if (averageInfo != null)
             {
@@ -428,7 +429,8 @@ namespace CapFrameX.ViewModel
 
                 var report = new ReportInfo
                 {
-                    Game = "Averaged values"
+                    Game = CxLang.T("ReportViewModel_AveragedValues"),
+                    IsAverageRow = true
                 };
 
                 foreach (var propertyInfo in propertyInfos)
@@ -470,7 +472,7 @@ namespace CapFrameX.ViewModel
             var propertyInfo = typeof(ReportInfo).GetProperty(column);
             ReportInfoCollection.Sort(c => propertyInfo.GetValue(c), e.Column.SortDirection);
 
-            var averageRow = ReportInfoCollection.FirstOrDefault(x => x.Game == "Averaged values");
+            var averageRow = ReportInfoCollection.FirstOrDefault(x => x.IsAverageRow);
             if (averageRow != null)
                 ReportInfoCollection.Move(ReportInfoCollection.IndexOf(averageRow), ReportInfoCollection.Count - 1);
         }

@@ -917,7 +917,7 @@
             <!--System info expander-->
             <Expander Margin="0 -6 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1"
                       Style="{StaticResource CxRailExpander}" Header="{loc:Tr DataView_SYSTEMINFO}"
-                      Tag="Show or hide the system info of this capture">
+                      Tag="{loc:Tr DataView_ShowOrHideTheSystemInfo}">
                 <ScrollViewer VerticalScrollBarVisibility="Hidden">
                     <ScrollViewer.Resources>
                         <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarWidthKey}">3</sys:Double>

@@ -1,4 +1,5 @@
 using CapFrameX.Capture.Contracts;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.PresentMonInterface;
 using System;
 using System.ComponentModel;
@@ -60,7 +61,7 @@ namespace CapFrameX
             set { _presentMonMemoryUsage = value; OnPropertyChanged(); }
         }
 
-        private string _presentMonStatus = "Not Running";
+        private string _presentMonStatus = CxLang.T("DebugMonitorWindow_NotRunning");
         public string PresentMonStatus
         {
             get => _presentMonStatus;
@@ -272,7 +273,7 @@ namespace CapFrameX
                     {
                         _presentMonProcess = newProcess;
                         _lastPresentMonCpuTime = _presentMonProcess.TotalProcessorTime;
-                        PresentMonStatus = "Running";
+                        PresentMonStatus = CxLang.T("DebugMonitorWindow_Running");
                     }
 
                     _presentMonProcess.Refresh();
@@ -298,7 +299,7 @@ namespace CapFrameX
                     _presentMonProcess = null;
                     PresentMonCpuUsage = 0;
                     PresentMonMemoryUsage = 0;
-                    PresentMonStatus = "Not Running";
+                    PresentMonStatus = CxLang.T("DebugMonitorWindow_NotRunning");
                 }
 
                 // Update the last check time
@@ -306,7 +307,7 @@ namespace CapFrameX
             }
             catch
             {
-                PresentMonStatus = "Error";
+                PresentMonStatus = CxLang.T("DebugMonitorWindow_Error");
             }
         }
 

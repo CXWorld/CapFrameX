@@ -109,7 +109,7 @@ namespace CapFrameX.ViewModel
         private bool _showCustomTitle;
         private string _selectedChartView = "Frametimes";
         private EFilterMode _selectedFilterMode;
-        private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
+        private string _lShapeYaxisLabel = CxLang.T("DataViewModel_FrametimesMs") + Environment.NewLine + " ";
         private bool _showGpuActiveLineCharts;
         private bool _isDistributionChartDirty = true;
         private bool _isFpsChartDirty = true;
@@ -661,7 +661,7 @@ namespace CapFrameX.ViewModel
             {
                 _selectedChartView = value;
                 if (value == "Frametimes" || value == "GPU Frametimes")
-                    ComparisonLShapeYAxisLabel = "Frametimes" + Environment.NewLine + " ";
+                    ComparisonLShapeYAxisLabel = CxLang.T("ComparisonViewModel_Frametimes") + Environment.NewLine + " ";
                 else
                     ComparisonLShapeYAxisLabel = "FPS" + Environment.NewLine + " ";
                 RaisePropertyChanged();
@@ -872,8 +872,25 @@ namespace CapFrameX.ViewModel
 
         public double BarChartMaxRowHeight { get; private set; } = 25;
 
-        public Array SortMetricItemsSource
-            => new[] { "First Metric", "Second Metric", "Third Metric", "Comment Label", "CPU Label", "GPU Label" };
+        public SortMetricOption[] SortMetricItemsSource { get; } =
+        {
+            new SortMetricOption("First Metric", CxLang.T("ComparisonViewModel_SortFirstMetric")),
+            new SortMetricOption("Second Metric", CxLang.T("ComparisonViewModel_SortSecondMetric")),
+            new SortMetricOption("Third Metric", CxLang.T("ComparisonViewModel_SortThirdMetric")),
+            new SortMetricOption("Comment Label", CxLang.T("ComparisonViewModel_SortCommentLabel")),
+            new SortMetricOption("CPU Label", CxLang.T("ComparisonViewModel_SortCPULabel")),
+            new SortMetricOption("GPU Label", CxLang.T("ComparisonViewModel_SortGPULabel"))
+        };
+
+        private void RefreshSortMetricNames()
+        {
+            SortMetricItemsSource[0].DisplayName = CxLang.T("ComparisonViewModel_SortFirstMetric");
+            SortMetricItemsSource[1].DisplayName = CxLang.T("ComparisonViewModel_SortSecondMetric");
+            SortMetricItemsSource[2].DisplayName = CxLang.T("ComparisonViewModel_SortThirdMetric");
+            SortMetricItemsSource[3].DisplayName = CxLang.T("ComparisonViewModel_SortCommentLabel");
+            SortMetricItemsSource[4].DisplayName = CxLang.T("ComparisonViewModel_SortCPULabel");
+            SortMetricItemsSource[5].DisplayName = CxLang.T("ComparisonViewModel_SortGPULabel");
+        }
 
         public Array LegendFontSizeItemsSource => new[] { 1, 1.5, 2 };
 
@@ -906,6 +923,12 @@ namespace CapFrameX.ViewModel
             PercentageFormatter = value => value.ToString("P");
             SelectedComparisonContext = _appConfiguration.ComparisonContext.ConvertToEnum<EComparisonContext>();
             SelectedSecondComparisonContext = _appConfiguration.SecondComparisonContext.ConvertToEnum<EComparisonContext>();
+
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage))
+                    RefreshSortMetricNames();
+            };
 
             InitializeMetricsFromConfig();
             SetRowSeries();

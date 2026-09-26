@@ -39,7 +39,7 @@ namespace CapFrameX.View
 
         private void ReportDataGrid_LoadingRow(object sender, DataGridRowEventArgs e)
         {
-            if(e.Row.Item is ReportInfo reportInfo && reportInfo.Game.Equals("Averaged values"))
+            if(e.Row.Item is ReportInfo reportInfo && reportInfo.IsAverageRow)
             {
                 e.Row.Background = new SolidColorBrush(Color.FromArgb(150, 34, 151, 243));
             }

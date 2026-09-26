@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.EventAggregation.Messages;
@@ -344,8 +345,7 @@ namespace CapFrameX
             {
                 DataContext = new
                 {
-                    MessageText = "The overlay profile could not be saved. CapFrameX will remain " +
-                        "open so your changes are not lost."
+                    MessageText = CxLang.T("Shell_OverlayProfileCouldNotBeSaved")
                 }
             };
 

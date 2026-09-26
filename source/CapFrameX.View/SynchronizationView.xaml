@@ -180,7 +180,7 @@
                             <TextBlock VerticalAlignment="Center" Text="{loc:Tr SynchronizationView_FramesWithinMonitorSyncRange}"/>
                             <TextBlock Width="40" Height="27" Margin="10 0 0 0" Padding="0 7 0 0" FontWeight="Bold" TextAlignment="Center"
 						    Text="{Binding SyncRangePercentage}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
-                            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">(Range:</TextBlock>
+                            <TextBlock Margin="5 0 0 0" VerticalAlignment="Center" Text="{loc:Tr SynchronizationView_RangeOpen}"/>
                             <TextBox Height="25" Margin="5 0 0 0" TextAlignment="Center" Text="{Binding SyncRangeLower, UpdateSourceTrigger=PropertyChanged}" 
                                      materialDesign:HintAssist.Hint="{loc:Tr SynchronizationView_Lower}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">-</TextBlock>
