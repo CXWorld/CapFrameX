@@ -18,6 +18,26 @@
 
         ESystemInfoTertiaryStatus HardwareAcceleratedGPUSchedulingStatus { get; }
 
+        /// <summary>
+        /// UEFI Secure Boot. While it is on, Windows ignores the test signing boot option.
+        /// </summary>
+        ESystemInfoTertiaryStatus SecureBootStatus { get; }
+
+        /// <summary>
+        /// Test signing as the running kernel enforces it, i.e. whether test-signed drivers can load.
+        /// </summary>
+        ESystemInfoTertiaryStatus TestSigningStatus { get; }
+
+        /// <summary>
+        /// Virtualization-based security; enabled means running, not merely configured.
+        /// </summary>
+        ESystemInfoTertiaryStatus VirtualizationBasedSecurityStatus { get; }
+
+        /// <summary>
+        /// Memory integrity (hypervisor-enforced code integrity) as the running kernel enforces it.
+        /// </summary>
+        ESystemInfoTertiaryStatus MemoryIntegrityStatus { get; }
+
         string GetDeviceName();
 
         string GetProcessorName();

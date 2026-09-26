@@ -110,6 +110,7 @@
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!--System header: OS info-->
@@ -460,6 +461,51 @@
                                 <TextBlock Style="{StaticResource MetricValue}" Text="{Binding VulkanLayerStatus.Version}"/>
                                 <TextBlock Style="{StaticResource HardwareDetail}" Margin="0 2 0 0" Text="{Binding VulkanLayerStatus.State}"/>
                             </StackPanel>
+                        </Border>
+                    </UniformGrid>
+                </StackPanel>
+            </Border>
+
+            <!--Boot and code integrity settings: which drivers may load, and what costs performance-->
+            <Border Grid.Row="3" Style="{StaticResource SectionCard}" Margin="5" Padding="20 16">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource CardCaption}" Text="PLATFORM SECURITY"/>
+                    <UniformGrid Columns="4" Margin="0 10 0 0">
+                        <Border Style="{StaticResource MetricTile}" ToolTip="{Binding SecureBootStatus.ToolTip}">
+                            <DockPanel>
+                                <Ellipse DockPanel.Dock="Right" Width="10" Height="10" VerticalAlignment="Center"
+                                         Fill="{Binding SecureBootStatus.StatusColor}"/>
+                                <TextBlock DockPanel.Dock="Right" Style="{StaticResource HardwareDetail}" Margin="8 0" VerticalAlignment="Center"
+                                           Text="{Binding SecureBootStatus.State}"/>
+                                <TextBlock Style="{StaticResource MetricLabel}" FontSize="12" Text="Secure Boot"/>
+                            </DockPanel>
+                        </Border>
+                        <Border Style="{StaticResource MetricTile}" ToolTip="{Binding TestSigningStatus.ToolTip}">
+                            <DockPanel>
+                                <Ellipse DockPanel.Dock="Right" Width="10" Height="10" VerticalAlignment="Center"
+                                         Fill="{Binding TestSigningStatus.StatusColor}"/>
+                                <TextBlock DockPanel.Dock="Right" Style="{StaticResource HardwareDetail}" Margin="8 0" VerticalAlignment="Center"
+                                           Text="{Binding TestSigningStatus.State}"/>
+                                <TextBlock Style="{StaticResource MetricLabel}" FontSize="12" Text="Test signing"/>
+                            </DockPanel>
+                        </Border>
+                        <Border Style="{StaticResource MetricTile}" ToolTip="{Binding VbsStatus.ToolTip}">
+                            <DockPanel>
+                                <Ellipse DockPanel.Dock="Right" Width="10" Height="10" VerticalAlignment="Center"
+                                         Fill="{Binding VbsStatus.StatusColor}"/>
+                                <TextBlock DockPanel.Dock="Right" Style="{StaticResource HardwareDetail}" Margin="8 0" VerticalAlignment="Center"
+                                           Text="{Binding VbsStatus.State}"/>
+                                <TextBlock Style="{StaticResource MetricLabel}" FontSize="12" Text="VBS"/>
+                            </DockPanel>
+                        </Border>
+                        <Border Style="{StaticResource MetricTile}" Margin="0" ToolTip="{Binding MemoryIntegrityStatus.ToolTip}">
+                            <DockPanel>
+                                <Ellipse DockPanel.Dock="Right" Width="10" Height="10" VerticalAlignment="Center"
+                                         Fill="{Binding MemoryIntegrityStatus.StatusColor}"/>
+                                <TextBlock DockPanel.Dock="Right" Style="{StaticResource HardwareDetail}" Margin="8 0" VerticalAlignment="Center"
+                                           Text="{Binding MemoryIntegrityStatus.State}"/>
+                                <TextBlock Style="{StaticResource MetricLabel}" FontSize="12" Text="Memory integrity"/>
+                            </DockPanel>
                         </Border>
                     </UniformGrid>
                 </StackPanel>

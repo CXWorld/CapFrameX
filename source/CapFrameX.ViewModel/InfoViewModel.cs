@@ -30,7 +30,8 @@ namespace CapFrameX.ViewModel
     /// minimized nor hidden to the tray - otherwise the telemetry pauses so the
     /// tab causes no CPU load in the background. A software block lists the components the
     /// measurements depend on (sensor driver, capture backend, RTSS, Vulkan layer) with version
-    /// and state.
+    /// and state, a security block the boot and code integrity settings that decide which drivers
+    /// load and cost performance.
     /// </summary>
     public class InfoViewModel : BindableBase, INavigationAware
     {
@@ -97,6 +98,11 @@ namespace CapFrameX.ViewModel
         private SoftwareComponentStatus _rtssStatus = SoftwareComponentStatus.Detecting;
         private SoftwareComponentStatus _vulkanLayerStatus = SoftwareComponentStatus.Detecting;
 
+        private PlatformSecurityStatus _secureBootStatus = PlatformSecurityStatus.Unknown;
+        private PlatformSecurityStatus _testSigningStatus = PlatformSecurityStatus.Unknown;
+        private PlatformSecurityStatus _vbsStatus = PlatformSecurityStatus.Unknown;
+        private PlatformSecurityStatus _memoryIntegrityStatus = PlatformSecurityStatus.Unknown;
+
         private const string StatusGreen = "#4CAF50";
         private const string StatusOrange = "#FF9800";
         private const string StatusGray = "#757575";
@@ -141,6 +147,11 @@ namespace CapFrameX.ViewModel
         public SoftwareComponentStatus PresentMonStatus { get => _presentMonStatus; set => SetProperty(ref _presentMonStatus, value); }
         public SoftwareComponentStatus RtssStatus { get => _rtssStatus; set => SetProperty(ref _rtssStatus, value); }
         public SoftwareComponentStatus VulkanLayerStatus { get => _vulkanLayerStatus; set => SetProperty(ref _vulkanLayerStatus, value); }
+
+        public PlatformSecurityStatus SecureBootStatus { get => _secureBootStatus; set => SetProperty(ref _secureBootStatus, value); }
+        public PlatformSecurityStatus TestSigningStatus { get => _testSigningStatus; set => SetProperty(ref _testSigningStatus, value); }
+        public PlatformSecurityStatus VbsStatus { get => _vbsStatus; set => SetProperty(ref _vbsStatus, value); }
+        public PlatformSecurityStatus MemoryIntegrityStatus { get => _memoryIntegrityStatus; set => SetProperty(ref _memoryIntegrityStatus, value); }
 
         public InfoViewModel(ISensorService sensorService,
                              ISensorConfig sensorConfig,
@@ -516,6 +527,11 @@ namespace CapFrameX.ViewModel
                 ? _systemInfo.ResizableBarD3DStatus : _systemInfo.ResizableBarHardwareStatus);
             HagsStatusColor = GetStatusColor(_systemInfo.HardwareAcceleratedGPUSchedulingStatus);
             GameModeStatusColor = GetStatusColor(_systemInfo.GameModeStatus);
+
+            SecureBootStatus = PlatformSecurityStatus.ForSecureBoot(_systemInfo.SecureBootStatus);
+            TestSigningStatus = PlatformSecurityStatus.ForTestSigning(_systemInfo.TestSigningStatus);
+            VbsStatus = PlatformSecurityStatus.ForVirtualizationBasedSecurity(_systemInfo.VirtualizationBasedSecurityStatus);
+            MemoryIntegrityStatus = PlatformSecurityStatus.ForMemoryIntegrity(_systemInfo.MemoryIntegrityStatus);
         }
 
         private static string GetStatusColor(ESystemInfoTertiaryStatus status)
