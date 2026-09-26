@@ -968,6 +968,15 @@ namespace CapFrameX.ViewModel
             OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries.ForEach(entry => entry.PropertyChangedAction = SetSaveButtonIsEnable);
         }
 
+        // Every path that swaps in new entry objects (template apply and revert, reset to defaults)
+        // has to hook them up again: without PropertyChangedAction an edit no longer enables the
+        // save button, without UpdateGroupName a renamed group no longer reaches the separator list.
+        private void AttachEntryCallbacks()
+        {
+            OverlayEntries.ForEach(entry => entry.UpdateGroupName = OverlaySubModelGroupSeparating.UpdateGroupName);
+            SetSaveButtonIsEnableAction();
+        }
+
         private void SetSaveButtonIsEnable()
         {
             _overlayEntryProvider.MarkPendingChanges();
@@ -1053,7 +1062,7 @@ namespace CapFrameX.ViewModel
                 OverlayEntries.Clear();
                 OverlayEntries.AddRange(overlayEntries);
                 SetupOverlayEntriesView();
-                SetSaveButtonIsEnableAction();
+                AttachEntryCallbacks();
                 OverlayItemsOptionsEnabled = false;
                 _overlayEntryProvider.UpdateOverlayEntryFormats();
 
@@ -1215,6 +1224,7 @@ namespace CapFrameX.ViewModel
             // Setup view, refresh Separators list, and notify overlay
             SetupOverlayEntriesView();
             OverlaySubModelGroupSeparating.SetOverlayEntries(sortedEntries);
+            AttachEntryCallbacks();
 
             SetSaveButtonIsEnable();
 
@@ -1244,6 +1254,7 @@ namespace CapFrameX.ViewModel
             // Setup view, refresh Separators list, and notify overlay
             SetupOverlayEntriesView();
             OverlaySubModelGroupSeparating.SetOverlayEntries(OverlayEntries);
+            AttachEntryCallbacks();
 
             SetSaveButtonIsEnable();
 
