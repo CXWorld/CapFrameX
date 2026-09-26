@@ -1,0 +1,2461 @@
+{
+  // =========================================================================
+  // CapFrameX Localization Catalog (Spanish / Español)
+  // Original Spanish translation by indep-arg (https://github.com/indep-arg).
+  // Translation of en.json. Keep the keys and the {0}/{1} placeholders identical to en.json;
+  // new languages should start from en.json, not from this file.
+  // Terminology: FPS, frametime, overlay, OSD, stuttering, 1% low and tool names stay in English.
+  // All Localization/*.json files are automatically embedded on build.
+  // =========================================================================
+  "name": "Español",
+  "culture": "es-ES",
+  "strings": {
+
+    // =========================================================================
+    // AGGREGATION VIEW - Merging and averaging multiple benchmark sessions
+    // =========================================================================
+    "AggregationViewModel_ErrorWhileCalculatingResult": "Error al calcular el resultado. Inténtalo de nuevo.",
+    "AggregationView_Aggregate": "Agregar",
+    "AggregationView_AggregateAllEntries": "Agregar todas las entradas",
+    "AggregationView_AggregateExcludingOutliers": "Agregar sin valores atípicos",
+    "AggregationView_AggregateIncludingOutliers": "Agregar\nincluyendo valores atípicos",
+    "AggregationView_AggregationSettings": "Configuración de agregación",
+    "AggregationView_AggregationTable": "Tabla de agregación",
+    "AggregationView_Average": "Promedio",
+    "AggregationView_Date": "Fecha",
+    "AggregationView_DropItemsHereOrDouble": "Arrastra elementos aquí o haz doble clic sobre ellos en la lista de registros para agregarlos manualmente.\n\nPara la agregación automática durante los benchmarks, usa la configuración de la página de captura.",
+    "AggregationView_Game": "Juego",
+    "AggregationView_MetricUsedToDetermineOutliers": "Métrica usada para detectar valores atípicos",
+    "AggregationView_OnlyUseEntiresThatAre": "Usar solo las entradas que no sean valores atípicos para la agregación",
+    "AggregationView_OutlierMetric": "Métrica de atípicos",
+    "AggregationView_OutlierPercentage": "% de atípicos",
+    "AggregationView_RemoveAllEntries": "Quitar todas las entradas",
+    "AggregationView_SecondMetric": "Segunda métrica",
+    "AggregationView_SecondMetricShownInAggregation": "Segunda métrica mostrada en la tabla de agregación",
+    "AggregationView_ThePercentageTheFPSOf": "Porcentaje en que los FPS de una entrada pueden diferir de la mediana de todas las entradas antes de contarla como valor atípico",
+    "AggregationView_ThirdMetric": "Tercera métrica",
+    "AggregationView_ThirdMetricShownInAggregation": "Tercera métrica mostrada en la tabla de agregación",
+    "AggregationView_Time": "Hora",
+    "AggregationView_UseAllEntriesForAggregation": "Usar todas las entradas para la agregación, sean o no valores atípicos",
+
+    // =========================================================================
+    // APPLICATION SHELL & GENERAL DIALOGS
+    // =========================================================================
+    "AppHelper_ThereIsAlreadyAnInstance": "Ya hay una instancia en ejecución...",
+    "Appxaml_AnUnexpectedErrorOccuredDo": "Se produjo un error inesperado. ¿Quieres subir el registro de CapFrameX para un análisis más detallado?",
+    "Appxaml_EtwSessionConflictDetected": "Conflicto de sesión ETW detectado",
+    "Appxaml_FatalError": "Error grave",
+    "Appxaml_FrameViewEtwSessionDetected": "Se detectó una sesión ETW de FrameViewService.\n\nEl SDK de NVIDIA FrameView está ejecutando una sesión de seguimiento ETW que puede entrar en conflicto con PresentMon. Si CapFrameX no muestra métricas de rendimiento durante la captura, plantéate desinstalar el SDK de NVIDIA FrameView.\n\nHaz clic en 'Sí' para continuar y volver a mostrar esta advertencia la próxima vez.\nHaz clic en 'No' para continuar y no volver a mostrar esta advertencia.",
+    "Appxaml_YourReportIdIs0": "Tu ID de informe es {0}.\nIncluye este ID en tu consulta al soporte. Visita https://www.capframex.com/support para más información.",
+
+    // =========================================================================
+    // BENCHLAB - Power unit label
+    // =========================================================================
+    "BenchlabMetricsManager_W": "W",
+
+    // =========================================================================
+    // CAPTURE VIEW - Benchmark recording triggers, hotkeys, process monitoring
+    // =========================================================================
+    "CaptureViewModel_0AutoDetected": "\"{0}\" detectado automáticamente.",
+    "CaptureViewModel_0Selected": "\"{0}\" seleccionado.",
+    "CaptureViewModel_CaptureDurationSavedFor": "Duración de captura guardada para {0} ({1}). Haz clic para usar la duración global.",
+    "CaptureViewModel_CaptureHotkeyDisabled": "Atajo de captura desactivado.",
+    "CaptureViewModel_CaptureStartingWithDelay": "La captura empieza con un retraso de {0} segundos...",
+    "CaptureViewModel_CapturingInProgress": "Captura en curso...",
+    "CaptureViewModel_CapturingInProgressSetTime": "Captura en curso (tiempo fijado: {0} segundos)...",
+    "CaptureViewModel_ChangesApplyTo0Only": "Los cambios se aplican solo a {0}",
+    "CaptureViewModel_CreatingCaptureFile": "Creando el archivo de captura...",
+    "CaptureViewModel_FrametimeMs": "Frametime [ms]",
+    "CaptureViewModel_Global": "Global",
+    "CaptureViewModel_GlobalCaptureDuration": "Duración de captura global",
+    "CaptureViewModel_GlobalCaptureDurationClick": "Duración de captura global. Haz clic para recordar una duración propia para el juego seleccionado.",
+    "CaptureViewModel_MultipleProcessesDetected": "Se detectaron varios procesos.",
+    "CaptureViewModel_NoLimit": "Sin límite",
+    "CaptureViewModel_Press0ToStartCapture": "Pulsa \"{0}\" para iniciar la captura.",
+    "CaptureViewModel_Press0ToStartCaptureOfRunningProcess": "Pulsa {0} para iniciar la captura del proceso en ejecución.",
+    "CaptureViewModel_Press0ToStopCapture": "Pulsa {0} para detener la captura.",
+    "CaptureViewModel_ProcessListClear": "Lista de procesos vacía.",
+    "CaptureViewModel_RemoteCapturingInProgress": "Captura remota en curso...",
+    "CaptureViewModel_RemovesThisGamesCustom": " · Quita la duración propia de este juego",
+    "CaptureViewModel_Samples": "Muestras",
+    "CaptureViewModel_SelectAProcessFirst": "Selecciona primero un proceso",
+    "CaptureViewModel_SelectOneOrMoveUnwanted": "Selecciona uno o mueve los procesos no deseados a la lista de ignorados.",
+    "CaptureViewModel_ServiceReady": "Servicio listo...",
+    "CaptureViewModel_StartAnyGameAndPress0": "Inicia cualquier juego o aplicación y pulsa \"{0}\" para iniciar la captura.",
+    "CaptureViewModel_ThisGame": "Este juego",
+    "CaptureViewModel_UsedByGamesWithoutA": " · La usan los juegos sin duración propia",
+    "CaptureView_AdvancedInfo": "Información avanzada",
+    "CaptureView_AggregationOfRunHistory": "Agregación del historial de pasadas",
+    "CaptureView_BasicInfo": "Información básica",
+    "CaptureView_CaptureDelayS": "Retraso de captura [s]",
+    "CaptureView_CaptureDurationScope": "Alcance de la duración de captura",
+    "CaptureView_CaptureHotkey": "Atajo de captura",
+    "CaptureView_CaptureLogger": "Registro de captura",
+    "CaptureView_CaptureServiceLoggerOutput": "Salida del registro del servicio de captura...",
+    "CaptureView_CaptureSettings": "Configuración de captura",
+    "CaptureView_CaptureTimeS": "Tiempo de captura [s]",
+    "CaptureView_ClearLoggerOutput": "Borrar la salida del registro",
+    "CaptureView_EnterAValidDuration": "Introduce una duración válida de 0 segundos o más (0 = sin límite).",
+    "CaptureView_Errors": "Errores",
+    "CaptureView_HotkeyPressBackspaceDeleteOrEsc": "Atajo combinable con hasta dos teclas modificadoras (Ctrl, Shift o Alt). Pulsa Retroceso, Supr o Esc para borrarlo.",
+    "CaptureView_HotkeySound": "Sonido",
+    "CaptureView_IfCheckedTheSingleRuns": "Si está marcado, las pasadas individuales no se guardan además del resultado agregado.",
+    "CaptureView_IfTheSelectedMetricOf": "Si la métrica seleccionada de una pasada difiere de la mediana de todas las pasadas más que el porcentaje fijado, se marca como valor atípico.\n\n\nMarcar y usar\nTodas las pasadas se agregan cuando el historial está lleno.\n\n\nMarcar y reemplazar\nLas pasadas marcadas se deben reemplazar por pasadas adicionales.\n\nLas pasadas se agregan cuando el historial ya no contiene valores atípicos.",
+    "CaptureView_MessageFilter": "Filtro de mensajes",
+    "CaptureView_MetricUsedToDetermineOutliers": "Métrica usada para detectar valores atípicos",
+    "CaptureView_MoveToIgnoreList": "Mover a la lista de ignorados",
+    "CaptureView_NoDelay": "0 = sin retraso",
+    "CaptureView_NoLimitPressEnterOrLeave": "0 = sin límite. Pulsa Intro o sal del campo para guardar.",
+    "CaptureView_NumberOfRuns": "Número de pasadas",
+    "CaptureView_OnceTheRunHistoryIs": "Cuando el historial de pasadas está lleno, combina y guarda todos los datos de frametime en un nuevo archivo de registro único.\n\n\nEsto NO es lo mismo que calcular parámetros promedio a partir de varios archivos de registro individuales. Simula ejecutar la misma escena varias veces en un único benchmark.\nLos parámetros de rendimiento se calculan una sola vez, con todos los datos de frametime.",
+    "CaptureView_OutlierHandling": "Tratamiento de valores atípicos",
+    "CaptureView_OutlierMetric": "Métrica de atípicos",
+    "CaptureView_OutlierPercentage": "% de atípicos",
+    "CaptureView_ProcessIgnoreList": "Lista de procesos ignorados",
+    "CaptureView_RememberForThisGame": "Recordar para este juego",
+    "CaptureView_RemoveFromIgnoreList": "Quitar de la lista de ignorados",
+    "CaptureView_ResetAndRescanProcesses": "Restablecer y volver a buscar procesos",
+    "CaptureView_ResetRunHistory": "Restablecer el historial de pasadas",
+    "CaptureView_RunHistory": "Historial de pasadas",
+    "CaptureView_RunHistoryAndAggregation": "Historial y agregación",
+    "CaptureView_RunningProcesses": "Procesos en ejecución",
+    "CaptureView_SaveAggregatedResultOnly": "Guardar solo el resultado agregado",
+    "CaptureView_SavesASetNumberOf": "Guarda un número fijo de pasadas en un historial que también se puede mostrar en el overlay",
+    "CaptureView_SecondMetric": "Segunda métrica",
+    "CaptureView_SecondMetricShownForHistory": "Segunda métrica mostrada en las entradas del historial en el overlay",
+    "CaptureView_ShowProcessDetails": "Mostrar detalles del proceso",
+    "CaptureView_SoundLevelControl": "Control del volumen",
+    "CaptureView_TheMaxPercentageTheFPS": "Porcentaje máximo en que los FPS de una pasada pueden diferir de la mediana de todas las pasadas antes de contarla como valor atípico",
+    "CaptureView_TheNumberOfRunsWritten": "Número de pasadas que se guardan en el historial.\nSin agregación, cada pasada añadida a un historial lleno reemplaza a la más antigua.",
+    "CaptureView_ThirdMetric": "Tercera métrica",
+    "CaptureView_ThirdMetricShownForHistory": "Tercera métrica mostrada en las entradas del historial en el overlay",
+    "CaptureView_UseGlobalDuration": "Usar la duración global",
+
+    // =========================================================================
+    // CLOUD VIEW - Sharing benchmarks on capframex.com
+    // =========================================================================
+    "CloudViewModel_UploadSizeLimitExceeded0": "Las sesiones seleccionadas superan el límite de {0} bytes por subida",
+    "CloudView_AnyNewGameNameOr": "Cualquier nombre de juego nuevo o proceso ignorado que añadas se nos enviará para que podamos añadirlo a nuestra propia lista",
+    "CloudView_AutoUpdateList": "Actualización automática",
+    "CloudView_Comment": "Comentario",
+    "CloudView_CopyToClipboard": "Copiar al portapapeles",
+    "CloudView_Date": "Fecha",
+    "CloudView_DownloadFolder": "Carpeta de descarga",
+    "CloudView_DownloadLinkID": "Enlace / ID de descarga",
+    "CloudView_DownloadLinkID2": "Enlace / ID de descarga",
+    "CloudView_DownloadRecords": "Descargar registros",
+    "CloudView_DownloadTheRecordsBoundTo": "Descarga los registros asociados al ID de descarga en la carpeta de descarga indicada",
+    "CloudView_Downloading": "Descargando...",
+    "CloudView_DropItemsHereOrDouble": "Arrastra elementos aquí o haz doble clic sobre ellos en la lista de registros",
+    "CloudView_Game": "Juego",
+    "CloudView_ItHoldsInformationAboutThe": "Contiene el nombre que se muestra para cada proceso y si el servicio de captura lo ignora o no.",
+    "CloudView_ObserveDownloadFolder": "Vigilar la carpeta de descarga",
+    "CloudView_OnFirstStartupYourOwn": "En el primer inicio, tu propia lista de procesos se crea y se actualiza a partir de una lista predeterminada que incluimos en cada nueva versión de CapFrameX y que ya contiene muchos procesos de juegos con sus nombres correctos y otros procesos que se deben ignorar.",
+    "CloudView_OnStartupYourOwnProcess": "Al iniciar, tu propia lista de procesos se compara con nuestra lista en línea y se añade todo lo que no esté en la tuya.\n\nEsto no cambia el estado de ignorado/no ignorado ni el nombre de juego personalizado de ningún proceso que ya esté en tu lista",
+    "CloudView_OptionalUploadDescription": "Descripción de la subida (opcional)",
+    "CloudView_ProcessListOptions": "Opciones de la lista de procesos",
+    "CloudView_RecordDownload": "Descarga de registros",
+    "CloudView_RecordUpload": "Subida de registros",
+    "CloudView_RemoveAllEntries": "Quitar todas las entradas",
+    "CloudView_ShareNewEntries": "Compartir entradas nuevas",
+    "CloudView_TheOptionsBelowHelpUs": "Las siguientes opciones nos ayudan a obtener entradas adicionales para nuestra lista predeterminada y también te pueden dar directamente nuestras últimas incorporaciones.",
+    "CloudView_TheProcessListContainsAll": "La lista de procesos contiene todos los procesos que conoce CapFrameX.",
+    "CloudView_Time": "Hora",
+    "CloudView_UploadRecords": "Subir registros",
+    "CloudView_UploadYourRecordsToOur": "Sube tus registros a nuestro servidor y recibe un ID para compartirlos",
+    "CloudView_Uploading": "Subiendo...",
+    "CloudView_WhatIsTheProcessList": "¿Qué es la lista de procesos?",
+
+    // =========================================================================
+    // SETTINGS & NAVIGATION (COLORBAR) - Options, hardware detection, overlay
+    // =========================================================================
+    "ColorbarView_AGGREGATION": "AGREGACIÓN",
+    "ColorbarView_ANALYSIS": "ANÁLISIS",
+    "ColorbarView_ActiveSensorsWebSocketURL": "URL WebSocket de sensores activos",
+    "ColorbarView_AddsPresentMonSMsPCLatencyColumn": "Añade la columna MsPCLatency de PresentMon a los datos de captura. Hay que reiniciar el servicio de captura.",
+    "ColorbarView_AdjustAppearanceStartupBehaviorAnd": "Ajusta la apariencia, el comportamiento al iniciar y los servicios de toda la aplicación.",
+    "ColorbarView_AllowsYouToReceiveImportant": "Permite recibir mensajes importantes del equipo de CX al iniciar la aplicación",
+    "ColorbarView_AppearanceAndNotifications": "Apariencia y notificaciones",
+    "ColorbarView_Application": "Aplicación",
+    "ColorbarView_Application2": "Aplicación",
+    "ColorbarView_AskTheCapFrameXUpdateServer": "Consultar al servidor de actualizaciones de CapFrameX si hay una versión más reciente",
+    "ColorbarView_AutomaticChecksFollowTheInstalled": "Las comprobaciones automáticas siguen el canal instalado. Todas las versiones Release y Beta publicadas se pueden seleccionar abajo.",
+    "ColorbarView_AvailableEndpoints": "Endpoints disponibles",
+    "ColorbarView_AverageTimeWindowInMilliseconds": "Ventana de tiempo del promedio en milisegundos.",
+    "ColorbarView_CAPTURE": "CAPTURA",
+    "ColorbarView_CHECKFORUPDATES": "BUSCAR ACTUALIZACIONES",
+    "ColorbarView_CLOUD": "NUBE",
+    "ColorbarView_COMPARISON": "COMPARACIÓN",
+    "ColorbarView_CPU": "CPU",
+    "ColorbarView_CXRemoteServiceInfoURL": "URL de información del servicio remoto de CX",
+    "ColorbarView_CapFrameXCom": "CapFrameX.com",
+    "ColorbarView_CaptureFileMode": "Modo de archivo de captura",
+    "ColorbarView_CaptureMetrics": "Métricas de captura",
+    "ColorbarView_ChartsAndExport": "Gráficos y exportación",
+    "ColorbarView_CheckForANewerCapFrameX": "Busca una versión más reciente de CapFrameX cada vez que se inicia la aplicación.",
+    "ColorbarView_CheckForUpdatesEveryTime": "Buscar actualizaciones cada vez que se inicia CapFrameX",
+    "ColorbarView_CheckForUpdatesOrDeliberately": "Busca actualizaciones o vuelve a propósito a una versión anterior compatible.",
+    "ColorbarView_CheckOnStart": "Comprobar al iniciar",
+    "ColorbarView_ChooseThePrimaryAdapterUsed": "Elige el adaptador principal usado para la monitorización y el registro. Reinicia CapFrameX después de cambiarlo.",
+    "ColorbarView_ChooseTheTimingDataStored": "Elige los datos de tiempo usados para el análisis de rendimiento y cómo se guardan las capturas.",
+    "ColorbarView_ChooseWhereScreenshotsCreatedFrom": "Elige dónde se guardan las capturas de pantalla hechas desde la barra de herramientas.",
+    "ColorbarView_ChooseWhetherTheHardwareNamesStored": "Elige si los nombres de hardware guardados con las capturas se detectan o se introducen a mano.",
+    "ColorbarView_Close": "Cerrar",
+    "ColorbarView_CloseThisMessageAndNot": "Cerrar este mensaje y no volver a mostrarlo hasta que haya uno nuevo",
+    "ColorbarView_ConfigureCapFrameXToMatchYour": "Configura CapFrameX según tu forma de trabajar.",
+    "ColorbarView_ConfigureChartsCaptureMetricsLatency": "Configura los gráficos, las métricas y el formato de archivo de captura, el seguimiento de latencia y las capturas de pantalla.",
+    "ColorbarView_ConfigureLocalServiceAccessAnd": "Configura el acceso al servicio local y revisa los endpoints que expone CapFrameX.",
+    "ColorbarView_ControlHowCapFrameXStartsAnd": "Controla cómo se inicia CapFrameX y cómo se comporta al minimizarlo.",
+    "ColorbarView_ControlHowFPSValuesAre": "Controla cómo se calculan, se muestran y se exportan los valores de FPS.",
+    "ColorbarView_ControlWhichPowerSensorIs": "Controla qué sensor de potencia se usa para las métricas relacionadas con el consumo.",
+    "ColorbarView_Copy": "Copiar",
+    "ColorbarView_CustomHardwareLabels": "Etiquetas de hardware personalizadas",
+    "ColorbarView_DarkMode": "Modo oscuro",
+    "ColorbarView_DecimalPlaces": "Decimales",
+    "ColorbarView_DisplayedDecimalPlaces": "Decimales mostrados.",
+    "ColorbarView_EnableMCPServer": "Activar el servidor MCP",
+    "ColorbarView_EnablePCLatencyTrackingVia": "Activa el seguimiento de la latencia del PC mediante PresentMon. Si está activado, la columna \"MsPCLatency\" estará disponible en los datos de captura.\nHay que reiniciar el servicio de captura para que surta efecto.",
+    "ColorbarView_EnablesTheLocalMCPEndpoint": "Activa el endpoint MCP local para integraciones con herramientas. Reinicia CapFrameX después de cambiar esta opción.",
+    "ColorbarView_Events": "Eventos",
+    "ColorbarView_ExposeTheLocalMCPEndpoint": "Expone el endpoint MCP local para integraciones con herramientas. Hay que reiniciar.",
+    "ColorbarView_FPSDecimals": "Decimales de FPS",
+    "ColorbarView_FPSGraphFilter": "Filtro del gráfico de FPS",
+    // Dropdown hint for selecting capture file format (JSON vs JSON + CSV)
+    "ColorbarView_FileMode": "Modo de archivo",
+    "ColorbarView_GPU": "GPU",
+    "ColorbarView_GraphExportResolution": "Resolución de exportación de gráficos",
+    "ColorbarView_GraphicsAdapter": "Adaptador gráfico",
+    "ColorbarView_HTTPURLToAccessThe": "URL HTTP para acceder a la salida actual del overlay (el overlay debe estar activo)",
+    "ColorbarView_Hardware": "Hardware",
+    "ColorbarView_Hardware2": "Hardware",
+    "ColorbarView_HardwareInfoSource": "Origen de la información de hardware",
+    // Settings card title for hardware info source
+    "ColorbarView_HardwareLabels": "Etiquetas de hardware",
+    "ColorbarView_Height": "Alto",
+    "ColorbarView_Help": "Ayuda",
+    "ColorbarView_Help2": "Ayuda",
+    "ColorbarView_HideOSDOnRTSS": "Ocultar el OSD en RTSS",
+    "ColorbarView_INFO": "INFO",
+    "ColorbarView_IfCheckedTheOverlayWill": "Si está marcado, el overlay no se muestra en RTSS, pero sigue disponible a través de la API remota.",
+    "ColorbarView_IfSensorDataOfA": "Si los datos de sensores de un registro contienen valores \"TBP Sim\" (solo GPU RDNA e Intel Arc), úsalos para análisis como FPS/W en lugar de \"GPU Total\".\nPara que los cambios surtan efecto, hay que recargar las páginas de análisis y comparación y volver a añadir los registros ya insertados en la página de informe.",
+    "ColorbarView_ImportantMessage": "Mensaje importante:",
+    "ColorbarView_InstallAnyPublishedReleaseFrom": "Instala cualquier versión publicada desde la",
+    "ColorbarView_InstalledVersion": "Versión instalada",
+    "ColorbarView_InterfaceLanguage": "Idioma de la interfaz",
+    // Description for "JSON + CSV" file mode option
+    "ColorbarView_JSONCSVAdditionallySaves": "JSON + CSV guarda además todos los datos de PresentMon de cada registro como archivo CSV.",
+    "ColorbarView_JSONRecordsAreSavedAs": "JSON:\nLos registros se guardan como archivos JSON con todos los datos necesarios.\n\nJSON + CSV:\nPara cada registro se crea un archivo CSV además del archivo JSON. El CSV incluye todos los datos de PresentMon y está pensado para análisis especiales.",
+    "ColorbarView_KeepCapFrameXRunningInThe": "Mantiene CapFrameX en ejecución en el área de notificación al minimizarlo.",
+    "ColorbarView_KeepTheOverlayAvailableThrough": "Mantiene el overlay disponible a través de la API remota sin mostrarlo en RTSS.",
+    "ColorbarView_LanguageOfMenusPagesAnd": "Idioma de los menús, las páginas y los diálogos.",
+    "ColorbarView_LanguageOfOverlayLabelsSuch": "Idioma de las etiquetas del overlay, como CPU, punto caliente de la GPU y frametime. Independiente del idioma de la interfaz.",
+    "ColorbarView_LatestBeta": "Última Beta",
+    "ColorbarView_LatestRelease": "Última Release",
+    "ColorbarView_LaunchCapFrameXAutomaticallyAfterSigning": "Inicia CapFrameX automáticamente al iniciar sesión.",
+    "ColorbarView_ListeningPortForTheLocal": "Puerto de escucha del servicio remoto local. Hay que reiniciar.",
+    "ColorbarView_Login": "Iniciar sesión",
+    "ColorbarView_Logout": "Cerrar sesión",
+    "ColorbarView_Mainboard": "Placa base",
+    "ColorbarView_ManageTheLocalWebService": "Gestiona el servicio web local, la salida a RTSS y la integración MCP.",
+    "ColorbarView_MinimizeToTray": "Minimizar a la bandeja",
+    "ColorbarView_MoreCloselyReflectsDisplayedFrames": "Refleja con más fidelidad los fotogramas mostrados y se recomienda con Frame Generation.",
+    "ColorbarView_NetworkTarget": "Destino de red",
+    "ColorbarView_NumberOfPresentEventsPresentMon": "Número de eventos present que PresentMon conserva en su búfer circular (--set_circular_buffer_size). Auméntalo si se pierden fotogramas con tasas de fotogramas muy altas; el valor predeterminado de PresentMon es 2048.\nAl cambiarlo se reinicia el servicio de captura, lo que tarda un momento. La opción está bloqueada mientras el servicio está detenido o hay una captura en curso.",
+    "ColorbarView_OSDHTTPURL": "URL HTTP del OSD",
+    "ColorbarView_OSDLanguage": "Idioma del OSD",
+    "ColorbarView_OSDWebSocketURL": "URL WebSocket del OSD",
+    "ColorbarView_OVERLAY": "OVERLAY",
+    "ColorbarView_OnwardSelectingAnOlderVersion": "en adelante. Seleccionar una versión anterior inicia una reversión explícita.",
+    "ColorbarView_OpenCapFrameXWithoutBringingThe": "Abre CapFrameX sin traer la ventana principal al primer plano.",
+    "ColorbarView_OpenScreenshotFolder": "Abrir la carpeta de capturas de pantalla",
+    "ColorbarView_Options": "Opciones",
+    "ColorbarView_Options2": "Opciones",
+    "ColorbarView_OverrideTheHardwareNamesStored": "Reemplaza los nombres de hardware guardados con las capturas.",
+    "ColorbarView_PMD": "PMD",
+    "ColorbarView_PackagesAreVerifiedBeforeInstallation": "Los paquetes se verifican antes de instalarlos.",
+    "ColorbarView_PersonalizeTheInterfaceAndChoose": "Personaliza la interfaz y elige si CapFrameX puede mostrar mensajes del equipo.",
+    "ColorbarView_PingURL": "URL de ping",
+    "ColorbarView_PixelDimensionsUsedByGraph": "Dimensiones en píxeles usadas al exportar gráficos.",
+    "ColorbarView_Port": "Puerto",
+    "ColorbarView_PowerAnalysis": "Análisis de potencia",
+    "ColorbarView_PreferSimulatedTotalBoardPower": "Prefiere los datos simulados de potencia total de la placa (TBP) en GPU RDNA e Intel Arc compatibles.",
+    "ColorbarView_PresentMonEventBuffer": "Búfer de eventos de PresentMon",
+    "ColorbarView_PrimaryGraphicsAdapter": "Adaptador gráfico principal",
+    "ColorbarView_PublishedVersion": "Versión publicada",
+    "ColorbarView_QuickReferenceForWorkingWith": "Referencia rápida para trabajar con CapFrameX.",
+    "ColorbarView_RAM": "RAM",
+    "ColorbarView_REPORT": "INFORME",
+    "ColorbarView_ReadOnlyAddressesGeneratedFrom": "Direcciones de solo lectura generadas a partir de la configuración actual del servicio.",
+    "ColorbarView_ReceiveNotifications": "Recibir notificaciones",
+    "ColorbarView_Remote": "Remoto",
+    "ColorbarView_Remote2": "Remoto",
+    "ColorbarView_RollbackReplacesTheApplicationVersion": "La reversión reemplaza la versión de la aplicación. Las capturas y la configuración se conservan, pero es posible que la configuración más reciente no sea compatible con la versión seleccionada.",
+    "ColorbarView_SENSOR": "SENSOR",
+    "ColorbarView_SHOWUPDATE": "VER ACTUALIZACIÓN",
+    "ColorbarView_Save": "Guardar",
+    "ColorbarView_ScreenshotDirectory": "Carpeta de capturas de pantalla",
+    "ColorbarView_Screenshots": "Capturas de pantalla",
+    "ColorbarView_SelectMonitoringHardwareAndControl": "Selecciona el hardware de monitorización y controla cómo se guarda la información del sistema.",
+    "ColorbarView_SelectResolutionForGraphExport": "Selecciona la resolución para exportar gráficos (desde el menú contextual)",
+    "ColorbarView_SelectScreenshotFolder": "Seleccionar la carpeta de capturas de pantalla",
+    "ColorbarView_SensorStreamWebSocketURL": "URL WebSocket del flujo de sensores",
+    "ColorbarView_ServiceConfiguration": "Configuración del servicio",
+    "ColorbarView_SetTheHostUsedBy": "Define el host que usa la entrada de ping de red del overlay.",
+    "ColorbarView_SetsTheNumberOfDecimal": "Define el número de decimales de los valores de FPS mostrados",
+    "ColorbarView_SetsThePrimaryGraphicsAdapter": "Define el adaptador gráfico principal para la monitorización y el registro. Reinicia CapFrameX después de cambiar el adaptador.",
+    "ColorbarView_SetsTheTimeWindowFor": "Define la ventana de tiempo del intervalo de los gráficos de FPS promedio",
+    "ColorbarView_Settings": "Configuración",
+    "ColorbarView_SettingsMarkedInTheirDescription": "Las opciones marcadas así en su descripción pueden requerir un reinicio.",
+    "ColorbarView_ShowImportantMessagesFromThe": "Muestra al iniciar los mensajes importantes del equipo de CapFrameX.",
+    "ColorbarView_ShowWhatTheAvailableUpdate": "Muestra qué contiene la actualización disponible",
+    "ColorbarView_SizeOfPresentMonSPresent": "Tamaño del búfer circular de eventos present de PresentMon. Reinicia el servicio de captura.",
+    "ColorbarView_StartMinimized": "Iniciar minimizado",
+    "ColorbarView_StartWithWindows": "Iniciar con Windows",
+    "ColorbarView_TakeAScreenshot": "Hacer una captura de pantalla",
+    "ColorbarView_TargetVersion": "Versión de destino",
+    "ColorbarView_TimeWindowMs": "Ventana de tiempo (ms)",
+    "ColorbarView_URLToUseForThe": "URL que usa la entrada de ping de red del overlay",
+    "ColorbarView_Update": "Actualizar",
+    "ColorbarView_Update2": "Actualizar",
+    "ColorbarView_UpdateStatus": "Estado de la actualización",
+    "ColorbarView_UseMsBetweenDisplayChangeMetrics": "Usar las métricas de MsBetweenDisplayChange",
+    "ColorbarView_UseMsBetweenDisplayChangeToCalculatePerformance": "Usa \"MsBetweenDisplayChange\" para calcular las métricas de rendimiento. Esta opción da métricas más consistentes al usar Frame Generation.\nMsBetweenDisplayChange se acerca más a la experiencia del usuario.",
+    "ColorbarView_UsePCLatency": "Usar la latencia del PC",
+    "ColorbarView_UseTBPSimValuesFor": "Usar los valores TBP Sim para el análisis si están disponibles",
+    "ColorbarView_UseTheDarkCapFrameXColor": "Usa el tema de color oscuro de CapFrameX.",
+    "ColorbarView_VersionHistory": "Historial de versiones",
+    "ColorbarView_VersionStatus": "Estado de la versión",
+    "ColorbarView_WebSocketURLToAccessAll": "URL WebSocket para acceder a todos los sensores seleccionados actualmente en la pestaña Sensores",
+    "ColorbarView_WebSocketURLToAccessThe": "URL WebSocket para acceder a la salida actual del overlay (el overlay debe estar activo)",
+    "ColorbarView_WebSocketURLToAccessThe2": "URL WebSocket para acceder al flujo completo de sensores",
+    "ColorbarView_WebservicePort": "Puerto del servicio web",
+    "ColorbarView_Width": "Ancho",
+    "ColorbarView_WindowsBehavior": "Comportamiento en Windows",
+
+    // =========================================================================
+    // COMPARISON VIEW - Multi-run comparison graphs, bar charts, custom labels
+    // =========================================================================
+    "ComparisonDataViewModel_Average": "Promedio",
+    "ComparisonDataViewModel_CaptureTime0": "duración de la captura: {0} s",
+    "ComparisonDataViewModel_CreationDate0": "fecha de creación: {0}",
+    "ComparisonDataViewModel_CreationTime0": "hora de creación: {0}",
+    "ComparisonDataViewModel_FPS": "FPS",
+    "ComparisonDataViewModel_FPS2": "FPS",
+    "ComparisonDataViewModel_FrametimeMs": "Frametime [ms]",
+    "ComparisonDataViewModel_NumberOfSamples0": "número de muestras: {0}",
+    "ComparisonDataViewModel_P01": "P0.1",
+    "ComparisonDataViewModel_P1": "P1",
+    "ComparisonDataViewModel_RecordingTimeS": "Tiempo de grabación [s]",
+    "ComparisonDataViewModel_Text": "%",
+    "ComparisonDataView_AbsoluteMode": "Modo absoluto",
+    "ComparisonDataView_CPU": "CPU",
+    "ComparisonDataView_Comparisons": "Comparaciones",
+    "ComparisonDataView_CustomComments": "Comentarios personalizados",
+    "ComparisonDataView_CutFirstSeconds": "Recortar los primeros segundos",
+    "ComparisonDataView_CutLastSeconds": "Recortar los últimos segundos",
+    "ComparisonDataView_CuttingMode": "Modo de recorte:",
+    "ComparisonDataView_CuttingMode2": "Modo de recorte",
+    "ComparisonDataView_DataChartSettings": "Configuración de datos/gráfico",
+    "ComparisonDataView_DateAndTime": "Fecha y hora",
+    "ComparisonDataView_FrametimeMs": "Frametime (ms)",
+    "ComparisonDataView_Frametimes": "Frametimes",
+    "ComparisonDataView_GPU": "GPU",
+    "ComparisonDataView_LShape": "Curva L",
+    "ComparisonDataView_Quantiles": "Cuantiles (%)",
+    "ComparisonDataView_RelativeMode": "Modo relativo",
+    "ComparisonDataView_RemoveAllComparisons": "Quitar todas las comparaciones",
+    "ComparisonDataView_SetAbsolutRelativeMode": "Cambiar entre modo absoluto y relativo",
+    "ComparisonDataView_SetComparisonContext": "Definir el contexto de comparación",
+    "ComparisonDataView_ShowContextLegend": "Mostrar la leyenda de contexto:",
+    "ComparisonDataView_ShowContextLegend2": "Mostrar la leyenda de contexto",
+    // Chart Y-axis label: frames per second calculated from display change
+    "ComparisonViewModel_DisplayFPS": "FPS de pantalla",
+    // Chart Y-axis label: time between display change samples
+    "ComparisonViewModel_DisplayTime": "Tiempo de pantalla",
+    "ComparisonViewModel_Distribution0": "{0}: distribución [%]",
+    "ComparisonViewModel_FPS": "FPS",
+    "ComparisonViewModel_FPS1S": "FPS [1/s]",
+    "ComparisonViewModel_FrameTimeDistribution": "Distribución de frametimes [%]",
+    "ComparisonViewModel_FrameTimeMs2": "Frametime [ms]",
+    "ComparisonViewModel_FramesIn01": "{0} fotogramas en {1} s",
+    "ComparisonViewModel_FrametimeMs": "Frametime [ms]",
+    "ComparisonViewModel_Frametimes": "Frametimes",
+    "ComparisonViewModel_GPUActiveTimeMs": "Tiempo activo de la GPU [ms]",
+    "ComparisonViewModel_LegendDisplay": "pantalla",
+    "ComparisonViewModel_LegendGPUActive": "GPU activa",
+    "ComparisonViewModel_LegendPresent": "present",
+    "ComparisonViewModel_MetricFps01": "{0} de FPS ({1})",
+    // Chart Y-axis label: frames per second calculated from present calls
+    "ComparisonViewModel_PresentFPS": "FPS de present",
+    // Chart Y-axis label: time between present calls
+    "ComparisonViewModel_PresentFrametime": "Frametime de present",
+    "ComparisonViewModel_RecordAlreadyInList": "La lista ya contiene este registro, así que no se puede insertar. Selecciona otro registro para la comparación.",
+    "ComparisonViewModel_RecordingTimeS": "Tiempo de grabación [s]",
+    "ComparisonViewModel_RecordingTimeS2": "Tiempo de grabación [s]",
+    "ComparisonViewModel_SortCPULabel": "Etiqueta de CPU",
+    "ComparisonViewModel_SortCommentLabel": "Etiqueta de comentario",
+    "ComparisonViewModel_SortFirstMetric": "Primera métrica",
+    "ComparisonViewModel_SortGPULabel": "Etiqueta de GPU",
+    "ComparisonViewModel_SortSecondMetric": "Segunda métrica",
+    "ComparisonViewModel_SortThirdMetric": "Tercera métrica",
+    "ComparisonViewModel_SourceDisplayChangesAverageFPS": "Origen: cambios de pantalla (FPS promedio: presents)",
+    "ComparisonViewModel_SourcePresents": "Origen: presents",
+    "ComparisonViewModel_SourcePresentsDisplayDataUnavailable": "Origen: presents (datos de pantalla no disponibles)",
+    "ComparisonView_AllComparedRecordsUseThis": "Todos los registros comparados usan este origen de tiempos; no se permite mezclar comparaciones de pantalla y de present.",
+    "ComparisonView_AutoScale": "Escala automática:",
+    "ComparisonView_AutoScaleVarianceBarsBased": "Escalar automáticamente las barras de varianza según el primer grupo de varianza",
+    "ComparisonView_BarCharts": "Gráficos de barras",
+    "ComparisonView_ChangeTheOrderInWhich": "Cambia el orden en que los gráficos nuevos reciben sus colores",
+    "ComparisonView_ColorOrder": "Orden de\ncolores",
+    "ComparisonView_Comparisons": "Comparaciones",
+    "ComparisonView_CustomTitle": "Título personalizado:",
+    "ComparisonView_DropItemsHereOrDouble": "Suelta los elementos aquí o haz doble clic sobre ellos en la lista de registros.",
+    "ComparisonView_EndS": "Fin (s)",
+    "ComparisonView_EndS2": "Fin (s)",
+    "ComparisonView_FilterMode": "Modo de filtro",
+    "ComparisonView_FirstLabel": "Primera etiqueta",
+    "ComparisonView_FirstMetric": "Primera métrica",
+    "ComparisonView_FrameTimeDistribution": "Distribución de frametimes",
+    "ComparisonView_Frametimes": "Frametimes",
+    "ComparisonView_FurtherSettings": "Más opciones",
+    "ComparisonView_GPUBusyTimes": "Tiempos GPU-Busy:",
+    "ComparisonView_Grouping": "Agrupación:",
+    "ComparisonView_Labels": "Etiquetas",
+    "ComparisonView_Legend": "Leyenda:",
+    "ComparisonView_LegendSize": "Tamaño de la leyenda",
+    "ComparisonView_LineChartsLShapes": "Gráficos de líneas/ curvas L",
+    "ComparisonView_MaximumTheSingleHighestValue": "Máximo:\n\nEl valor más alto\n\n\nPromedio:\n\nEl promedio de todos los valores\n\n\nMediana:\n\nEl valor central de todos los valores ordenados de menor a mayor\n\n\nMínimo:\n\nEl valor más bajo\n\n\nPercentil X%:\n\nEl X% de todos los valores es inferior a este\n\n\nPromedio X% low:\n\nEl promedio del X% de los valores más bajos\n\n\nIntegral X% low:\n\nDurante el X% del tiempo total de la prueba, los valores son inferiores a este\n\n\nSTDEV adaptativa:\n\nLa desviación estándar de los valores respecto a la media móvil\n\n\nFPS/10W de CPU/GPU:\n\nLa tasa de fotogramas promedio por cada 10 W de consumo (multiplicada por 10 para obtener gráficos de barras más comparables al usarla junto con otras métricas de FPS)",
+    "ComparisonView_MetricInfo": "Información de métricas",
+    "ComparisonView_Metrics": "Métricas",
+    "ComparisonView_OrderInWhichColorsAre": "Orden en que\nse aplican los colores\na los registros añadidos",
+    "ComparisonView_Percentiles": "Percentiles (%)",
+    "ComparisonView_Range": "Rango:",
+    "ComparisonView_Range2": "Rango:",
+    "ComparisonView_RangeSlider": "Control de rango:",
+    "ComparisonView_RangeSliderEndPoint": "Punto final del control de rango",
+    "ComparisonView_RangeSliderEndPoint2": "Punto final del control de rango",
+    "ComparisonView_RangeSliderStartPoint": "Punto inicial del control de rango",
+    "ComparisonView_RangeSliderStartPoint2": "Punto inicial del control de rango",
+    "ComparisonView_RealTimeUpdate": "Actualización en tiempo real",
+    "ComparisonView_RealTimeUpdate2": "Actualización en tiempo real",
+    "ComparisonView_RelativeMode": "Modo relativo:",
+    "ComparisonView_RemoveAllComparisons": "Quitar todas las comparaciones",
+    "ComparisonView_SavePlotAsPNG": "Guardar el gráfico como PNG",
+    "ComparisonView_SavePlotAsPNG2": "Guardar el gráfico como PNG",
+    "ComparisonView_SavePlotAsPNG3": "Guardar el gráfico como PNG",
+    "ComparisonView_SavePlotAsSVG": "Guardar el gráfico como SVG",
+    "ComparisonView_SavePlotAsSVG2": "Guardar el gráfico como SVG",
+    "ComparisonView_SavePlotAsSVG3": "Guardar el gráfico como SVG",
+    "ComparisonView_SecondLabel": "Segunda etiqueta",
+    "ComparisonView_SecondMetric": "Segunda métrica",
+    "ComparisonView_SelectMetricsToBeShown": "Selecciona las métricas que se muestran",
+    "ComparisonView_SelectUpTo2Labels": "Selecciona hasta 2 etiquetas para mostrar en cada registro",
+    "ComparisonView_ShowCustomTitleEditBox": "Mostrar el cuadro para editar el título personalizado",
+    "ComparisonView_ShowGPUBusyTimesInstead": "Mostrar los tiempos GPU-Busy en lugar de los frametimes normales",
+    "ComparisonView_ShowSelectedLabelsAsChart": "Mostrar las etiquetas seleccionadas como leyenda del gráfico",
+    "ComparisonView_SortEntriesByGameFirst": "Ordenar las entradas primero por juego",
+    "ComparisonView_SortMethod": "Método de ordenación",
+    "ComparisonView_StartS": "Inicio (s)",
+    "ComparisonView_StartS2": "Inicio (s)",
+    "ComparisonView_ThirdMetric": "Tercera métrica",
+    "ComparisonView_TimeDifferencesBetweenTwoConsecutive": "Diferencias de tiempo entre dos frametimes consecutivos",
+    "ComparisonView_ToggleFixedRelativeModeTarget": "Activa o desactiva el modo relativo fijo. El valor de referencia se elige con un clic.",
+    "ComparisonView_TypeYourTitleHere": "Escribe aquí tu título...",
+    "ComparisonView_TypeYourTitleHere2": "Escribe aquí tu título...",
+    "ComparisonView_TypeYourTitleHere3": "Escribe aquí tu título...",
+    "ComparisonView_TypeYourTitleHere4": "Escribe aquí tu título...",
+    "ComparisonView_Values": "Valores",
+    "ComparisonView_Variances": "Varianzas",
+
+    // =========================================================================
+    // MESSAGE DIALOGS - Shared close buttons
+    // =========================================================================
+    "ConditionalMessageDialog_Close": "Cerrar",
+
+    // =========================================================================
+    // RECORD LIST (CONTROL VIEW) - Capture folders, record list and record details
+    // =========================================================================
+    "ControlViewModel_SearchIn01Items": "Buscar en \"{0}\" ({1})",
+    "ControlView_Aggregated": "Agregado",
+    "ControlView_Aggregated2": "Agregado",
+    "ControlView_ApplyTheDescriptionsToThe": "Aplica las descripciones a los registros seleccionados. Pulsar Intro dentro de un campo también guarda.",
+    "ControlView_CPU": "CPU",
+    "ControlView_CPU2": "CPU",
+    "ControlView_CPUDescription": "Descripción de la CPU",
+    "ControlView_Captures": "Capturas",
+    "ControlView_ColumnOptions": "Opciones de columnas",
+    "ControlView_Comment": "Comentario",
+    "ControlView_Comment2": "Comentario",
+    "ControlView_Comment3": "Comentario",
+    "ControlView_CopyPasteRecordingFileS": "Copiar/pegar archivos de grabación",
+    "ControlView_CreateNewSubfolder": "Crear una subcarpeta nueva",
+    "ControlView_DateTime": "Fecha / hora",
+    "ControlView_DateTime2": "Fecha / hora",
+    "ControlView_DeleteFolder": "Eliminar la carpeta",
+    "ControlView_DeleteRecordingFileS": "Eliminar archivos de grabación",
+    "ControlView_DirectoryIsEmptyRefreshDirectory": "La carpeta está vacía. Actualiza la carpeta (menú contextual) o inicia un juego y pulsa la tecla de captura para crear registros.",
+    "ControlView_GPU": "GPU",
+    "ControlView_GPU2": "GPU",
+    "ControlView_GPUDescription": "Descripción de la GPU",
+    "ControlView_Game": "Juego",
+    "ControlView_Loading": "Cargando...",
+    "ControlView_LoadingRecords": "Cargando registros...",
+    "ControlView_MoveRecordingFileS": "Mover archivos de grabación",
+    "ControlView_ObservedDirectoryMissingOpenThe": "Falta la carpeta observada.\nAbre el chip de carpeta de arriba y selecciona una carpeta.",
+    "ControlView_OpenFolder": "Abrir la carpeta",
+    "ControlView_RAM": "RAM",
+    "ControlView_RAM2": "RAM",
+    "ControlView_RAMDescription": "Descripción de la RAM",
+    "ControlView_RecordInfo": "Información del registro",
+    "ControlView_RefreshDirectory": "Actualizar la carpeta",
+    "ControlView_ReloadRootFolder": "Recargar la carpeta raíz",
+    "ControlView_Resolution": "Resolución",
+    "ControlView_RootCaptureFolder": "Carpeta raíz de capturas",
+    "ControlView_SAVE": "GUARDAR",
+    "CreateFolderDialog_Cancel": "Cancelar",
+    "CreateFolderDialog_Create": "Crear",
+    "CreateFolderDialog_NewSubfolderName": "Nombre de la subcarpeta nueva",
+
+    // =========================================================================
+    // ANALYSIS VIEW - Frametime graphs, FPS trends, L-shape curves, percentiles
+    // =========================================================================
+    "DataThresholdViewModel_Frames": "Fotogramas",
+    "DataThresholdViewModel_Time": "Tiempo",
+    "DataViewModel_BarAdaptiveSTDEV": "STDEV adaptativa",
+    "DataViewModel_BarAverage": "Promedio",
+    "DataViewModel_BarAverageAnimationError": "|Error de animación| promedio",
+    "DataViewModel_BarCpuFpsPer10W": "FPS/10W de CPU",
+    "DataViewModel_BarGpuBusyAverage": "Promedio de GPU-Busy",
+    "DataViewModel_BarGpuBusyOnePercentHighAverage": "Prom. 1% high de GPU-Busy",
+    "DataViewModel_BarGpuBusyOnePercentLowAverage": "Prom. 1% low de GPU-Busy",
+    "DataViewModel_BarGpuBusyP1": "P1 de GPU-Busy",
+    "DataViewModel_BarGpuBusyP99": "P99 de GPU-Busy",
+    "DataViewModel_BarGpuFpsPer10W": "FPS/10W de GPU",
+    "DataViewModel_BarMax": "Máx.",
+    "DataViewModel_BarMedian": "Mediana",
+    "DataViewModel_BarMin": "Mín.",
+    "DataViewModel_BarOnePercentHighAverage": "Promedio 1% high",
+    "DataViewModel_BarOnePercentHighIntegral": "Integral 1% high",
+    "DataViewModel_BarOnePercentLowAverage": "Promedio 1% low",
+    "DataViewModel_BarOnePercentLowIntegral": "Integral 1% low",
+    "DataViewModel_BarP99AnimationError": "P99 |Error de animación|",
+    "DataViewModel_BarPointOnePercentHighAverage": "Promedio 0.1% high",
+    "DataViewModel_BarPointOnePercentHighIntegral": "Integral 0.1% high",
+    "DataViewModel_BarPointOnePercentLowAverage": "Promedio 0.1% low",
+    "DataViewModel_BarPointOnePercentLowIntegral": "Integral 0.1% low",
+    "DataViewModel_FrametimesMs": "Frametimes (ms)",
+    "DataViewModel_LowFPS01": "FPS bajos:  {0}s ({1}%)",
+    "DataViewModel_OutlierCleaned0": "{0} (sin valores atípicos)",
+    "DataViewModel_RemoveOutliersIsOnlyASimulation": "Quitar valores atípicos solo simula cómo serían los parámetros si no hubiera valores atípicos.\nNo sirve como evaluación concluyente de la pasada del benchmark.",
+    "DataViewModel_Smooth01": "Fluido:  {0}s ({1}%)",
+    "DataViewModel_Stuttering01": "Stuttering:  {0}s ({1}%)",
+    "DataViewModel_VarianceAbove01": "> {0}ms ({1}%)",
+    "DataViewModel_VarianceBelow01": "< {0}ms ({1}%)",
+    "DataView_01Percentile": "Percentil 0.1%",
+    "DataView_02Percentile": "Percentil 0.2%",
+    "DataView_1Percentile": "Percentil 1%",
+    "DataView_1Percentile2": "Percentil 1%",
+    "DataView_5Percentile": "Percentil 5%",
+    "DataView_5Percentile2": "Percentil 5%",
+    "DataView_95Percentile": "Percentil 95%",
+    "DataView_95Percentile2": "Percentil 95%",
+    "DataView_998Percentile": "Percentil 99.8%",
+    "DataView_999Percentile": "Percentil 99.9%",
+    "DataView_99Percentile": "Percentil 99%",
+    "DataView_99Percentile2": "Percentil 99%",
+    "DataView_AdaptiveSTDEV": "STDEV adaptativa",
+    "DataView_AdaptiveSTDEV2": "STDEV adaptativa",
+    "DataView_AdditionalGraphs": "Gráficos adicionales:",
+    "DataView_AnimationError": "Error de animación",
+    "DataView_Average": "Promedio",
+    "DataView_Average2": "Promedio",
+    "DataView_Average3": "Promedio",
+    "DataView_AverageAnimationErrorOnlyMs": "|Error de animación| promedio (solo ms)",
+    "DataView_Avg": "Prom.",
+    "DataView_CPUBusyTimes": "Tiempos CPU-Busy",
+    "DataView_CPUFPS10W": "FPS/10W de CPU",
+    "DataView_CPUFPS10W2": "FPS/10W de CPU",
+    "DataView_ChangeFpsThresholdsDirection": "Cambiar la dirección de los umbrales de FPS",
+    "DataView_ChangeFpsThresholdsDirection2": "Cambiar la dirección de los umbrales de FPS",
+    "DataView_CopyMetrics": "Copiar métricas",
+    "DataView_CopyQuantiles": "Copiar cuantiles",
+    "DataView_CopyRawSensorData": "Copiar los datos brutos de sensores",
+    "DataView_CopyRawSensorData2": "Copiar los datos brutos de sensores",
+    "DataView_CopySensorDataMinAvg": "Copiar datos de sensores (mín., prom., máx.)",
+    "DataView_CopySensorDataMinAvg2": "Copiar datos de sensores (mín., prom., máx.)",
+    "DataView_CopySystemInfo": "Copiar la información del sistema",
+    "DataView_CopyThresholdData": "Copiar los datos de umbrales",
+    "DataView_CopyThresholdData2": "Copiar los datos de umbrales",
+    "DataView_Counts": "Conteo",
+    "DataView_Counts2": "Conteo",
+    "DataView_CustomTitle": "Título personalizado:",
+    "DataView_CutInside": "Recortar dentro",
+    "DataView_CutOutside": "Recortar fuera",
+    "DataView_EndS": "Fin (s)",
+    "DataView_FPS": "FPS",
+    "DataView_FPS2": "FPS",
+    "DataView_FPSThresholdForTheLow": "Umbral de FPS para el tiempo de FPS bajos.\nCada frametime que no se haya contado ya como stuttering y cuyos FPS equivalentes estén por debajo de este umbral se suma al tiempo de FPS bajos.",
+    "DataView_FPSThresholds": "Umbrales de FPS",
+    "DataView_FPSThresholds2": "Umbrales de FPS",
+    "DataView_FactorForTheStutteringTime": "Factor para el tiempo de stuttering.\nCada frametime mayor que el frametime de la media móvil correspondiente x factor se suma al tiempo de stuttering.",
+    "DataView_FilterMode": "Modo de filtro",
+    "DataView_FrameTimeDistribution": "Distribución de frametimes",
+    "DataView_FrameTimes": "Frametimes",
+    "DataView_GPUBusy1HighAverage": "Promedio 1% high de GPU-Busy (solo ms)",
+    "DataView_GPUBusy1HighAvg": "Prom. 1% high de GPU-Busy (solo ms)",
+    "DataView_GPUBusy99PercentileOnly": "Percentil 99% de GPU-Busy (solo ms)",
+    "DataView_GPUBusy99PercentileOnly2": "Percentil 99% de GPU-Busy (solo ms)",
+    "DataView_GPUBusyAverageOnlyMs": "Promedio de GPU-Busy (solo ms)",
+    "DataView_GPUBusyAverageOnlyMs2": "Promedio de GPU-Busy (solo ms)",
+    "DataView_GPUBusyDeviation": "Desviación de GPU-Busy:",
+    "DataView_GPUBusyTimes": "Tiempos GPU-Busy",
+    "DataView_GPUFPS10W": "FPS/10W de GPU",
+    "DataView_GPUFPS10W2": "FPS/10W de GPU",
+    "DataView_GPULoad": "Carga de la GPU",
+    "DataView_GPUPowerLimit": "Límite de potencia de la GPU",
+    "DataView_HardwareTelemetry": "Telemetría de hardware",
+    "DataView_LShape": "Curva L",
+    "DataView_LowFPSThreshold": "Umbral de FPS bajos",
+    "DataView_Max": "Máx.",
+    "DataView_Max2": "Máx.",
+    "DataView_MaxCPUThreadLoad": "Carga máx. de hilo de CPU",
+    "DataView_Maximum": "Máximo",
+    "DataView_Maximum2": "Máximo",
+    "DataView_MaximumTheSingleHighestValue": "Máximo:\n\nEl valor más alto\n\n\nPromedio:\n\nEl promedio de todos los valores\n\n\nMediana:\n\nEl valor central de todos los valores ordenados de menor a mayor\n\n\nMínimo:\n\nEl valor más bajo\n\n\nPercentil X%:\n\nEl X% de todos los valores es inferior a este\n\n\nPromedio X% low:\n\nEl promedio del X% de los valores más bajos\n\n\nIntegral X% low:\n\nDurante el X% del tiempo total de la prueba, los valores son inferiores a este\n\n\nGPU-Busy:\n\nEl tiempo que la GPU trabajó en un fotograma\n\n\nSTDEV adaptativa:\n\nLa desviación estándar de los valores respecto a la media móvil",
+    "DataView_MaximumTheSingleHighestValue2": "Máximo:\n\nEl valor más alto\n\n\nPromedio:\n\nEl promedio de todos los valores\n\n\nMediana:\n\nEl valor central de todos los valores ordenados de menor a mayor\n\n\nMínimo:\n\nEl valor más bajo\n\n\nPercentil X%:\n\nEl X% de todos los valores es inferior a este\n\n\nPromedio X% high:\n\nEl promedio del X% de los valores más altos\n\n\nIntegral X% low:\n\nDurante el X% del tiempo total de la prueba, los valores son superiores a este\n\n\nGPU-Busy:\n\nEl tiempo que la GPU trabajó en un fotograma\n\n\nSTDEV adaptativa:\n\nLa desviación estándar de los valores respecto a la media móvil",
+    "DataView_Median": "Mediana",
+    "DataView_Median2": "Mediana",
+    "DataView_Metric": "Métrica",
+    "DataView_Min": "Mín.",
+    "DataView_Min2": "Mín.",
+    "DataView_Minimum": "Mínimo",
+    "DataView_Minimum2": "Mínimo",
+    "DataView_Ms": "ms",
+    "DataView_OnePercentHighAverage": "Promedio 1% high",
+    "DataView_OnePercentHighIntegral": "Integral 1% high",
+    "DataView_OnePercentLowAverage": "Promedio 1% low",
+    "DataView_OnePercentLowIntegral": "Integral 1% low",
+    "DataView_Options": "Opciones",
+    "DataView_OptionsForTheStutterAnd": "Opciones de los valores de stuttering y FPS bajos del gráfico circular",
+    "DataView_P99AnimationErrorOnlyMs": "P99 |Error de animación| (solo ms)",
+    "DataView_PCLatency": "Latencia del PC",
+    "DataView_Percentiles": "Percentiles (%)",
+    "DataView_PointOnePercentHighAverage": "Promedio 0.1% high",
+    "DataView_PointOnePercentHighIntegral": "Integral 0.1% high",
+    "DataView_PointOnePercentLowAverage": "Promedio 0.1% low",
+    "DataView_PointOnePercentLowIntegral": "Integral 0.1% low",
+    "DataView_PresentMetrics": "Métricas de present",
+    "DataView_Range": "Rango:",
+    "DataView_RangeSlider": "Control de rango:",
+    "DataView_RangeSliderEndPoint": "Punto final del control de rango",
+    "DataView_RangeSliderStartPoint": "Punto inicial del control de rango",
+    "DataView_RealTimeUpdate": "Actualización en tiempo real",
+    "DataView_RemoveDataInsideOfRange": "Quita los datos dentro del control de rango (azul) y crea un archivo nuevo con los datos restantes (rojo)",
+    "DataView_RemoveDataOutsideOfRange": "Quita los datos fuera del control de rango (rojo) y crea un archivo nuevo con los datos restantes (azul)",
+    "DataView_RemoveOutliers": "Quitar valores atípicos:",
+    "DataView_SYSTEMINFO": "INFO DEL SISTEMA",
+    "DataView_Sensor": "Sensor",
+    "DataView_Sensor2": "Sensor",
+    "DataView_SensorData": "Datos de sensores",
+    "DataView_SensorData2": "Datos de sensores",
+    "DataView_ShowAdditionalGraphsForCPU": "Mostrar gráficos adicionales de carga de CPU y GPU",
+    "DataView_ShowAggregation": "Mostrar la agregación:",
+    "DataView_ShowAnimationErrorGraph": "Mostrar el gráfico de error de animación",
+    "DataView_ShowCPUBusyTimeIn": "Mostrar el tiempo CPU-Busy en los gráficos de frametimes",
+    "DataView_ShowCPUUsageGraph": "Mostrar el gráfico de uso de CPU",
+    "DataView_ShowCustomTitleEditBox": "Mostrar el cuadro para editar el título personalizado",
+    "DataView_ShowGPUBusyTimeIn": "Mostrar el tiempo GPU-Busy en los gráficos de frametimes",
+    "DataView_ShowGPUPowerLimit": "Mostrar el límite de potencia de la GPU",
+    "DataView_ShowGPUUsageGraph": "Mostrar el gráfico de uso de GPU",
+    "DataView_ShowInCharts": "Mostrar en los gráficos",
+    "DataView_ShowMaxCPUThreadUsage": "Mostrar el gráfico de uso máx. de hilo de CPU",
+    "DataView_ShowNumberOfFramesAbove": "Mostrar el número de fotogramas por encima o por debajo de los umbrales",
+    "DataView_ShowNumberOfFramesAbove2": "Mostrar el número de fotogramas por encima o por debajo de los umbrales",
+    "DataView_ShowOrHideTheSystemInfo": "Muestra u oculta la información del sistema de esta captura",
+    "DataView_ShowPCLatencyGraph": "Mostrar el gráfico de latencia del PC",
+    "DataView_ShowSeparatorLinesForThe": "Mostrar líneas de separación entre las distintas pasadas de la sesión",
+    "DataView_ShowThresholdLinesForStuttering": "Mostrar las líneas de umbral de stuttering y FPS bajos en los gráficos de frametimes y FPS",
+    "DataView_ShowTimeAboveOrBelow": "Mostrar el tiempo por encima o por debajo de los umbrales",
+    "DataView_ShowTimeAboveOrBelow2": "Mostrar el tiempo por encima o por debajo de los umbrales",
+    "DataView_StartS": "Inicio (s)",
+    "DataView_StatisticParameterSettings": "Parámetros estadísticos:",
+    "DataView_StatisticParameterSettings2": "Parámetros estadísticos:",
+    "DataView_Stuttering": "Stuttering",
+    "DataView_StutteringFactor": "Factor de stuttering",
+    "DataView_TimeDifferencesBetweenTwoConsecutive": "Diferencias de tiempo entre dos\nframetimes consecutivos",
+    "DataView_Times": "Tiempos",
+    "DataView_Times2": "Tiempos",
+    "DataView_ToggleBetweenAbsoluteAndRelative": "Cambiar entre valores absolutos y relativos",
+    "DataView_ToggleBetweenAbsoluteAndRelative2": "Cambiar entre valores absolutos y relativos",
+    "DataView_TotalCPULoad": "Carga total de la CPU",
+    "DataView_TypeYourTitleHere": "Escribe aquí tu título...",
+    "DataView_Variances": "Varianzas",
+    "DataView_YAxisScale": "Escala del eje Y",
+
+    // =========================================================================
+    // DEBUG MONITOR - CapFrameX and PresentMon resource usage, ETW buffer status
+    // =========================================================================
+    "DebugMonitorWindow_BufferFill": "Llenado del búfer %:",
+    "DebugMonitorWindow_BuffersInUse": "Búferes en uso:",
+    "DebugMonitorWindow_BuffersLost": "Búferes perdidos:",
+    "DebugMonitorWindow_CPUUsage": "Uso de CPU:",
+    "DebugMonitorWindow_CPUUsage2": "Uso de CPU:",
+    "DebugMonitorWindow_DebugMonitor": "Monitor de depuración",
+    "DebugMonitorWindow_ETWBufferStatus": "Estado de los búferes ETW",
+    "DebugMonitorWindow_Error": "Error",
+    "DebugMonitorWindow_EventsLost": "Eventos perdidos:",
+    "DebugMonitorWindow_MemoryUsage": "Uso de memoria:",
+    "DebugMonitorWindow_MemoryUsage2": "Uso de memoria:",
+    "DebugMonitorWindow_NotRunning": "No se está ejecutando",
+    "DebugMonitorWindow_ProcessingDelay": "Retraso de procesamiento:",
+    "DebugMonitorWindow_Running": "En ejecución",
+    "DebugMonitorWindow_Status": "Estado:",
+    "DebugMonitorWindow_TotalBuffers": "Búferes totales:",
+
+    // =========================================================================
+    // ENUMS & METRICS - Metric descriptions, sensor types, capture file formats
+    // =========================================================================
+    "ECaptureFileMode_Json": "JSON",
+    "ECaptureFileMode_JsonCsv": "JSON + CSV",
+    "EChartYAxisSetting_FullFit": "Ajuste completo",
+    "EChartYAxisSetting_IQR": "Rango intercuartílico",
+    "EChartYAxisSetting_Zero_Eighty": "0-80ms",
+    "EChartYAxisSetting_Zero_Forty": "0-40ms",
+    "EChartYAxisSetting_Zero_Hundred": "0-100ms",
+    "EChartYAxisSetting_Zero_Sixty": "0-60ms",
+    "EChartYAxisSetting_Zero_Ten": "0-10ms",
+    "EChartYAxisSetting_Zero_Thirty": "0-30ms",
+    "EChartYAxisSetting_Zero_Twenty": "0-20ms",
+    "EComparisonContext_API": "API",
+    "EComparisonContext_CPU": "CPU",
+    "EComparisonContext_Custom": "Comentario personalizado",
+    "EComparisonContext_DateTime": "Fecha y hora",
+    "EComparisonContext_GPU": "GPU",
+    "EComparisonContext_GPUDriver": "Controlador de la GPU",
+    "EComparisonContext_None": "Ninguno",
+    "EComparisonContext_SystemRam": "RAM",
+    "EFilterMode_None": "Datos brutos",
+    "EFilterMode_RawPlusAverage": "Brutos + promedio",
+    "EFilterMode_TimeIntervalAverage": "Promedio",
+    "EHardwareInfoSource_Auto": "Detección automática",
+    "EHardwareInfoSource_Custom": "Descripción personalizada",
+    "EHookOverlayStatus_Active": "Activo",
+    "EHookOverlayStatus_Blocked": "Bloqueado",
+    "EHookOverlayStatus_Disabled": "Apagado",
+    "EHookOverlayStatus_Error": "Error",
+    "EHookOverlayStatus_Fallback": "Alternativo",
+    "EHookOverlayStatus_Hidden": "Oculto",
+    "EHookOverlayStatus_Idle": "Inactivo",
+    "EHookOverlayStatus_Initializing": "Iniciando",
+    "EHookOverlayStatus_Injected": "Inyectado",
+    "EHookOverlayStatus_Injecting": "Inyectando",
+    "EHookOverlayStatus_Probing": "Sondeando",
+    "EHookOverlayStatus_RestartPending": "Reinicia el juego",
+    "EHookOverlayStatus_Waiting": "Esperando",
+    "ELogMessageType_AdvancedInfo": "Información avanzada",
+    "ELogMessageType_BasicInfo": "Información básica",
+    "ELogMessageType_Error": "Error",
+    "EMetric_AdaptiveStd": "STDEV adaptativa",
+    // Compact / abbreviated label for EMetric_AdaptiveStd (used in tight table headers or OSD)
+    "EMetric_AdaptiveStd_Short": "STDEV adp.",
+    "EMetric_Average": "Promedio",
+    // Compact / abbreviated label for EMetric_Average (used in tight table headers or OSD)
+    "EMetric_Average_Short": "Prom.",
+    "EMetric_CpuActiveAverage": "Promedio de CPU activa",
+    // Compact / abbreviated label for EMetric_CpuActiveAverage (used in tight table headers or OSD)
+    "EMetric_CpuActiveAverage_Short": "Prom. CPU",
+    "EMetric_CpuFpsPerWatt": "FPS de CPU por cada 10 vatios",
+    // Compact / abbreviated label for EMetric_CpuFpsPerWatt (used in tight table headers or OSD)
+    "EMetric_CpuFpsPerWatt_Short": "FPS/10W CPU",
+    "EMetric_GpuActiveAverage": "Promedio de GPU activa",
+    // Compact / abbreviated label for EMetric_GpuActiveAverage (used in tight table headers or OSD)
+    "EMetric_GpuActiveAverage_Short": "Prom. GPU",
+    "EMetric_GpuActiveOnePercentLowAverage": "Promedio 1% low de GPU activa",
+    // Compact / abbreviated label for EMetric_GpuActiveOnePercentLowAverage (used in tight table headers or OSD)
+    "EMetric_GpuActiveOnePercentLowAverage_Short": "Prom. 1% Low GPU",
+    "EMetric_GpuActiveP1": "Percentil 1% de GPU activa",
+    // Compact / abbreviated label for EMetric_GpuActiveP1 (used in tight table headers or OSD)
+    "EMetric_GpuActiveP1_Short": "P1 GPU",
+    "EMetric_GpuFpsPerWatt": "FPS de GPU por cada 10 vatios",
+    // Compact / abbreviated label for EMetric_GpuFpsPerWatt (used in tight table headers or OSD)
+    "EMetric_GpuFpsPerWatt_Short": "FPS/10W GPU",
+    "EMetric_Max": "Máximo",
+    // Compact / abbreviated label for EMetric_Max (used in tight table headers or OSD)
+    "EMetric_Max_Short": "Máx.",
+    "EMetric_Median": "Mediana",
+    // Compact / abbreviated label for EMetric_Median (used in tight table headers or OSD)
+    "EMetric_Median_Short": "Med.",
+    "EMetric_Min": "Mínimo",
+    // Compact / abbreviated label for EMetric_Min (used in tight table headers or OSD)
+    "EMetric_Min_Short": "Mín.",
+    "EMetric_None": "Ninguna",
+    // Compact / abbreviated label for EMetric_None (used in tight table headers or OSD)
+    "EMetric_None_Short": "Ninguna",
+    "EMetric_OnePercentLowAverage": "Promedio 1% low",
+    // Compact / abbreviated label for EMetric_OnePercentLowAverage (used in tight table headers or OSD)
+    "EMetric_OnePercentLowAverage_Short": "Prom. 1% Low",
+    "EMetric_OnePercentLowIntegral": "Integral 1% low",
+    // Compact / abbreviated label for EMetric_OnePercentLowIntegral (used in tight table headers or OSD)
+    "EMetric_OnePercentLowIntegral_Short": "Int. 1% Low",
+    "EMetric_P0dot1": "Percentil 0.1%",
+    // Compact / abbreviated label for EMetric_P0dot1 (used in tight table headers or OSD)
+    "EMetric_P0dot1_Short": "P0.1",
+    "EMetric_P0dot2": "Percentil 0.2%",
+    // Compact / abbreviated label for EMetric_P0dot2 (used in tight table headers or OSD)
+    "EMetric_P0dot2_Short": "P0.2",
+    "EMetric_P1": "Percentil 1%",
+    // Compact / abbreviated label for EMetric_P1 (used in tight table headers or OSD)
+    "EMetric_P1_Short": "P1",
+    "EMetric_P5": "Percentil 5%",
+    // Compact / abbreviated label for EMetric_P5 (used in tight table headers or OSD)
+    "EMetric_P5_Short": "P5",
+    "EMetric_P95": "Percentil 95%",
+    // Compact / abbreviated label for EMetric_P95 (used in tight table headers or OSD)
+    "EMetric_P95_Short": "P95",
+    "EMetric_P99": "Percentil 99%",
+    // Compact / abbreviated label for EMetric_P99 (used in tight table headers or OSD)
+    "EMetric_P99_Short": "P99",
+    "EMetric_ZerodotOnePercentLowAverage": "Promedio 0.1% low",
+    // Compact / abbreviated label for EMetric_ZerodotOnePercentLowAverage (used in tight table headers or OSD)
+    "EMetric_ZerodotOnePercentLowAverage_Short": "Prom. 0.1% Low",
+    "EMetric_ZerodotOnePercentLowIntegral": "Integral 0.1% low",
+    // Compact / abbreviated label for EMetric_ZerodotOnePercentLowIntegral (used in tight table headers or OSD)
+    "EMetric_ZerodotOnePercentLowIntegral_Short": "Int. 0.1% Low",
+    "EMetric_ZerodotTwoPercentLowAverage": "Promedio 0.2% low",
+    // Compact / abbreviated label for EMetric_ZerodotTwoPercentLowAverage (used in tight table headers or OSD)
+    "EMetric_ZerodotTwoPercentLowAverage_Short": "Prom. 0.2% Low",
+    "EMetric_ZerodotTwoPercentLowIntegral": "Integral 0.2% low",
+    // Compact / abbreviated label for EMetric_ZerodotTwoPercentLowIntegral (used in tight table headers or OSD)
+    "EMetric_ZerodotTwoPercentLowIntegral_Short": "Int. 0.2% Low",
+    "EOutlierHandling_Ignore": "Marcar y usar",
+    "EOutlierHandling_Replace": "Marcar y reemplazar",
+    "EOverlayEntryType_CPU": "Sensor de CPU",
+    // Compact / abbreviated label for EOverlayEntryType_CPU (used in tight table headers or OSD)
+    "EOverlayEntryType_CPU_Short": "CPU",
+    "EOverlayEntryType_CX": "Información de la aplicación",
+    // Compact / abbreviated label for EOverlayEntryType_CX (used in tight table headers or OSD)
+    "EOverlayEntryType_CX_Short": "App",
+    "EOverlayEntryType_FanController": "Sensor del controlador de ventiladores",
+    // Compact / abbreviated label for EOverlayEntryType_FanController (used in tight table headers or OSD)
+    "EOverlayEntryType_FanController_Short": "Ventilador",
+    "EOverlayEntryType_GPU": "Sensor de GPU",
+    // Compact / abbreviated label for EOverlayEntryType_GPU (used in tight table headers or OSD)
+    "EOverlayEntryType_GPU_Short": "GPU",
+    "EOverlayEntryType_HDD": "Sensor de almacenamiento",
+    // Compact / abbreviated label for EOverlayEntryType_HDD (used in tight table headers or OSD)
+    "EOverlayEntryType_HDD_Short": "Almacenamiento",
+    "EOverlayEntryType_Mainboard": "Sensor de la placa base",
+    // Compact / abbreviated label for EOverlayEntryType_Mainboard (used in tight table headers or OSD)
+    "EOverlayEntryType_Mainboard_Short": "Placa base",
+    "EOverlayEntryType_OnlineMetric": "Métrica de rendimiento",
+    // Compact / abbreviated label for EOverlayEntryType_OnlineMetric (used in tight table headers or OSD)
+    "EOverlayEntryType_OnlineMetric_Short": "Métrica",
+    "EOverlayEntryType_RAM": "Sensor de memoria",
+    // Compact / abbreviated label for EOverlayEntryType_RAM (used in tight table headers or OSD)
+    "EOverlayEntryType_RAM_Short": "RAM",
+    "EOverlayEntryType_Undefined": "Varios",
+    // Compact / abbreviated label for EOverlayEntryType_Undefined (used in tight table headers or OSD)
+    "EOverlayEntryType_Undefined_Short": "Varios",
+    "EOverlayTemplate_Basic": "Básica",
+    "EOverlayTemplate_Detailed": "Detallada",
+    "EOverlayTemplate_Enthusiast": "Entusiasta",
+    "EPmdDriverStatus_Connected": "Conectado",
+    "EPmdDriverStatus_Error": "Error",
+    "EPmdDriverStatus_Ready": "Listo",
+    "EPmdServiceStatus_Error": "Error",
+    "EPmdServiceStatus_Running": "En ejecución",
+    "EPmdServiceStatus_Stopped": "Detenido",
+    "EPmdServiceStatus_Waiting": "Esperando",
+    "EPresentMode_ComposedCompositionAtlas": "Compuesto: Composition Atlas",
+    "EPresentMode_ComposedCopyWithCPUGDI": "Compuesto: copia con GDI por CPU",
+    "EPresentMode_ComposedCopyWithGPUGDI": "Compuesto: copia con GDI por GPU",
+    "EPresentMode_ComposedFlip": "Compuesto: Flip",
+    "EPresentMode_HardwareComposedIndependentFlip": "Compuesto por hardware: Independent Flip",
+    "EPresentMode_HardwareIndependentFlip": "Hardware: Independent Flip",
+    "EPresentMode_HardwareLegacyCopyToFrontBuffer": "Hardware: copia heredada al búfer frontal",
+    "EPresentMode_HardwareLegacyFlip": "Hardware: Flip heredado",
+    "EPresentMode_Other": "Otro",
+    "EPresentMode_Unknown": "Desconocido",
+    "EReportSensorName_CpuMaxClock": "Reloj máx. de CPU (MHz)",
+    "EReportSensorName_CpuMaxThreadUsage": "Carga máx. de hilo de CPU (%)",
+    "EReportSensorName_CpuPower": "Potencia de CPU (W)",
+    "EReportSensorName_CpuTemp": "Temp. de CPU (°C)",
+    "EReportSensorName_CpuUsage": "Carga de CPU (%)",
+    "EReportSensorName_GpuClock": "Reloj de GPU (MHz)",
+    "EReportSensorName_GpuLoadLimit": "Tiempo en límite de carga de GPU (%)",
+    "EReportSensorName_GpuPower": "Potencia de GPU (W)",
+    "EReportSensorName_GpuTBPSim": "TBP Sim de GPU (W)",
+    "EReportSensorName_GpuTemp": "Temp. de GPU (°C)",
+    "EReportSensorName_GpuUsage": "Carga de GPU (%)",
+    "EReportSensorName_RamUsage": "Uso de RAM (GB)",
+    "EReportSensorName_VRamUsage": "Uso de VRAM de GPU (MB)",
+    "EReportSensorName_VRamUsageGB": "Uso de VRAM de GPU (GB)",
+
+    // =========================================================================
+    // EDITING DIALOG - Custom hardware names and benchmark run comments
+    // =========================================================================
+    "EditingDialog_CustomCPUDescription": "Descripción personalizada de la CPU",
+    "EditingDialog_CustomComment": "Comentario personalizado",
+    "EditingDialog_CustomGPUDescription": "Descripción personalizada de la GPU",
+
+    // =========================================================================
+    // OVERLAY DIAGNOSTICS - Extended OSD logging errors
+    // =========================================================================
+    "ExtendedOsdLoggingViewModel_CouldNotBeRead0": "No se pudo leer el log extendido del OSD: {0}",
+    "ExtendedOsdLoggingViewModel_CouldNotBeUpdated0": "No se pudo actualizar el log extendido del OSD: {0}",
+    "ExtendedOsdLoggingViewModel_FolderCouldNotBeOpened0": "No se pudo abrir la carpeta de logs del OSD: {0}",
+
+    // =========================================================================
+    // CHART CONTEXT MENUS - Copy and export actions of the analysis charts
+    // =========================================================================
+    "FpsGraphControl_CopyFpsGPUBusyFps": "Copiar valores de FPS + FPS de GPU-Busy (f)",
+    "FpsGraphControl_CopyFpsGPUBusyFps2": "Copiar puntos de FPS + FPS de GPU-Busy (t, f(t))",
+    "FpsGraphControl_CopyFpsPointsTF": "Copiar puntos de FPS (t, f(t))",
+    "FpsGraphControl_CopyFpsValuesF": "Copiar valores de FPS (f)",
+    "FpsGraphControl_SavePlotAsPNG": "Guardar el gráfico como PNG",
+    "FpsGraphControl_SavePlotAsSVG": "Guardar el gráfico como SVG",
+    "FrametimeDistributionGraphControl_CopyDistributionPointsMs": "Copiar puntos de distribución (ms, %)",
+    "FrametimeDistributionGraphControl_SavePlotAsPNG": "Guardar el gráfico como PNG",
+    "FrametimeDistributionGraphControl_SavePlotAsSVG": "Guardar el gráfico como SVG",
+    "FrametimeGraphControl_CopyFrametimeGPUBusyFrametime": "Copiar valores de frametime + frametime de GPU-Busy (f)",
+    "FrametimeGraphControl_CopyFrametimeGPUBusyFrametime2": "Copiar puntos de frametime + frametime de GPU-Busy (t, f(t))",
+    "FrametimeGraphControl_CopyFrametimePointsTF": "Copiar puntos de frametime (t, f(t))",
+    "FrametimeGraphControl_CopyFrametimeValuesF": "Copiar valores de frametime (f)",
+    "FrametimeGraphControl_SavePlotAsPNG": "Guardar el gráfico como PNG",
+    "FrametimeGraphControl_SavePlotAsSVG": "Guardar el gráfico como SVG",
+
+    // =========================================================================
+    // HOTKEY FIELDS - Placeholder and validation message of hotkey text boxes
+    // =========================================================================
+    "HotkeyValidationRule_HotkeyIsNotValid": "El atajo no es válido.",
+    "HotkeyValidationRule_NotSet": "Sin asignar",
+
+    // =========================================================================
+    // SYSTEM INFO VIEW - CPU, GPU, RAM, motherboard and driver details
+    // =========================================================================
+    "InfoViewModel_Detecting": "Detectando...",
+    "InfoView_Available": "Disponible",
+    "InfoView_Clock": "Reloj",
+    "InfoView_Clock2": "Reloj",
+    "InfoView_Driver0": "Controlador {0}",
+    "InfoView_GRAPHICSCARD": "TARJETA GRÁFICA",
+    "InfoView_HardwareAcceleratedGPUScheduling": "Programación de GPU acelerada por hardware",
+    "InfoView_InUse": "En uso",
+    "InfoView_Load": "Carga",
+    "InfoView_Load2": "Carga",
+    "InfoView_MAINBOARD": "PLACA BASE",
+    "InfoView_MEMORY": "MEMORIA",
+    "InfoView_OPERATINGSYSTEM": "SISTEMA OPERATIVO",
+    "InfoView_PROCESSOR": "PROCESADOR",
+    "InfoView_Power": "Potencia",
+    "InfoView_Power2": "Potencia",
+    "InfoView_ResizableBAR": "Resizable BAR",
+    "InfoView_Temperature": "Temperatura",
+    "InfoView_Temperature2": "Temperatura",
+    "InfoView_Usage": "Uso",
+    "InfoView_VRAM": "VRAM",
+    "InfoView_WindowsGameMode": "Modo de juego de Windows",
+
+    // =========================================================================
+    // VOLTAGE MONITOR - Panther Lake voltage diagnostics tool
+    // =========================================================================
+    "MainWindow_Core": "Núcleo",
+    "MainWindow_PantherLakeVoltageCandidates": "Candidatos de voltaje de Panther Lake",
+    "MainWindow_PantherLakeVoltageMonitor": "Monitor de voltaje de Panther Lake",
+    "MainWindow_Polling1s": "Sondeo: 1 s",
+    "MainWindow_Raw0x019C": "Raw 0x019C",
+
+    // =========================================================================
+    // MESSAGE DIALOGS - Shared close buttons
+    // =========================================================================
+    "MessageDialog_Close": "Cerrar",
+
+    // =========================================================================
+    // OVERLAY CONFIGURATION - OSD layout, grouped sensors, colors, font sizes
+    // =========================================================================
+    "OverlayViewModel_InjectedIntoTheGameFor": "Se inyecta en el juego para los gráficos dentro de la swapchain.",
+    "OverlayViewModel_LearnedProfilesNoGame": "{0} perfiles de compatibilidad aprendidos; no hay ningún juego seleccionado.",
+    "OverlayViewModel_NoLearnedCompatibilityProfiles": "Todavía no hay perfiles de compatibilidad aprendidos.",
+    "OverlayViewModel_NoLearnedProfileForProcess": "Todavía no hay un perfil de compatibilidad aprendido para {0} ({1} en total).",
+    "OverlayViewModel_ProfileExhausted0": "{0}: no se pudo establecer la compatibilidad; se volverá a probar en el próximo inicio del juego.",
+    "OverlayViewModel_ProfileNextLaunchStage01": "{0}: el próximo inicio empieza en {1}.",
+    "OverlayViewModel_ProfileNotVerified01": "{0}: último intento con {1}, todavía sin verificar.",
+    "OverlayViewModel_ProfileVerified012": "{0}: {1} (verificado el {2}).",
+    "OverlayViewModel_ProfilesUnavailable0": "Los perfiles de compatibilidad aprendidos no están disponibles ({0}).",
+    "OverlayView_AddsDisplayTimesOffUses": "Añade los tiempos de pantalla. Desactivado usa los frametimes locales del hook.",
+    "OverlayView_AdjustThePlacementAndBackground": "Ajusta la posición y el fondo del contenido del overlay de CapFrameX.",
+    "OverlayView_AllEntries": "Todas las entradas",
+    "OverlayView_AlwaysLearnsCompatibilitySettingsFor": "Aprende siempre la configuración de compatibilidad de cada juego.",
+    "OverlayView_AnchorCornerAndDistanceIn": "Esquina de anclaje y distancia en píxeles para el renderizador sin hook; RTSS se posiciona en su propia configuración.",
+    "OverlayView_AnimateIntermediateValuesBetweenData": "Anima los valores intermedios entre actualizaciones de datos. Desactívalo para mostrar cada valor publicado al instante; RTSS no se ve afectado.",
+    "OverlayView_AppearanceAndPosition": "Apariencia y posición",
+    "OverlayView_AppliesToTheHookFree": "Se aplica al renderizador sin hook; RTSS usa su propia configuración.",
+    "OverlayView_Apply": "Aplicar",
+    "OverlayView_ApplySelectedTemplate": "Aplicar la plantilla seleccionada",
+    "OverlayView_ApplyToMultipleEntries": "Aplicar a varias entradas",
+    "OverlayView_AutoDisableWhileCapturing": "Desactivar automáticamente durante la captura",
+    "OverlayView_BackgroundOpacity": "Opacidad del fondo",
+    "OverlayView_BottomLeft": "Abajo a la izquierda",
+    "OverlayView_BottomRight": "Abajo a la derecha",
+    "OverlayView_CPUCoreClocks": "Relojes de núcleos de CPU",
+    "OverlayView_CPUCoreLoads": "Cargas de núcleos de CPU",
+    "OverlayView_CPUCorePowers": "Potencias de núcleos de CPU",
+    "OverlayView_CPUCoreTemps": "Temps. de núcleos de CPU",
+    "OverlayView_CPUCoreVoltages": "Voltajes de núcleos de CPU",
+    "OverlayView_CalculationTimeFrame": "Intervalo de cálculo",
+    "OverlayView_CapFrameXHookFree": "CapFrameX sin hook",
+    "OverlayView_CapFrameXInGameExperimental": "CapFrameX en el juego (experimental)",
+    "OverlayView_CaptureItems": "Elementos de captura",
+    "OverlayView_ChartRefreshRate": "Frecuencia de actualización del gráfico",
+    "OverlayView_CheckCPUClocks": "Marcar relojes de CPU",
+    "OverlayView_CheckCPUClocks2": "Marcar relojes de CPU",
+    "OverlayView_CheckCPUCoreTemps": "Marcar temps. de núcleos de CPU",
+    "OverlayView_CheckCPUCoreVoltages": "Marcar voltajes de núcleos de CPU",
+    "OverlayView_CheckCPULoads": "Marcar cargas de CPU",
+    "OverlayView_CheckCaptureItems": "Marcar elementos de captura",
+    "OverlayView_CheckGPUBasics": "Marcar lo básico de GPU",
+    "OverlayView_CheckRAMItems": "Marcar elementos de RAM",
+    "OverlayView_CheckRealTimeMetrics": "Marcar métricas en tiempo real",
+    "OverlayView_CheckSystemInfo": "Marcar información del sistema",
+    "OverlayView_ChooseOneOutputBackendRenderer": "Elige un backend de salida. Las opciones específicas de cada renderizador se quedan con su renderizador.",
+    "OverlayView_ClearFilters": "Borrar filtros",
+    "OverlayView_CollectDetailedDataForTroubleshooting": "Recopila datos detallados para diagnosticar problemas de los renderizadores del overlay de CapFrameX.",
+    "OverlayView_Colors": "Colores",
+    "OverlayView_ColorsAndLimits": "Colores y límites",
+    "OverlayView_Config1": "Config.  1",
+    "OverlayView_Config2": "Config.  2",
+    "OverlayView_Config3": "Config.  3",
+    "OverlayView_ConfigHotkey": "Atajo de configuración",
+    "OverlayView_ConfigureOverlayControlsAndData": "Configura los controles del overlay y los intervalos de actualización de datos.",
+    "OverlayView_ControlWhenTheOverlayIs": "Controla cuándo es visible el overlay y cómo se comportan las entradas comunes.",
+    "OverlayView_CustomPosition": "Posición personalizada",
+    "OverlayView_CyclePosition": "Rotar posición",
+    "OverlayView_Description": "Descripción",
+    "OverlayView_DetailedDirectXVulkanAndHook": "Logs detallados de DirectX, Vulkan y del modo sin hook, con estadísticas por present.",
+    "OverlayView_Diagnostics": "Diagnóstico",
+    "OverlayView_DisableHideOSDOnRTSS": "Desactiva \"Ocultar el OSD en RTSS\" para mostrar el overlay.",
+    "OverlayView_Display": "Pantalla",
+    "OverlayView_DisplayUsedByTheHook": "Pantalla usada por el overlay sin hook",
+    "OverlayView_DragDropToChangeOrder": "Arrastra y suelta para cambiar el orden",
+    "OverlayView_EntryType": "Tipo de entrada",
+    "OverlayView_EntryType2": "Tipo",
+    "OverlayView_ExtendedOSDLogging": "Log extendido del OSD",
+    "OverlayView_FilterByEntryType": "Filtrar por tipo de entrada",
+    "OverlayView_Format": "Formato",
+    "OverlayView_FormatOptions": "Opciones de formato",
+    "OverlayView_GPUBasics": "Básico de GPU",
+    "OverlayView_General": "General",
+    "OverlayView_Graph": "Gráfico",
+    "OverlayView_GroupColor": "Color del grupo:",
+    "OverlayView_GroupControl": "Control de grupos:",
+    "OverlayView_GroupName": "Nombre del grupo",
+    "OverlayView_GroupName2": "Nombre del grupo",
+    "OverlayView_GroupName3": "Nombre del grupo",
+    "OverlayView_GroupNameFontSize": "Tamaño del nombre",
+    "OverlayView_Groups": "Grupos",
+    "OverlayView_HardwareController": "Controlador de hardware",
+    "OverlayView_HideTheOSDWhileA": "Oculta el OSD mientras se ejecuta una captura de benchmark.",
+    "OverlayView_HookFreeAppliesLiveRestart": "El modo sin hook se aplica al momento. Reinicia CapFrameX y el juego para el log dentro del juego.",
+    "OverlayView_HookFreeOutputDisplay": "Pantalla de salida sin hook",
+    "OverlayView_HotkeyCombinableWithUpTo": "Atajo combinable con hasta dos teclas modificadoras (Ctrl, Shift o Alt)",
+    "OverlayView_HotkeyPressBackspaceDeleteOrEsc": "Atajo combinable con hasta dos teclas modificadoras (Ctrl, Shift o Alt). Pulsa Retroceso, Supr o Esc para borrarlo.",
+    "OverlayView_IncludeSecondsInTheSystem": "Incluye los segundos en la entrada de hora del sistema del overlay.",
+    "OverlayView_LaunchPreviewApp": "Iniciar la app de vista previa",
+    "OverlayView_Limits": "Límites",
+    "OverlayView_LowerLimitColor": "Límite inferior + color:",
+    "OverlayView_LowerLimitColorHint": "Cambia el color del valor si es igual o inferior\nVacía este cuadro para desactivar el límite",
+    "OverlayView_ManuallyPositionTheCapFrameXOverlay": "Posiciona manualmente los elementos del overlay de CapFrameX.",
+    "OverlayView_MaximumVisibleChartUpdatesPer": "Máximo de actualizaciones visibles del gráfico por segundo",
+    "OverlayView_MetricIntervalS": "Intervalo de métricas (s)",
+    "OverlayView_MinOSD": "OSD mínimo",
+    "OverlayView_MinimumBufferingUsedToSmooth": "Búfer mínimo usado para suavizar las ráfagas de datos de fotogramas de PresentMon. Auméntalo si los gráficos se pausan entre actualizaciones; los valores altos añaden latencia. Se aplica al renderizador sin hook.",
+    "OverlayView_OSD": "OSD",
+    "OverlayView_OSDOptions": "Opciones del OSD",
+    "OverlayView_OSDParameterGroupControl": "Control de grupos de parámetros del OSD",
+    "OverlayView_OSDUpdatePeriod": "Periodo de actualización del OSD",
+    "OverlayView_OpenConfigurationFolder": "Abrir la carpeta de configuración",
+    "OverlayView_OpenOSDLogFolder": "Abrir la carpeta de logs del OSD",
+    "OverlayView_OpenTheFolderContainingThe": "Abre la carpeta que contiene los archivos de log del OSD",
+    "OverlayView_OverlayActive": "Overlay activo",
+    "OverlayView_OverlayCoordinates": "Coordenadas del overlay",
+    "OverlayView_OverlayHotkey": "Atajo del overlay",
+    "OverlayView_OverlayItems": "Elementos del overlay",
+    "OverlayView_OverlayItems2": "Elementos",
+    "OverlayView_OverlayPosition": "Posición del overlay",
+    "OverlayView_OverlayRefresh": "Actualización del overlay",
+    "OverlayView_OverlayRenderer": "Renderizador del overlay",
+    "OverlayView_OverlaySize": "Tamaño del overlay",
+    "OverlayView_OverlayTemplate": "Plantilla del overlay",
+    "OverlayView_PercentageFormatHint": "Porcentaje positivo = superíndice\nPorcentaje negativo = subíndice",
+    "OverlayView_PositionHotkey": "Atajo de posición",
+    "OverlayView_PositivePercentageSuperscriptNegativePercentage": "Porcentaje positivo = superíndice\nPorcentaje negativo = subíndice",
+    "OverlayView_PresentMonReplayBuffer": "Búfer de reproducción de PresentMon",
+    "OverlayView_Preview": "Vista previa",
+    "OverlayView_RAMItems": "Elementos de RAM",
+    "OverlayView_RTSS": "RTSS",
+    "OverlayView_RealTimeMetrics": "Métricas en tiempo real",
+    "OverlayView_RealTimeMetrics2": "Métricas en tiempo real",
+    "OverlayView_RefreshPeriodMs": "Periodo de actualización (ms)",
+    "OverlayView_RefreshRate": "Frecuencia",
+    "OverlayView_RequiresRivaTunerStatisticsServer": "Requiere RivaTuner Statistics Server.",
+    "OverlayView_ResetMetrics": "Reiniciar métricas",
+    "OverlayView_ResetMetricsHotkey": "Atajo para reiniciar métricas",
+    "OverlayView_ResetToDefaults": "Restablecer valores predeterminados",
+    "OverlayView_ResetToDefaults2": "Restablecer valores predeterminados",
+    "OverlayView_Revert": "Revertir",
+    "OverlayView_RevertToLastAppliedTemplate": "Volver a la última plantilla aplicada",
+    "OverlayView_SaveSelectionToCurrentConfig": "Guardar la selección en la config. actual",
+    "OverlayView_SaveSelectionToOtherConfigs": "Guardar la selección en las otras config.",
+    "OverlayView_Saving": "Guardando...",
+    "OverlayView_ScalesTextSpacingAndGraphs": "Escala el texto, el espaciado y los gráficos del renderizador sin hook; RTSS usa su propio zoom.",
+    "OverlayView_Search": "Buscar...",
+    "OverlayView_SearchInDescriptionGroupName": "Buscar en descripción, nombre del grupo e identificador",
+    "OverlayView_SendFutureSessionProfilesGame": "Envía a CapFrameX, para su análisis, los perfiles de sesiones futuras, las versiones y hashes del juego y del runtime, Windows, GPU/controlador, el progreso de renderizado, el estado de la ventana del juego y el diagnóstico de fallback/FG. Los informes usan un ID aleatorio; no incluyen títulos de ventana, rutas, datos de cuenta ni logs en bruto. Desactivarlo detiene los envíos y borra los informes no enviados; los ya enviados se conservan.",
+    "OverlayView_SensorType": "Tipo de sensor",
+    "OverlayView_Separators": "Separadores",
+    "OverlayView_SetOSDItemsToMinimum": "Reduce los elementos del OSD al mínimo. Solo se muestran la tasa de fotogramas y el frametime.",
+    "OverlayView_SetSelectedOptionsForAll": "Aplica las opciones seleccionadas a todas las entradas con este nombre de grupo",
+    "OverlayView_SetSelectedOptionsForAll2": "Aplica las opciones seleccionadas a todas las entradas con este tipo de sensor",
+    "OverlayView_SetSelectedOptionsForAll3": "Aplica las opciones seleccionadas a todos los grupos de entradas",
+    "OverlayView_SetSelectedOptionsForAll4": "Aplica las opciones seleccionadas a todos los valores de las entradas",
+    "OverlayView_SetsTheThreadAffinityFor": "Define la afinidad de hilos para arquitecturas híbridas de Intel y CPU Ryzen con 2 CCD.",
+    "OverlayView_ShareOverlayCompatibilityReports": "Compartir informes de compatibilidad del overlay",
+    "OverlayView_ShortcutsAndTiming": "Atajos y tiempos",
+    "OverlayView_ShowOrHideTheSelected": "Muestra u oculta el renderizador de overlay seleccionado.",
+    "OverlayView_SmoothNumericValues": "Suavizar valores numéricos",
+    "OverlayView_SortEntriesByType": "Ordenar las entradas por tipo",
+    "OverlayView_SpecialCXOverlayItemsCapture": "Elementos especiales del overlay de CX:\n\n\nEstado del servicio de captura:\n\nEstado actual del servicio de captura (proceso encontrado, varios procesos encontrados, benchmark en curso...)\n\n\nTemporizador de captura:\n\nTiempo restante de la captura activa (duración definida) o tiempo de captura actual (ilimitado)\n\n\nHistorial de pasadas:\n\nMuestra los datos de las pasadas anteriores y los resultados agregados (configuración en la página de captura)\n\n\nMétricas de FPS en tiempo real:\n\nValores promediados de FPS promedio y percentiles\n\n\nTiempo de stuttering:\n\nPorcentaje de tiempo de los fotogramas por encima del umbral de stuttering\n\n\nLatencia de la aplicación:\n\nInput lag aproximado promediado\n\n\nPotencias PMD:\n\nValores de potencia para usar con la herramienta Powenetics v2",
+    "OverlayView_StandardValueColor": "Color del valor:",
+    "OverlayView_SwitchConfig": "Cambiar de config.",
+    "OverlayView_SystemInfos": "Información del sistema",
+    "OverlayView_SystemTimeSeconds": "Segundos de la hora del sistema",
+    "OverlayView_ThreadAffinityController": "Controlador de afinidad de hilos",
+    "OverlayView_ThreadAffinityHotkey": "Atajo de afinidad de hilos",
+    "OverlayView_ToggleOverlay": "Mostrar/ocultar overlay",
+    "OverlayView_TopCenter": "Arriba al centro",
+    "OverlayView_TopLeft": "Arriba a la izquierda",
+    "OverlayView_TopRight": "Arriba a la derecha",
+    "OverlayView_UncheckCPUClocks": "Desmarcar relojes de CPU",
+    "OverlayView_UncheckCPUClocks2": "Desmarcar relojes de CPU",
+    "OverlayView_UncheckCPUCoreTemps": "Desmarcar temps. de núcleos de CPU",
+    "OverlayView_UncheckCPUCoreVoltages": "Desmarcar voltajes de núcleos de CPU",
+    "OverlayView_UncheckCPULoads": "Desmarcar cargas de CPU",
+    "OverlayView_UncheckCaptureItems": "Desmarcar elementos de captura",
+    "OverlayView_UncheckGPUBasics": "Desmarcar lo básico de GPU",
+    "OverlayView_UncheckRAMItems": "Desmarcar elementos de RAM",
+    "OverlayView_UncheckRealTimeMetrics": "Desmarcar métricas en tiempo real",
+    "OverlayView_UncheckSystemInfo": "Desmarcar información del sistema",
+    "OverlayView_UpdateIntervals": "Intervalos de actualización",
+    "OverlayView_UpperLimitColor": "Límite superior + color:",
+    "OverlayView_UpperLimitColorHint": "Cambia el color del valor si es igual o superior\nVacía este cuadro para desactivar el límite",
+    "OverlayView_UsePresentMonFrameTimes": "Usar los frametimes de PresentMon",
+    "OverlayView_UsesDWMDirectCompositionWithoutGame": "Usa DWM/DirectComposition sin inyectarse en el juego y es seguro para títulos protegidos por anti-cheat.",
+    "OverlayView_ValueFontSize": "Tamaño del valor",
+    "OverlayView_Values": "Valores",
+
+    // =========================================================================
+    // POWER MEASUREMENT (PMD / POWENETICS / BENCHLAB) - Real-time power metrics
+    // =========================================================================
+    "PmdAnalysisChartManager_CPUPowerW": "Potencia de CPU [W]",
+    "PmdAnalysisChartManager_GPUPowerW": "Potencia de GPU [W]",
+    "PmdAnalysisChartManager_TimeS": "Tiempo [s]",
+    "PmdAnalysisChartManager_TimeS2": "Tiempo [s]",
+    "PmdAnalysisChartManager_TimeS3": "Tiempo [s]",
+    "PmdAnalysisChartManager_TimeS4": "Tiempo [s]",
+    "PmdAnalysisChartManager_TimeS5": "Tiempo [s]",
+    "PmdChart_CpuPowerW": "Potencia de CPU [W]",
+    "PmdChart_FrametimeMs": "Frametime [ms]",
+    "PmdChart_GpuPowerW": "Potencia de GPU [W]",
+    "PmdChart_PowerW": "Potencia [W]",
+    "PmdChart_TimeS": "Tiempo [s]",
+    "PmdSampleFilterMode_Average": "Prom. de N",
+    "PmdSampleFilterMode_Single": "Último de N",
+    "PmdView_ATXPower": "Potencia ATX",
+    "PmdView_AutoStartPMD": "Autoiniciar PMD",
+    "PmdView_AverageMetrics": "Métricas promedio",
+    "PmdView_Avg": "Prom.",
+    "PmdView_Avg10": "Prom.",
+    "PmdView_Avg2": "Prom.",
+    "PmdView_Avg3": "Prom.",
+    "PmdView_Avg4": "Prom.",
+    "PmdView_Avg5": "Prom.",
+    "PmdView_Avg6": "Prom.",
+    "PmdView_Avg7": "Prom.",
+    "PmdView_Avg8": "Prom.",
+    "PmdView_Avg9": "Prom.",
+    "PmdView_AvgPMDPower": "Potencia PMD prom.",
+    "PmdView_BENCHLAB": "BENCHLAB",
+    "PmdView_COMPort": "Puerto COM",
+    "PmdView_CPU": "CPU :",
+    "PmdView_CPUPower": "Potencia de CPU",
+    "PmdView_CPUTotalPower": "CPU total",
+    "PmdView_ChartLengthS": "Duración del gráfico [s]",
+    "PmdView_ChartLengthS2": "Duración del gráfico [s]",
+    "PmdView_CopyCPUPowerFrameTimes": "Copiar potencia de CPU/frametimes (t, f(t), p(t))",
+    "PmdView_CopyCPUPowerPointsT": "Copiar puntos de potencia de CPU (t, p(t))",
+    "PmdView_CopyCPUPowerValuesF": "Copiar valores de potencia de CPU (f)",
+    "PmdView_CopyGPUPowerFrameTimes": "Copiar potencia de GPU/frametimes (t, f(t), p(t))",
+    "PmdView_CopyGPUPowerPointsT": "Copiar puntos de potencia de GPU (t, p(t))",
+    "PmdView_CopyGPUPowerValuesF": "Copiar valores de potencia de GPU (f)",
+    "PmdView_Cur": "Act.",
+    "PmdView_Cur10": "Act.",
+    "PmdView_Cur2": "Act.",
+    "PmdView_Cur3": "Act.",
+    "PmdView_Cur4": "Act.",
+    "PmdView_Cur5": "Act.",
+    "PmdView_Cur6": "Act.",
+    "PmdView_Cur7": "Act.",
+    "PmdView_Cur8": "Act.",
+    "PmdView_Cur9": "Act.",
+    "PmdView_DownsamplingFactor": "Factor de submuestreo",
+    "PmdView_DownsamplingMode": "Modo de submuestreo",
+    "PmdView_EfficiencyFPS10W": "Eficiencia (FPS/10W)",
+    "PmdView_FPS": "FPS :",
+    "PmdView_Frametimes": "Frametimes",
+    "PmdView_GPU": "GPU :",
+    "PmdView_GPUPower": "Potencia de GPU",
+    "PmdView_GPUTotalPower": "GPU total",
+    "PmdView_GraphSelection": "Selección de gráficos",
+    "PmdView_LogPMDData": "Registrar PMD",
+    "PmdView_LogPMDData2": "Registrar PMD",
+    "PmdView_LostPackets": "Paquetes perdidos:",
+    "PmdView_MainboardPower": "Potencia placa base",
+    "PmdView_Max": "Máx.",
+    "PmdView_Max10": "Máx.",
+    "PmdView_Max2": "Máx.",
+    "PmdView_Max3": "Máx.",
+    "PmdView_Max4": "Máx.",
+    "PmdView_Max5": "Máx.",
+    "PmdView_Max6": "Máx.",
+    "PmdView_Max7": "Máx.",
+    "PmdView_Max8": "Máx.",
+    "PmdView_Max9": "Máx.",
+    "PmdView_MonitoringIntervalMs": "Intervalo [ms]",
+    "PmdView_PCIePower": "Potencia PCIe",
+    "PmdView_PCIeSlotPower": "Ranura PCIe",
+    "PmdView_PMDAnalysis": "Análisis PMD",
+    "PmdView_PMDCPU": "PMD CPU :",
+    "PmdView_PMDGPU": "PMD GPU :",
+    "PmdView_PMDPower": "Potencia PMD",
+    "PmdView_PMDServiceStatus": "Estado del servicio PMD:",
+    "PmdView_PMDServiceStatus2": "Estado del servicio PMD:",
+    "PmdView_Performance": "Rendimiento",
+    "PmdView_Performance2": "Rendimiento",
+    "PmdView_Powenetics": "Powenetics",
+    "PmdView_ResetPMDMetrics": "Reiniciar métricas de PMD",
+    "PmdView_ResetPMDMetrics2": "Reiniciar métricas de PMD",
+    "PmdView_SampleRate": "Frecuencia:",
+    "PmdView_SelectTheCOMPort": "Selecciona el puerto COM.",
+    "PmdView_SensorCPU": "Sensor CPU :",
+    "PmdView_SensorGPU": "Sensor GPU :",
+    "PmdView_SensorPower": "Potencia del sensor",
+    "PmdView_SetsTheDownsamplingMode": "Define el modo de submuestreo.",
+    "PmdView_SetsTheLenghtSOf": "Define la duración [s] de los gráficos.",
+    "PmdView_SetsTheLenghtSOf2": "Define la duración [s] de los gráficos.",
+    "PmdView_SetsTheMonitoringIntervalMs": "Define el intervalo de monitorización [ms] del dispositivo PMD.",
+    "PmdView_SetsTheRefreshRateMs": "Define la frecuencia de actualización [ms] del dispositivo PMD.",
+    "PmdView_ShowCharts": "Mostrar gráficos",
+    "PmdView_ShowCharts2": "Mostrar gráficos",
+    "PmdView_SomeNeededPowerSourcesAre": "Faltan algunas fuentes de potencia necesarias para que esta métrica sea precisa",
+    "PmdView_SomeNeededPowerSourcesAre2": "Faltan algunas fuentes de potencia necesarias para que esta métrica sea precisa",
+    "PmdView_StartOrStopBENCHLABMonitoring": "Inicia o detiene la monitorización de BENCHLAB. Usa un servicio compatible existente o inicia el servicio incluido.",
+    "PmdView_StartOrStopThePMD": "Inicia o detiene el servicio PMD.",
+    "PmdView_StartStopPMD": "Iniciar/detener PMD",
+    "PmdView_StartStopPMD2": "Iniciar/detener PMD",
+    "PmdView_System": "Sistema :",
+    "PmdView_System2": "Sistema :",
+    "PmdView_SystemPower": "Potencia del sistema",
+    "PmdView_SystemPower2": "Potencia del sistema",
+    "PmdView_Values": "Valores",
+    "PoweneticsMetricsManager_W": "W",
+    "PoweneticsViewModel_1S": "[1/s]",
+
+    // =========================================================================
+    // OUTLIER DETECTION - Metric compared to find outlier runs (capture and aggregation)
+    // =========================================================================
+    "RelatedMetric_Average": "Promedio",
+    "RelatedMetric_Second": "Segunda",
+    "RelatedMetric_Third": "Tercera",
+
+    // =========================================================================
+    // REPORT VIEW - Comprehensive tabular benchmark and sensor summary
+    // =========================================================================
+    "ReportViewModel_AveragedValues": "Valores promediados",
+    "ReportView_AdaptiveSTDEV": "STDEV adaptativa",
+    "ReportView_AdaptiveSTDEV2": "STDEV adaptativa",
+    "ReportView_AppLatencyMs": "Latencia de la app (ms)",
+    "ReportView_AppLatencyMs2": "Latencia de la app (ms)",
+    "ReportView_Average": "Promedio",
+    "ReportView_AverageAnimationErrorMs": "|Error de animación| promedio (ms)",
+    "ReportView_AverageAnimationErrorMs2": "|Error de animación| promedio (ms)",
+    "ReportView_AverageFPS": "FPS promedio",
+    "ReportView_CPU": "CPU",
+    "ReportView_CPUClockMHz": "Reloj de CPU (MHz)",
+    "ReportView_CPUClockMHz2": "Reloj de CPU (MHz)",
+    "ReportView_CPUFPS10W": "FPS / 10W de CPU",
+    "ReportView_CPUFPS10W2": "FPS/10W de CPU",
+    "ReportView_CPUMaxThread": "Hilo máx. de CPU (%)",
+    "ReportView_CPUMaxThread2": "Hilo máx. de CPU (%)",
+    "ReportView_CPUName": "Nombre de la CPU",
+    "ReportView_CPUPowerW": "Potencia de CPU (W)",
+    "ReportView_CPUPowerW2": "Potencia de CPU (W)",
+    "ReportView_CPUTempC": "Temp. de CPU (°C)",
+    "ReportView_CPUTempC2": "Temp. de CPU (°C)",
+    "ReportView_Comment": "Comentario",
+    "ReportView_Comment2": "Comentario",
+    "ReportView_CopyTable": "Copiar la tabla",
+    "ReportView_CreationDate": "Fecha de creación",
+    "ReportView_CreationDate2": "Fecha de creación",
+    "ReportView_CreationTime": "Hora de creación",
+    "ReportView_CreationTime2": "Hora de creación",
+    "ReportView_DropItemsHereOrDouble": "Suelta los elementos aquí o haz doble clic sobre ellos en la lista de registros.",
+    "ReportView_GPU": "GPU",
+    "ReportView_GPUBusyAvgMs": "GPU-Busy prom. (ms)",
+    "ReportView_GPUBusyTimeAvgMs": "Tiempo GPU-Busy prom. (ms)",
+    "ReportView_GPUBusyTimeDev": "Desv. del tiempo GPU-Busy (%)",
+    "ReportView_GPUBusyTimeDev2": "Desv. del tiempo GPU-Busy (%)",
+    "ReportView_GPUClockMHz": "Reloj de GPU (MHz)",
+    "ReportView_GPUClockMHz2": "Reloj de GPU (MHz)",
+    "ReportView_GPUFPS10W": "FPS / 10W de GPU",
+    "ReportView_GPUFPS10W2": "FPS/10W de GPU",
+    "ReportView_GPUName": "Nombre de la GPU",
+    "ReportView_GPUPowerW": "Potencia de GPU (W)",
+    "ReportView_GPUPowerW2": "Potencia de GPU (W)",
+    "ReportView_GPUTBPSimW": "TBP Sim de GPU (W)",
+    "ReportView_GPUTBPSimW2": "TBP Sim de GPU (W)",
+    "ReportView_GPUTempC": "Temp. de GPU (°C)",
+    "ReportView_GPUTempC2": "Temp. de GPU (°C)",
+    "ReportView_GPUUsage": "Uso de GPU (%)",
+    "ReportView_GPUUsage2": "Uso de GPU (%)",
+    "ReportView_GameName": "Nombre del juego",
+    "ReportView_IfAvailableUsePMDValues": "Si están disponibles, usa los valores de PMD en lugar de las lecturas de los sensores para la potencia y la eficiencia de CPU/GPU.",
+    "ReportView_MaxFPS": "FPS máx.",
+    "ReportView_Maximum": "Máximo",
+    "ReportView_Median": "Mediana",
+    "ReportView_MedianFPS": "FPS mediana",
+    "ReportView_MetricsSettings": "Configuración de métricas:",
+    "ReportView_MinFPS": "FPS mín.",
+    "ReportView_Minimum": "Mínimo",
+    "ReportView_OnePercentLowAverage": "Promedio 1% low",
+    "ReportView_OnePercentLowAverageFps": "FPS promedio 1% low",
+    "ReportView_OnePercentLowIntegral": "Integral 1% low",
+    "ReportView_OnePercentLowIntegralFps": "FPS integral 1% low",
+    "ReportView_P01FPS": "FPS P0.1",
+    "ReportView_P02FPS": "FPS P0.2",
+    "ReportView_P1FPS": "FPS P1",
+    "ReportView_P5FPS": "FPS P5",
+    "ReportView_P95FPS": "FPS P95",
+    "ReportView_P99AnimationErrorMs": "P99 |Error de animación| (ms)",
+    "ReportView_P99AnimationErrorMs2": "P99 |Error de animación| (ms)",
+    "ReportView_P99FPS": "FPS P99",
+    "ReportView_Percentile01": "Percentil 0.1%",
+    "ReportView_Percentile02": "Percentil 0.2%",
+    "ReportView_Percentile1": "Percentil 1%",
+    "ReportView_Percentile5": "Percentil 5%",
+    "ReportView_Percentile95": "Percentil 95%",
+    "ReportView_Percentile99": "Percentil 99%",
+    "ReportView_PointOnePercentLowAverage": "Promedio 0.1% low",
+    "ReportView_PointOnePercentLowAverageFps": "FPS promedio 0.1% low",
+    "ReportView_PointOnePercentLowIntegral": "Integral 0.1% low",
+    "ReportView_PointOnePercentLowIntegralFps": "FPS integral 0.1% low",
+    "ReportView_RAM": "RAM",
+    "ReportView_RAMName": "Nombre de la RAM",
+    "ReportView_RecordTimeS": "Tiempo de grabación (s)",
+    "ReportView_RecordingTime": "Tiempo de grabación",
+    "ReportView_RemoveAllReportEntries": "Quitar todas las entradas del informe",
+    "ReportView_Samples": "Muestras",
+    "ReportView_Samples2": "Muestras",
+    "ReportView_SelectMetricsToBeShown": "Selecciona las métricas que se muestran",
+    "ReportView_ShowAverageRow": "Mostrar la fila de promedio",
+    "ReportView_ShowsAnAdditionalRowContaining": "Muestra una fila adicional con las métricas de FPS promediadas de todos los registros insertados.",
+    "ReportView_UsePMDValues": "Usar los valores de PMD",
+
+    // =========================================================================
+    // OVERLAY PROFILE DIALOGS - Reset confirmation and unsaved changes alerts
+    // =========================================================================
+    "ResetOverlayConfigDialog_Cancel": "Cancelar",
+    "ResetOverlayConfigDialog_DoYouReallyWantTo": "¿Seguro que quieres restablecer la configuración? ¡Se perderá la configuración anterior!",
+    "ResetOverlayConfigDialog_OK": "Aceptar",
+
+    // =========================================================================
+    // SENSOR VIEW - Hardware sensors logging and real-time monitoring
+    // =========================================================================
+    // Multi-line button text: line 1 "Evaluar", line 2 "varias entradas"
+    "SensorViewModel_EvaluateMultipleEntries": "Evaluar\nvarias entradas",
+    "SensorViewModel_SensorStatisticsForMultipleSelected": "Estadísticas de sensores de los registros seleccionados",
+    "SensorViewModel_SensorStatisticsForSelectedRecord": "Estadísticas de sensores del registro seleccionado",
+    "SensorViewModel_SensorStatisticsForSelectedRecord2": "Estadísticas de sensores del registro seleccionado",
+    "SensorViewModel_Working": "Procesando",
+    "SensorView_AllSensors": "Todos los sensores",
+    "SensorView_Avg": "Prom.",
+    "SensorView_CPUBasics": "Básico de CPU",
+    "SensorView_CPUCoreClocks": "Relojes de núcleos de CPU",
+    "SensorView_CPUThreadLoads": "Cargas de hilos de CPU",
+    "SensorView_CheckAllSensors": "Marcar todos los sensores",
+    "SensorView_CheckCPUBasics": "Marcar lo básico de CPU",
+    "SensorView_CheckCPUCoreClocks": "Marcar relojes de núcleos de CPU",
+    "SensorView_CheckCPUThreadLoads": "Marcar cargas de hilos de CPU",
+    "SensorView_CheckGPUBasics": "Marcar lo básico de GPU",
+    "SensorView_CheckOrUncheckGroupsOf": "Marca o desmarca grupos de sensores",
+    "SensorView_CopyRawSensorData": "Copiar los datos brutos de sensores",
+    "SensorView_CopySensorDataMinAvg": "Copiar datos de sensores (mín., prom., máx.)",
+    "SensorView_Evaluation": "Evaluación",
+    "SensorView_GPUBasics": "Básico de GPU",
+    "SensorView_GroupControl": "Control de grupos",
+    "SensorView_LogSensors": "Registrar sensores",
+    "SensorView_LogsSelectedSensorValuesDuring": "Registra los valores de los sensores seleccionados durante una captura",
+    "SensorView_Max": "Máx.",
+    "SensorView_Min": "Mín.",
+    "SensorView_OpenConfigurationFolder": "Abrir la carpeta de configuración",
+    "SensorView_ResetToDefaults": "Restablecer valores predeterminados",
+    "SensorView_ResyncWindowsPerformanceMonitorWhen": "Resincroniza el monitor de rendimiento de Windows si tienes problemas con contadores de memoria en 0. Reinicia CX después de ejecutarlo.",
+    "SensorView_SaveSelectedSensorsForLogging": "Guardar los sensores seleccionados para el registro",
+    "SensorView_SelectTheMethodForEvaluating": "Selecciona el método para evaluar varias entradas.\n\n\nAgregación: genera el informe a partir de los datos de sensores combinados de todas las entradas.\n\n\nPromedio: genera el informe a partir del promedio de cada informe individual.\n\n(solo incluye los sensores presentes en todas las entradas)",
+    "SensorView_Sensor": "Sensor",
+    "SensorView_Sensor2": "Sensor",
+    "SensorView_SensorItems": "Elementos de sensores",
+    "SensorView_SensorPollingMs": "Sondeo de sensores [ms]",
+    "SensorView_ShowSensorStatisticsForAll": "Muestra las estadísticas de sensores de todas las entradas seleccionadas en la lista de registros.",
+    "SensorView_Type": "Tipo",
+    "SensorView_UncheckAllSensors": "Desmarcar todos los sensores",
+    "SensorView_UncheckCPUBasics": "Desmarcar lo básico de CPU",
+    "SensorView_UncheckCPUCoreClocks": "Desmarcar relojes de núcleos de CPU",
+    "SensorView_UncheckCPUThreadLoads": "Desmarcar cargas de hilos de CPU",
+    "SensorView_UncheckGPUBasics": "Desmarcar lo básico de GPU",
+    "SensorView_UseForLogging": "Registrar",
+
+    // =========================================================================
+    // SHELL, SOUNDS & SPLASH SCREEN - Tray menu, capture sound modes, startup screen
+    // =========================================================================
+    "Shell_CapFrameX": "CapFrameX",
+    "Shell_Close": "Cerrar",
+    "Shell_OverlayProfileCouldNotBeSaved": "No se pudo guardar el perfil del overlay. CapFrameX seguirá abierto para que no pierdas los cambios.",
+    "Shell_ShowMainWindow": "Mostrar la ventana principal",
+    "SoundMode_None": "Ninguno",
+    "SoundMode_Simple": "Simple",
+    "SoundMode_Voice": "Voz",
+    "SplashScreenWindow_CapFrameX": "CapFrameX",
+    "SplashScreenWindow_Starting": "Iniciando...",
+
+    // =========================================================================
+    // STATUS BAR - Hook overlay status, capture indicators, HAGS status
+    // =========================================================================
+    "StateViewModelSystemStatus_Off": "Apagado",
+    "StateViewModelSystemStatus_On": "Encendido",
+    "StateViewModelSystemStatus_Partial": "Parcial",
+    "StateViewModel_NoInfoAvailable": "No hay información disponible",
+    "StateViewModel_Revision0": "Revisión: {0}",
+    // Tooltip shown while waiting for game process detection hook
+    "StateViewModel_WaitingForHookStatus": "Esperando el estado del hook.",
+    "StateView_CaptureService": "Servicio de captura:",
+    // Status toggle (active): shown when benchmark capture is in progress
+    "StateView_Capturing": "Capturando",
+    "StateView_Hook": "Hook:",
+    // User account status: logged in to capframex.com
+    "StateView_LoggedIn": "Sesión iniciada",
+    "StateView_LoginStatus": "Estado de la sesión:",
+    // User account status: not logged in
+    "StateView_NotLoggedIn": "Sin sesión iniciada",
+    // Boolean toggle: status is disabled (e.g. HAGS)
+    "StateView_Off": "Apagado",
+    // Boolean toggle: status is enabled (e.g. HAGS)
+    "StateView_On": "Encendido",
+    "StateView_Overlay": "Overlay:",
+    // Status toggle (idle): shown when ready to record a benchmark
+    "StateView_Ready": "Listo",
+    "StateView_ResizableBar": "Resizable Bar:",
+    "StateView_ResizableBarD3D": "Resizable Bar D3D:",
+    "StateView_ResizableBarHW": "Resizable Bar HW:",
+    "StateView_ResizableBarVulkan": "Resizable Bar Vulkan:",
+    "StateView_SensorLogging": "Registro de sensores:",
+    "StateView_UpdateSystemInfoStatus": "Actualizar el estado de la información del sistema",
+    "StateView_Version": "Versión:",
+    "StateView_WinGameMode": "Modo de juego de Win:",
+
+    // =========================================================================
+    // SYNCHRONIZATION & DISPLAY TIMING - Display change metrics and latency
+    // =========================================================================
+    "SynchronizationViewModel_AverageInputLag": "Input lag promedio",
+    "SynchronizationViewModel_DroppedFrames": "Fotogramas descartados",
+    "SynchronizationViewModel_Expected": "Esperado",
+    "SynchronizationViewModel_FrametimeInputLagMs": "Frametime + input lag [ms]",
+    "SynchronizationViewModel_FrametimeUntilDisplayedTimeMs": "Frametime + tiempo hasta mostrarse [ms]",
+    "SynchronizationViewModel_Frametimes": "Frametimes",
+    "SynchronizationViewModel_Frametimes2": "Frametimes",
+    "SynchronizationViewModel_InputLagHigh": "Input lag alto",
+    "SynchronizationViewModel_InputLagLow": "Input lag bajo",
+    "SynchronizationViewModel_InputLagTimeDistribution": "Distribución del input lag",
+    "SynchronizationViewModel_LowerBound": "Límite inferior",
+    "SynchronizationViewModel_Samples": "Muestras",
+    "SynchronizationViewModel_Samples2": "Muestras",
+    "SynchronizationViewModel_SyncedFrames": "Fotogramas sincronizados",
+    "SynchronizationViewModel_UntilDisplayedTimeDistribution": "Distribución del tiempo hasta mostrarse",
+    "SynchronizationViewModel_UntilDisplayedTimes": "Tiempos hasta mostrarse",
+    "SynchronizationViewModel_UpperBound": "Límite superior",
+    "SynchronizationView_CopyHistogramData": "Copiar los datos del histograma",
+    "SynchronizationView_CopyHistogramData2": "Copiar los datos del histograma",
+    "SynchronizationView_CopyMetrics": "Copiar métricas",
+    "SynchronizationView_CopyUntilDisplayedTimeValues": "Copiar los valores de tiempo hasta mostrarse",
+    "SynchronizationView_Distribution": "Distribución",
+    "SynchronizationView_Distribution2": "Distribución",
+    "SynchronizationView_ExpectedInputLagMs": "Input lag esperado (ms)",
+    "SynchronizationView_FramesWithinMonitorSyncRange": "Fotogramas dentro del rango de sincronización del monitor:",
+    "SynchronizationView_InputLagApproximation": "Aproximación del input lag",
+    "SynchronizationView_InputLagOffsetMs": "Desfase del input lag (ms):",
+    "SynchronizationView_Lower": "Inferior",
+    "SynchronizationView_Ms": "ms",
+    "SynchronizationView_Offset": "Desfase",
+    "SynchronizationView_OffsetForDisplayAndMouse": "Desfase por la latencia de la pantalla y del ratón/teclado/mando",
+    "SynchronizationView_RangeOpen": "(Rango:",
+    "SynchronizationView_SavePlotAsPNG": "Guardar el gráfico como PNG",
+    "SynchronizationView_SavePlotAsPNG2": "Guardar el gráfico como PNG",
+    "SynchronizationView_SavePlotAsSVG": "Guardar el gráfico como SVG",
+    "SynchronizationView_SavePlotAsSVG2": "Guardar el gráfico como SVG",
+    "SynchronizationView_UntilDisplayedTimeMs": "Tiempo hasta mostrarse (ms)",
+    "SynchronizationView_UntilDisplayedTimes": "Tiempos hasta mostrarse",
+    "SynchronizationView_Upper": "Superior",
+
+    // =========================================================================
+    // UNSAVED OVERLAY PROFILE DIALOG - Prompt when closing with unsaved overlay changes
+    // =========================================================================
+    "UnsavedOverlayProfileDialog_Cancel": "Cancelar",
+    "UnsavedOverlayProfileDialog_ClosingWithoutSavingPermanentlyDiscards": "Si cierras sin guardar, se descartarán definitivamente los cambios actuales.",
+    "UnsavedOverlayProfileDialog_ExitWithoutSaving": "Salir sin guardar",
+    "UnsavedOverlayProfileDialog_SaveAndExit": "Guardar y salir",
+    "UnsavedOverlayProfileDialog_TheCurrentOverlayItemsProfile": "El perfil actual de elementos del overlay tiene cambios sin guardar. ¿Quieres guardarlos antes de cerrar CapFrameX?",
+    "UnsavedOverlayProfileDialog_UnsavedOverlayProfile": "Perfil del overlay sin guardar",
+
+    // =========================================================================
+    // AUTO-UPDATER & ROLLBACK - Update notifications and version installation
+    // =========================================================================
+    "UpdateDialog_Cancel": "Cancelar",
+    "UpdateDialog_Close": "Cerrar",
+    "UpdateDialog_RELEASENOTES": "NOTAS DE LA VERSIÓN",
+    "UpdateDialog_TargetVersion": "Versión de destino",
+    "UpdateService_ChecksumFailed": "El paquete descargado no superó la comprobación de checksum y se descartó.",
+    "UpdateService_DownloadCancelled": "Se canceló la descarga.",
+    "UpdateService_DownloadingVersion": "Descargando la versión {0}...",
+    "UpdateService_LoadingAvailableVersions": "Cargando las versiones disponibles...",
+    "UpdateService_NoSelectedVersionToDownload": "No hay ninguna versión seleccionada para descargar.",
+    "UpdateService_NoTargetVersionSelected": "No se seleccionó ninguna versión de destino.",
+    "UpdateService_PackageCouldNotBeDownloaded": "No se pudo descargar el paquete seleccionado.",
+    "UpdateService_RollbackDownloaded": "La reversión a la versión {0} se descargó y se iniciará la próxima vez que abras CapFrameX.",
+    "UpdateService_RollbackReady": "La reversión a la versión {0} está lista.",
+    "UpdateService_StartingDownload": "Iniciando la descarga...",
+    "UpdateService_VersionAlreadyInstalled": "La versión {0} ya está instalada.",
+    "UpdateService_VersionDownloaded": "La versión {0} se descargó y se instalará la próxima vez que abras CapFrameX.",
+    "UpdateService_VersionNotInCatalog": "La versión {0} no está en el catálogo verificado de versiones.",
+    "UpdateService_VersionReady": "La versión {0} está lista.",
+    "UpdateService_VersionsOlderThanCannotBeInstalled": "No se pueden instalar versiones anteriores a la {0}.",
+    "UpdateViewModel_CapFrameXHasNotCheckedFor": "CapFrameX todavía no ha buscado actualizaciones.",
+    "UpdateViewModel_CapFrameXIsUpToDate": "CapFrameX está actualizado.",
+    // {0}: channel name, {1}: count of versions available
+    "UpdateViewModel_CapFrameXUpToDateOnChannel": "CapFrameX está actualizado en el canal {0}. Versiones disponibles: {1}.",
+    "UpdateViewModel_CapFrameXUpdate": "Actualización de CapFrameX",
+    "UpdateViewModel_DownloadSize0MB": "Tamaño de la descarga: {0} MB",
+    // Dialog message when installing a beta release
+    "UpdateViewModel_InstallConfirmationBeta": "Esta versión beta se descarga ahora y se instala la próxima vez que se inicie CapFrameX. Las versiones beta pueden ser menos estables que las normales.",
+    // Dialog message when installing a stable release
+    "UpdateViewModel_InstallConfirmationRegular": "La actualización se descarga ahora y se instala la próxima vez que se inicie CapFrameX.",
+    // Dialog message when installing an older version (rollback)
+    "UpdateViewModel_InstallConfirmationRollback": "La versión seleccionada reemplaza la instalación actual en el próximo inicio. Las capturas y la configuración se conservan, pero es posible que la versión anterior no entienda la configuración creada por versiones más recientes.",
+    "UpdateViewModel_InstallVersion": "INSTALAR VERSIÓN",
+    "UpdateViewModel_LookingForUpdates": "Buscando actualizaciones...",
+    // {0}: channel name (e.g. Beta), {1}: count of other versions available
+    "UpdateViewModel_NoChannelBuildPublished": "Ahora mismo no hay ninguna versión {0} publicada. Otras versiones disponibles: {1}.",
+    "UpdateViewModel_NoDescriptionWasProvidedFor": "Esta actualización no incluye descripción.",
+    "UpdateViewModel_NoUpdateServerIsConfigured": "No hay ningún servidor de actualizaciones configurado.",
+    "UpdateViewModel_RollBack": "REVERTIR",
+    "UpdateViewModel_RollBackCapFrameX": "Revertir CapFrameX",
+    "UpdateViewModel_TheUpdateCheckFailed": "Falló la búsqueda de actualizaciones.",
+    // Status message when update check is cancelled by user
+    "UpdateViewModel_TheUpdateCheckWasCancelled": "Se canceló la búsqueda de actualizaciones.",
+    // Error message when update server connection fails
+    "UpdateViewModel_TheUpdateServerCouldNotBeReached": "No se pudo conectar con el servidor de actualizaciones.",
+    "UpdateViewModel_Update": "ACTUALIZAR",
+    // {0}: channel name, {1}: version string (e.g. 1.9.2)
+    "UpdateViewModel_VersionAvailable": "La versión {0} {1} está disponible."
+  },
+  // =========================================================================
+  // OVERLAY - Real-time On-Screen Display label overrides
+  // =========================================================================
+  "overlay": {
+    "0.1% Low": "0.1% Low",
+    "0.2% Low": "0.2% Low",
+    "1% Low": "1% Low",
+    "<APP>": "<JUEGO>",
+    "Animation Error": "Error de animación",
+    "Animation Error (ms)": "Error de animación (ms)",
+    "App Resolution": "Resolución de la app",
+    "Application Resolution": "Resolución de la aplicación",
+    "Average": "Promedio",
+    "Battery Life": "Batería",
+    "Battery Life (%)": "Carga de la batería (%)",
+    "Battery Life Remaining (min)": "Autonomía restante (min)",
+    "CPU Active Time Average (ms)": "Tiempo activo promedio de la CPU (ms)",
+    "CPU Info": "CPU",
+    "CPUBusy Avg": "CPU-Busy prom.",
+    "CX CPU": "CPU de CX",
+    "CapFrameX CPU Usage (%)": "Uso de CPU de CapFrameX (%)",
+    "Capture service ready...": "Servicio de captura listo...",
+    "Capture service status": "Estado del servicio de captura",
+    "Capture starting in": "La captura empieza en",
+    "Capture timer": "Temporizador de captura",
+    "Click-to-Screen-Response Latency (ms)": "Latencia del clic a la pantalla (ms)",
+    "Custom CPU Name": "Nombre personalizado de la CPU",
+    "Custom GPU Name": "Nombre personalizado de la GPU",
+    "Custom RAM Description": "Descripción personalizada de la RAM",
+    "Display 1 Resolution": "Resolución de la pantalla 1",
+    "Displaytime": "Tiempo de pantalla",
+    "Frame Generation": "Frame Generation",
+    "Frame Time Average (ms)": "Frametime promedio (ms)",
+    "Frame generation status": "Estado de Frame Generation",
+    "Frame generation technology": "Tecnología de Frame Generation",
+    "Framerate": "Tasa de fotogramas",
+    "Frametime": "Frametime",
+    "Frametime Avg": "Frametime prom.",
+    "GPU Active Time Average (ms)": "Tiempo activo promedio de la GPU (ms)",
+    "GPU Active Time Deviation (%)": "Desviación del tiempo activo de la GPU (%)",
+    "GPU Driver": "Controlador de la GPU",
+    "GPU Info": "GPU",
+    "GPU Software Version": "Versión del software de la GPU",
+    "GPUBusy Avg": "GPU-Busy prom.",
+    "GPUBusy Deviation": "Desviación de GPU-Busy",
+    "Hook": "Hook",
+    "MB Info": "Placa base",
+    "Mainboard Name": "Placa base",
+    "Multiple processes detected": "Se detectaron varios procesos",
+    "Network Ping": "Ping de red",
+    "OS": "SO",
+    "OS Version": "Versión del SO",
+    "Overlay hook status": "Estado del hook del overlay",
+    "P0.1%": "P0.1%",
+    "P0.2%": "P0.2%",
+    "P1%": "P1%",
+    "PC Latency": "Latencia del PC",
+    "PC Latency (ms)": "Latencia del PC (ms)",
+    "PMD CPU Power": "Potencia CPU PMD",
+    "PMD CPU Power (W)": "Potencia CPU PMD (W)",
+    "PMD GPU Power": "Potencia GPU PMD",
+    "PMD GPU Power (W)": "Potencia GPU PMD (W)",
+    "PMD Sys Power": "Potencia sistema PMD",
+    "PMD System Power (W)": "Potencia del sistema PMD (W)",
+    "Ping": "Ping",
+    "Present Resolution": "Resolución de present",
+    "Processing data": "Procesando datos",
+    "RAM Info": "RAM",
+    "Ready to capture...": "Listo para capturar...",
+    "Real-time 0.1% Low FPS": "FPS 0.1% Low en tiempo real",
+    "Real-time 0.2% Low FPS": "FPS 0.2% Low en tiempo real",
+    "Real-time 1% Low FPS": "FPS 1% Low en tiempo real",
+    "Real-time P0.1 FPS": "FPS P0.1 en tiempo real",
+    "Real-time P0.2 FPS": "FPS P0.2 en tiempo real",
+    "Real-time P1 FPS": "FPS P1 en tiempo real",
+    "Real-time average FPS": "FPS promedio en tiempo real",
+    "Recording frametimes": "Grabando frametimes",
+    "Resolution": "Resolución",
+    "Result:": "Resultado:",
+    "Run history": "Historial de pasadas",
+    "Scanning for process...": "Buscando proceso...",
+    "Status:": "Estado:",
+    "Stuttering": "Stuttering",
+    "Stuttering Time (%)": "Tiempo de stuttering (%)",
+    "System time": "Hora del sistema",
+    "Time": "Hora"
+  },
+  // Phrases: regex rules for OSD labels that have no exact "overlay" entry (sensor and group names).
+  // Matched case-insensitively and applied longest pattern first; the order of patterns with the
+  // same length is not guaranteed, so a specific rule must be longer than the generic one it overrides.
+  // Replacements are lowercase: the first letter of the result is capitalized afterwards.
+  // Spanish puts the device after the noun: "GPU Core" -> "Núcleo GPU".
+  "phrases": [
+    {
+      "pattern": "\\bDistance to TjMax\\b",
+      "replacement": "distancia a TjMax"
+    },
+    {
+      "pattern": "^Aggregate$",
+      "replacement": "agregación"
+    },
+    {
+      "pattern": "Run (\\d+):",
+      "replacement": "Pasada $1:"
+    },
+    {
+      "pattern": "ready to capture\\.\\.\\.",
+      "replacement": "listo para capturar..."
+    },
+    {
+      "pattern": "\\bPerformance\\b",
+      "replacement": "rendimiento"
+    },
+    {
+      "pattern": "CapFrameX overlay refresh",
+      "replacement": "actualización del overlay de CapFrameX"
+    },
+    {
+      "pattern": "(\\d+)\\s*Cores\\b",
+      "replacement": "$1 núcleos"
+    },
+    {
+      "pattern": "(\\d+)\\s*Threads\\b",
+      "replacement": "$1 hilos"
+    },
+    {
+      "pattern": "\\bGPU Memory Temperature\\b",
+      "replacement": "temperatura memoria GPU"
+    },
+    {
+      "pattern": "\\bGPU Memory Dedicated Game\\b",
+      "replacement": "memoria GPU dedicada del juego"
+    },
+    {
+      "pattern": "\\bGPU Memory Shared Game\\b",
+      "replacement": "memoria GPU compartida del juego"
+    },
+    {
+      "pattern": "\\bGPU Memory Junction\\b",
+      "replacement": "unión memoria GPU"
+    },
+    {
+      "pattern": "\\bGPU Memory Bandwidth\\b",
+      "replacement": "ancho de banda memoria GPU"
+    },
+    {
+      "pattern": "\\bGPU Mem Junction\\b",
+      "replacement": "unión mem. GPU"
+    },
+    {
+      "pattern": "\\bVRAM Hot Spot\\b",
+      "replacement": "punto caliente VRAM"
+    },
+    {
+      "pattern": "\\bGPU Hot Spot\\b",
+      "replacement": "punto caliente GPU"
+    },
+    {
+      "pattern": "\\bGPU Media Engine\\b",
+      "replacement": "motor multimedia GPU"
+    },
+    {
+      "pattern": "\\bGPU Computing\\b",
+      "replacement": "cómputo GPU"
+    },
+    {
+      "pattern": "\\bGPU Overvoltage\\b",
+      "replacement": "sobrevoltaje GPU"
+    },
+    {
+      "pattern": "\\bGPU Power Budget\\b",
+      "replacement": "presupuesto de potencia GPU"
+    },
+    {
+      "pattern": "\\bGPU Thermal Budget\\b",
+      "replacement": "presupuesto térmico GPU"
+    },
+    {
+      "pattern": "\\bGPU Intake\\b",
+      "replacement": "admisión GPU"
+    },
+    {
+      "pattern": "\\bGPU PCIe (Rx|Tx)\\b",
+      "replacement": "PCIe $1 GPU"
+    },
+    {
+      "pattern": "\\bCPU Max Core Temp\\b",
+      "replacement": "temp. máx. núcleos CPU"
+    },
+    {
+      "pattern": "\\bCPU Max Clock\\b",
+      "replacement": "reloj máx. CPU"
+    },
+    {
+      "pattern": "\\bCPU Max Effective\\b",
+      "replacement": "reloj efectivo máx. CPU"
+    },
+    {
+      "pattern": "\\bCPU Max Thread Load\\b",
+      "replacement": "carga máx. de hilo CPU"
+    },
+    {
+      "pattern": "\\bCPU Effective\\b",
+      "replacement": "reloj efectivo CPU"
+    },
+    {
+      "pattern": "\\bGPU Effective\\b",
+      "replacement": "reloj efectivo GPU"
+    },
+    {
+      "pattern": "\\bCPU Cores\\b",
+      "replacement": "núcleos CPU"
+    },
+    {
+      "pattern": "\\bCPU Model\\b",
+      "replacement": "modelo CPU"
+    },
+    {
+      "pattern": "\\bCPU Total\\b",
+      "replacement": "CPU total"
+    },
+    {
+      "pattern": "\\bGPU Total\\b",
+      "replacement": "GPU total"
+    },
+    {
+      "pattern": "\\bCPU Max\\b",
+      "replacement": "CPU máx."
+    },
+    {
+      "pattern": "\\bCPU Bus\\b",
+      "replacement": "bus CPU"
+    },
+    {
+      "pattern": "\\bCCDs Average\\b",
+      "replacement": "promedio CCD"
+    },
+    {
+      "pattern": "\\bCCDs Max\\b",
+      "replacement": "máx. CCD"
+    },
+    {
+      "pattern": "\\bCore Average\\b",
+      "replacement": "promedio núcleos"
+    },
+    {
+      "pattern": "\\bCore Max\\b",
+      "replacement": "máx. núcleos"
+    },
+    {
+      "pattern": "\\bP-Core\\b",
+      "replacement": "núcleo P"
+    },
+    {
+      "pattern": "\\bE-Core\\b",
+      "replacement": "núcleo E"
+    },
+    {
+      "pattern": "\\bRAM Game Used\\b",
+      "replacement": "RAM usada por el juego"
+    },
+    {
+      "pattern": "\\bGame Used\\b",
+      "replacement": "usada por el juego"
+    },
+    {
+      "pattern": "\\bMemory Controller\\b",
+      "replacement": "controlador de memoria"
+    },
+    {
+      "pattern": "\\bMemory Data Rate\\b",
+      "replacement": "velocidad de datos de memoria"
+    },
+    {
+      "pattern": "\\bMemory Gear\\b",
+      "replacement": "modo Gear de memoria"
+    },
+    {
+      "pattern": "\\bDRAM Frequency\\b",
+      "replacement": "frecuencia DRAM"
+    },
+    {
+      "pattern": "\\bIMC Clock\\b",
+      "replacement": "reloj IMC"
+    },
+    {
+      "pattern": "\\bUncore Ring Clock\\b",
+      "replacement": "reloj Ring Uncore"
+    },
+    {
+      "pattern": "\\bNGU/NCLK Clock\\b",
+      "replacement": "reloj NGU/NCLK"
+    },
+    {
+      "pattern": "\\bD2D Clock\\b",
+      "replacement": "reloj D2D"
+    },
+    {
+      "pattern": "\\bBus Speed\\b",
+      "replacement": "velocidad del bus"
+    },
+    {
+      "pattern": "(\\+\\d+V) Voltage\\b",
+      "replacement": "voltaje $1"
+    },
+    {
+      "pattern": "\\bGPU Power Limit\\b",
+      "replacement": "límite de potencia GPU"
+    },
+    {
+      "pattern": "\\bGPU Thermal Limit\\b",
+      "replacement": "límite térmico GPU"
+    },
+    {
+      "pattern": "\\bGPU Voltage Limit\\b",
+      "replacement": "límite de voltaje GPU"
+    },
+    {
+      "pattern": "\\bGPU Mem Temperature\\b",
+      "replacement": "temperatura mem. GPU"
+    },
+    {
+      "pattern": "\\bGPU\\sMem\\sGame\\b",
+      "replacement": "mem. GPU del juego"
+    },
+    {
+      "pattern": "\\bGPU\\sMem\\sBandwidth\\b",
+      "replacement": "ancho de banda mem. GPU"
+    },
+    {
+      "pattern": "\\bGPU\\sMem\\sRead\\b",
+      "replacement": "lectura mem. GPU"
+    },
+    {
+      "pattern": "\\bGPU\\sMem\\sWrite\\b",
+      "replacement": "escritura mem. GPU"
+    },
+    {
+      "pattern": "\\bGPU\\sMemory\\sRead\\b",
+      "replacement": "lectura memoria GPU"
+    },
+    {
+      "pattern": "\\bGPU Memory Write\\b",
+      "replacement": "escritura memoria GPU"
+    },
+    {
+      "pattern": "\\bD3D Dedicated Memory\\b",
+      "replacement": "memoria dedicada D3D"
+    },
+    {
+      "pattern": "\\bD3D Shared Memory\\b",
+      "replacement": "memoria compartida D3D"
+    },
+    {
+      "pattern": "\\bDedicated Mem\\b",
+      "replacement": "mem. dedicada"
+    },
+    {
+      "pattern": "\\bShared Mem\\b",
+      "replacement": "mem. compartida"
+    },
+    {
+      "pattern": "\\bMem Data Rate\\b",
+      "replacement": "velocidad de datos de mem."
+    },
+    {
+      "pattern": "\\bMem\\s+Gear\\b",
+      "replacement": "modo Gear de mem."
+    },
+    {
+      "pattern": "\\bVirtual RAM Available\\b",
+      "replacement": "RAM virtual disponible"
+    },
+    {
+      "pattern": "\\bVirtual RAM Usage\\b",
+      "replacement": "uso de RAM virtual"
+    },
+    {
+      "pattern": "\\bVirtual RAM Used\\b",
+      "replacement": "RAM virtual usada"
+    },
+    {
+      "pattern": "\\bRAM Usage\\b",
+      "replacement": "uso de RAM"
+    },
+    {
+      "pattern": "\\bFan Power\\b",
+      "replacement": "potencia del ventilador"
+    },
+    {
+      "pattern": "\\bFan Voltage\\b",
+      "replacement": "voltaje del ventilador"
+    },
+    {
+      "pattern": "\\bPump Power\\b",
+      "replacement": "potencia de la bomba"
+    },
+    {
+      "pattern": "\\bPump Voltage\\b",
+      "replacement": "voltaje de la bomba"
+    },
+    {
+      "pattern": "\\bPump Frequency\\b",
+      "replacement": "frecuencia de la bomba"
+    },
+    {
+      "pattern": "\\bPump Control\\b",
+      "replacement": "control de la bomba"
+    },
+    {
+      "pattern": "\\bPower Limit\\b",
+      "replacement": "límite de potencia"
+    },
+    {
+      "pattern": "\\bThermal Limit\\b",
+      "replacement": "límite térmico"
+    },
+    {
+      "pattern": "\\bVoltage Limit\\b",
+      "replacement": "límite de voltaje"
+    },
+    {
+      "pattern": "\\bDrive Available Spare Threshold\\b",
+      "replacement": "umbral de reserva disponible del disco"
+    },
+    {
+      "pattern": "\\bDrive Available Spare\\b",
+      "replacement": "reserva disponible del disco"
+    },
+    {
+      "pattern": "\\bDrive Lifetime Used\\b",
+      "replacement": "vida útil consumida del disco"
+    },
+    {
+      "pattern": "\\bDrive Read Activity\\b",
+      "replacement": "actividad de lectura del disco"
+    },
+    {
+      "pattern": "\\bDrive Write Activity\\b",
+      "replacement": "actividad de escritura del disco"
+    },
+    {
+      "pattern": "\\bDrive Total Activity\\b",
+      "replacement": "actividad total del disco"
+    },
+    {
+      "pattern": "\\bDrive Write Amplification\\b",
+      "replacement": "amplificación de escritura del disco"
+    },
+    {
+      "pattern": "\\bDrive Data Written\\b",
+      "replacement": "datos escritos en el disco"
+    },
+    {
+      "pattern": "\\bDrive Data Read\\b",
+      "replacement": "datos leídos del disco"
+    },
+    {
+      "pattern": "\\bDrive Used Space\\b",
+      "replacement": "espacio usado del disco"
+    },
+    {
+      "pattern": "\\bDrive Write Rate\\b",
+      "replacement": "velocidad de escritura del disco"
+    },
+    {
+      "pattern": "\\bDrive Read Rate\\b",
+      "replacement": "velocidad de lectura del disco"
+    },
+    {
+      "pattern": "\\bDrive Temperature\\b",
+      "replacement": "temperatura del disco"
+    },
+    {
+      "pattern": "\\bBattery Temperature\\b",
+      "replacement": "temperatura de la batería"
+    },
+    {
+      "pattern": "\\bCharge/Discharge Current\\b",
+      "replacement": "corriente de carga/descarga"
+    },
+    {
+      "pattern": "\\bCharge/Discharge Rate\\b",
+      "replacement": "tasa de carga/descarga"
+    },
+    {
+      "pattern": "\\bCharge Level\\b",
+      "replacement": "nivel de carga"
+    },
+    {
+      "pattern": "\\bDegradation Level\\b",
+      "replacement": "nivel de degradación"
+    },
+    {
+      "pattern": "\\bDesigned Capacity\\b",
+      "replacement": "capacidad de diseño"
+    },
+    {
+      "pattern": "\\bFully-Charged Capacity\\b",
+      "replacement": "capacidad a plena carga"
+    },
+    {
+      "pattern": "\\bRemaining Capacity\\b",
+      "replacement": "capacidad restante"
+    },
+    {
+      "pattern": "\\bRemaining Time \\(Estimated\\)",
+      "replacement": "tiempo restante (estimado)"
+    },
+    {
+      "pattern": "\\bDownload Speed\\b",
+      "replacement": "velocidad de descarga"
+    },
+    {
+      "pattern": "\\bUpload Speed\\b",
+      "replacement": "velocidad de subida"
+    },
+    {
+      "pattern": "\\bData Downloaded\\b",
+      "replacement": "datos descargados"
+    },
+    {
+      "pattern": "\\bData Uploaded\\b",
+      "replacement": "datos subidos"
+    },
+    {
+      "pattern": "\\bNetwork Utilization\\b",
+      "replacement": "uso de red"
+    },
+    {
+      "pattern": "\\bMonitor Refresh Rate\\b",
+      "replacement": "frecuencia de actualización del monitor"
+    },
+    {
+      "pattern": "\\bWater Temperature Alarm\\b",
+      "replacement": "alarma de temperatura del agua"
+    },
+    {
+      "pattern": "\\bWater Temperature\\b",
+      "replacement": "temperatura del agua"
+    },
+    {
+      "pattern": "\\bWater Quality Alarm\\b",
+      "replacement": "alarma de calidad del agua"
+    },
+    {
+      "pattern": "\\bWater Quality\\b",
+      "replacement": "calidad del agua"
+    },
+    {
+      "pattern": "\\bExternal Temperature Alarm\\b",
+      "replacement": "alarma de temperatura externa"
+    },
+    {
+      "pattern": "\\bExternal Temperature\\b",
+      "replacement": "temperatura externa"
+    },
+    {
+      "pattern": "\\bExternal Sensor\\b",
+      "replacement": "sensor externo"
+    },
+    {
+      "pattern": "\\bExternal Fan VRM\\b",
+      "replacement": "ventilador externo VRM"
+    },
+    {
+      "pattern": "\\bExternal Fan\\b",
+      "replacement": "ventilador externo"
+    },
+    {
+      "pattern": "\\bInternal Water\\b",
+      "replacement": "agua interna"
+    },
+    {
+      "pattern": "\\bFlow Alarm\\b",
+      "replacement": "alarma de caudal"
+    },
+    {
+      "pattern": "\\bViritual Flow\\b",
+      "replacement": "caudal virtual"
+    },
+    {
+      "pattern": "\\bPump MaxFrequency\\b",
+      "replacement": "frecuencia máx. de la bomba"
+    },
+    {
+      "pattern": "\\bFans Control\\b",
+      "replacement": "control de ventiladores"
+    },
+    {
+      "pattern": "\\bFan Control\\b",
+      "replacement": "control de ventilador"
+    },
+    {
+      "pattern": "\\bFan Channel\\b",
+      "replacement": "canal de ventilador"
+    },
+    {
+      "pattern": "\\bGRID Noise\\b",
+      "replacement": "ruido GRID"
+    },
+    {
+      "pattern": "\\bGRID Fan\\b",
+      "replacement": "ventilador GRID"
+    },
+    {
+      "pattern": "\\bAnalog Sensor\\b",
+      "replacement": "sensor analógico"
+    },
+    {
+      "pattern": "\\bDigital Sensor\\b",
+      "replacement": "sensor digital"
+    },
+    {
+      "pattern": "\\bDissipated Power\\b",
+      "replacement": "potencia disipada"
+    },
+    {
+      "pattern": "\\b([CG]PU) Temperature\\b",
+      "replacement": "temperatura $1"
+    },
+    {
+      "pattern": "\\b([CG]PU) Temp\\b",
+      "replacement": "temp. $1"
+    },
+    {
+      "pattern": "\\b([CG]PU) Clock\\b",
+      "replacement": "reloj $1"
+    },
+    {
+      "pattern": "\\b([CG]PU) Power\\b",
+      "replacement": "potencia $1"
+    },
+    {
+      "pattern": "\\b([CG]PU) Voltage\\b",
+      "replacement": "voltaje $1"
+    },
+    {
+      "pattern": "\\b([CG]PU) Load\\b",
+      "replacement": "carga $1"
+    },
+    {
+      "pattern": "\\b([CG]PU) Usage\\b",
+      "replacement": "uso $1"
+    },
+    {
+      "pattern": "\\b([CG]PU) Fan\\b",
+      "replacement": "ventilador $1"
+    },
+    {
+      "pattern": "\\b([CG]PU) Memory\\b",
+      "replacement": "memoria $1"
+    },
+    {
+      "pattern": "\\b([CG]PU) Mem\\b",
+      "replacement": "mem. $1"
+    },
+    {
+      "pattern": "\\b([CG]PU) Core\\b",
+      "replacement": "núcleo $1"
+    },
+    {
+      "pattern": "\\b([CG]PU) Package\\b",
+      "replacement": "paquete $1"
+    },
+    {
+      "pattern": "\\b([CG]PU) Limits\\b",
+      "replacement": "límites $1"
+    },
+    {
+      "pattern": "\\b([CG]PU) Throughput\\b",
+      "replacement": "transferencia $1"
+    },
+    {
+      "pattern": "\\bStorage Temperature\\b",
+      "replacement": "temperatura almacenamiento"
+    },
+    {
+      "pattern": "\\bStorage Throughput\\b",
+      "replacement": "transferencia almacenamiento"
+    },
+    {
+      "pattern": "\\bStorage Load\\b",
+      "replacement": "carga almacenamiento"
+    },
+    {
+      "pattern": "\\bTemperature\\b",
+      "replacement": "temperatura"
+    },
+    {
+      "pattern": "\\bTemp\\b(?!\\.)",
+      "replacement": "temp."
+    },
+    {
+      "pattern": "\\bClock\\b",
+      "replacement": "reloj"
+    },
+    {
+      "pattern": "\\bPower\\b",
+      "replacement": "potencia"
+    },
+    {
+      "pattern": "\\bVoltage\\b",
+      "replacement": "voltaje"
+    },
+    {
+      "pattern": "\\bCurrent\\b",
+      "replacement": "corriente"
+    },
+    {
+      "pattern": "\\bPackage\\b",
+      "replacement": "paquete"
+    },
+    {
+      "pattern": "\\bMemory\\b",
+      "replacement": "memoria"
+    },
+    {
+      "pattern": "\\bMem\\b(?!\\.)",
+      "replacement": "mem."
+    },
+    {
+      "pattern": "\\bUsage\\b",
+      "replacement": "uso"
+    },
+    {
+      "pattern": "\\bLoad\\b",
+      "replacement": "carga"
+    },
+    {
+      "pattern": "\\bFans\\b",
+      "replacement": "ventiladores"
+    },
+    {
+      "pattern": "\\bFan\\b",
+      "replacement": "ventilador"
+    },
+    {
+      "pattern": "\\bPump\\b",
+      "replacement": "bomba"
+    },
+    {
+      "pattern": "\\bFlowmeter\\b",
+      "replacement": "caudalímetro"
+    },
+    {
+      "pattern": "\\bFlow\\b",
+      "replacement": "caudal"
+    },
+    {
+      "pattern": "\\bCoolant\\b",
+      "replacement": "refrigerante"
+    },
+    {
+      "pattern": "\\bLiquid\\b",
+      "replacement": "líquido"
+    },
+    {
+      "pattern": "\\bPressure\\b",
+      "replacement": "presión"
+    },
+    {
+      "pattern": "\\bConductivity\\b",
+      "replacement": "conductividad"
+    },
+    {
+      "pattern": "\\bInput\\b",
+      "replacement": "entrada"
+    },
+    {
+      "pattern": "\\bExternal\\b",
+      "replacement": "externo"
+    },
+    {
+      "pattern": "\\bFrequency\\b",
+      "replacement": "frecuencia"
+    },
+    {
+      "pattern": "\\bAverage\\b",
+      "replacement": "promedio"
+    },
+    {
+      "pattern": "\\bDedicated\\b",
+      "replacement": "dedicada"
+    },
+    {
+      "pattern": "\\bShared\\b",
+      "replacement": "compartida"
+    },
+    {
+      "pattern": "\\bAllocated\\b",
+      "replacement": "asignada"
+    },
+    {
+      "pattern": "\\bUsed\\b",
+      "replacement": "usada"
+    },
+    {
+      "pattern": "\\bFree\\b",
+      "replacement": "libre"
+    },
+    {
+      "pattern": "\\bAvailable\\b",
+      "replacement": "disponible"
+    },
+    {
+      "pattern": "\\bTotal\\b",
+      "replacement": "total"
+    },
+    {
+      "pattern": "\\bRead\\b",
+      "replacement": "lectura"
+    },
+    {
+      "pattern": "\\bWrite\\b",
+      "replacement": "escritura"
+    },
+    {
+      "pattern": "\\bCores\\b",
+      "replacement": "núcleos"
+    },
+    {
+      "pattern": "\\bCore\\b",
+      "replacement": "núcleo"
+    },
+    {
+      "pattern": "\\bThreads\\b",
+      "replacement": "hilos"
+    },
+    {
+      "pattern": "\\bThread\\b",
+      "replacement": "hilo"
+    },
+    {
+      "pattern": "\\bEffective\\b",
+      "replacement": "efectivo"
+    },
+    {
+      "pattern": "\\bHot Spot\\b",
+      "replacement": "punto caliente"
+    },
+    {
+      "pattern": "\\bJunction\\b",
+      "replacement": "unión"
+    },
+    {
+      "pattern": "\\bCapacity\\b",
+      "replacement": "capacidad"
+    },
+    {
+      "pattern": "\\bThreshold\\b",
+      "replacement": "umbral"
+    },
+    {
+      "pattern": "\\bLifetime\\b",
+      "replacement": "vida útil"
+    },
+    {
+      "pattern": "\\bActivity\\b",
+      "replacement": "actividad"
+    },
+    {
+      "pattern": "\\bDrive\\b",
+      "replacement": "disco"
+    },
+    {
+      "pattern": "\\bModel\\b",
+      "replacement": "modelo"
+    },
+    {
+      "pattern": "\\bMax\\b",
+      "replacement": "máx."
+    },
+    {
+      "pattern": "\\bMin\\b",
+      "replacement": "mín."
+    },
+    {
+      "pattern": "\\bGame\\b",
+      "replacement": "juego"
+    }
+  ]
+}

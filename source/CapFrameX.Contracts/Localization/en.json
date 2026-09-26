@@ -47,6 +47,10 @@
     "Appxaml_FatalError": "Fatal Error",
     "Appxaml_FrameViewEtwSessionDetected": "FrameViewService ETW session detected.\n\nThe NVIDIA FrameView SDK is currently running an ETW trace session that may conflict with PresentMon. If CapFrameX does not show performance metrics during capture, consider uninstalling the NVIDIA FrameView SDK.\n\nClick 'Yes' to continue and show this warning again next time.\nClick 'No' to continue and never show this warning again.",
     "Appxaml_YourReportIdIs0": "Your Report-ID is {0}.\nPlease include this Id in your support inquiry. Visit https://www.capframex.com/support for further information.",
+
+    // =========================================================================
+    // BENCHLAB - Power unit label
+    // =========================================================================
     "BenchlabMetricsManager_W": "W",
 
     // =========================================================================
@@ -368,14 +372,19 @@
     "ComparisonViewModel_DisplayFPS": "Display FPS",
     // Chart Y-axis label: time between display change samples
     "ComparisonViewModel_DisplayTime": "Display time",
-    "ComparisonViewModel_Distribution": "Distribution [%]",
+    "ComparisonViewModel_Distribution0": "{0} Distribution [%]",
     "ComparisonViewModel_FPS": "FPS",
     "ComparisonViewModel_FPS1S": "FPS [1/s]",
     "ComparisonViewModel_FrameTimeDistribution": "Frame Time Distribution [%]",
     "ComparisonViewModel_FrameTimeMs2": "Frame time [ms]",
+    "ComparisonViewModel_FramesIn01": "{0} frames in {1}s",
     "ComparisonViewModel_FrametimeMs": "Frametime [ms]",
     "ComparisonViewModel_Frametimes": "Frametimes",
     "ComparisonViewModel_GPUActiveTimeMs": "GPU active time [ms]",
+    "ComparisonViewModel_LegendDisplay": "Display",
+    "ComparisonViewModel_LegendGPUActive": "GPU active",
+    "ComparisonViewModel_LegendPresent": "Present",
+    "ComparisonViewModel_MetricFps01": "{0} FPS ({1})",
     // Chart Y-axis label: frames per second calculated from present calls
     "ComparisonViewModel_PresentFPS": "Present FPS",
     // Chart Y-axis label: time between present calls
@@ -457,10 +466,14 @@
     "ComparisonView_TypeYourTitleHere4": "Type your title here...",
     "ComparisonView_Values": "Values",
     "ComparisonView_Variances": "Variances",
+
+    // =========================================================================
+    // MESSAGE DIALOGS - Shared close buttons
+    // =========================================================================
     "ConditionalMessageDialog_Close": "Close",
 
     // =========================================================================
-    // OVERLAY CONTROL - Hotkeys, toggle switches, active profile selection
+    // RECORD LIST (CONTROL VIEW) - Capture folders, record list and record details
     // =========================================================================
     "ControlViewModel_SearchIn01Items": "Search in \"{0}\" ({1} items)",
     "ControlView_Aggregated": "Aggregated",
@@ -680,7 +693,7 @@
     "DataView_YAxisScale": "Y-Axis scale",
 
     // =========================================================================
-    // DEBUG MONITOR - Diagnostic logs and internal process status
+    // DEBUG MONITOR - CapFrameX and PresentMon resource usage, ETW buffer status
     // =========================================================================
     "DebugMonitorWindow_BufferFill": "Buffer Fill %:",
     "DebugMonitorWindow_BuffersInUse": "Buffers In Use:",
@@ -884,9 +897,17 @@
     "EditingDialog_CustomCPUDescription": "Custom CPU description",
     "EditingDialog_CustomComment": "Custom comment",
     "EditingDialog_CustomGPUDescription": "Custom GPU description",
+
+    // =========================================================================
+    // OVERLAY DIAGNOSTICS - Extended OSD logging errors
+    // =========================================================================
     "ExtendedOsdLoggingViewModel_CouldNotBeRead0": "Extended OSD logging could not be read: {0}",
     "ExtendedOsdLoggingViewModel_CouldNotBeUpdated0": "Extended OSD logging could not be updated: {0}",
     "ExtendedOsdLoggingViewModel_FolderCouldNotBeOpened0": "OSD log folder could not be opened: {0}",
+
+    // =========================================================================
+    // CHART CONTEXT MENUS - Copy and export actions of the analysis charts
+    // =========================================================================
     "FpsGraphControl_CopyFpsGPUBusyFps": "Copy fps + GPU-Busy fps values (f)",
     "FpsGraphControl_CopyFpsGPUBusyFps2": "Copy fps + GPU-Busy fps points (t, f(t))",
     "FpsGraphControl_CopyFpsPointsTF": "Copy fps points (t, f(t))",
@@ -904,10 +925,14 @@
     "FrametimeGraphControl_SavePlotAsSVG": "Save plot as SVG",
 
     // =========================================================================
-    // SYSTEM INFO VIEW - CPU, GPU, RAM, motherboard and driver details
+    // HOTKEY FIELDS - Placeholder and validation message of hotkey text boxes
     // =========================================================================
     "HotkeyValidationRule_HotkeyIsNotValid": "Hotkey is not valid.",
     "HotkeyValidationRule_NotSet": "Not set",
+
+    // =========================================================================
+    // SYSTEM INFO VIEW - CPU, GPU, RAM, motherboard and driver details
+    // =========================================================================
     "InfoViewModel_Detecting": "Detecting...",
     "InfoView_Available": "Available",
     "InfoView_Clock": "Clock",
@@ -930,11 +955,19 @@
     "InfoView_Usage": "Usage",
     "InfoView_VRAM": "VRAM",
     "InfoView_WindowsGameMode": "Windows Game Mode",
+
+    // =========================================================================
+    // VOLTAGE MONITOR - Panther Lake voltage diagnostics tool
+    // =========================================================================
     "MainWindow_Core": "Core",
     "MainWindow_PantherLakeVoltageCandidates": "Panther Lake Voltage Candidates",
     "MainWindow_PantherLakeVoltageMonitor": "Panther Lake Voltage Monitor",
     "MainWindow_Polling1s": "Polling: 1s",
     "MainWindow_Raw0x019C": "Raw 0x019C",
+
+    // =========================================================================
+    // MESSAGE DIALOGS - Shared close buttons
+    // =========================================================================
     "MessageDialog_Close": "Close",
 
     // =========================================================================
@@ -1236,6 +1269,10 @@
     "PmdView_Values": "Values",
     "PoweneticsMetricsManager_W": "W",
     "PoweneticsViewModel_1S": "[1/s]",
+
+    // =========================================================================
+    // OUTLIER DETECTION - Metric compared to find outlier runs (capture and aggregation)
+    // =========================================================================
     "RelatedMetric_Average": "Average",
     "RelatedMetric_Second": "Second",
     "RelatedMetric_Third": "Third",
@@ -1386,6 +1423,10 @@
     "SensorView_UncheckCPUThreadLoads": "Uncheck CPU thread loads",
     "SensorView_UncheckGPUBasics": "Uncheck GPU basics",
     "SensorView_UseForLogging": "Use for logging",
+
+    // =========================================================================
+    // SHELL, SOUNDS & SPLASH SCREEN - Tray menu, capture sound modes, startup screen
+    // =========================================================================
     "Shell_CapFrameX": "CapFrameX",
     "Shell_Close": "Close",
     "Shell_OverlayProfileCouldNotBeSaved": "The overlay profile could not be saved. CapFrameX will remain open so your changes are not lost.",
@@ -1473,6 +1514,10 @@
     "SynchronizationView_UntilDisplayedTimeMs": "Until displayed time (ms)",
     "SynchronizationView_UntilDisplayedTimes": "Until displayed times",
     "SynchronizationView_Upper": "Upper",
+
+    // =========================================================================
+    // UNSAVED OVERLAY PROFILE DIALOG - Prompt when closing with unsaved overlay changes
+    // =========================================================================
     "UnsavedOverlayProfileDialog_Cancel": "Cancel",
     "UnsavedOverlayProfileDialog_ClosingWithoutSavingPermanentlyDiscards": "Closing without saving permanently discards the current changes.",
     "UnsavedOverlayProfileDialog_ExitWithoutSaving": "Exit without saving",
@@ -1618,6 +1663,9 @@
     "System time": "System time",
     "Time": "Time"
   },
-  // Phrases: Regex replacements for OSD hardware labels (built on-demand)
+  // Phrases: regex rules for OSD labels that have no exact "overlay" entry (sensor and group names).
+  // Matched case-insensitively and applied longest pattern first; the order of patterns with the
+  // same length is not guaranteed, so a specific rule must be longer than the generic one it overrides.
+  // Replacements are lowercase: the first letter of the result is capitalized afterwards.
   "phrases": []
 }

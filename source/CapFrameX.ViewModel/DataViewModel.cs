@@ -5,6 +5,7 @@ using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
+using CapFrameX.Extensions.NetStandard;
 using CapFrameX.MVVM.Dialogs;
 using CapFrameX.Sensor.Reporting;
 using CapFrameX.Sensor.Reporting.Contracts;
@@ -780,6 +781,12 @@ namespace CapFrameX.ViewModel
             InitializeStatisticParameter();
             SetThresholdLabels();
             Setup();
+
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage) && _session != null)
+                    UpdateSensorSessionReport();
+            };
         }
 
         private bool GetIsPowerLimitAvailable()
@@ -1391,8 +1398,18 @@ namespace CapFrameX.ViewModel
             SensorReportItems.Clear();
             SensorReport.GetReportFromSessionSensorData(_session.Runs.Select(run => run.SensorData2).Cast<ISessionSensorData>(),
                _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength)
-               .ForEach(SensorReportItems.Add);
+               .ForEach(item =>
+               {
+                   // The report names are the English descriptions; the table shows them in the UI language.
+                   if (item.Name != null && ReportSensorNames.TryGetValue(item.Name, out var sensorName))
+                       item.Name = CxLang.TranslateEnum(sensorName);
+                   SensorReportItems.Add(item);
+               });
         }
+
+        private static readonly Dictionary<string, EReportSensorName> ReportSensorNames =
+            Enum.GetValues(typeof(EReportSensorName)).Cast<EReportSensorName>()
+                .ToDictionary(name => name.GetDescription(), name => name);
 
         private void UpdateMainCharts()
         {

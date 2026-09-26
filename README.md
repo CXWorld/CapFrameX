@@ -397,6 +397,8 @@ NuGet package versions are managed centrally in `source/Directory.Packages.props
 
 CapFrameX supports multiple languages through embedded JSON catalog files located in `source/CapFrameX.Contracts/Localization/`.
 
+Available languages: English (`en`), Russian (`ru`) and Spanish (`es`).
+
 Each language catalog contains three main sections:
 * `"strings"`: Key-value pairs for desktop UI elements (buttons, menus, labels, dialogs). Placeholders like `{0}` and `{1}` must be preserved.
 * `"overlay"`: Static label overrides displayed directly in the in-game OSD (e.g. `<APP>`, FPS, frametime labels).
@@ -410,6 +412,7 @@ Each language catalog contains three main sections:
    * Translate all values in `"strings"`.
    * Translate labels in `"overlay"`.
    * Translate the regex replacement values in `"phrases"` for localized OSD sensor names.
+4. **Translate the Chart Help (optional)**: Add `source/CapFrameX/HelpTexts/ChartControls.<code>.rtf` with the translated chart controls help. Without it, the English `ChartControls.rtf` is shown.
 
 That's it! All `*.json` files in the `Localization` folder are automatically embedded on build and discovered at runtime, so no project files or C# code need to be touched. Automated catalog tests will verify that all required keys are present and match placeholder parameters.
 
