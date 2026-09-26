@@ -99,25 +99,15 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.IsOverlayActive; }
             set
             {
-                // Missing renderer dependencies may prevent activation, but they must never trap
-                // a stale active state. In particular, a portable configuration can still contain
-                // IsOverlayActive=true after being moved to a machine without RTSS.
-                if (CanSetOverlayActive(value, IsRTSSInstalled,
-                    _appConfiguration.EnableHookFreeOverlay, _appConfiguration.EnableHookOverlay))
-                {
-                    _appConfiguration.IsOverlayActive = value;
-                    _overlayService.IsOverlayActiveStream.OnNext(value);
-                }
-
+                // A refused activation still raises the change, so the toggle springs back.
+                OverlayActivation.TrySet(_appConfiguration, _overlayService, IsRTSSInstalled, value);
                 RaisePropertyChanged();
             }
         }
 
         internal static bool CanSetOverlayActive(bool requestedActive, bool isRTSSInstalled,
             bool enableHookFreeOverlay, bool enableHookOverlay)
-        {
-            return !requestedActive || isRTSSInstalled || enableHookFreeOverlay || enableHookOverlay;
-        }
+            => OverlayActivation.CanSet(requestedActive, isRTSSInstalled, enableHookFreeOverlay, enableHookOverlay);
 
         //public bool ToggleGlobalRTSSOSD
         //{
@@ -874,6 +864,12 @@ namespace CapFrameX.ViewModel
                 .Throttle(TimeSpan.FromMilliseconds(50))
                 .ObserveOnDispatcher()
                 .Subscribe(_ => RaiseOverlayRendererProperties());
+
+            // The overlay is also switched by the status bar, by the auto-disable during a capture
+            // and by remote clients; the toggles on this page have to follow all of them.
+            _overlayService.IsOverlayActiveStream
+                ?.ObserveOnDispatcher()
+                .Subscribe(_ => RaisePropertyChanged(nameof(IsOverlayActive)));
 
             // Keep the "RTSS output is hidden" hint (ShowRtssHiddenHint) in sync when the user
             // toggles "Hide OSD on RTSS" from the other settings view.

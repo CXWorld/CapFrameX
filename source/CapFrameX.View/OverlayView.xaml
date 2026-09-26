@@ -528,11 +528,13 @@
 				</DockPanel>
 			</materialDesign:DialogHost>
 		</Border>
-		<!--No outer frame: the sections inside are individual filled cards-->
+		<!--No outer frame: the sections inside are individual filled cards. The cards are taller than
+			the page at the default window height, so the column scrolls instead of cutting them off.-->
 		<Border Grid.Row="0" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness="0">
+		<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 			<Grid HorizontalAlignment="Center">
 				<Grid.RowDefinitions>
-					<RowDefinition Height="0"></RowDefinition>
+					<RowDefinition Height="55"></RowDefinition>
 					<RowDefinition Height="120"></RowDefinition>
 					<RowDefinition Height="200"></RowDefinition>
 					<RowDefinition Height="320"></RowDefinition>
@@ -543,6 +545,23 @@
 					<ColumnDefinition Width="220"/>
 				</Grid.ColumnDefinitions>
 				<!--<TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Text="{Binding SelectedOverlayItemName}"/>-->
+				<!-- Overlay switch: its own card above the template, the first thing in the column. Same
+					 binding as the switch in OSD options, the status bar toggle and the overlay hotkey. -->
+				<!-- 10 below: the template card starts at its row edge, so this margin alone is the gap
+					 that two 5 px card margins make everywhere else. -->
+				<Border Grid.Row="0" Grid.ColumnSpan="2" Margin="5 0 5 10" Style="{StaticResource SectionCard}"
+						ToolTip="Show or hide the overlay">
+					<DockPanel Margin="10 0 12 0" VerticalAlignment="Center">
+						<ToggleButton DockPanel.Dock="Right" VerticalAlignment="Center"
+									  IsChecked="{Binding IsOverlayActive, Mode=TwoWay}"/>
+						<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+							<TextBlock Text="Overlay" FontSize="16" VerticalAlignment="Center"/>
+							<TextBlock Margin="12 0 0 0" FontSize="12" VerticalAlignment="Center"
+									   Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"
+									   Text="{Binding OverlayHotkeyString, StringFormat='Hotkey {0}'}"/>
+						</StackPanel>
+					</DockPanel>
+				</Border>
 				<!-- Overlay Template Picker -->
 				<Border Grid.Row="1" Grid.ColumnSpan="2" Margin="5 0 5 5" Style="{StaticResource SectionCard}">
 					<Grid Margin="5 0 5 0">
@@ -976,6 +995,7 @@
 					</Border>
 				</Grid>
 			</Grid>
+		</ScrollViewer>
 		</Border>
 				</Grid>
 			</TabItem>

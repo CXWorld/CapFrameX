@@ -29,6 +29,7 @@ namespace CapFrameX.ViewModel
 		private readonly ICaptureService _captureService;
 		private readonly IOverlayService _overlayService;
 		private readonly IAppVersionProvider _appVersionProvider;
+		private readonly IRTSSService _rTSSService;
 		private readonly ISystemInfo _systemInfo;
 		private static ILogger<StateViewModel> _logger;
 
@@ -40,13 +41,31 @@ namespace CapFrameX.ViewModel
 
 		private bool IsBeta => _appVersionProvider.GetReleaseChannel() == EUpdateChannel.Beta;
 
+		/// <summary>
+		/// Backs the overlay toggle of the status bar. Setting it switches the overlay like the
+		/// hotkey does; the shown state follows the overlay stream, so a refused activation
+		/// springs back and any other switch (hotkey, Overlay tab, capture) shows up here.
+		/// </summary>
 		public bool IsOverlayActive
 		{
 			get { return _isOverlayActive; }
 			set
 			{
-				_isOverlayActive = value;
+				if (value != _isOverlayActive)
+					OverlayActivation.TrySet(_appConfiguration, _overlayService,
+						_rTSSService.IsRTSSInstalled(), value);
 				RaisePropertyChanged();
+			}
+		}
+
+		public string OverlayToggleToolTip
+		{
+			get
+			{
+				string hotkey = _appConfiguration.OverlayHotKey;
+				return string.IsNullOrWhiteSpace(hotkey)
+					? "Switch the overlay on or off."
+					: $"Switch the overlay on or off (hotkey {hotkey}).";
 			}
 		}
 
@@ -150,15 +169,16 @@ namespace CapFrameX.ViewModel
 			_overlayService = overlayService;
 			UpdateViewModel = updateViewModel;
 			_appVersionProvider = appVersionProvider;
+			_rTSSService = rTSSService;
 			_systemInfo = systemInfo;
 			_logger = logger;
 
 			UpdateStatusInfoCommand = new DelegateCommand(RefreshSystemInfo);
 
 			IsCaptureModeActive = false;
-			IsOverlayActive = _appConfiguration.IsOverlayActive &&
+			ShowOverlayActive(_appConfiguration.IsOverlayActive &&
 				(rTSSService.IsRTSSInstalled() || _appConfiguration.EnableHookFreeOverlay ||
-				 _appConfiguration.EnableHookOverlay);
+				 _appConfiguration.EnableHookOverlay));
 			IsHookOverlayStatusVisible = _appConfiguration.EnableHookOverlay;
 			ApplyHookOverlayStatus(hookOverlayStatusService.Current);
 			Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
@@ -179,6 +199,10 @@ namespace CapFrameX.ViewModel
 					else uiDispatcher.BeginInvoke(apply);
 				});
 
+			_appConfiguration.OnValueChanged
+				.Where(x => x.key == nameof(IAppConfiguration.OverlayHotKey))
+				.Subscribe(_ => RaisePropertyChanged(nameof(OverlayToggleToolTip)));
+
 			_captureService.IsCaptureModeActiveStream
 				.Subscribe(state => IsCaptureModeActive = state);
 
@@ -186,7 +210,7 @@ namespace CapFrameX.ViewModel
 				.Subscribe(state => IsLoggingActive = state);
 
 			_overlayService.IsOverlayActiveStream
-				.Subscribe(state => IsOverlayActive = state);
+				.Subscribe(ShowOverlayActive);
 
 			IsLoggedIn = loginManager.State.Token != null;
 
@@ -204,6 +228,12 @@ namespace CapFrameX.ViewModel
 			Dispatcher.CurrentDispatcher.BeginInvoke(
 				new Action(RefreshSystemInfo),
 				DispatcherPriority.ApplicationIdle);
+		}
+
+		private void ShowOverlayActive(bool active)
+		{
+			_isOverlayActive = active;
+			RaisePropertyChanged(nameof(IsOverlayActive));
 		}
 
 		private void ApplyHookOverlayStatus(HookOverlayStatus status)
