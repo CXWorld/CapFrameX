@@ -1,5 +1,6 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Monitoring.Contracts;
 using CapFrameX.Test.Mocks;
@@ -44,6 +45,8 @@ namespace CapFrameX.Test.ViewModel
                 _sensorConfig.Object,
                 new Mock<ISystemInfo>().Object,
                 appConfiguration.Object,
+                new Mock<IRTSSService>().Object,
+                new Mock<IAppVersionProvider>().Object,
                 _eventAggregator,
                 new Mock<ILogger<InfoViewModel>>().Object);
         }

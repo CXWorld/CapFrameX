@@ -156,7 +156,7 @@
 							<Grid>
 								<Grid Margin="0 0 50 0" Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Bottom">
 									<ComboBox Grid.Column="5" Margin="45 0 0 15" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="{loc:Tr ComparisonView_Values}"
-					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="80" Height="40">
+					                    materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="110" Height="40">
 										<ComboBoxItem IsSelected="True" Content="{loc:Tr ComparisonView_Frametimes}"/>
 										<ComboBoxItem>FPS</ComboBoxItem>
 										<ComboBox.Text>

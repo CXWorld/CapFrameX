@@ -100,25 +100,15 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.IsOverlayActive; }
             set
             {
-                // Missing renderer dependencies may prevent activation, but they must never trap
-                // a stale active state. In particular, a portable configuration can still contain
-                // IsOverlayActive=true after being moved to a machine without RTSS.
-                if (CanSetOverlayActive(value, IsRTSSInstalled,
-                    _appConfiguration.EnableHookFreeOverlay, _appConfiguration.EnableHookOverlay))
-                {
-                    _appConfiguration.IsOverlayActive = value;
-                    _overlayService.IsOverlayActiveStream.OnNext(value);
-                }
-
+                // A refused activation still raises the change, so the toggle springs back.
+                OverlayActivation.TrySet(_appConfiguration, _overlayService, IsRTSSInstalled, value);
                 RaisePropertyChanged();
             }
         }
 
         internal static bool CanSetOverlayActive(bool requestedActive, bool isRTSSInstalled,
             bool enableHookFreeOverlay, bool enableHookOverlay)
-        {
-            return !requestedActive || isRTSSInstalled || enableHookFreeOverlay || enableHookOverlay;
-        }
+            => OverlayActivation.CanSet(requestedActive, isRTSSInstalled, enableHookFreeOverlay, enableHookOverlay);
 
         //public bool ToggleGlobalRTSSOSD
         //{
@@ -876,6 +866,12 @@ namespace CapFrameX.ViewModel
                 .ObserveOnDispatcher()
                 .Subscribe(_ => RaiseOverlayRendererProperties());
 
+            // The overlay is also switched by the status bar, by the auto-disable during a capture
+            // and by remote clients; the toggles on this page have to follow all of them.
+            _overlayService.IsOverlayActiveStream
+                ?.ObserveOnDispatcher()
+                .Subscribe(_ => RaisePropertyChanged(nameof(IsOverlayActive)));
+
             // Keep the "RTSS output is hidden" hint (ShowRtssHiddenHint) in sync when the user
             // toggles "Hide OSD on RTSS" from the other settings view.
             _appConfiguration.OnValueChanged
@@ -1001,6 +997,15 @@ namespace CapFrameX.ViewModel
             OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries.ForEach(entry => entry.PropertyChangedAction = SetSaveButtonIsEnable);
         }
 
+        // Every path that swaps in new entry objects (template apply and revert, reset to defaults)
+        // has to hook them up again: without PropertyChangedAction an edit no longer enables the
+        // save button, without UpdateGroupName a renamed group no longer reaches the separator list.
+        private void AttachEntryCallbacks()
+        {
+            OverlayEntries.ForEach(entry => entry.UpdateGroupName = OverlaySubModelGroupSeparating.UpdateGroupName);
+            SetSaveButtonIsEnableAction();
+        }
+
         private void SetSaveButtonIsEnable()
         {
             _overlayEntryProvider.MarkPendingChanges();
@@ -1086,7 +1091,7 @@ namespace CapFrameX.ViewModel
                 OverlayEntries.Clear();
                 OverlayEntries.AddRange(overlayEntries);
                 SetupOverlayEntriesView();
-                SetSaveButtonIsEnableAction();
+                AttachEntryCallbacks();
                 OverlayItemsOptionsEnabled = false;
                 _overlayEntryProvider.UpdateOverlayEntryFormats();
 
@@ -1248,6 +1253,7 @@ namespace CapFrameX.ViewModel
             // Setup view, refresh Separators list, and notify overlay
             SetupOverlayEntriesView();
             OverlaySubModelGroupSeparating.SetOverlayEntries(sortedEntries);
+            AttachEntryCallbacks();
 
             SetSaveButtonIsEnable();
 
@@ -1277,6 +1283,7 @@ namespace CapFrameX.ViewModel
             // Setup view, refresh Separators list, and notify overlay
             SetupOverlayEntriesView();
             OverlaySubModelGroupSeparating.SetOverlayEntries(OverlayEntries);
+            AttachEntryCallbacks();
 
             SetSaveButtonIsEnable();
 
