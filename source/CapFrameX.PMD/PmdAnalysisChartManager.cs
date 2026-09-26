@@ -260,7 +260,10 @@ namespace CapFrameX.PMD
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         AbsoluteMinimum = 0,
-                        AxisTitleDistance = 15
+                        AxisTitleDistance = 15,
+                        // OxyPlot clips the title to the plot area, which is shorter than "Frametimes [ms]"
+                        // in a default-sized window; the chart has room above and below it.
+                        ClipTitle = false
                     }
                  },
                  { "X_Axis_Performance", new LinearAxis()
