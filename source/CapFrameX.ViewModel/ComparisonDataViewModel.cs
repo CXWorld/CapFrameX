@@ -678,10 +678,10 @@ namespace CapFrameX.ViewModel
 			if (session != null)
 			{
 				var newLine = Environment.NewLine;
-				infoText += "creation date: " + fileRecordInfo.FileInfo.LastWriteTime.ToShortDateString() + newLine +
-							"creation time: " + fileRecordInfo.FileInfo.LastWriteTime.ToString("HH:mm:ss") + newLine +
-							"capture time: " + Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture) + " s" + newLine +
-							"number of samples: " + session.FrameTimes.Count.ToString();
+				infoText += CxLang.Format("ComparisonDataViewModel_CreationDate0", fileRecordInfo.FileInfo.LastWriteTime.ToShortDateString()) + newLine +
+							CxLang.Format("ComparisonDataViewModel_CreationTime0", fileRecordInfo.FileInfo.LastWriteTime.ToString("HH:mm:ss")) + newLine +
+							CxLang.Format("ComparisonDataViewModel_CaptureTime0", Math.Round(session.LastFrameTime, 2).ToString(CultureInfo.InvariantCulture)) + newLine +
+							CxLang.Format("ComparisonDataViewModel_NumberOfSamples0", session.FrameTimes.Count.ToString());
 			}
 
 			return new ComparisonRecordInfo

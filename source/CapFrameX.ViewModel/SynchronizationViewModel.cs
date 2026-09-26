@@ -632,9 +632,9 @@ namespace CapFrameX.ViewModel
 
                 InputLagParameterLabels = new List<string>
                 {
-                    "Upper bound",
-                    "Expected",
-                    "Lower bound"
+                    CxLang.T("SynchronizationViewModel_UpperBound"),
+                    CxLang.T("SynchronizationViewModel_Expected"),
+                    CxLang.T("SynchronizationViewModel_LowerBound")
                 }.ToArray();
             }));
         }

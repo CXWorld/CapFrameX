@@ -3,6 +3,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Extensions;
 using CapFrameX.Hotkey;
 using CapFrameX.ViewModel;
@@ -111,7 +112,7 @@ namespace CapFrameX.View
                 return true;
             }
 
-            const string message = "Enter a valid duration of 0 seconds or more (0 = no limit).";
+            string message = CxLang.T("CaptureView_EnterAValidDuration");
             if (binding != null)
                 Validation.MarkInvalid(binding, new ValidationError(new ExceptionValidationRule(), binding, message, null));
             CaptureTimeTextBox.ToolTip = message;
@@ -145,7 +146,7 @@ namespace CapFrameX.View
             var binding = textBox.GetBindingExpression(TextBox.TextProperty);
             if (binding != null)
                 Validation.ClearInvalid(binding);
-            textBox.ToolTip = "0 = no limit. Press Enter or leave the field to save.";
+            textBox.ToolTip = CxLang.T("CaptureView_NoLimitPressEnterOrLeave");
         }
 
         private void CaptureTimeScopeButton_Click(object sender, RoutedEventArgs e)

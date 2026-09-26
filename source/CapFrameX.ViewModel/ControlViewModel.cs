@@ -410,6 +410,15 @@ namespace CapFrameX.ViewModel
                 RaisePropertyChanged(nameof(SearchBarText));
             };
 
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage))
+                {
+                    RaisePropertyChanged(nameof(SearchBarText));
+                    RaisePropertyChanged(nameof(RootDirectory));
+                }
+            };
+
             SetupObservers(SynchronizationContext.Current);
         }
 

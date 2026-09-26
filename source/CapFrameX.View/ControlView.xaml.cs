@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.View.Controls;
@@ -118,7 +119,7 @@ namespace CapFrameX.View
                 Header = name,
                 Tag = o
             };
-            item.Items.Add("Loading...");
+            item.Items.Add(CxLang.T("ControlView_Loading"));
             return item;
         }
 
