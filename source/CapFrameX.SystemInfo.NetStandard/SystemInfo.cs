@@ -1,4 +1,4 @@
-﻿using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Sensor;
 using Microsoft.Extensions.Logging;
 using Mixaill.HwInfo.D3D;

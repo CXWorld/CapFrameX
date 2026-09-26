@@ -1,5 +1,6 @@
 using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.MVVM;
 using CapFrameX.Contracts.Overlay;
@@ -427,6 +428,35 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public IReadOnlyList<LanguageOption> Languages => CxLang.Instance.Languages;
+
+        public string UiLanguage
+        {
+            get => string.IsNullOrWhiteSpace(_appConfiguration.UiLanguage) ? "en" : _appConfiguration.UiLanguage;
+            set
+            {
+                if (value == null || value == _appConfiguration.UiLanguage)
+                    return;
+                _appConfiguration.UiLanguage = value;
+                CxLang.Instance.SetUiLanguage(value);
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(HelpText));
+            }
+        }
+
+        public string OverlayLanguage
+        {
+            get => string.IsNullOrWhiteSpace(_appConfiguration.OverlayLanguage) ? "en" : _appConfiguration.OverlayLanguage;
+            set
+            {
+                if (value == null || value == _appConfiguration.OverlayLanguage)
+                    return;
+                _appConfiguration.OverlayLanguage = value;
+                CxLang.Instance.SetOverlayLanguage(value);
+                RaisePropertyChanged();
+            }
+        }
+
         public bool StartMinimized
         {
             get { return _appConfiguration.StartMinimized; }
@@ -593,7 +623,16 @@ namespace CapFrameX.ViewModel
 
         public string AppNotification { get; private set; }
 
-        public string HelpText => File.ReadAllText(@"HelpTexts\ChartControls.rtf");
+        public string HelpText
+        {
+            get
+            {
+                var language = CxLang.Instance.UiLanguage;
+                var localized = Path.Combine("HelpTexts", "ChartControls." + language + ".rtf");
+                var path = File.Exists(localized) ? localized : Path.Combine("HelpTexts", "ChartControls.rtf");
+                return File.ReadAllText(path);
+            }
+        }
 
         public bool IsCompatibleWithRunningOS => CaptureServiceInfo.IsCompatibleWithRunningOS;
 
@@ -656,6 +695,7 @@ namespace CapFrameX.ViewModel
             _loginManager = loginManager;
             _captureManager = captureManager;
             UpdateViewModel = updateViewModel;
+            CxLang.Instance.PropertyChanged += (_, __) => RaisePropertyChanged(nameof(HelpText));
 
             RoundingDigits = new List<int>(Enumerable.Range(0, 8));
             SelectScreenshotFolderCommand = new DelegateCommand(OnSelectScreenshotFolder);

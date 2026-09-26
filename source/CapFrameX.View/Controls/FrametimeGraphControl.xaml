@@ -1,7 +1,7 @@
-﻿<UserControl x:Class="CapFrameX.View.Controls.FrametimeGraphControl"
+<UserControl x:Class="CapFrameX.View.Controls.FrametimeGraphControl"
 			 x:Name="FrametimeGraphControlName"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:CapFrameX.MVVM.Localization;assembly=CapFrameX.MVVM"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 			 xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
@@ -40,12 +40,12 @@
                 </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                 <controls:PlotViewCustomZoom.ContextMenu>
                     <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                        <MenuItem Header="Copy frametime values (f)" Command="{Binding CopyFrametimeValuesCommand}"/>
-                        <MenuItem Header="Copy frametime points (t, f(t))" Command="{Binding CopyFrametimePointsCommand}"/>
-                        <MenuItem Header="Copy frametime + GPU-Busy frametime values (f)" Command="{Binding CopyGpuActiveTimeValuesCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                        <MenuItem Header="Copy frametime + GPU-Busy frametime points (t, f(t))" Command="{Binding CopyGpuActiveTimePointsCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                        <MenuItem Header="Save plot as SVG" Command="{Binding SavePlotAsSVG }"/>
-                        <MenuItem Header="Save plot as PNG" Command="{Binding SavePlotAsPNG }"/>
+                        <MenuItem Header="{loc:Tr FrametimeGraphControl_CopyFrametimeValuesF}" Command="{Binding CopyFrametimeValuesCommand}"/>
+                        <MenuItem Header="{loc:Tr FrametimeGraphControl_CopyFrametimePointsTF}" Command="{Binding CopyFrametimePointsCommand}"/>
+                        <MenuItem Header="{loc:Tr FrametimeGraphControl_CopyFrametimeGPUBusyFrametime}" Command="{Binding CopyGpuActiveTimeValuesCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                        <MenuItem Header="{loc:Tr FrametimeGraphControl_CopyFrametimeGPUBusyFrametime2}" Command="{Binding CopyGpuActiveTimePointsCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                        <MenuItem Header="{loc:Tr FrametimeGraphControl_SavePlotAsSVG}" Command="{Binding SavePlotAsSVG }"/>
+                        <MenuItem Header="{loc:Tr FrametimeGraphControl_SavePlotAsPNG}" Command="{Binding SavePlotAsPNG }"/>
                     </ContextMenu>
                 </controls:PlotViewCustomZoom.ContextMenu>
             </controls:PlotViewCustomZoom>

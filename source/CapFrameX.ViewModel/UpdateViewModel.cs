@@ -1,5 +1,6 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Update;
 using CapFrameX.MVVM.Dialogs;
 using Microsoft.Extensions.Logging;
@@ -95,7 +96,7 @@ namespace CapFrameX.ViewModel
 			&& !IsDownloading
 			&& Normalize(SelectedVersion.Version) != Normalize(_appVersionProvider.GetAppVersion());
 
-		public string VersionSelectionActionText => IsSelectedVersionRollback ? "ROLL BACK" : "INSTALL VERSION";
+		public string VersionSelectionActionText => CxLang.T(IsSelectedVersionRollback ? "UpdateViewModel_RollBack" : "UpdateViewModel_InstallVersion");
 
 		/// <summary>Full sentence for the tab and the status bar tooltip.</summary>
 		public string StatusText
@@ -103,17 +104,22 @@ namespace CapFrameX.ViewModel
 			get
 			{
 				if (!IsUpdateServerConfigured)
-					return "No update server is configured.";
+					return CxLang.T("UpdateViewModel_NoUpdateServerIsConfigured");
 
+				if (_status.LocalizedMessage != null)
+					return _status.LocalizedMessage.Resolve();
+
+				// Messages without a catalog key (e.g. technical reasons for rejecting the
+				// release catalog) are shown in English.
 				if (!string.IsNullOrWhiteSpace(_status.Message))
 					return _status.Message;
 
 				switch (_status.State)
 				{
-					case EUpdateState.Checking: return "Looking for updates...";
-					case EUpdateState.UpToDate: return "CapFrameX is up to date.";
-					case EUpdateState.Failed: return "The update check failed.";
-					default: return "CapFrameX has not checked for updates yet.";
+					case EUpdateState.Checking: return CxLang.T("UpdateViewModel_LookingForUpdates");
+					case EUpdateState.UpToDate: return CxLang.T("UpdateViewModel_CapFrameXIsUpToDate");
+					case EUpdateState.Failed: return CxLang.T("UpdateViewModel_TheUpdateCheckFailed");
+					default: return CxLang.T("UpdateViewModel_CapFrameXHasNotCheckedFor");
 				}
 			}
 		}
@@ -129,15 +135,15 @@ namespace CapFrameX.ViewModel
 		public bool IsRollback => Package != null
 			&& Normalize(Package.Version) < Normalize(_appVersionProvider.GetAppVersion());
 
-		public string UpdateDialogTitle => IsRollback ? "Roll back CapFrameX" : "CapFrameX update";
+		public string UpdateDialogTitle => CxLang.T(IsRollback ? "UpdateViewModel_RollBackCapFrameX" : "UpdateViewModel_CapFrameXUpdate");
 
-		public string ConfirmActionText => IsRollback ? "ROLL BACK" : "UPDATE";
+		public string ConfirmActionText => CxLang.T(IsRollback ? "UpdateViewModel_RollBack" : "UpdateViewModel_Update");
 
-		public string InstallConfirmationText => IsRollback
-			? "The selected version replaces the current installation on the next launch. Captures and settings remain, but settings created by newer versions may not be understood by the older release."
+		public string InstallConfirmationText => CxLang.T(IsRollback
+			? "UpdateViewModel_InstallConfirmationRollback"
 			: Package?.Channel == EUpdateChannel.Beta
-				? "This beta build is downloaded now and installed the next time CapFrameX starts. Beta builds may be less stable than regular releases."
-				: "The update is downloaded now and installed the next time CapFrameX starts.";
+				? "UpdateViewModel_InstallConfirmationBeta"
+				: "UpdateViewModel_InstallConfirmationRegular");
 
 		/// <summary>Drives the download icon in the status bar.</summary>
 		public bool IsUpdateIndicatorVisible => IsUpdateAvailable || IsDownloading || IsUpdateReadyToInstall;
@@ -148,7 +154,7 @@ namespace CapFrameX.ViewModel
 			=> DownloadProgressPercent.ToString("F0", CultureInfo.InvariantCulture) + " %";
 
 		public string ReleaseSummary => string.IsNullOrWhiteSpace(Package?.Summary)
-			? "No description was provided for this update."
+			? CxLang.T("UpdateViewModel_NoDescriptionWasProvidedFor")
 			: Package.Summary;
 
 		public IReadOnlyList<string> ReleaseHighlights
@@ -173,7 +179,7 @@ namespace CapFrameX.ViewModel
 
 				return sizeInBytes <= 0L
 					? string.Empty
-					: $"Download size: {sizeInBytes / (1024d * 1024d):F1} MB";
+					: string.Format(CultureInfo.CurrentCulture, CxLang.T("UpdateViewModel_DownloadSize0MB"), (sizeInBytes / (1024d * 1024d)).ToString("F1", CultureInfo.CurrentCulture));
 			}
 		}
 
@@ -236,6 +242,22 @@ namespace CapFrameX.ViewModel
 			CancelDownloadCommand = cancelDownloadCommand;
 			InstallSelectedVersionCommand = installSelectedVersionCommand;
 			OpenReleaseNotesCommand = new DelegateCommand(OnOpenReleaseNotes, () => HasReleaseNotesLink);
+
+			CxLang.Instance.PropertyChanged += (_, __) =>
+			{
+				Action apply = () =>
+				{
+					RaisePropertyChanged(nameof(StatusText));
+					RaisePropertyChanged(nameof(VersionSelectionActionText));
+					RaisePropertyChanged(nameof(UpdateDialogTitle));
+					RaisePropertyChanged(nameof(ConfirmActionText));
+					RaisePropertyChanged(nameof(InstallConfirmationText));
+					RaisePropertyChanged(nameof(ReleaseSummary));
+					RaisePropertyChanged(nameof(PackageSizeText));
+				};
+				if (_dispatcher.CheckAccess()) apply();
+				else _dispatcher.BeginInvoke(apply);
+			};
 
 			// BehaviorSubject replays the current status, so this also seeds the initial state.
 			_updateService.StatusStream.Subscribe(status =>

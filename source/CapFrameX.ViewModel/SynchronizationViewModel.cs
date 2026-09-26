@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Data;
@@ -424,7 +425,7 @@ namespace CapFrameX.ViewModel
 
             var frametimeSeries = new Statistics.PlotBuilder.LineSeries
             {
-                Title = "Frametimes",
+                Title = CxLang.T("SynchronizationViewModel_Frametimes"),
                 StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 FontSize = 13,
@@ -434,7 +435,7 @@ namespace CapFrameX.ViewModel
 
             var untilDisplayedTimesSeries = new Statistics.PlotBuilder.LineSeries
             {
-                Title = "Until displayed times",
+                Title = CxLang.T("SynchronizationViewModel_UntilDisplayedTimes"),
                 StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 FontSize = 13,
@@ -469,7 +470,7 @@ namespace CapFrameX.ViewModel
                 {
                     Key = "xAxis",
                     Position = OxyPlot.Axes.AxisPosition.Bottom,
-                    Title = "Samples",
+                    Title = CxLang.T("SynchronizationViewModel_Samples"),
                     FontSize = 13,
                     AxisTitleDistance = 10,
                     Minimum = 0,
@@ -486,7 +487,7 @@ namespace CapFrameX.ViewModel
                 {
                     Key = "yAxis",
                     Position = OxyPlot.Axes.AxisPosition.Left,
-                    Title = "Frametime + until displayed time [ms]",
+                    Title = CxLang.T("SynchronizationViewModel_FrametimeUntilDisplayedTimeMs"),
                     FontSize = 13,
                     AxisTitleDistance = 10,
                     Minimum = yMin - (yMax - yMin) / 6,
@@ -534,7 +535,7 @@ namespace CapFrameX.ViewModel
                 {
                     new LiveCharts.Wpf.ColumnSeries
                     {
-                        Title = "Until displayed time distribution",
+                        Title = CxLang.T("SynchronizationViewModel_UntilDisplayedTimeDistribution"),
                         FontSize = 12,
                         Values = histogramValues,
                         Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
@@ -578,7 +579,7 @@ namespace CapFrameX.ViewModel
                 {
                     new LiveCharts.Wpf.ColumnSeries
                     {
-                        Title = "Input lag time distribution",
+                        Title = CxLang.T("SynchronizationViewModel_InputLagTimeDistribution"),
                         FontSize = 12,
                         Values = histogramValues,
                         Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
@@ -617,7 +618,7 @@ namespace CapFrameX.ViewModel
                 {
                     new RowSeries
                     {
-                        Title = "Average input lag",
+                        Title = CxLang.T("SynchronizationViewModel_AverageInputLag"),
                         Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)),
                         Values = values,
                         DataLabels = true,
@@ -649,7 +650,7 @@ namespace CapFrameX.ViewModel
                 {
                     new LiveCharts.Wpf.PieSeries
                     {
-                        Title = "Synced frames",
+                        Title = CxLang.T("SynchronizationViewModel_SyncedFrames"),
                         Values = new ChartValues<int>(){ appMissed.Count(flag => flag == false) },
                         DataLabels = true,
                         StrokeThickness = 0,
@@ -659,7 +660,7 @@ namespace CapFrameX.ViewModel
                     },
                     new LiveCharts.Wpf.PieSeries
                     {
-                        Title = "Dropped frames",
+                        Title = CxLang.T("SynchronizationViewModel_DroppedFrames"),
                         Values = new ChartValues<int>(){ appMissed.Count(flag => flag == true) },
                         DataLabels = true,
                         StrokeThickness = 0,
@@ -717,7 +718,7 @@ namespace CapFrameX.ViewModel
 
             var frametimeSeries = new Statistics.PlotBuilder.LineSeries
             {
-                Title = "Frametimes",
+                Title = CxLang.T("SynchronizationViewModel_Frametimes2"),
                 StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 Color = Constants.FrametimeColor,
@@ -726,7 +727,7 @@ namespace CapFrameX.ViewModel
 
             var upperBoundInputLagSeries = new Statistics.PlotBuilder.LineSeries
             {
-                Title = "Input lag high",
+                Title = CxLang.T("SynchronizationViewModel_InputLagHigh"),
                 StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 Color = OxyColor.FromRgb(255, 150, 150),
@@ -735,7 +736,7 @@ namespace CapFrameX.ViewModel
 
             var lowerBoundInputLagSeries = new Statistics.PlotBuilder.LineSeries
             {
-                Title = "Input lag low",
+                Title = CxLang.T("SynchronizationViewModel_InputLagLow"),
                 StrokeThickness = 1.5,
                 LegendStrokeThickness = 4,
                 Color = OxyColor.FromRgb(200, 140, 140),
@@ -781,7 +782,7 @@ namespace CapFrameX.ViewModel
                 {
                     Key = "xAxis",
                     Position = OxyPlot.Axes.AxisPosition.Bottom,
-                    Title = "Samples",
+                    Title = CxLang.T("SynchronizationViewModel_Samples2"),
                     FontSize = 13,
                     AxisTitleDistance = 10,
                     Minimum = 0,
@@ -798,7 +799,7 @@ namespace CapFrameX.ViewModel
                 {
                     Key = "yAxis",
                     Position = OxyPlot.Axes.AxisPosition.Left,
-                    Title = "Frametime + input lag [ms]",
+                    Title = CxLang.T("SynchronizationViewModel_FrametimeInputLagMs"),
                     FontSize = 13,
                     AxisTitleDistance = 10,
                     Minimum = yMin - (yMax - yMin) / 6,

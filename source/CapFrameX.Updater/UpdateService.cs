@@ -1,4 +1,5 @@
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Update;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -83,14 +84,16 @@ namespace CapFrameX.Updater
 		public async Task<UpdateStatus> CheckForUpdateAsync(CancellationToken cancellationToken = default)
 		{
 			if (!IsConfigured)
-				return Publish(new UpdateStatus(EUpdateState.Unknown, message: "No update server is configured."));
+				return Publish(new UpdateStatus(EUpdateState.Unknown, message: "No update server is configured.",
+					localizedMessage: new LocalizedText("UpdateViewModel_NoUpdateServerIsConfigured")));
 
 			if (!await _gate.WaitAsync(0).ConfigureAwait(false))
 				return CurrentStatus;
 
 			try
 			{
-				Publish(new UpdateStatus(EUpdateState.Checking, message: "Loading available versions..."));
+				Publish(new UpdateStatus(EUpdateState.Checking, message: "Loading available versions...",
+					localizedMessage: new LocalizedText("UpdateService_LoadingAvailableVersions")));
 
 				UpdateCatalogManifest catalog;
 				using (var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken))
@@ -116,7 +119,8 @@ namespace CapFrameX.Updater
 					_logger.LogInformation("The catalog contains no {channel} package. {releaseCount} packages remain selectable.",
 						currentChannel, packages.Count);
 					return Publish(new UpdateStatus(EUpdateState.UpToDate,
-						message: $"No {currentChannel} build is currently published. {packages.Count} other versions are available."));
+						message: $"No {currentChannel} build is currently published. {packages.Count} other versions are available.",
+						localizedMessage: new LocalizedText("UpdateViewModel_NoChannelBuildPublished", currentChannel, packages.Count)));
 				}
 
 				if (UpdatePolicy.Normalize(latestPackage.Version) <= UpdatePolicy.Normalize(currentVersion))
@@ -124,22 +128,26 @@ namespace CapFrameX.Updater
 					_logger.LogInformation("CapFrameX {appVersion} is up to date on the {channel} channel. The catalog contains {releaseCount} selectable versions.",
 						currentVersion, currentChannel, packages.Count);
 					return Publish(new UpdateStatus(EUpdateState.UpToDate,
-						message: $"CapFrameX is up to date on the {currentChannel} channel. {packages.Count} versions are available."));
+						message: $"CapFrameX is up to date on the {currentChannel} channel. {packages.Count} versions are available.",
+						localizedMessage: new LocalizedText("UpdateViewModel_CapFrameXUpToDateOnChannel", currentChannel, packages.Count)));
 				}
 
 				_logger.LogInformation("{channel} update {updateVersion} is available (installed: {appVersion}).",
 					latestPackage.Channel, latestPackage.Version, currentVersion);
 				return Publish(new UpdateStatus(EUpdateState.UpdateAvailable, latestPackage,
-					message: $"{latestPackage.Channel} version {UpdatePolicy.Format(latestPackage.Version)} is available."));
+					message: $"{latestPackage.Channel} version {UpdatePolicy.Format(latestPackage.Version)} is available.",
+					localizedMessage: new LocalizedText("UpdateViewModel_VersionAvailable", latestPackage.Channel, UpdatePolicy.Format(latestPackage.Version))));
 			}
 			catch (OperationCanceledException)
 			{
-				return Publish(new UpdateStatus(EUpdateState.Unknown, message: "The update check was cancelled."));
+				return Publish(new UpdateStatus(EUpdateState.Unknown, message: "The update check was cancelled.",
+					localizedMessage: new LocalizedText("UpdateViewModel_TheUpdateCheckWasCancelled")));
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Unable to read the update catalog at {catalogUri}.", _catalogUri);
-				return Publish(new UpdateStatus(EUpdateState.Failed, message: "The update server could not be reached."));
+				return Publish(new UpdateStatus(EUpdateState.Failed, message: "The update server could not be reached.",
+					localizedMessage: new LocalizedText("UpdateViewModel_TheUpdateServerCouldNotBeReached")));
 			}
 			finally
 			{
@@ -150,7 +158,8 @@ namespace CapFrameX.Updater
 		public UpdateStatus SelectVersion(Version version)
 		{
 			if (version == null)
-				return Publish(new UpdateStatus(EUpdateState.Failed, message: "No target version was selected."));
+				return Publish(new UpdateStatus(EUpdateState.Failed, message: "No target version was selected.",
+					localizedMessage: new LocalizedText("UpdateService_NoTargetVersionSelected")));
 
 			if (!_gate.Wait(0))
 				return CurrentStatus;
@@ -160,7 +169,8 @@ namespace CapFrameX.Updater
 				if (UpdatePolicy.IsBelowRollbackFloor(version))
 				{
 					return Publish(new UpdateStatus(EUpdateState.Failed,
-						message: $"Versions older than {UpdatePolicy.Format(MinimumRollbackVersion)} cannot be installed."));
+						message: $"Versions older than {UpdatePolicy.Format(MinimumRollbackVersion)} cannot be installed.",
+						localizedMessage: new LocalizedText("UpdateService_VersionsOlderThanCannotBeInstalled", UpdatePolicy.Format(MinimumRollbackVersion))));
 				}
 
 				var package = _availablePackages.FirstOrDefault(candidate =>
@@ -169,21 +179,25 @@ namespace CapFrameX.Updater
 				if (package == null)
 				{
 					return Publish(new UpdateStatus(EUpdateState.Failed,
-						message: $"Version {UpdatePolicy.Format(version)} is not present in the verified release catalog."));
+						message: $"Version {UpdatePolicy.Format(version)} is not present in the verified release catalog.",
+						localizedMessage: new LocalizedText("UpdateService_VersionNotInCatalog", UpdatePolicy.Format(version))));
 				}
 
 				var currentVersion = _appVersionProvider.GetAppVersion();
 				if (UpdatePolicy.IsSameVersion(package.Version, currentVersion))
 				{
 					return Publish(new UpdateStatus(EUpdateState.UpToDate,
-						message: $"Version {UpdatePolicy.Format(package.Version)} is already installed."));
+						message: $"Version {UpdatePolicy.Format(package.Version)} is already installed.",
+						localizedMessage: new LocalizedText("UpdateService_VersionAlreadyInstalled", UpdatePolicy.Format(package.Version))));
 				}
 
 				var isRollback = UpdatePolicy.IsDowngrade(package.Version, currentVersion);
 				return Publish(new UpdateStatus(EUpdateState.UpdateAvailable, package,
 					message: isRollback
 						? $"Rollback to version {UpdatePolicy.Format(package.Version)} is ready."
-						: $"Version {UpdatePolicy.Format(package.Version)} is ready."));
+						: $"Version {UpdatePolicy.Format(package.Version)} is ready.",
+					localizedMessage: new LocalizedText(isRollback ? "UpdateService_RollbackReady" : "UpdateService_VersionReady",
+						UpdatePolicy.Format(package.Version))));
 			}
 			finally
 			{
@@ -199,7 +213,8 @@ namespace CapFrameX.Updater
 				return CurrentStatus;
 
 			if (CurrentStatus.State != EUpdateState.UpdateAvailable || package == null)
-				return Publish(new UpdateStatus(EUpdateState.Failed, message: "There is no selected version to download."));
+				return Publish(new UpdateStatus(EUpdateState.Failed, message: "There is no selected version to download.",
+					localizedMessage: new LocalizedText("UpdateService_NoSelectedVersionToDownload")));
 
 			if (!await _gate.WaitAsync(0).ConfigureAwait(false))
 				return CurrentStatus;
@@ -220,7 +235,8 @@ namespace CapFrameX.Updater
 					DeleteIfExists(targetPath);
 					DeleteIfExists(partialPath);
 
-					Publish(new UpdateStatus(EUpdateState.Downloading, package, 0d, "Starting the download..."));
+					Publish(new UpdateStatus(EUpdateState.Downloading, package, 0d, "Starting the download...",
+						new LocalizedText("UpdateService_StartingDownload")));
 
 					var hash = await DownloadToFileAsync(package, partialPath, downloadCancellation.Token)
 						.ConfigureAwait(false);
@@ -230,7 +246,8 @@ namespace CapFrameX.Updater
 						_logger.LogError("The downloaded package has checksum {actual} but the catalog promised {expected}.", hash, package.Sha256);
 						DeleteIfExists(partialPath);
 						return Publish(new UpdateStatus(EUpdateState.Failed, package,
-							message: "The downloaded package failed its checksum check and was discarded."));
+							message: "The downloaded package failed its checksum check and was discarded.",
+							localizedMessage: new LocalizedText("UpdateService_ChecksumFailed")));
 					}
 
 					File.Move(partialPath, targetPath);
@@ -252,21 +269,25 @@ namespace CapFrameX.Updater
 					return Publish(new UpdateStatus(EUpdateState.ReadyToInstall, package, 1d,
 						isRollback
 							? $"Rollback to version {UpdatePolicy.Format(package.Version)} is downloaded and will start with the next CapFrameX launch."
-							: $"Version {UpdatePolicy.Format(package.Version)} is downloaded and will be installed with the next CapFrameX launch."));
+							: $"Version {UpdatePolicy.Format(package.Version)} is downloaded and will be installed with the next CapFrameX launch.",
+						new LocalizedText(isRollback ? "UpdateService_RollbackDownloaded" : "UpdateService_VersionDownloaded",
+							UpdatePolicy.Format(package.Version))));
 				}
 				catch (OperationCanceledException)
 				{
 					DeleteIfExists(partialPath);
 					_logger.LogInformation("The package download was cancelled.");
 					return Publish(new UpdateStatus(EUpdateState.UpdateAvailable, package,
-						message: "The download was cancelled."));
+						message: "The download was cancelled.",
+						localizedMessage: new LocalizedText("UpdateService_DownloadCancelled")));
 				}
 				catch (Exception ex)
 				{
 					DeleteIfExists(partialPath);
 					_logger.LogError(ex, "Unable to download the package from {packageUri}.", package.PackageUri);
 					return Publish(new UpdateStatus(EUpdateState.Failed, package,
-						message: "The selected package could not be downloaded."));
+						message: "The selected package could not be downloaded.",
+						localizedMessage: new LocalizedText("UpdateService_PackageCouldNotBeDownloaded")));
 				}
 				finally
 				{
@@ -360,7 +381,8 @@ namespace CapFrameX.Updater
 
 						lastReportedPercent = percent;
 						Publish(new UpdateStatus(EUpdateState.Downloading, package, percent / 100d,
-							$"Downloading version {UpdatePolicy.Format(package.Version)}..."));
+							$"Downloading version {UpdatePolicy.Format(package.Version)}...",
+							new LocalizedText("UpdateService_DownloadingVersion", UpdatePolicy.Format(package.Version))));
 					}
 
 					if (receivedBytes != package.SizeInBytes)

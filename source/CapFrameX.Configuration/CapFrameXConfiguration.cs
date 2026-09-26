@@ -69,6 +69,18 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public string UiLanguage
+        {
+            get => Get<string>("en");
+            set => Set(value);
+        }
+
+        public string OverlayLanguage
+        {
+            get => Get<string>("en");
+            set => Set(value);
+        }
+
         public string CustomCpuDescription
         {
             get => Get<string>("CPU");

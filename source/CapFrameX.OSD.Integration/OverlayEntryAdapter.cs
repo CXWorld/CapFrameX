@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.OSD.Interop;
 
@@ -43,7 +44,7 @@ namespace CapFrameX.OSD.Integration
                 {
                     Identifier = e.Identifier,
                     Group = e.GroupName ?? string.Empty,
-                    Label = string.IsNullOrEmpty(e.Description) ? e.Identifier : e.Description,
+                    Label = CxLang.Instance.TranslateOverlay(string.IsNullOrEmpty(e.Description) ? e.Identifier : e.Description),
                     Unit = ExtractUnit(e.ValueUnitFormat),
                     Color = OsdColor.FromCapFrameXHex(e.Color),
                     GroupColor = OsdColor.FromCapFrameXHex(e.GroupColor),
@@ -91,7 +92,12 @@ namespace CapFrameX.OSD.Integration
                     o.IsNumeric = false;
                     // FormattedValue contains RTSS hypertext (<S...>/<C...>). The neutral OSD
                     // renderer does not interpret those tags, so only forward the raw text value.
-                    o.ValueText = e.Value?.ToString() ?? string.Empty;
+                    var text = e.Value?.ToString() ?? string.Empty;
+                    // Status lines are sentences, not hardware names. Other text values (CPU name,
+                    // driver version) must stay literal.
+                    if (e.Identifier == "CaptureServiceStatus" || e.Identifier == "HookOverlayStatus")
+                        text = CxLang.Instance.TranslateOverlay(text);
+                    o.ValueText = text;
                 }
 
                 if (TryParseLimit(e.UpperLimitValue, out var up))
@@ -128,8 +134,8 @@ namespace CapFrameX.OSD.Integration
                 list.Add(new OsdEntry
                 {
                     Identifier = $"RunHistory.{i + 1}",
-                    Group = $"Run {i + 1}:",
-                    Label = template.Description ?? "Run history",
+                    Group = CxLang.Instance.TranslateOverlay($"Run {i + 1}:"),
+                    Label = CxLang.Instance.TranslateOverlay(template.Description ?? "Run history"),
                     ValueText = string.IsNullOrEmpty(runHistory[i]) ? "N/A" : runHistory[i],
                     IsNumeric = false,
                     Color = isOutlier ? outlierColor : valueColor,
@@ -145,8 +151,8 @@ namespace CapFrameX.OSD.Integration
                 list.Add(new OsdEntry
                 {
                     Identifier = "RunHistory.Result",
-                    Group = "Result:",
-                    Label = template.Description ?? "Run history",
+                    Group = CxLang.Instance.TranslateOverlay("Result:"),
+                    Label = CxLang.Instance.TranslateOverlay(template.Description ?? "Run history"),
                     ValueText = aggregation,
                     IsNumeric = false,
                     Color = valueColor,
@@ -248,7 +254,7 @@ namespace CapFrameX.OSD.Integration
                 else if (ch == '>') inTag = false;
                 else if (!inTag && ch != '{' && ch != '}') sb.Append(ch);
             }
-            return sb.ToString().Trim();
+            return CxLang.Instance.TranslateOverlay(sb.ToString().Trim());
         }
     }
 }

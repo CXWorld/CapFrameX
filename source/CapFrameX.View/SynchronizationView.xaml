@@ -1,7 +1,7 @@
-﻿<UserControl x:Class="CapFrameX.View.SynchronizationView"
+<UserControl x:Class="CapFrameX.View.SynchronizationView"
 			 Name="SynchronizationViewUserControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:CapFrameX.MVVM.Localization;assembly=CapFrameX.MVVM"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:CapFrameX.View"
@@ -47,9 +47,9 @@
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{Binding CurrentGameName}"/>
         <TabControl Grid.Row="1" Grid.Column="0" Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
-            <TabItem Width="150" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
+            <TabItem Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                 <TabItem.Header>
-                    <Label FontSize="12">Input lag approximation</Label>
+                    <Label FontSize="12" Content="{loc:Tr SynchronizationView_InputLagApproximation}"/>
                 </TabItem.Header>
                 <Grid>
                     <Grid.RowDefinitions>
@@ -72,8 +72,8 @@
                             </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                             <controls:PlotViewCustomZoom.ContextMenu>
                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                    <MenuItem Header="Save plot as SVG" Command="{Binding SaveInputLagPlotAsSVG }"/>
-                                    <MenuItem Header="Save plot as PNG" Command="{Binding SaveInputLagPlotAsPNG }"/>
+                                    <MenuItem Header="{loc:Tr SynchronizationView_SavePlotAsSVG}" Command="{Binding SaveInputLagPlotAsSVG }"/>
+                                    <MenuItem Header="{loc:Tr SynchronizationView_SavePlotAsPNG}" Command="{Binding SaveInputLagPlotAsPNG }"/>
                                 </ContextMenu>
                             </controls:PlotViewCustomZoom.ContextMenu>
                         </controls:PlotViewCustomZoom>
@@ -81,9 +81,9 @@
                     <!--Input lag offset-->
                     <Grid Grid.Row="1" Margin="0 5 0 0" >
                         <StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
-                            <TextBlock VerticalAlignment="Center" FontSize="14">Input lag offset (ms):</TextBlock>
-                            <TextBox FontSize="14" Height="25" Margin="5 0 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" TextAlignment="Center" Text="{Binding InputLagOffset, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="Offset" 
-									 PreviewKeyDown="InputLagOffsetTextBox_PreviewKeyDown" ToolTip="Offset for display and mouse/keyboard/gamepad latency"/>
+                            <TextBlock VerticalAlignment="Center" FontSize="14" Text="{loc:Tr SynchronizationView_InputLagOffsetMs}"/>
+                            <TextBox FontSize="14" Height="25" Margin="5 0 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" TextAlignment="Center" Text="{Binding InputLagOffset, UpdateSourceTrigger=LostFocus}" materialDesign:HintAssist.Hint="{loc:Tr SynchronizationView_Offset}" 
+									 PreviewKeyDown="InputLagOffsetTextBox_PreviewKeyDown" ToolTip="{loc:Tr SynchronizationView_OffsetForDisplayAndMouse}"/>
                         </StackPanel>
                     </Grid>
                     <Grid Grid.Row="2">
@@ -97,18 +97,18 @@
 								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
                                 <lvc:CartesianChart.ContextMenu>
                                     <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                        <MenuItem Header="Copy histogram data" Command="{Binding CopyInputLagHistogramDataCommand}"/>
+                                        <MenuItem Header="{loc:Tr SynchronizationView_CopyHistogramData}" Command="{Binding CopyInputLagHistogramDataCommand}"/>
                                     </ContextMenu>
                                 </lvc:CartesianChart.ContextMenu>
                                 <lvc:CartesianChart.AxisX>
-                                    <lvc:Axis Title="Expected input lag (ms)" FontSize="13" BarUnit="1" Labels="{Binding InputLagHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
+                                    <lvc:Axis Title="{loc:Tr SynchronizationView_ExpectedInputLagMs}" FontSize="13" BarUnit="1" Labels="{Binding InputLagHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator Step="1" StrokeThickness="0" IsEnabled="True"></lvc:Separator>
                                         </lvc:Axis.Separator>
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisX>
                                 <lvc:CartesianChart.AxisY>
-                                    <lvc:Axis Title="Distribution&#x0a;&#x0a;" FontSize="13" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
+                                    <lvc:Axis Title="{loc:Tr SynchronizationView_Distribution}" FontSize="13" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                                     <lvc:Axis.Separator>
                                             <lvc:Separator Stroke="{DynamicResource MaterialDesign.Brush.Foreground}" StrokeThickness=".3" IsEnabled="True"></lvc:Separator>
                                     </lvc:Axis.Separator>
@@ -121,11 +121,11 @@
 									Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}" >
                                 <lvc:CartesianChart.ContextMenu>
                                     <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-										<MenuItem Header="Copy metrics" Command="{Binding CopyInputLagStatisticalParameterCommand}"/>
+										<MenuItem Header="{loc:Tr SynchronizationView_CopyMetrics}" Command="{Binding CopyInputLagStatisticalParameterCommand}"/>
                                     </ContextMenu>
                                 </lvc:CartesianChart.ContextMenu>
                                 <lvc:CartesianChart.AxisX>
-                                    <lvc:Axis Title="ms" FontSize="14" MinValue="0" MaxValue="{Binding InputLagBarMaxValue}" 
+                                    <lvc:Axis Title="{loc:Tr SynchronizationView_Ms}" FontSize="14" MinValue="0" MaxValue="{Binding InputLagBarMaxValue}" 
 								  LabelFormatter="{Binding InputLagParameterFormatter}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator Stroke="{DynamicResource MaterialDesign.Brush.Foreground}" StrokeThickness=".3" IsEnabled="True"></lvc:Separator>
@@ -144,9 +144,9 @@
                     </Grid>
                 </Grid>
             </TabItem>
-            <TabItem Width="150" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >
+            <TabItem Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >
                 <TabItem.Header>
-                    <Label FontSize="12">Until displayed times</Label>
+                    <Label FontSize="12" Content="{loc:Tr SynchronizationView_UntilDisplayedTimes}"/>
                 </TabItem.Header>
                 <Grid>
                     <Grid.RowDefinitions>
@@ -168,24 +168,24 @@
                             </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                             <controls:PlotViewCustomZoom.ContextMenu>
                                 <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                    <MenuItem Header="Copy until displayed time values" Command="{Binding CopyUntilDisplayedTimesValuesCommand}"/>
-                                    <MenuItem Header="Save plot as SVG" Command="{Binding SaveDisplayTimesPlotAsSVG}"/>
-                                    <MenuItem Header="Save plot as PNG" Command="{Binding SaveDisplayTimesPlotAsPNG}"/>
+                                    <MenuItem Header="{loc:Tr SynchronizationView_CopyUntilDisplayedTimeValues}" Command="{Binding CopyUntilDisplayedTimesValuesCommand}"/>
+                                    <MenuItem Header="{loc:Tr SynchronizationView_SavePlotAsSVG2}" Command="{Binding SaveDisplayTimesPlotAsSVG}"/>
+                                    <MenuItem Header="{loc:Tr SynchronizationView_SavePlotAsPNG2}" Command="{Binding SaveDisplayTimesPlotAsPNG}"/>
                                 </ContextMenu>
                             </controls:PlotViewCustomZoom.ContextMenu>
                         </controls:PlotViewCustomZoom>
                     </DockPanel>
                     <Grid Grid.Row="1" Margin="0 5 0 0">
                         <StackPanel Margin="20 0 0 0" Orientation="Horizontal" HorizontalAlignment="Left">
-                            <TextBlock VerticalAlignment="Center">Frames within monitor sync range:</TextBlock>
+                            <TextBlock VerticalAlignment="Center" Text="{loc:Tr SynchronizationView_FramesWithinMonitorSyncRange}"/>
                             <TextBlock Width="40" Height="27" Margin="10 0 0 0" Padding="0 7 0 0" FontWeight="Bold" TextAlignment="Center"
 						    Text="{Binding SyncRangePercentage}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">(Range:</TextBlock>
                             <TextBox Height="25" Margin="5 0 0 0" TextAlignment="Center" Text="{Binding SyncRangeLower, UpdateSourceTrigger=PropertyChanged}" 
-                                     materialDesign:HintAssist.Hint="Lower" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
+                                     materialDesign:HintAssist.Hint="{loc:Tr SynchronizationView_Lower}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">-</TextBlock>
                             <TextBox Height="25" Margin="5 0 0 0" TextAlignment="Center" Text="{Binding SyncRangeUpper, UpdateSourceTrigger=PropertyChanged}" 
-                                     materialDesign:HintAssist.Hint="Upper" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
+                                     materialDesign:HintAssist.Hint="{loc:Tr SynchronizationView_Upper}" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
                             <TextBlock Margin="5 0 0 0" VerticalAlignment="Center">Hz)</TextBlock>
                         </StackPanel>
                     </Grid>
@@ -200,18 +200,18 @@
 								Tag="{Binding ElementName=SynchronizationViewUserControl, Path=DataContext}" DataTooltip="{x:Null}">
                                 <lvc:CartesianChart.ContextMenu>
                                     <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                        <MenuItem Header="Copy histogram data" Command="{Binding CopyDisplayTimesHistogramDataCommand}"/>
+                                        <MenuItem Header="{loc:Tr SynchronizationView_CopyHistogramData2}" Command="{Binding CopyDisplayTimesHistogramDataCommand}"/>
                                     </ContextMenu>
                                 </lvc:CartesianChart.ContextMenu>
                                 <lvc:CartesianChart.AxisX>
-                                    <lvc:Axis Title="Until displayed time (ms)" FontSize="13" BarUnit="1" Labels="{Binding DisplayTimesHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
+                                    <lvc:Axis Title="{loc:Tr SynchronizationView_UntilDisplayedTimeMs}" FontSize="13" BarUnit="1" Labels="{Binding DisplayTimesHistogramLabels}" LabelFormatter="{Binding HistogramFormatter}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator Step="1" StrokeThickness="0" IsEnabled="True"></lvc:Separator>
                                         </lvc:Axis.Separator>
                                     </lvc:Axis>
                                 </lvc:CartesianChart.AxisX>
                                 <lvc:CartesianChart.AxisY>
-                                    <lvc:Axis Title="Distribution&#x0a;&#x0a;" FontSize="13" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
+                                    <lvc:Axis Title="{loc:Tr SynchronizationView_Distribution2}" FontSize="13" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                                         <lvc:Axis.Separator>
                                             <lvc:Separator Stroke="{DynamicResource MaterialDesign.Brush.Foreground}" StrokeThickness=".2" IsEnabled="True"></lvc:Separator>
                                         </lvc:Axis.Separator>

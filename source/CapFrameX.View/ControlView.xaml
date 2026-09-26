@@ -1,7 +1,7 @@
 <UserControl x:Class="CapFrameX.View.ControlView"
              Name="ControlViewControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:CapFrameX.MVVM.Localization;assembly=CapFrameX.MVVM"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
@@ -47,7 +47,7 @@
             </Grid.RowDefinitions>
             <Border Grid.Column="0" Grid.Row="0" Visibility="{Binding HasValidSource, Converter={StaticResource FalseToVisibleConverter}}" Margin="0 0 50 0" BorderThickness="1" Panel.ZIndex="2">
                 <!--Style="{StaticResource MaterialDesignHeadlineTextBlock}"-->
-                <TextBlock Text="Observed directory missing.&#10;Open the folder chip above and select a folder." TextAlignment="Center"
+                <TextBlock Text="{loc:Tr ControlView_ObservedDirectoryMissingOpenThe}" TextAlignment="Center"
                        TextWrapping="Wrap" Width="220" Margin="60 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center"
                        Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
             </Border>
@@ -58,9 +58,9 @@
                         <RowDefinition Height="1*"></RowDefinition>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Loading records..." FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryLoading, Converter={StaticResource TrueToVisibleConverter}}"
+                    <TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{loc:Tr ControlView_LoadingRecords}" FontSize="16" Panel.ZIndex="1" Visibility="{Binding DirectoryLoading, Converter={StaticResource TrueToVisibleConverter}}"
                         Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-					<TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="Directory is empty. Refresh directory (context menu) or start a game and then press the capture key to create records." TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1"
+					<TextBlock Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Text="{loc:Tr ControlView_DirectoryIsEmptyRefreshDirectory}" TextWrapping="Wrap" Width="200" TextAlignment="Center" FontSize="16" Panel.ZIndex="1"
                         Visibility="{Binding DirectoryIsEmpty, Converter={StaticResource TrueToVisibleConverter}}"
                         Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 
@@ -98,11 +98,11 @@
                                         <DockPanel Grid.Row="0" LastChildFill="True">
                                             <Button DockPanel.Dock="Right" VerticalAlignment="Bottom" Margin="8 0 0 4"
                                                 Width="26" Height="26" Padding="0" Style="{StaticResource MaterialDesignIconButton}"
-                                                ToolTip="Reload root folder" Command="{Binding ReloadRootFolderCommand}"
+                                                ToolTip="{loc:Tr ControlView_ReloadRootFolder}" Command="{Binding ReloadRootFolderCommand}"
                                                 Foreground="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
                                                 <materialDesign:PackIcon Kind="Cached" Width="18" Height="18"/>
                                             </Button>
-                                            <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="Root capture folder"
+                                            <TextBox IsReadOnly="True" materialDesign:HintAssist.Hint="{loc:Tr ControlView_RootCaptureFolder}"
 												Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
                                                 materialDesign:HintAssist.IsFloating="True" materialDesign:HintAssist.HintOpacity=".8"
                                                 Text="{Binding DataContext.RootDirectory, ElementName=ControlViewControl, Mode=OneWay}"
@@ -120,9 +120,9 @@
                                                 dragdrop:DragDrop.UseDefaultEffectDataTemplate="False" Drop="TrvStructure_Drop">
                                                 <TreeView.ContextMenu>
                                                     <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                                        <MenuItem Header="Open folder" Command="{Binding OpenObservedFolderCommand}"/>
-                                                        <MenuItem Header="Delete folder" Command="{Binding DeleteFolderCommand}"/>
-                                                        <MenuItem Header="Create new subfolder" Command="{Binding OpenCreateSubFolderDialogCommand}"/>
+                                                        <MenuItem Header="{loc:Tr ControlView_OpenFolder}" Command="{Binding OpenObservedFolderCommand}"/>
+                                                        <MenuItem Header="{loc:Tr ControlView_DeleteFolder}" Command="{Binding DeleteFolderCommand}"/>
+                                                        <MenuItem Header="{loc:Tr ControlView_CreateNewSubfolder}" Command="{Binding OpenCreateSubFolderDialogCommand}"/>
                                                     </ContextMenu>
                                                 </TreeView.ContextMenu>
                                             </TreeView>
@@ -137,7 +137,7 @@
                             Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                         <materialDesign:PopupBox.ToolTip>
                             <ToolTip Placement="Top">
-                                <TextBlock Text="Column options"/>
+                                <TextBlock Text="{loc:Tr ControlView_ColumnOptions}"/>
                             </ToolTip>
                         </materialDesign:PopupBox.ToolTip>
                         <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
@@ -164,17 +164,17 @@
                                     <ColumnDefinition Width="100"/>
                                     <ColumnDefinition Width="100"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="Date / Time" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="0" Grid.Column="0" Text="{loc:Tr ControlView_DateTime}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="0" Grid.Column="1" IsChecked="{Binding ShowCreationDate}"/>
-                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="Comment" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="1" Grid.Column="0" Text="{loc:Tr ControlView_Comment}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="1" Grid.Column="1" IsChecked="{Binding ShowComment}"/>
-                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="Aggregated" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="2" Grid.Column="0" Text="{loc:Tr ControlView_Aggregated}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="2" Grid.Column="1" IsChecked="{Binding ShowIsAggregated}" />
-                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="CPU" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="3" Grid.Column="0" Text="{loc:Tr ControlView_CPU}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="3" Grid.Column="1" IsChecked="{Binding ShowCpuName}"/>
-                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="GPU" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="4" Grid.Column="0" Text="{loc:Tr ControlView_GPU}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="4" Grid.Column="1" IsChecked="{Binding ShowGpuName}"/>
-                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="RAM" VerticalAlignment="Center"/>
+                                <TextBlock Margin="5" Grid.Row="5" Grid.Column="0" Text="{loc:Tr ControlView_RAM}" VerticalAlignment="Center"/>
                                 <ToggleButton Margin="5" Grid.Row="5" Grid.Column="1" IsChecked="{Binding ShowRamName}"/>
                             </Grid>
                         </materialDesign:Card>
@@ -290,10 +290,10 @@
                         </DataGrid.InputBindings>
                         <DataGrid.ContextMenu>
                             <ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-                                <MenuItem Header="Delete recording file(s)" Command="{Binding DeleteRecordFileCommand}"/>
-                                <MenuItem Header="Move recording file(s)" Command="{Binding MoveRecordFileCommand}"/>
-                                <MenuItem Header="Copy/paste recording file(s)" Command="{Binding DuplicateRecordFileCommand}"/>
-								<MenuItem Header="Refresh directory" Command="{Binding RefreshDirectoryCommand}"/>
+                                <MenuItem Header="{loc:Tr ControlView_DeleteRecordingFileS}" Command="{Binding DeleteRecordFileCommand}"/>
+                                <MenuItem Header="{loc:Tr ControlView_MoveRecordingFileS}" Command="{Binding MoveRecordFileCommand}"/>
+                                <MenuItem Header="{loc:Tr ControlView_CopyPasteRecordingFileS}" Command="{Binding DuplicateRecordFileCommand}"/>
+								<MenuItem Header="{loc:Tr ControlView_RefreshDirectory}" Command="{Binding RefreshDirectoryCommand}"/>
 							</ContextMenu>
                         </DataGrid.ContextMenu>
                         <DataGrid.ColumnHeaderStyle>
@@ -365,9 +365,9 @@
                             </Style>
                         </DataGrid.ColumnHeaderStyle>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding GameName, Mode=OneWay}"
+                            <DataGridTextColumn x:Name="GameColumn" Binding="{Binding GameName, Mode=OneWay}"
                                         Width="Auto"
-                                        Header="Game"
+                                        Header="{loc:Tr ControlView_Game}"
                                         FontSize="13"
                                         IsReadOnly="True">
                                 <DataGridTextColumn.ElementStyle>
@@ -376,10 +376,10 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding CreationTimestamp, Mode=OneWay}"
+                            <DataGridTextColumn x:Name="DateColumn" Binding="{Binding CreationTimestamp, Mode=OneWay}"
                                         Width="Auto"
                                         MinWidth="110"
-                                        Header="Date / Time"
+                                        Header="{loc:Tr ControlView_DateTime2}"
                                         IsReadOnly="True"
                                         Visibility="{Binding DataContext.ShowCreationDate, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
@@ -389,9 +389,9 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <DataGridTextColumn x:Name="CommentColumn" Binding="{Binding Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="100"
-                                        Header="Comment"
+                                        Header="{loc:Tr ControlView_Comment2}"
                                         IsReadOnly="False"
                                         Visibility="{Binding DataContext.ShowComment, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
@@ -400,9 +400,9 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridCheckBoxColumn Binding="{Binding IsAggregated, Mode=OneWay}"
+                            <DataGridCheckBoxColumn x:Name="AggregatedColumn" Binding="{Binding IsAggregated, Mode=OneWay}"
                                         Width="Auto"
-                                        Header="Aggregated"
+                                        Header="{loc:Tr ControlView_Aggregated2}"
                                         IsReadOnly="True" 
                                         MinWidth="40"
                                         Visibility="{Binding DataContext.ShowIsAggregated, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
@@ -415,9 +415,9 @@
                                     </Style>
                                 </DataGridCheckBoxColumn.ElementStyle>
                             </DataGridCheckBoxColumn>
-                            <DataGridTextColumn Binding="{Binding ProcessorName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <DataGridTextColumn x:Name="CpuColumn" Binding="{Binding ProcessorName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
-                                        Header="CPU"
+                                        Header="{loc:Tr ControlView_CPU2}"
                                         IsReadOnly="False"
                                         Visibility="{Binding DataContext.ShowCpuName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
@@ -426,9 +426,9 @@
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding GraphicCardName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <DataGridTextColumn x:Name="GpuColumn" Binding="{Binding GraphicCardName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
-                                        Header="GPU"
+                                        Header="{loc:Tr ControlView_GPU2}"
                                         IsReadOnly="False"
                                         Visibility="{Binding DataContext.ShowGpuName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
@@ -437,9 +437,9 @@
                                     </Style> 
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
-                            <DataGridTextColumn Binding="{Binding SystemRamInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                            <DataGridTextColumn x:Name="RamColumn" Binding="{Binding SystemRamInfo, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
 										Width="Auto"
-                                        Header="RAM"
+                                        Header="{loc:Tr ControlView_RAM2}"
                                         IsReadOnly="False"
                                         Visibility="{Binding DataContext.ShowRamName, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">
                                 <DataGridTextColumn.ElementStyle>
@@ -458,7 +458,7 @@
                 <Expander.Header>
                     <StackPanel Orientation="Horizontal">
                         <materialDesign:PackIcon Kind="CardTextOutline" Width="18" Height="18" VerticalAlignment="Center" Margin="0 0 8 0"/>
-                        <TextBlock Text="Record Info" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
+                        <TextBlock Text="{loc:Tr ControlView_RecordInfo}" FontSize="14" FontWeight="Medium" VerticalAlignment="Center"/>
                         <TextBlock Text="{Binding SelectedRecordInfo.GameName, StringFormat=' — {0}'}" FontSize="14" Opacity="0.7" VerticalAlignment="Center"/>
                     </StackPanel>
                 </Expander.Header>
@@ -483,27 +483,27 @@
                         <ColumnDefinition Width="1*"/>
                     </Grid.ColumnDefinitions>
                     <!--System descriptions (left column)-->
-                    <TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="CPU description"
+                    <TextBox Grid.Row="0" Grid.Column="0" wpf:HintAssist.Hint="{loc:Tr ControlView_CPUDescription}"
                              Text="{Binding CustomCpuDescription, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
-                    <TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="GPU description"
+                    <TextBox Grid.Row="1" Grid.Column="0" wpf:HintAssist.Hint="{loc:Tr ControlView_GPUDescription}"
                              Text="{Binding CustomGpuDescription, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
-                    <TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="RAM description"
+                    <TextBox Grid.Row="2" Grid.Column="0" wpf:HintAssist.Hint="{loc:Tr ControlView_RAMDescription}"
                              Text="{Binding CustomRamDescription, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
                     <!--Record metadata (right column)-->
-                    <TextBox Grid.Row="0" Grid.Column="2" wpf:HintAssist.Hint="Game"
+                    <TextBox Grid.Row="0" Grid.Column="2" wpf:HintAssist.Hint="{loc:Tr ControlView_Game}"
                              Text="{Binding CustomGameName, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
-                    <TextBox Grid.Row="1" Grid.Column="2" wpf:HintAssist.Hint="Resolution"
+                    <TextBox Grid.Row="1" Grid.Column="2" wpf:HintAssist.Hint="{loc:Tr ControlView_Resolution}"
                              Text="{Binding CustomResolution, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
-                    <TextBox Grid.Row="2" Grid.Column="2" VerticalAlignment="Stretch" wpf:HintAssist.Hint="Comment"
+                    <TextBox Grid.Row="2" Grid.Column="2" VerticalAlignment="Stretch" wpf:HintAssist.Hint="{loc:Tr ControlView_Comment3}"
                              Text="{Binding CustomComment, UpdateSourceTrigger=PropertyChanged}" KeyDown="TextBox_KeyDown"/>
                     <!--Actions-->
                     <Button Grid.Row="3" Grid.Column="2" Margin="0 12 0 0" MinWidth="120" HorizontalAlignment="Right"
                             Style="{DynamicResource MaterialDesignRaisedButton}" Command="{Binding AcceptEditingDialogCommand}"
-                            ToolTip="Apply the descriptions to the selected record(s). Enter inside a field saves as well.">
+                            ToolTip="{loc:Tr ControlView_ApplyTheDescriptionsToThe}">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="ContentSave" Width="16" Height="16" VerticalAlignment="Center" Margin="0 0 8 0"
                                                      Foreground="White"/>
-                            <TextBlock Text="SAVE" VerticalAlignment="Center" Foreground="White"/>
+                            <TextBlock Text="{loc:Tr ControlView_SAVE}" VerticalAlignment="Center" Foreground="White"/>
                         </StackPanel>
                     </Button>
                 </Grid>

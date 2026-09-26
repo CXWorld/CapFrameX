@@ -1,3 +1,5 @@
+using CapFrameX.Contracts.Localization;
+
 namespace CapFrameX.Contracts.Update
 {
 	/// <summary>
@@ -16,16 +18,23 @@ namespace CapFrameX.Contracts.Update
 		/// <summary>Download progress in the range 0..1. Only meaningful while downloading.</summary>
 		public double Progress { get; }
 
-		/// <summary>Human readable detail, e.g. why a check failed. May be null.</summary>
+		/// <summary>Human readable detail in English, e.g. why a check failed. May be null.</summary>
 		public string Message { get; }
 
+		/// <summary>
+		/// The same detail as a catalog key plus arguments, for display in the interface
+		/// language. May be null, in which case <see cref="Message"/> is shown as is.
+		/// </summary>
+		public LocalizedText LocalizedMessage { get; }
+
 		public UpdateStatus(EUpdateState state, UpdatePackageInfo package = null,
-			double progress = 0d, string message = null)
+			double progress = 0d, string message = null, LocalizedText localizedMessage = null)
 		{
 			State = state;
 			Package = package;
 			Progress = progress;
 			Message = message;
+			LocalizedMessage = localizedMessage;
 		}
 	}
 }

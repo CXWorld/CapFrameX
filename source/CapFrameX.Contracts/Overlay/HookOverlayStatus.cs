@@ -1,35 +1,49 @@
 using System;
+using System.ComponentModel;
 
 namespace CapFrameX.Contracts.Overlay
 {
     public enum EHookOverlayStatus
     {
+        [Description("Off")]
         Disabled,
+        [Description("Waiting")]
         Waiting,
+        [Description("Injecting")]
         Injecting,
+        [Description("Injected")]
         Injected,
+        [Description("Initializing")]
         Initializing,
+        [Description("Active")]
         Active,
+        [Description("Hidden")]
         Hidden,
+        [Description("Idle")]
         Idle,
+        [Description("Error")]
         Error,
+        [Description("Fallback")]
         Fallback,
         /// <summary>
         /// Injection was deliberately not attempted and will not be retried for this process.
         /// Unlike <see cref="Waiting"/> this never resolves on its own — the game has to be
         /// restarted. Detail carries the reason.
         /// </summary>
+        [Description("Blocked")]
         Blocked,
         /// <summary>
         /// The hook is injected and CapFrameX is judging the current compatibility stage against
         /// its time budget. Resolves into <see cref="Active"/>, <see cref="Fallback"/> or
         /// <see cref="RestartPending"/> within seconds.
         /// </summary>
+        [Description("Probing")]
         Probing,
         /// <summary>
         /// The current stage failed and the next one needs a fresh process. The hook-free
         /// fallback serves this session; the next launch of the title starts on the next stage.
         /// </summary>
+        [Description("Restart game")]
         RestartPending
     }
 

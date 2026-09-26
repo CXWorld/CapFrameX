@@ -1,7 +1,7 @@
-﻿<UserControl x:Class="CapFrameX.View.Controls.FpsGraphControl"
+<UserControl x:Class="CapFrameX.View.Controls.FpsGraphControl"
 			 x:Name="FpsGraphControlName"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:CapFrameX.MVVM.Localization;assembly=CapFrameX.MVVM"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
@@ -41,12 +41,12 @@
                 </controls:PlotViewCustomZoom.DefaultTrackerTemplate>
                 <controls:PlotViewCustomZoom.ContextMenu>
 					<ContextMenu DataContext="{Binding Path=PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
-						<MenuItem Header="Copy fps values (f)" Command="{Binding CopyFpsValuesCommand}"/>
-                        <MenuItem Header="Copy fps points (t, f(t))" Command="{Binding CopyFpsPointsCommand}"/>
-                        <!--<MenuItem Header="Copy fps + GPU-Busy fps values (f)" Command="{Binding CopyGpuActiveFpsValuesCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}"/>
-                        <MenuItem Header="Copy fps + GPU-Busy fps points (t, f(t))" Command="{Binding CopyGpuActiveFpsPointsCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}" />-->
-                        <MenuItem Header="Save plot as SVG" Command="{Binding SavePlotAsSVG }"/>
-                        <MenuItem Header="Save plot as PNG" Command="{Binding SavePlotAsPNG }"/>
+						<MenuItem Header="{loc:Tr FpsGraphControl_CopyFpsValuesF}" Command="{Binding CopyFpsValuesCommand}"/>
+                        <MenuItem Header="{loc:Tr FpsGraphControl_CopyFpsPointsTF}" Command="{Binding CopyFpsPointsCommand}"/>
+                        <!--<MenuItem Header="{loc:Tr FpsGraphControl_CopyFpsGPUBusyFps}" Command="{Binding CopyGpuActiveFpsValuesCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}"/>
+                        <MenuItem Header="{loc:Tr FpsGraphControl_CopyFpsGPUBusyFps2}" Command="{Binding CopyGpuActiveFpsPointsCommand}" Visibility="{Binding ShowGpuActiveCommands, Converter={StaticResource FalseToCollapsedConverter}}" />-->
+                        <MenuItem Header="{loc:Tr FpsGraphControl_SavePlotAsSVG}" Command="{Binding SavePlotAsSVG }"/>
+                        <MenuItem Header="{loc:Tr FpsGraphControl_SavePlotAsPNG}" Command="{Binding SavePlotAsPNG }"/>
 					</ContextMenu>
                 </controls:PlotViewCustomZoom.ContextMenu>
 			</controls:PlotViewCustomZoom>

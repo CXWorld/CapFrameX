@@ -393,6 +393,26 @@ This doesn't affect any processes you already have on your list. If our online l
 
 NuGet package versions are managed centrally in `source/Directory.Packages.props`. Restore the solution's dependencies with `nuget restore CapFrameX.sln`. See `source/CapFrameX.Sensor/SensorService.cs` and `SensorConfig.cs` for how the customized hardware-monitoring library is integrated.
 
+# Localization
+
+CapFrameX supports multiple languages through embedded JSON catalog files located in `source/CapFrameX.Contracts/Localization/`.
+
+Each language catalog contains three main sections:
+* `"strings"`: Key-value pairs for desktop UI elements (buttons, menus, labels, dialogs). Placeholders like `{0}` and `{1}` must be preserved.
+* `"overlay"`: Static label overrides displayed directly in the in-game OSD (e.g. `<APP>`, FPS, frametime labels).
+* `"phrases"`: An array of regular expression pattern/replacement rules used to dynamically translate real-time hardware telemetry sensor names in the OSD (e.g. CPU Package, GPU Core, temperatures, clock speeds, and numbered cores/threads).
+
+### Adding a new language
+
+1. **Create the Catalog**: Copy `source/CapFrameX.Contracts/Localization/en.json` and name it using your two-letter ISO 639-1 code (for example, `es.json` for Spanish) in the same directory.
+2. **Set Language Metadata**: In the new file, set `"name"` to your native language name (e.g. `"Español"`) and `"culture"` to its locale identifier (e.g. `"es-ES"`).
+3. **Translate**:
+   * Translate all values in `"strings"`.
+   * Translate labels in `"overlay"`.
+   * Translate the regex replacement values in `"phrases"` for localized OSD sensor names.
+
+That's it! All `*.json` files in the `Localization` folder are automatically embedded on build and discovered at runtime, so no project files or C# code need to be touched. Automated catalog tests will verify that all required keys are present and match placeholder parameters.
+
 # Requirements
 
 * Windows x64

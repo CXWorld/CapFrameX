@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
@@ -60,7 +61,7 @@ namespace CapFrameX.ViewModel
 		private string[] _comparisonColumnChartLabels;
 		private SeriesCollection _comparisonLShapeCollection;
 		private string _comparisonItemControlHeight = "300";
-		private string _columnChartYAxisTitle = "FPS";
+		private string _columnChartYAxisTitle = CxLang.T("ComparisonDataViewModel_FPS");
 		private HashSet<SolidColorBrush> _freeColors = new HashSet<SolidColorBrush>(_comparisonBrushes);
 		private bool _useEventMessages;
 		private string _remainingRecordingTime;
@@ -253,7 +254,7 @@ namespace CapFrameX.ViewModel
                 // Average
                 new ColumnSeries
 				{
-					Title = "Average",
+					Title = CxLang.T("ComparisonDataViewModel_Average"),
 					Values = new ChartValues<double>(),
                     // Kind of blue
                     Fill = _comparisonBrushes[1],
@@ -263,7 +264,7 @@ namespace CapFrameX.ViewModel
                  //1% quantile
                 new ColumnSeries
 				{
-					Title = "P1",
+					Title = CxLang.T("ComparisonDataViewModel_P1"),
 					Values = new ChartValues<double>(),
                     // Kind of red
                     Fill = _comparisonBrushes[2],
@@ -273,7 +274,7 @@ namespace CapFrameX.ViewModel
                 //0.1% quantile
                 new LiveCharts.Wpf.ColumnSeries
 				{
-					Title = "P0.1",
+					Title = CxLang.T("ComparisonDataViewModel_P01"),
 					Values = new ChartValues<double>(),
                     // Kind of dark red
                     Fill = _comparisonBrushes[3],
@@ -301,7 +302,7 @@ namespace CapFrameX.ViewModel
 			{
 				Key = "xAxis",
 				Position = OxyPlot.Axes.AxisPosition.Bottom,
-				Title = "Recording time [s]",
+				Title = CxLang.T("ComparisonDataViewModel_RecordingTimeS"),
 				MajorGridlineStyle = LineStyle.Solid,
 				MajorGridlineThickness = 1,
 				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
@@ -314,7 +315,7 @@ namespace CapFrameX.ViewModel
 			{
 				Key = "yAxis",
 				Position = OxyPlot.Axes.AxisPosition.Left,
-				Title = "Frametime [ms]",
+				Title = CxLang.T("ComparisonDataViewModel_FrametimeMs"),
 				MajorGridlineStyle = LineStyle.Solid,
 				MajorGridlineThickness = 1,
 				MajorGridlineColor = OxyColor.FromArgb(64, 204, 204, 204),
@@ -539,14 +540,14 @@ namespace CapFrameX.ViewModel
 		{
 			_comparisonNumericMode = EComparisonNumericMode.Absolute;
 			SetColumnChart();
-			ColumnChartYAxisTitle = "FPS";
+			ColumnChartYAxisTitle = CxLang.T("ComparisonDataViewModel_FPS2");
 		}
 
 		private void OnRelativeMode()
 		{
 			_comparisonNumericMode = EComparisonNumericMode.Relative;
 			SetColumnChart();
-			ColumnChartYAxisTitle = "%";
+			ColumnChartYAxisTitle = CxLang.T("ComparisonDataViewModel_Text");
 		}
 
 		private void SetLabelDateTimeContext()

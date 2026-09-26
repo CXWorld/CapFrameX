@@ -1,5 +1,6 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Monitoring.Contracts;
@@ -421,7 +422,7 @@ namespace CapFrameX.ViewModel
         private static string FormatValue(float? value, string format, string unit)
         {
             return value.HasValue
-                ? value.Value.ToString(format, CultureInfo.InvariantCulture) + unit
+                ? value.Value.ToString(format, CultureInfo.InvariantCulture) + CxLang.Instance.TranslateUiText(unit)
                 : NoValue;
         }
 
@@ -459,10 +460,10 @@ namespace CapFrameX.ViewModel
             if (total.HasValue && total.Value > 0f)
             {
                 var totalText = total.Value.ToString("F0", CultureInfo.InvariantCulture);
-                return $"{usedText} / {totalText} GB";
+                return $"{usedText} / {totalText} {CxLang.Instance.TranslateUiText("GB")}";
             }
 
-            return $"{usedText} GB";
+            return $"{usedText} {CxLang.Instance.TranslateUiText("GB")}";
         }
 
         private void UpdateSystemStatus()

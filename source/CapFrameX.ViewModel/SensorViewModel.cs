@@ -1,5 +1,6 @@
-﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
@@ -46,8 +47,8 @@ namespace CapFrameX.ViewModel
         private bool _saveButtonIsEnable;
         private bool _isActive;
         private bool _aggregateButtonIsEnable = true;
-        private string _aggregationButtonText = "Evaluate" + Environment.NewLine + "multiple entries";
-        private string _sensorStatisticsText = "Sensor statistics for selected record";
+        private string _aggregationButtonText = CxLang.T("SensorViewModel_EvaluateMultipleEntries");
+        private string _sensorStatisticsText = CxLang.T("SensorViewModel_SensorStatisticsForSelectedRecord");
         private bool _selectedRecordChanged;
 
         public IFileRecordInfo RecordInfo { get; private set; }
@@ -137,7 +138,7 @@ namespace CapFrameX.ViewModel
 
         public string AggregateButtonText
         {
-            get { return _aggregationButtonText; }
+            get { return CxLang.T(_aggregationButtonText); }
             set
             {
                 _aggregationButtonText = value;
@@ -147,7 +148,7 @@ namespace CapFrameX.ViewModel
 
         public string SensorStatisticsText
         {
-            get { return _sensorStatisticsText; }
+            get { return CxLang.T(_sensorStatisticsText); }
             set
             {
                 _sensorStatisticsText = value;
@@ -222,7 +223,7 @@ namespace CapFrameX.ViewModel
                 {
                     if (_applicationState.SelectedRecords != null && _applicationState.SelectedRecords.Count > 1)
                     {
-                        AggregateButtonText = "Working";
+                        AggregateButtonText = CxLang.T("SensorViewModel_Working");
                         AggregateButtonIsEnable = false;
                         CopyRawSensorsEnable = false;
                         _selectedRecordChanged = false;
@@ -237,8 +238,8 @@ namespace CapFrameX.ViewModel
                         else
                             AggregateSensorDataOfSessions(sessions);
 
-                        AggregateButtonText = "Evaluate" + Environment.NewLine + "multiple entries";
-                        SensorStatisticsText = "Sensor statistics for multiple selected records";
+                        AggregateButtonText = CxLang.T("SensorViewModel_EvaluateMultipleEntries");
+                        SensorStatisticsText = CxLang.T("SensorViewModel_SensorStatisticsForMultipleSelected");
                         AggregateButtonIsEnable = true;
                     }
                 });
@@ -282,7 +283,7 @@ namespace CapFrameX.ViewModel
                     UpdateSensorSessionReport(msg.CurrentSession);
                     CopyRawSensorsEnable = true;
                     _selectedRecordChanged = true;
-                    SensorStatisticsText = "Sensor statistics for selected record";
+                    SensorStatisticsText = CxLang.T("SensorViewModel_SensorStatisticsForSelectedRecord2");
                 });
         }
 

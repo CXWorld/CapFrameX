@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.PMD;
 using CapFrameX.PMD;
 using CapFrameX.PMD.Powenetics;
@@ -148,7 +149,7 @@ namespace CapFrameX.ViewModel.SubModels
 
         public string SampleRate
         {
-            get => _sampleRate;
+            get => _sampleRate.Replace("[1/s]", CxLang.T("PoweneticsViewModel_1S"));
             set
             {
                 _sampleRate = value;

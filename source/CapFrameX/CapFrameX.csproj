@@ -34,7 +34,7 @@
     <Resource Include="Icons\cx_icon_BUC.ico" />
     <Resource Include="Icons\CX_Icon.png" />
     <Resource Include="Icons\CX_Screen_Logo_Name.png" />
-    <Content Include="HelpTexts\ChartControls.rtf">
+    <Content Include="HelpTexts\ChartControls*.rtf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="..\..\LICENSE">

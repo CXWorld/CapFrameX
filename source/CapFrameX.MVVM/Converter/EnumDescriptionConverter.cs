@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CapFrameX.Contracts.Localization;
+using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
@@ -32,8 +33,7 @@ namespace CapFrameX.MVVM.Converter
                 if (!(value is Enum myEnum))
                     return string.Empty;
 
-                string description = GetEnumDescription(myEnum);
-				return description;
+				return CxLang.TranslateEnum(myEnum);
 			}
 			catch { return string.Empty; }
 		}

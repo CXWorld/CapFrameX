@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Reactive.Linq;
 using System.Threading;
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.OSD.Interop;
 using Serilog;
@@ -348,7 +349,8 @@ namespace CapFrameX.OSD.Integration
                 fps = _curFps; ft = _curFrametimeMs; dt = _curDisplayTimeMs;
             }
             var appLabel = _curRuntime;
-            if (string.IsNullOrWhiteSpace(appLabel)) appLabel = "Performance";
+            if (string.IsNullOrWhiteSpace(appLabel))
+                appLabel = CxLang.Instance.TranslateOverlay("Performance");
             for (int i = 0; i < list.Count; i++)
             {
                 var e = list[i];

@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
@@ -55,7 +56,7 @@ namespace CapFrameX.ViewModel
         private Subject<object> _configSubject = new Subject<object>();
         private ResetOverlayConfigDialog _resetOverlayConfigContent;
         private bool _resetOverlayConfigContentIsOpen;
-        private string _hookLearnedProfileText = "No learned compatibility profiles yet.";
+        private string _hookLearnedProfileText = CxLang.T("OverlayViewModel_NoLearnedCompatibilityProfiles");
         private string _filterText = string.Empty;
         private EOverlayEntryType? _selectedEntryTypeFilter;
         private ICollectionView _overlayEntriesView;
@@ -615,7 +616,7 @@ namespace CapFrameX.ViewModel
         public bool IsInGameOverlayAvailable => OverlayAvailability.IsInGameAvailable;
 
         public string InGameOverlayDescription => IsInGameOverlayAvailable
-            ? "Injected into the game for in-swapchain graphs."
+            ? CxLang.T("OverlayViewModel_InjectedIntoTheGameFor")
             : OverlayAvailability.InGameUnavailableMessage;
 
         public bool OverlayModeHookFree
@@ -912,6 +913,15 @@ namespace CapFrameX.ViewModel
                 .ObserveOnDispatcher()
                 .Subscribe(_ => RefreshHookLearnedProfileText());
             RefreshHookLearnedProfileText();
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage))
+                {
+                    RaisePropertyChanged(nameof(InGameOverlayDescription));
+                    RefreshHookLearnedProfileText();
+                }
+            };
+            CxLang.Instance.OverlayLanguageChanged += OnOverlayLanguageChanged;
 
             SetFormatForGroupNameCommand = new DelegateCommand(
                () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
@@ -948,6 +958,25 @@ namespace CapFrameX.ViewModel
             SetGlobalHookEventResetMetricsHotkey();
 
             InitializeOSDCustomPosition();
+        }
+
+        private void OnOverlayLanguageChanged()
+        {
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher != null && !dispatcher.CheckAccess())
+            {
+                dispatcher.BeginInvoke(new Action(OnOverlayLanguageChanged));
+                return;
+            }
+
+            if (OverlayEntries != null)
+            {
+                foreach (var entry in OverlayEntries.OfType<OverlayEntryWrapper>())
+                {
+                    entry.RefreshLocalization();
+                }
+            }
+            OverlayEntriesView?.Refresh();
         }
 
         // Shared refresh path after the provider re-read its entry list (profile switch or display
@@ -988,8 +1017,8 @@ namespace CapFrameX.ViewModel
                 if (processName == null)
                 {
                     text = total == 0
-                        ? "No learned compatibility profiles yet."
-                        : $"{total} learned compatibility profile(s); no game selected.";
+                        ? CxLang.T("OverlayViewModel_NoLearnedCompatibilityProfiles")
+                        : string.Format(CxLang.T("OverlayViewModel_LearnedProfilesNoGame"), total);
                 }
                 else
                 {
@@ -997,7 +1026,7 @@ namespace CapFrameX.ViewModel
                         _hookLearnedProfiles.GetForProcess(processName);
                     if (entries.Count == 0)
                     {
-                        text = $"No learned compatibility profile for {processName} yet ({total} in total).";
+                        text = string.Format(CxLang.T("OverlayViewModel_NoLearnedProfileForProcess"), processName, total);
                     }
                     else
                     {
@@ -1348,8 +1377,10 @@ namespace CapFrameX.ViewModel
             if (!string.IsNullOrWhiteSpace(_filterText))
             {
                 var searchText = _filterText.Trim();
-                bool matchesDescription = entry.Description?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
-                bool matchesGroupName = entry.GroupName?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                bool matchesDescription = entry.Description?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0
+                    || CxLang.Instance.TranslateOverlay(entry.Description)?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                bool matchesGroupName = entry.GroupName?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0
+                    || CxLang.Instance.TranslateOverlay(entry.GroupName)?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
                 bool matchesStableId = entry.StableIdentifier?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
 
                 if (!matchesDescription && !matchesGroupName && !matchesStableId)

@@ -1,6 +1,7 @@
-﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Capture.Contracts;
 using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
@@ -435,7 +436,10 @@ namespace CapFrameX
             // The topmost splash must never sit above the crash dialog.
             SplashScreenHost.Close();
 
-            if (MessageBox.Show("An unexpected Error occured. Do you want to upload the CapFrameX Log for further analysis?", "Fatal Error", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            if (MessageBox.Show(
+                CxLang.TOrDefault("Appxaml_AnUnexpectedErrorOccuredDo", "An unexpected Error occured. Do you want to upload the CapFrameX Log for further analysis?"),
+                CxLang.TOrDefault("Appxaml_FatalError", "Fatal Error"),
+                MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 using (var client = new HttpClient()
                 {
