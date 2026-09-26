@@ -386,6 +386,8 @@
                                     <Style>
                                         <Setter Property="TextBlock.TextAlignment" Value="Center" />
                                         <Setter Property="TextBlock.VerticalAlignment" Value="Center" />
+                                        <!--Two lines need 29 px; the 36 px row leaves 24 inside the cell padding.-->
+                                        <Setter Property="TextBlock.Margin" Value="0 -3 0 -3" />
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>

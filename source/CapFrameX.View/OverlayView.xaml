@@ -59,15 +59,17 @@
 			</Style>
 		</ResourceDictionary>
 	</UserControl.Resources>
-	<Grid HorizontalAlignment="Center">
-		<TabControl Width="940" Margin="10" Background="{DynamicResource MaterialDesign.Brush.Card.Background}" BorderThickness="0" FocusVisualStyle="{x:Null}">
+	<!--Wide enough for three OSD option columns at 1920 px; narrower windows shrink it and the
+	    OSD options wrap to two columns. Stretch with MaxWidth keeps it centred.-->
+	<Grid>
+		<TabControl MaxWidth="1440" Margin="10" Background="{DynamicResource MaterialDesign.Brush.Card.Background}" BorderThickness="0" FocusVisualStyle="{x:Null}">
 			<TabItem Width="140" Header="Overlay items">
-				<Grid Margin="{StaticResource CxTabContentMargin}">
+				<Grid Margin="{StaticResource CxTabContentMargin}" HorizontalAlignment="Center">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="*"/>
 					</Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="460"/>
+						<ColumnDefinition Width="540"/>
 						<ColumnDefinition Width="10"/>
 						<ColumnDefinition Width="460"/>
 					</Grid.ColumnDefinitions>
@@ -220,7 +222,7 @@
 								<materialDesign:PackIcon Kind="FilterRemove" Height="16" Width="16" />
 							</Button>
 						</StackPanel>
-						<DataGrid Grid.Row="2" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" FontSize="12"
+						<DataGrid Grid.Row="2" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="520" FontSize="12"
 					          SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntriesView}"
 					          SelectionMode="Extended" CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" ColumnHeaderHeight="17"
 					          materialDesign:DataGridAssist.CellPadding="13 5 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="14 0 0 2" IsSynchronizedWithCurrentItem="False"
@@ -567,7 +569,7 @@
 					<Grid Margin="5 0 5 0">
 						<Grid.RowDefinitions>
 							<RowDefinition Height="55"/>
-							<RowDefinition Height="65"/>
+							<RowDefinition Height="60"/>
 						</Grid.RowDefinitions>
 						<StackPanel Grid.Row="0" Orientation="Horizontal" VerticalAlignment="Center">
 							<TextBlock VerticalAlignment="Center" Text="Overlay Template" FontSize="16" Margin="5 0 15 0"/>
@@ -1001,14 +1003,11 @@
 			</TabItem>
 			<TabItem Width="140" Header="OSD options">
 				<ScrollViewer Margin="{StaticResource CxTabContentMargin}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-					<Grid Margin="8 0 8 14">
-						<Grid.ColumnDefinitions>
-							<ColumnDefinition Width="*"/>
-							<ColumnDefinition Width="*"/>
-						</Grid.ColumnDefinitions>
-
-						<!-- Independent vertical sections keep future options local to their topic. -->
-						<StackPanel Grid.Column="0">
+					<!-- Independent vertical sections keep future options local to their topic. Three fixed-width
+					     stacks sit side by side from about 1400 px (a maximized 1080p window); narrower windows
+					     wrap the third stack below the first and the page scrolls. -->
+					<WrapPanel Margin="8 0 8 14" HorizontalAlignment="Center">
+						<StackPanel Width="456">
 							<Border Margin="6 0 6 6" Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="General"/>
@@ -1156,42 +1155,9 @@
 									</DockPanel>
 								</StackPanel>
 							</Border>
-
-							<Border Style="{StaticResource OsdOptionsCard}">
-								<StackPanel>
-									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="Diagnostics"/>
-									<TextBlock Style="{StaticResource OsdOptionsDescription}"
-											   Text="Collect detailed data for troubleshooting CapFrameX overlay renderers."/>
-									<Separator Margin="0 10 0 8" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
-
-									<CheckBox Content="Extended OSD logging"
-											  IsChecked="{Binding ExtendedOsdLogging.IsEnabled, Mode=TwoWay}"
-											  IsEnabled="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource InvertBoolConverter}}"
-											  Style="{StaticResource MaterialDesignCheckBox}"/>
-									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-											   Visibility="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource TrueToVisibleConverter}}"
-											   Text="Saving..."/>
-									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
-											   Text="Detailed DirectX, Vulkan and hook-free logs, including per-present statistics."/>
-									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
-											   Text="&#x26A0; Hook-free applies live. Restart CapFrameX and the game for in-game logging."/>
-									<Button Margin="26 12 0 0" HorizontalAlignment="Left"
-											Style="{StaticResource MaterialDesignOutlinedButton}"
-											Command="{Binding ExtendedOsdLogging.OpenLogFolderCommand}"
-											ToolTip="Open the folder containing the OSD log files">
-										<StackPanel Orientation="Horizontal">
-											<materialDesign:PackIcon Kind="FolderOpen" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center"/>
-											<TextBlock Text="Open OSD log folder" VerticalAlignment="Center"/>
-										</StackPanel>
-									</Button>
-									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
-											   Visibility="{Binding ExtendedOsdLogging.HasError, Converter={StaticResource TrueToVisibleConverter}}"
-											   Text="{Binding ExtendedOsdLogging.Error}"/>
-								</StackPanel>
-							</Border>
 						</StackPanel>
 
-						<StackPanel Grid.Column="1">
+						<StackPanel Width="456">
 							<Border Margin="6 0 6 6" Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="Overlay renderer"/>
@@ -1314,8 +1280,10 @@
 								</StackPanel>
 
 							</Border>
+						</StackPanel>
 
-							<Border Style="{StaticResource OsdOptionsCard}">
+						<StackPanel Width="456">
+							<Border Margin="6 0 6 6" Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="Shortcuts and timing"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
@@ -1428,8 +1396,41 @@
 									</DockPanel>
 								</StackPanel>
 							</Border>
+
+							<Border Style="{StaticResource OsdOptionsCard}">
+								<StackPanel>
+									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="Diagnostics"/>
+									<TextBlock Style="{StaticResource OsdOptionsDescription}"
+											   Text="Collect detailed data for troubleshooting CapFrameX overlay renderers."/>
+									<Separator Margin="0 10 0 8" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
+
+									<CheckBox Content="Extended OSD logging"
+											  IsChecked="{Binding ExtendedOsdLogging.IsEnabled, Mode=TwoWay}"
+											  IsEnabled="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource InvertBoolConverter}}"
+											  Style="{StaticResource MaterialDesignCheckBox}"/>
+									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
+											   Visibility="{Binding ExtendedOsdLogging.IsUpdating, Converter={StaticResource TrueToVisibleConverter}}"
+											   Text="Saving..."/>
+									<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}"
+											   Text="Detailed DirectX, Vulkan and hook-free logs, including per-present statistics."/>
+									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#E0A020" TextWrapping="Wrap"
+											   Text="&#x26A0; Hook-free applies live. Restart CapFrameX and the game for in-game logging."/>
+									<Button Margin="26 12 0 0" HorizontalAlignment="Left"
+											Style="{StaticResource MaterialDesignOutlinedButton}"
+											Command="{Binding ExtendedOsdLogging.OpenLogFolderCommand}"
+											ToolTip="Open the folder containing the OSD log files">
+										<StackPanel Orientation="Horizontal">
+											<materialDesign:PackIcon Kind="FolderOpen" Width="18" Height="18" Margin="0 0 8 0" VerticalAlignment="Center"/>
+											<TextBlock Text="Open OSD log folder" VerticalAlignment="Center"/>
+										</StackPanel>
+									</Button>
+									<TextBlock Margin="26 8 0 0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
+											   Visibility="{Binding ExtendedOsdLogging.HasError, Converter={StaticResource TrueToVisibleConverter}}"
+											   Text="{Binding ExtendedOsdLogging.Error}"/>
+								</StackPanel>
+							</Border>
 						</StackPanel>
-					</Grid>
+					</WrapPanel>
 				</ScrollViewer>
 			</TabItem>
 		</TabControl>

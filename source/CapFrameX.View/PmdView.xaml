@@ -29,6 +29,10 @@
 			<mvvm:PmdStatusColorConverter x:Key="PmdStatusColorConverter"/>
 			<system:Double x:Key="FontSizeMetrics">17</system:Double>
 			<system:Double x:Key="LabelHeight">28</system:Double>
+			<!--Tighter than the MDIX default so all six Powenetics metric boxes fit a maximized 1080p window.-->
+			<Style x:Key="PmdMetricGroupBox" TargetType="{x:Type GroupBox}" BasedOn="{StaticResource MaterialDesignGroupBox}">
+				<Setter Property="Padding" Value="9 3"/>
+			</Style>
 			<Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource CxTabHeaderItem}" />
 		</ResourceDictionary>
 	</UserControl.Resources>
@@ -50,7 +54,7 @@
 					<!--Style="{StaticResource MaterialDesignOutlinedTextBox}"-->
 					<ScrollViewer Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="5 0 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 						<StackPanel>
-							<GroupBox Header="GPU Total Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="GPU Total Power" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<materialDesign:PackIcon Foreground="Red" Margin="140 -55 0 0" Visibility="{Binding PoweneticsViewModel.PmdMetrics.GpuPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
 										Kind="Information" VerticalAlignment="Center" >
@@ -72,7 +76,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="PCIe Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="PCIe Power" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
@@ -88,7 +92,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="PCIe Slot Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="PCIe Slot Power" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
@@ -104,7 +108,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="CPU Total Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="CPU Total Power" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
@@ -120,7 +124,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="ATX Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="ATX Power" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
@@ -136,7 +140,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="System Power" FontSize="17" Style="{StaticResource MaterialDesignGroupBox}">
+							<GroupBox Header="System Power" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<materialDesign:PackIcon Foreground="Red" Margin="120 -55 0 0" Visibility="{Binding PoweneticsViewModel.PmdMetrics.SystemPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
 										Kind="Information" VerticalAlignment="Center" >
@@ -344,7 +348,7 @@
 					<!--Style="{StaticResource MaterialDesignOutlinedTextBox}"-->
 					<ScrollViewer Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="5 0 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 						<StackPanel>
-							<GroupBox Header="GPU Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="GPU Power" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
@@ -360,7 +364,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="CPU Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="CPU Power" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
@@ -376,7 +380,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="Mainboard Power" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="Mainboard Power" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>
@@ -392,7 +396,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="System Power" FontSize="17" Style="{StaticResource MaterialDesignGroupBox}">
+							<GroupBox Header="System Power" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="Cur"/>

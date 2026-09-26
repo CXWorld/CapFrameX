@@ -53,7 +53,7 @@
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="1*"></RowDefinition>
-                        <RowDefinition Height="100"></RowDefinition>
+                        <RowDefinition Height="105"></RowDefinition>
                     </Grid.RowDefinitions>
                     <DataGrid Grid.Row="0" x:Name="SensorItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="440" FontSize="12"
 					         SelectedIndex="{Binding SelectedSensorEntryIndex}" SelectedItem="{Binding SelectedSensorEntry}" ItemsSource="{Binding SensorEntries}"
