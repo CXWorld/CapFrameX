@@ -113,17 +113,28 @@
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!--System header: OS info-->
+            <!--System header: OS info and the copy action for the whole page-->
             <Border Grid.Row="0" Style="{StaticResource SectionCard}" Margin="5" Padding="20 12">
-                <StackPanel Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="MicrosoftWindows" Width="30" Height="30"
-                                             VerticalAlignment="Center"
-                                             Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"/>
-                    <StackPanel Margin="15 0 0 0" VerticalAlignment="Center">
-                        <TextBlock Style="{StaticResource CardCaption}" Text="OPERATING SYSTEM"/>
-                        <TextBlock Style="{StaticResource HardwareName}" FontSize="14" Margin="0 2 0 0" Text="{Binding OsVersion}"/>
+                <DockPanel>
+                    <Button DockPanel.Dock="Right" VerticalAlignment="Center"
+                            Style="{StaticResource MaterialDesignFlatButton}"
+                            Command="{Binding CopySystemInfoCommand}"
+                            ToolTip="Copy the system information as text, e.g. for a bug report">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="ContentCopy" Width="16" Height="16" VerticalAlignment="Center"/>
+                            <TextBlock Margin="8 0 0 0" VerticalAlignment="Center" Text="COPY SYSTEM INFO"/>
+                        </StackPanel>
+                    </Button>
+                    <StackPanel Orientation="Horizontal">
+                        <materialDesign:PackIcon Kind="MicrosoftWindows" Width="30" Height="30"
+                                                 VerticalAlignment="Center"
+                                                 Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}"/>
+                        <StackPanel Margin="15 0 0 0" VerticalAlignment="Center">
+                            <TextBlock Style="{StaticResource CardCaption}" Text="OPERATING SYSTEM"/>
+                            <TextBlock Style="{StaticResource HardwareName}" FontSize="14" Margin="0 2 0 0" Text="{Binding OsVersion}"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </DockPanel>
             </Border>
 
             <UniformGrid Grid.Row="1" Columns="2">

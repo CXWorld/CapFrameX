@@ -1,4 +1,5 @@
 using CapFrameX.Overlay;
+using CapFrameX.ViewModel;
 using CapFrameX.ViewModel.SubModels;
 using LibreHardwareMonitor.PawnIo;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -89,6 +90,20 @@ namespace CapFrameX.Test.ViewModel
 
             Assert.AreEqual("Conflicting registration", status.State);
             Assert.AreEqual("#F44336", status.StatusColor);
+        }
+
+        [TestMethod]
+        public void DescribeComponent_WithoutVersion_ShowsStateOnly()
+        {
+            Assert.AreEqual("Not installed", InfoViewModel.DescribeComponent(SoftwareComponentStatus.ForRtss(null)));
+            Assert.AreEqual("2.6.0 (Bundled)", InfoViewModel.DescribeComponent(SoftwareComponentStatus.ForPresentMon("2.6.0", true)));
+        }
+
+        [TestMethod]
+        public void DescribeWithDetails_EmptyDetails_ShowsNameOnly()
+        {
+            Assert.AreEqual("Kingston", InfoViewModel.DescribeWithDetails("Kingston", string.Empty));
+            Assert.AreEqual("ROG MAXIMUS Z890 (BIOS 1203)", InfoViewModel.DescribeWithDetails("ROG MAXIMUS Z890", "BIOS 1203"));
         }
     }
 }

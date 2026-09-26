@@ -46,6 +46,7 @@ namespace CapFrameX.Test.ViewModel
                 new Mock<ISystemInfo>().Object,
                 appConfiguration.Object,
                 new Mock<IRTSSService>().Object,
+                new Mock<IAppVersionProvider>().Object,
                 _eventAggregator,
                 new Mock<ILogger<InfoViewModel>>().Object);
         }

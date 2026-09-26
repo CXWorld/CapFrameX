@@ -8,6 +8,7 @@ using CapFrameX.Overlay;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.ViewModel.SubModels;
 using Microsoft.Extensions.Logging;
+using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;
@@ -16,7 +17,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reactive.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
@@ -31,7 +35,7 @@ namespace CapFrameX.ViewModel
     /// tab causes no CPU load in the background. A software block lists the components the
     /// measurements depend on (sensor driver, capture backend, RTSS, Vulkan layer) with version
     /// and state, a security block the boot and code integrity settings that decide which drivers
-    /// load and cost performance.
+    /// load and cost performance. The whole page can be copied as text for bug reports.
     /// </summary>
     public class InfoViewModel : BindableBase, INavigationAware
     {
@@ -42,6 +46,7 @@ namespace CapFrameX.ViewModel
         private readonly ISystemInfo _systemInfo;
         private readonly IAppConfiguration _appConfiguration;
         private readonly IRTSSService _rtssService;
+        private readonly IAppVersionProvider _appVersionProvider;
         private readonly ILogger<InfoViewModel> _logger;
 
         // This view is the startup page and the initial activation does not raise
@@ -153,11 +158,14 @@ namespace CapFrameX.ViewModel
         public PlatformSecurityStatus VbsStatus { get => _vbsStatus; set => SetProperty(ref _vbsStatus, value); }
         public PlatformSecurityStatus MemoryIntegrityStatus { get => _memoryIntegrityStatus; set => SetProperty(ref _memoryIntegrityStatus, value); }
 
+        public ICommand CopySystemInfoCommand { get; }
+
         public InfoViewModel(ISensorService sensorService,
                              ISensorConfig sensorConfig,
                              ISystemInfo systemInfo,
                              IAppConfiguration appConfiguration,
                              IRTSSService rtssService,
+                             IAppVersionProvider appVersionProvider,
                              IEventAggregator eventAggregator,
                              ILogger<InfoViewModel> logger)
         {
@@ -166,7 +174,10 @@ namespace CapFrameX.ViewModel
             _systemInfo = systemInfo;
             _appConfiguration = appConfiguration;
             _rtssService = rtssService;
+            _appVersionProvider = appVersionProvider;
             _logger = logger;
+
+            CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfo);
 
             UpdateSensorEvaluationState();
 
@@ -523,8 +534,7 @@ namespace CapFrameX.ViewModel
 
         private void UpdateSystemStatus()
         {
-            ResizableBarStatusColor = GetStatusColor(_systemInfo.ResizableBarD3DStatus != ESystemInfoTertiaryStatus.Error
-                ? _systemInfo.ResizableBarD3DStatus : _systemInfo.ResizableBarHardwareStatus);
+            ResizableBarStatusColor = GetStatusColor(ResizableBarStatus);
             HagsStatusColor = GetStatusColor(_systemInfo.HardwareAcceleratedGPUSchedulingStatus);
             GameModeStatusColor = GetStatusColor(_systemInfo.GameModeStatus);
 
@@ -533,6 +543,76 @@ namespace CapFrameX.ViewModel
             VbsStatus = PlatformSecurityStatus.ForVirtualizationBasedSecurity(_systemInfo.VirtualizationBasedSecurityStatus);
             MemoryIntegrityStatus = PlatformSecurityStatus.ForMemoryIntegrity(_systemInfo.MemoryIntegrityStatus);
         }
+
+        private ESystemInfoTertiaryStatus ResizableBarStatus
+            => _systemInfo.ResizableBarD3DStatus != ESystemInfoTertiaryStatus.Error
+                ? _systemInfo.ResizableBarD3DStatus : _systemInfo.ResizableBarHardwareStatus;
+
+        private void OnCopySystemInfo()
+        {
+            try
+            {
+                // The live telemetry only refreshes the security block while it runs, so read the
+                // current state once more instead of copying whatever was shown last.
+                UpdateSystemStatus();
+                Clipboard.SetDataObject(BuildSystemReport(), false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while copying the system information.");
+            }
+        }
+
+        /// <summary>
+        /// The Info tab as plain text: identification, Windows settings, platform security and
+        /// software components. Live telemetry is left out - it says nothing about the setup.
+        /// </summary>
+        private string BuildSystemReport()
+        {
+            var report = new StringBuilder();
+            report.AppendLine($"CapFrameX {_appVersionProvider.GetAppVersion()} ({_appVersionProvider.GetReleaseChannel()})");
+            AppendReportLine(report, "Operating system", OsVersion);
+            AppendReportLine(report, "Processor", DescribeWithDetails(CpuName, CpuDetails));
+            AppendReportLine(report, "Graphics card", DescribeWithDetails(GpuName, GpuDetails));
+            AppendReportLine(report, "Mainboard", DescribeWithDetails(MainboardName, MainboardDetails));
+            AppendReportLine(report, "Memory", DescribeWithDetails(RamName, RamDetails));
+            report.AppendLine();
+            AppendReportLine(report, "Resizable BAR", DescribeStatus(ResizableBarStatus));
+            AppendReportLine(report, "Hardware-accelerated GPU scheduling", DescribeStatus(_systemInfo.HardwareAcceleratedGPUSchedulingStatus));
+            AppendReportLine(report, "Windows Game Mode", DescribeStatus(_systemInfo.GameModeStatus));
+            AppendReportLine(report, "Secure Boot", SecureBootStatus.State);
+            AppendReportLine(report, "Test signing", TestSigningStatus.State);
+            AppendReportLine(report, "Virtualization-based security", VbsStatus.State);
+            AppendReportLine(report, "Memory integrity", MemoryIntegrityStatus.State);
+            report.AppendLine();
+            AppendReportLine(report, "PawnIO driver", DescribeComponent(PawnIoStatus));
+            AppendReportLine(report, "PresentMon", DescribeComponent(PresentMonStatus));
+            AppendReportLine(report, "RTSS", DescribeComponent(RtssStatus));
+            AppendReportLine(report, "Vulkan layer", DescribeComponent(VulkanLayerStatus));
+            return report.ToString();
+        }
+
+        private static void AppendReportLine(StringBuilder report, string label, string value)
+            => report.AppendLine($"{label}: {(string.IsNullOrWhiteSpace(value) ? NoValue : value)}");
+
+        internal static string DescribeWithDetails(string name, string details)
+            => string.IsNullOrWhiteSpace(details) ? name : $"{name} ({details})";
+
+        internal static string DescribeStatus(ESystemInfoTertiaryStatus status)
+        {
+            switch (status)
+            {
+                case ESystemInfoTertiaryStatus.Enabled:
+                    return "Enabled";
+                case ESystemInfoTertiaryStatus.Disabled:
+                    return "Disabled";
+                default:
+                    return "Unknown";
+            }
+        }
+
+        internal static string DescribeComponent(SoftwareComponentStatus status)
+            => status.Version == SoftwareComponentStatus.NoValue ? status.State : $"{status.Version} ({status.State})";
 
         private static string GetStatusColor(ESystemInfoTertiaryStatus status)
         {
