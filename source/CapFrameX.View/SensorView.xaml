@@ -171,7 +171,7 @@
                                         </ToolTip>
                                     </CheckBox.ToolTip>
                                 </CheckBox>
-                                <TextBlock Margin="10 0 20 0" VerticalAlignment="Center" Text="Log sensors" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+                                <TextBlock Margin="10 0 12 0" VerticalAlignment="Center" Text="Log sensors" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                             </StackPanel>
                             <ComboBox Margin="15 0 0 0"
 					              materialDesign:HintAssist.Hint="Sensor polling [ms]" materialDesign:HintAssist.HintOpacity=".8"
@@ -190,13 +190,14 @@
                                     Polling period [ms] for sensor logging
                                 </ComboBox.ToolTip>
                             </ComboBox>
-                            <Grid Width="210">
-                                <Button Width="28" Height="28" Margin="20 10 15 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
+                            <!--The row is centred in a 460px card and must not grow past it, or the last button is cut off.-->
+                            <StackPanel Orientation="Horizontal">
+                                <Button Width="28" Height="28" Margin="16 10 0 0" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                 ToolTip="Reset to defaults" Command="{Binding ResetToDefaultCommand}" IsEnabled="{Binding Path=UseSensorLogging}"
                                 materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
                                 </Button>
-                                <Button Width="28" Height="28" Margin="0 10 100 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
+                                <Button Width="28" Height="28" Margin="8 10 0 0" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                     Command="{Binding ResyncPerfmonCommand}"
                                     materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="Update" Height="22" Width="22" />
@@ -207,17 +208,17 @@
                                         </ToolTip>
                                     </Button.ToolTip>
                                 </Button>
-                                <Button Width="28" Height="28" Margin="0 10 60 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
+                                <Button Width="28" Height="28" Margin="8 10 0 0" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                     ToolTip="Open configuration folder" Command="{Binding OpenConfigFolderCommand}"
                                     materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="Folder" Height="22" Width="22" />
                                 </Button>
-                                <Button Width="28" Height="28" Margin="0 10 20 0" HorizontalAlignment="Right" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
+                                <Button Width="28" Height="28" Margin="8 10 0 0" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
                                     ToolTip="Save selected sensors for logging" Command="{Binding SaveConfigCommand}" IsEnabled="{Binding SaveButtonIsEnable}"
                                     materialDesign:RippleAssist.Feedback="#DD000000">
                                     <materialDesign:PackIcon Kind="ContentSaveSettings" Height="22" Width="22" />
                                 </Button>
-                            </Grid>
+                            </StackPanel>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="5 0 0 0" ToolTip="Check or uncheck groups of sensors" ToolTipService.Placement="Top">
                             <materialDesign:PopupBox StaysOpen="True" IsEnabled="{Binding Path=UseSensorLogging}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
