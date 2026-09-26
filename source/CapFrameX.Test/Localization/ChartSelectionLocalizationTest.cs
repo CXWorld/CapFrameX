@@ -27,6 +27,7 @@ namespace CapFrameX.Test.Localization
         [DataTestMethod]
         [DataRow("en")]
         [DataRow("ru")]
+        [DataRow("es")]
         public void DataTabs_RefreshTheSelectedChartInEitherLanguage(string language)
         {
             string previous = CxLang.Instance.UiLanguage;
@@ -66,6 +67,7 @@ namespace CapFrameX.Test.Localization
         [DataTestMethod]
         [DataRow("en")]
         [DataRow("ru")]
+        [DataRow("es")]
         public void ComparisonTabs_KeepChartModeAndColorPickerIndependentOfHeaders(string language)
         {
             string previous = CxLang.Instance.UiLanguage;
