@@ -9,13 +9,103 @@ the OSD is built from source instead and these files are ignored.
 
 ## Build provenance
 
-All five native DLLs were rebuilt on **2026-09-24** with VS 2026/v145 (MSVC
-19.51.36260.0), Windows SDK 10.0.26100.0 and Vulkan SDK 1.4.335.0 in `RelWithDebInfo`.
-Ninja builds for core x64, hook x64/x86 and Vulkan x64/x86 compile directly from the source state
-now committed as private OSD revision `77ca87dca3256827b541cc2c1ae07e0b54074cac` (`08fa5f5` plus the
-chart line change below; the benchmark app gained CPU timing afterwards and is not part of the DLLs).
+All five native DLLs (core, hook x64/x86, Vulkan layer x64/x86) were rebuilt on **2026-09-26**
+with VS 2026/v145 (MSVC 19.51.36260.0), Windows SDK 10.0.26100.0 and Vulkan SDK 1.4.335.0 in
+`RelWithDebInfo`, from private OSD revision `9f82ac1fd6651a0c8dd0671045c54fa87cb91ca5`, which
+contains the frame-cadence, early-attach install-race and chart-motion changes below.
 
-### Antialiased chart lines (2026-09-24, current)
+### In-game chart motion (2026-09-26, current)
+
+The in-game frametime chart now moves like RTSS draws it: the chart geometry is rebuilt at most
+every 10 ms, always on a game present, and between two rebuilds the cached chart scrolls by whole
+pixels at every present, so it stays sharp and meets the next rebuild pixel for pixel. D3D11
+shifts the cached coverage mask in its chart shader. The D3D12 hook and the Vulkan layer, which
+previously moved the chart only with a 30 Hz full-panel raster by one or two pixels at a time,
+now receive pre-scrolled copies of each chart from the core (`cfx_osd_create_cpu_charts`) and
+upload, per present, only the copy the chart clock selects; the panel text keeps its 5 Hz raster.
+
+Two defects surfaced on the way and are fixed: the core's producer loop re-anchored its clock on
+every timer wake without a present, so rebuilds drifted off the presents and each was handed
+~10 ms too little wall time (the PresentMon replay would have run at ~0.86x on D3D12/Vulkan); and
+the Vulkan layer rebuilt its textures for the whole intro fade whenever a panel frame raced the
+staging ring's re-registration (27 rebuilds at 90 FPS, now one).
+
+Verified with CapFrameX.Test's new `verify-osd-chart-motion.ps1` (D3D11 x64/x86, D3D12 x64/x86,
+Vulkan x64/x86 at 60/90/144 FPS): the chart is placed at every present, keeps real time
+(0.99–1.01x), never moves by two or more pixels at once (0 of ~9,500 presents) and is rebuilt at
+`fps / ceil(fps / 100)` per second on presents. The frame-cadence, D3D12-native, late-attach,
+FSR/XeSS routing, XeSS application-native, Vulkan learning and HDR suites pass unchanged. Cost at
+144 FPS (presentStats, median of the per-10-s percentiles, test applications): about +8 µs per
+present at p50 and +10 µs at p99 on D3D12 and Vulkan, split roughly evenly between writing the
+chart copy and recording its upload; D3D11 about +2 µs.
+
+All five staged DLLs match their build outputs by SHA-256 and PE architecture. The Vulkan
+manifests remain byte-identical, and the signed managed bridge was retained (the new C API
+functions are additive; the existing exports are unchanged).
+
+| Native DLL | SHA-256 |
+| --- | --- |
+| Core x64 | `99A3F3D982B3427B763B6D1B7551A94DFBFCCEB2973744BF84CEE3283BD9B04C` |
+| Hook x64 | `894035AB562CAC921DEDF1A7628AA6BF4EB49E15C06F0526A4792FD66A2325C5` |
+| Hook x86 | `424267C4F809A40B1528C8717A5BE7F3747F4F75E08251300B88204FAC181F67` |
+| Vulkan x64 | `1B5C422429A6E3EEA381700DF0C05D6A2A0B5EAC1681374FEB368F6D32D60A48` |
+| Vulkan x86 | `09E790BD98995428ED9332954ACF6773FCD47D22D453CB62A4EB953F6FA1F5AC` |
+
+### Early-attach install race (2026-09-25)
+
+A vendor runtime loaded after injection is covered by two routes: the executable's
+`GetProcAddress` IAT detour (delay imports included) hands out a detour synchronously, and the
+loader-notification worker inline-patches the exports. When the worker was inside the API install
+lock at the moment the game resolved an export, the route returned the untouched export; the call
+then ran before its inline hook was enabled. For XeSS-FG's one-shot `InitFromSwapChain` the exact
+queue was lost and the in-game overlay stood down for the whole session — about one
+early-attached run in three. The route now waits for the worker (bounded to 2 s) and hands out
+the inline-patched export; XeSS-FG resolves its exports before taking the lock, as FidelityFX
+already did, so no loader-lock cycle is possible. Same change for FidelityFX `ffxCreateContext`.
+
+The integration-test switch `CFX_HOOK_TEST_API_INSTALL_RACE_MS` forces that interleaving. With it,
+a build with the former immediate fallback missed the initialization in 3 of 3 runs; the staged
+hooks passed the new `early-attach-install-race` cases of `verify-osd-xess-routing.ps1` and
+`verify-osd-fsr-routing.ps1`, and 10 of 10 unforced XeSS-FG early attachments (3 of them had to
+wait for the worker, 15–78 ms).
+
+All five staged DLLs match their build outputs by SHA-256 and PE architecture. The Vulkan
+manifests remain byte-identical, and the signed managed bridge was retained.
+
+| Native DLL | SHA-256 |
+| --- | --- |
+| Core x64 | `DD11B9A47D5E71278C79F2762FA628AEEC6A345FECC86F19D37ECCFB9A658DBC` |
+| Hook x64 | `A0B9AD7B144AB1C44BD298F09E5A182304584229C3A06E503DAB645E3C4016A0` |
+| Hook x86 | `B23D7203AE69B1B1287A6D7A23C21B04C8453812B60544D39859DA315A798122` |
+| Vulkan x64 | `128E800A52E2D179EEC1BCFE6280981D64D24A46BAFBDB28364AC80F349DA8CF` |
+| Vulkan x86 | `3A64FC25EA2A55F0744F7D674EBA0A81C6FEE2B321CDA5A263096AD044FD32D1` |
+
+### Frame cadence under frame generation (2026-09-25)
+
+The in-game overlay's local graph source (the hook's present ring, CapFrameX's default) mixed
+two cadences whenever it drew on a frame-generation proxy. On Dying Light: The Beast with FSR 3,
+the hook drew once per application frame on the FidelityFX proxy Present while the runtime
+presented twice natively from its own thread, and every Present of either kind timed the ring:
+Current FPS read ~300 for 200 displayed frames per second, and the graph advanced by only the
+newest interval per draw, crawling at a fraction of real time (about 1/multiplier with MFG).
+
+The ring is now timed by every native DXGI Present, nested in a proxy call or not (what
+PresentMon counts); proxy Presents stand in only when no native Present arrived for 250 ms. Each
+draw feeds the graph every frame recorded since the previous draw, and the ring is locked because
+the runtime's presenter thread and the application thread tick concurrently. The Vulkan layer
+only picked up the locked ring and a renamed accessor; its behaviour is unchanged.
+
+All hook and Vulkan CTests passed in both architectures (29 + 2 each), including the new
+`present_cadence` unit test (2x, 3x, 4x, 6x frame generation, passthrough, topology switches,
+stalls, concurrency, and a negative control that reproduces the old behaviour). The staged hooks
+passed the new `CapFrameX.Test` suite `verify-osd-frame-cadence.ps1` (12 cases: controls,
+Streamline 2x/3x/4x/6x on x64 and x86, passthrough, real FSR 3 on the FidelityFX proxy with and
+without toggling, real XeSS-FG): graph 1.00x of real time and the native framerate in every case.
+The other OSD suites (D3D12 native, late attach, FSR/XeSS routing, XeSS application-native,
+Vulkan queue families, Vulkan learning) passed with the same build. The staged hooks carry this
+change together with the install-race change above; hashes there.
+
+### Antialiased chart lines (2026-09-24, superseded)
 
 The aliased one-pixel line turned every gentle slope into visible stairs. Charts now draw a
 one-physical-pixel line with analytic antialiasing, identical on every path: the points are
