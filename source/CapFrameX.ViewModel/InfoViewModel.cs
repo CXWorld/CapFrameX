@@ -1,19 +1,27 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Localization;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Monitoring.Contracts;
+using CapFrameX.Overlay;
+using CapFrameX.PresentMonInterface;
 using CapFrameX.ViewModel.SubModels;
 using Microsoft.Extensions.Logging;
+using Prism.Commands;
 using Prism.Events;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Reactive.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
@@ -25,7 +33,10 @@ namespace CapFrameX.ViewModel
     /// keeps delivering values even when neither overlay nor logging is running.
     /// Visible means: the info tab is the active view and the shell is neither
     /// minimized nor hidden to the tray - otherwise the telemetry pauses so the
-    /// tab causes no CPU load in the background.
+    /// tab causes no CPU load in the background. A software block lists the components the
+    /// measurements depend on (sensor driver, capture backend, RTSS, Vulkan layer) with version
+    /// and state, a security block the boot and code integrity settings that decide which drivers
+    /// load and cost performance. The whole page can be copied as text for bug reports.
     /// </summary>
     public class InfoViewModel : BindableBase, INavigationAware
     {
@@ -35,6 +46,8 @@ namespace CapFrameX.ViewModel
         private readonly ISensorConfig _sensorConfig;
         private readonly ISystemInfo _systemInfo;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IRTSSService _rtssService;
+        private readonly IAppVersionProvider _appVersionProvider;
         private readonly ILogger<InfoViewModel> _logger;
 
         // This view is the startup page and the initial activation does not raise
@@ -91,6 +104,16 @@ namespace CapFrameX.ViewModel
         private string _hagsStatusColor = StatusGray;
         private string _gameModeStatusColor = StatusGray;
 
+        private SoftwareComponentStatus _pawnIoStatus = SoftwareComponentStatus.Detecting;
+        private SoftwareComponentStatus _presentMonStatus = SoftwareComponentStatus.Detecting;
+        private SoftwareComponentStatus _rtssStatus = SoftwareComponentStatus.Detecting;
+        private SoftwareComponentStatus _vulkanLayerStatus = SoftwareComponentStatus.Detecting;
+
+        private PlatformSecurityStatus _secureBootStatus = PlatformSecurityStatus.Unknown;
+        private PlatformSecurityStatus _testSigningStatus = PlatformSecurityStatus.Unknown;
+        private PlatformSecurityStatus _vbsStatus = PlatformSecurityStatus.Unknown;
+        private PlatformSecurityStatus _memoryIntegrityStatus = PlatformSecurityStatus.Unknown;
+
         private const string StatusGreen = "#4CAF50";
         private const string StatusOrange = "#FF9800";
         private const string StatusGray = "#757575";
@@ -131,10 +154,24 @@ namespace CapFrameX.ViewModel
         public string HagsStatusColor { get => _hagsStatusColor; set => SetProperty(ref _hagsStatusColor, value); }
         public string GameModeStatusColor { get => _gameModeStatusColor; set => SetProperty(ref _gameModeStatusColor, value); }
 
+        public SoftwareComponentStatus PawnIoStatus { get => _pawnIoStatus; set => SetProperty(ref _pawnIoStatus, value); }
+        public SoftwareComponentStatus PresentMonStatus { get => _presentMonStatus; set => SetProperty(ref _presentMonStatus, value); }
+        public SoftwareComponentStatus RtssStatus { get => _rtssStatus; set => SetProperty(ref _rtssStatus, value); }
+        public SoftwareComponentStatus VulkanLayerStatus { get => _vulkanLayerStatus; set => SetProperty(ref _vulkanLayerStatus, value); }
+
+        public PlatformSecurityStatus SecureBootStatus { get => _secureBootStatus; set => SetProperty(ref _secureBootStatus, value); }
+        public PlatformSecurityStatus TestSigningStatus { get => _testSigningStatus; set => SetProperty(ref _testSigningStatus, value); }
+        public PlatformSecurityStatus VbsStatus { get => _vbsStatus; set => SetProperty(ref _vbsStatus, value); }
+        public PlatformSecurityStatus MemoryIntegrityStatus { get => _memoryIntegrityStatus; set => SetProperty(ref _memoryIntegrityStatus, value); }
+
+        public ICommand CopySystemInfoCommand { get; }
+
         public InfoViewModel(ISensorService sensorService,
                              ISensorConfig sensorConfig,
                              ISystemInfo systemInfo,
                              IAppConfiguration appConfiguration,
+                             IRTSSService rtssService,
+                             IAppVersionProvider appVersionProvider,
                              IEventAggregator eventAggregator,
                              ILogger<InfoViewModel> logger)
         {
@@ -142,9 +179,12 @@ namespace CapFrameX.ViewModel
             _sensorConfig = sensorConfig;
             _systemInfo = systemInfo;
             _appConfiguration = appConfiguration;
+            _rtssService = rtssService;
+            _appVersionProvider = appVersionProvider;
             _logger = logger;
 
             CxLang.Instance.PropertyChanged += OnLanguageChanged;
+            CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfo);
 
             UpdateSensorEvaluationState();
 
@@ -294,6 +334,10 @@ namespace CapFrameX.ViewModel
 
                 UpdateGpuInfo();
 
+                // PawnIO is installed and started while the sensor service opens the hardware,
+                // so its state is only meaningful from here on.
+                UpdateSoftwareComponents();
+
                 // Keep the GPU block in sync with the graphics adapter selection
                 // (auto mode: discrete GPU, otherwise the configured adapter).
                 _appConfiguration.OnValueChanged
@@ -325,6 +369,28 @@ namespace CapFrameX.ViewModel
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while updating GPU information.");
+            }
+        }
+
+        /// <summary>
+        /// Versions and states of the software the measurements depend on. Everything here is a
+        /// service query, a registry read or a version resource, so it is cheap enough to refresh
+        /// on every visit of the tab.
+        /// </summary>
+        private void UpdateSoftwareComponents()
+        {
+            try
+            {
+                PawnIoStatus = SoftwareComponentStatus.FromPawnIo(DriverInstaller.QueryStatus());
+                PresentMonStatus = SoftwareComponentStatus.ForPresentMon(
+                    CaptureServiceConfiguration.GetPresentMonVersion(),
+                    File.Exists(CaptureServiceConfiguration.GetPresentMonPath()));
+                RtssStatus = SoftwareComponentStatus.ForRtss(_rtssService.GetRTSSVersion());
+                VulkanLayerStatus = SoftwareComponentStatus.FromVulkanLayer(VulkanLayerRegistrationProbe.Query());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while collecting software component information.");
             }
         }
 
@@ -513,11 +579,85 @@ namespace CapFrameX.ViewModel
 
         private void UpdateSystemStatus()
         {
-            ResizableBarStatusColor = GetStatusColor(_systemInfo.ResizableBarD3DStatus != ESystemInfoTertiaryStatus.Error
-                ? _systemInfo.ResizableBarD3DStatus : _systemInfo.ResizableBarHardwareStatus);
+            ResizableBarStatusColor = GetStatusColor(ResizableBarStatus);
             HagsStatusColor = GetStatusColor(_systemInfo.HardwareAcceleratedGPUSchedulingStatus);
             GameModeStatusColor = GetStatusColor(_systemInfo.GameModeStatus);
+
+            SecureBootStatus = PlatformSecurityStatus.ForSecureBoot(_systemInfo.SecureBootStatus);
+            TestSigningStatus = PlatformSecurityStatus.ForTestSigning(_systemInfo.TestSigningStatus);
+            VbsStatus = PlatformSecurityStatus.ForVirtualizationBasedSecurity(_systemInfo.VirtualizationBasedSecurityStatus);
+            MemoryIntegrityStatus = PlatformSecurityStatus.ForMemoryIntegrity(_systemInfo.MemoryIntegrityStatus);
         }
+
+        private ESystemInfoTertiaryStatus ResizableBarStatus
+            => _systemInfo.ResizableBarD3DStatus != ESystemInfoTertiaryStatus.Error
+                ? _systemInfo.ResizableBarD3DStatus : _systemInfo.ResizableBarHardwareStatus;
+
+        private void OnCopySystemInfo()
+        {
+            try
+            {
+                // The live telemetry only refreshes the security block while it runs, so read the
+                // current state once more instead of copying whatever was shown last.
+                UpdateSystemStatus();
+                Clipboard.SetDataObject(BuildSystemReport(), false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while copying the system information.");
+            }
+        }
+
+        /// <summary>
+        /// The Info tab as plain text: identification, Windows settings, platform security and
+        /// software components. Live telemetry is left out - it says nothing about the setup.
+        /// </summary>
+        private string BuildSystemReport()
+        {
+            var report = new StringBuilder();
+            report.AppendLine($"CapFrameX {_appVersionProvider.GetAppVersion()} ({_appVersionProvider.GetReleaseChannel()})");
+            AppendReportLine(report, "Operating system", OsVersion);
+            AppendReportLine(report, "Processor", DescribeWithDetails(CpuName, CpuDetails));
+            AppendReportLine(report, "Graphics card", DescribeWithDetails(GpuName, GpuDetails));
+            AppendReportLine(report, "Mainboard", DescribeWithDetails(MainboardName, MainboardDetails));
+            AppendReportLine(report, "Memory", DescribeWithDetails(RamName, RamDetails));
+            report.AppendLine();
+            AppendReportLine(report, "Resizable BAR", DescribeStatus(ResizableBarStatus));
+            AppendReportLine(report, "Hardware-accelerated GPU scheduling", DescribeStatus(_systemInfo.HardwareAcceleratedGPUSchedulingStatus));
+            AppendReportLine(report, "Windows Game Mode", DescribeStatus(_systemInfo.GameModeStatus));
+            AppendReportLine(report, "Secure Boot", SecureBootStatus.State);
+            AppendReportLine(report, "Test signing", TestSigningStatus.State);
+            AppendReportLine(report, "Virtualization-based security", VbsStatus.State);
+            AppendReportLine(report, "Memory integrity", MemoryIntegrityStatus.State);
+            report.AppendLine();
+            AppendReportLine(report, "PawnIO driver", DescribeComponent(PawnIoStatus));
+            AppendReportLine(report, "PresentMon", DescribeComponent(PresentMonStatus));
+            AppendReportLine(report, "RTSS", DescribeComponent(RtssStatus));
+            AppendReportLine(report, "Vulkan layer", DescribeComponent(VulkanLayerStatus));
+            return report.ToString();
+        }
+
+        private static void AppendReportLine(StringBuilder report, string label, string value)
+            => report.AppendLine($"{label}: {(string.IsNullOrWhiteSpace(value) ? NoValue : value)}");
+
+        internal static string DescribeWithDetails(string name, string details)
+            => string.IsNullOrWhiteSpace(details) ? name : $"{name} ({details})";
+
+        internal static string DescribeStatus(ESystemInfoTertiaryStatus status)
+        {
+            switch (status)
+            {
+                case ESystemInfoTertiaryStatus.Enabled:
+                    return "Enabled";
+                case ESystemInfoTertiaryStatus.Disabled:
+                    return "Disabled";
+                default:
+                    return "Unknown";
+            }
+        }
+
+        internal static string DescribeComponent(SoftwareComponentStatus status)
+            => status.Version == SoftwareComponentStatus.NoValue ? status.State : $"{status.Version} ({status.State})";
 
         private static string GetStatusColor(ESystemInfoTertiaryStatus status)
         {
@@ -544,6 +684,9 @@ namespace CapFrameX.ViewModel
         {
             _isViewActive = true;
             UpdateSensorEvaluationState();
+
+            if (_sensorService.SensorServiceCompletionSource.Task.IsCompleted)
+                _ = Task.Run(UpdateSoftwareComponents);
         }
     }
 }

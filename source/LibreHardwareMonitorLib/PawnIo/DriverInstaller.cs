@@ -1,3 +1,4 @@
+using LibreHardwareMonitor.PawnIo;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 using Serilog;
@@ -6,6 +7,8 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using Windows.Win32.Storage.FileSystem;
 using PInvoke = Windows.Win32.PInvoke;
@@ -79,6 +82,8 @@ public static class DriverInstaller
     private const int ERROR_MARKED_FOR_DELETE = 1072;
     private const int ERROR_NO_MORE_ITEMS = 259;
     private const int ERROR_INSUFFICIENT_BUFFER = 122;
+    private const int ERROR_INVALID_IMAGE_HASH = 577;
+    private const int ERROR_SERVICE_DOES_NOT_EXIST = 1060;
 
     // SetupAPI
     private const uint DIGCF_PRESENT = 0x00000002;
@@ -215,7 +220,7 @@ public static class DriverInstaller
 
             // PnP normally starts a demand-start driver as part of the install. If it did not,
             // nudge the service before giving up.
-            if (TryStartGlobalPawnIOService() && WaitForDriverDevice(opTimeout))
+            if (TryStartGlobalPawnIOService(out int startError) && WaitForDriverDevice(opTimeout))
             {
                 Log.Information("Driver installed and service started manually; device is available.");
                 return true;
@@ -227,6 +232,14 @@ public static class DriverInstaller
                 return false;
             }
 
+            // Code integrity refused the image the service points at, even after the install. The
+            // generic failure below would hide that, and so would the next reinstall.
+            if (startError == ERROR_INVALID_IMAGE_HASH)
+            {
+                LogRejectedDriverImage(serviceName, packageDir);
+                return false;
+            }
+
             throw new InvalidOperationException("Driver package installed, but device could not be opened.");
         }
         catch (Exception ex)
@@ -235,6 +248,69 @@ public static class DriverInstaller
             Log.Fatal(ex, "EnsureDriverReady failed for PawnIO driver.");
             return false;
         }
+    }
+
+    /// <summary>
+    /// Reports the state of the PawnIO service and the file version of the driver image it points at.
+    /// Read-only: nothing is started or installed.
+    /// </summary>
+    public static PawnIoDriverStatus QueryStatus()
+    {
+        try
+        {
+            using var scm = OpenSCManager(null, null, SC_MANAGER_CONNECT);
+            if (scm.IsInvalid)
+                return new PawnIoDriverStatus(PawnIoDriverState.Unknown, null);
+
+            using var service = OpenService(scm, PAWNIO_SERVICE_NAME, SERVICE_QUERY_STATUS);
+            if (service.IsInvalid)
+            {
+                bool missing = Marshal.GetLastWin32Error() == ERROR_SERVICE_DOES_NOT_EXIST;
+                return new PawnIoDriverStatus(missing ? PawnIoDriverState.NotInstalled : PawnIoDriverState.Unknown, null);
+            }
+
+            PawnIoDriverState state = QueryServiceStatus(service, out var status)
+                ? ClassifyServiceState(status.dwCurrentState, status.dwWin32ExitCode)
+                : PawnIoDriverState.Unknown;
+
+            return new PawnIoDriverStatus(state, ReadRegisteredImageVersion(PAWNIO_SERVICE_NAME));
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "Querying the PawnIO driver status failed.");
+            return new PawnIoDriverStatus(PawnIoDriverState.Unknown, null);
+        }
+    }
+
+    /// <summary>
+    /// Maps a service status onto <see cref="PawnIoDriverState"/>. A stopped driver keeps the exit
+    /// code of its last start attempt, which is how a code integrity refusal stays visible.
+    /// </summary>
+    internal static PawnIoDriverState ClassifyServiceState(uint currentState, uint win32ExitCode)
+    {
+        switch (currentState)
+        {
+            case SERVICE_RUNNING:
+                return PawnIoDriverState.Running;
+            case SERVICE_STOPPED:
+                return win32ExitCode == ERROR_INVALID_IMAGE_HASH ? PawnIoDriverState.Blocked : PawnIoDriverState.Stopped;
+            default:
+                return PawnIoDriverState.Unknown;
+        }
+    }
+
+    /// <summary>
+    /// Reads the file version of the driver image a service is registered with.
+    /// </summary>
+    private static string ReadRegisteredImageVersion(string serviceName)
+    {
+        using RegistryKey key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{serviceName}");
+        string imageFile = ResolveServiceImagePath(key?.GetValue("ImagePath") as string, Environment.GetFolderPath(Environment.SpecialFolder.Windows));
+        if (imageFile is null || !File.Exists(imageFile))
+            return null;
+
+        string version = FileVersionInfo.GetVersionInfo(imageFile).FileVersion;
+        return string.IsNullOrWhiteSpace(version) ? null : version.Trim();
     }
 
     /// <summary>
@@ -449,6 +525,123 @@ public static class DriverInstaller
     }
 
     /// <summary>
+    /// Explains a start that code integrity refused (ERROR_INVALID_IMAGE_HASH) after the bundled
+    /// package was installed. The case that needs explaining is a foreign package with the same INF,
+    /// e.g. a test-signed PawnIO build that stopped loading once Secure Boot was turned on: Windows
+    /// reports the bundled package as already imported and keeps the refused image, so reinstalling
+    /// PawnIO or CapFrameX never fixes it - only removing that package does.
+    /// </summary>
+    private static void LogRejectedDriverImage(string serviceName, string packageDir)
+    {
+        string imagePath = null;
+
+        try
+        {
+            string publishedInf = null;
+
+            using (RegistryKey key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{serviceName}"))
+            {
+                imagePath = key?.GetValue("ImagePath") as string;
+                publishedInf = FindPublishedInf(key?.GetValue("Owners") as string[]);
+            }
+
+            string imageFile = ResolveServiceImagePath(imagePath, Environment.GetFolderPath(Environment.SpecialFolder.Windows));
+            if (imageFile is null || !File.Exists(imageFile))
+            {
+                Log.Error("Windows refuses to load the PawnIO driver (Win32Error=577, invalid image hash); its registered image '{ImagePath}' could not be found.", imagePath);
+                return;
+            }
+
+            byte[] bundledImage = File.ReadAllBytes(Path.Combine(packageDir, "PawnIO.sys"));
+            if (File.ReadAllBytes(imageFile).AsSpan().SequenceEqual(bundledImage))
+            {
+                Log.Error("Windows refuses to load the PawnIO driver (Win32Error=577, invalid image hash) although '{ImageFile}' is the driver CapFrameX ships; the reason is recorded in the event log 'Microsoft-Windows-CodeIntegrity/Operational'.", imageFile);
+                return;
+            }
+
+            string signer = DescribeSigner(imageFile, out bool selfSigned);
+            string removalCommand = publishedInf is null
+                ? "pnputil /delete-driver <published name of pawnio.inf, see pnputil /enum-drivers> /uninstall /force"
+                : $"pnputil /delete-driver {publishedInf} /uninstall /force";
+
+            Log.Error("Windows refuses to load the PawnIO driver (Win32Error=577, invalid image hash): the registered image '{ImageFile}' is signed by '{Signer}', is not the driver CapFrameX ships, and installing the bundled package did not replace it. Remove that driver package from an elevated prompt with {RemovalCommand}, then restart CapFrameX.",
+                imageFile, signer, removalCommand);
+
+            if (selfSigned)
+                Log.Warning("'{Signer}' is a self-signed certificate: a driver signed with it only loads while test signing is enabled and Secure Boot is disabled.", signer);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Windows refuses to load the PawnIO driver (Win32Error=577, invalid image hash); inspecting its registered image '{ImagePath}' failed.", imagePath);
+        }
+    }
+
+    /// <summary>
+    /// Turns a service ImagePath into a file path. Driver services use NT forms: <c>\SystemRoot\...</c>
+    /// (written by an INF's AddService), <c>\??\C:\...</c> (SCM registrations of versions up to 1.9.0)
+    /// or a path relative to the Windows directory.
+    /// </summary>
+    internal static string ResolveServiceImagePath(string imagePath, string windowsDirectory)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return null;
+
+        const string systemRootPrefix = @"\SystemRoot\";
+        const string dosDevicesPrefix = @"\??\";
+
+        string path = imagePath.Trim().Trim('"');
+
+        if (path.StartsWith(systemRootPrefix, StringComparison.OrdinalIgnoreCase))
+            return Path.Combine(windowsDirectory, path.Substring(systemRootPrefix.Length));
+
+        if (path.StartsWith(dosDevicesPrefix, StringComparison.Ordinal))
+            return path.Substring(dosDevicesPrefix.Length);
+
+        return Path.IsPathRooted(path) ? path : Path.Combine(windowsDirectory, path);
+    }
+
+    /// <summary>
+    /// Picks the published name (<c>oemNN.inf</c>) of the driver package that owns a service from the
+    /// service's <c>Owners</c> value. That name is what <c>pnputil /delete-driver</c> expects.
+    /// </summary>
+    internal static string FindPublishedInf(string[] owners)
+    {
+        if (owners is null)
+            return null;
+
+        foreach (string owner in owners)
+        {
+            if (owner.StartsWith("oem", StringComparison.OrdinalIgnoreCase) && owner.EndsWith(".inf", StringComparison.OrdinalIgnoreCase))
+                return owner;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Reads the subject of the certificate a file's embedded signature was made with. That is enough
+    /// to tell a test-signed build, which uses a self-signed certificate, from a released driver.
+    /// </summary>
+    private static string DescribeSigner(string filePath, out bool selfSigned)
+    {
+        selfSigned = false;
+
+        try
+        {
+            // X509CertificateLoader has no counterpart for reading an Authenticode signature.
+#pragma warning disable SYSLIB0057
+            using X509Certificate certificate = X509Certificate.CreateFromSignedFile(filePath);
+#pragma warning restore SYSLIB0057
+            selfSigned = string.Equals(certificate.Subject, certificate.Issuer, StringComparison.Ordinal);
+            return certificate.Subject;
+        }
+        catch (CryptographicException)
+        {
+            return "no embedded signature";
+        }
+    }
+
+    /// <summary>
     /// Polls until the driver device can be opened or the timeout elapses. PnP starts the driver
     /// asynchronously, so the device does not exist the instant the install call returns.
     /// </summary>
@@ -476,7 +669,7 @@ public static class DriverInstaller
     {
         // First, check for global PawnIO service installation (preferred)
         // This ensures we use the globally installed driver if available
-        if (TryStartGlobalPawnIOService())
+        if (TryStartGlobalPawnIOService(out _))
         {
             // Global service is running, verify device is accessible
             if (TryOpenDriverDevice())
@@ -512,8 +705,11 @@ public static class DriverInstaller
     /// Global installation is typically done via the PawnIO installer and registers the driver
     /// package in the driver store with a persistent service registration.
     /// </summary>
-    private static bool TryStartGlobalPawnIOService()
+    /// <param name="startError">The Win32 error StartService failed with; 0 if it was not called or succeeded.</param>
+    private static bool TryStartGlobalPawnIOService(out int startError)
     {
+        startError = 0;
+
         try
         {
             using var scm = OpenSCManager(null, null, SC_MANAGER_CONNECT);
@@ -562,6 +758,7 @@ public static class DriverInstaller
                     {
                         return true;
                     }
+                    startError = err;
                     Log.Warning("Failed to start global PawnIO service. Win32Error={Win32Error}", err);
                 }
             }

@@ -27,6 +27,36 @@
             <Style TargetType="ToolTip">
                 <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"></Setter>
             </Style>
+            <!-- A status value that can be clicked: the bold On/Off in its state color like its
+                 neighbours, with a switch glyph and a hover surface as the only hints. -->
+            <Style x:Key="StatusBarToggle" TargetType="{x:Type ToggleButton}">
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Focusable" Value="False"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type ToggleButton}">
+                            <Border x:Name="Surface" Background="Transparent" CornerRadius="3" Padding="3 1">
+                                <StackPanel Orientation="Horizontal">
+                                    <materialDesign:PackIcon x:Name="Glyph" Kind="ToggleSwitchOffOutline"
+                                                             Width="18" Height="18" Margin="0 0 3 0" VerticalAlignment="Center"
+                                                             Foreground="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ModeColorConverter}}"/>
+                                    <TextBlock VerticalAlignment="Center" FontWeight="Bold"
+                                               Text="{loc:LanguageBinding {Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=StateView_On|StateView_Off}}"
+                                               Foreground="{Binding IsChecked, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource ModeColorConverter}}"/>
+                                </StackPanel>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsChecked" Value="True">
+                                    <Setter TargetName="Glyph" Property="Kind" Value="ToggleSwitch"/>
+                                </Trigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="Surface" Property="Background" Value="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
@@ -39,9 +69,10 @@
             <TextBlock Width="Auto" VerticalAlignment="Center" Text="{loc:LanguageBinding {Binding IsCaptureModeActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=StateView_Capturing|StateView_Ready}}"
                        FontWeight="Bold" Foreground="{Binding IsCaptureModeActive, Converter={StaticResource ModeColorConverterReverse}}"></TextBlock>
 
-            <TextBlock Margin="20 0 5 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr StateView_Overlay}"/>
-            <TextBlock Width="Auto" VerticalAlignment="Center" Text="{loc:LanguageBinding {Binding IsOverlayActive, Converter={StaticResource ModeDescriptionConverter}, ConverterParameter=StateView_On|StateView_Off}}"
-                       FontWeight="Bold" Foreground="{Binding IsOverlayActive, Converter={StaticResource ModeColorConverter}}"></TextBlock>
+            <TextBlock Margin="20 0 2 0" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr StateView_Overlay}"/>
+            <ToggleButton Margin="0 0 -3 0" VerticalAlignment="Center" Style="{StaticResource StatusBarToggle}"
+                          IsChecked="{Binding IsOverlayActive, Mode=TwoWay}"
+                          ToolTip="{Binding OverlayToggleToolTip}"/>
 
             <TextBlock Margin="20 0 5 0" VerticalAlignment="Center"
                        Visibility="{Binding IsHookOverlayStatusVisible, Converter={StaticResource FalseToCollapsedConverter}}"

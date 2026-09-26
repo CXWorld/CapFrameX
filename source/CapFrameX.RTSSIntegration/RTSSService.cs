@@ -41,6 +41,26 @@ namespace CapFrameX.RTSSIntegration
             return _isRTSSInstalled;
         }
 
+        public string GetRTSSVersion()
+        {
+            try
+            {
+                string path = GetRTSSFullPath();
+                if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+                    return null;
+
+                var versionInfo = FileVersionInfo.GetVersionInfo(path);
+                string version = string.IsNullOrWhiteSpace(versionInfo.ProductVersion)
+                    ? versionInfo.FileVersion : versionInfo.ProductVersion;
+                return string.IsNullOrWhiteSpace(version) ? null : version.Trim();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Reading the RTSS version failed");
+                return null;
+            }
+        }
+
         public Task CheckRTSSRunningAndRefresh()
         {
             return Task.Run(() =>
