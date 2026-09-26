@@ -23,6 +23,7 @@ namespace CapFrameX.PMD
         private bool _gpuAxisChanging;
         private bool _cpuAxisChanging;
         private bool _frametimeAxisChanging;
+        private bool _showFrametimes = true;
 
         PlotModel _eps12VModel = new PlotModel
         {
@@ -93,7 +94,11 @@ namespace CapFrameX.PMD
             AxisDefinitions["X_Axis_Performance"].AxisChanged += Performance_AxisChanged;
 
             ApplyAxisTitles();
-            CxLang.Instance.PropertyChanged += (_, __) => ApplyAxisTitles();
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage))
+                    ApplyAxisTitles();
+            };
         }
 
         private void ApplyAxisTitles()
@@ -108,7 +113,9 @@ namespace CapFrameX.PMD
             Set("Y_Axis_GPU_W", CxLang.T("PmdChart_GpuPowerW"));
             Set("Y_Axis_Analysis_CPU_W", CxLang.T("PmdChart_PowerW"));
             Set("Y_Axis_Analysis_GPU_W", CxLang.T("PmdChart_PowerW"));
-            Set("Y_Axis_Performance", CxLang.T("PmdChart_FrametimeMs"));
+            Set("Y_Axis_Performance", _showFrametimes ? CxLang.T("PmdChart_FrametimeMs") : "FPS");
+            foreach (var series in PerformanceModel.Series)
+                series.Title = _showFrametimes ? CxLang.T("PmdView_Frametimes") : "FPS";
             Set("X_Axis_Time_CPU", CxLang.T("PmdChart_TimeS"));
             Set("X_Axis_Time_GPU", CxLang.T("PmdChart_TimeS"));
             Set("X_Axis_Time_CPU_Analysis", CxLang.T("PmdChart_TimeS"));
@@ -661,7 +668,9 @@ namespace CapFrameX.PMD
         {
             if (session == null) return;
 
+            _showFrametimes = metric == "Frametimes";
             PerformanceModel.Series.Clear();
+            ApplyAxisTitles();
 
             if (DrawPerformanceChart)
             {
@@ -670,7 +679,7 @@ namespace CapFrameX.PMD
                 if (frametimePoints != null && frametimePoints.Any())
                 {
 
-                    var performanceDataPoints = metric == "Frametimes" ? frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)) : frametimePoints.Select(pnt => new DataPoint(pnt.X, 1000 / pnt.Y));
+                    var performanceDataPoints = _showFrametimes ? frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)) : frametimePoints.Select(pnt => new DataPoint(pnt.X, 1000 / pnt.Y));
                     var xMin = frametimePoints.Min(pnt => pnt.X);
                     var xMax = frametimePoints.Max(pnt => pnt.X);
 
@@ -685,7 +694,7 @@ namespace CapFrameX.PMD
 
                     var performanceSeries = new LineSeries
                     {
-                        Title = metric == "Frametimes" ? "Frametimes" : "FPS",
+                        Title = _showFrametimes ? CxLang.T("PmdView_Frametimes") : "FPS",
                         YAxisKey = "Y_Axis_Performance",
                         StrokeThickness = 2,
                         LegendStrokeThickness = 4,
@@ -695,8 +704,6 @@ namespace CapFrameX.PMD
 
                     var yAxisMin = performanceDataPoints.Min(pnt => pnt.Y);
                     var yAxisMax = performanceDataPoints.Max(pnt => pnt.Y);
-
-                    AxisDefinitions["Y_Axis_Performance"].Title = metric == "Frametimes" ? "Frametimes [ms]" : "FPS";
 
                     AxisDefinitions["Y_Axis_Performance"].Maximum = yAxisMax + (yAxisMax - yAxisMin) / 6;
                     AxisDefinitions["Y_Axis_Performance"].Minimum = yAxisMin - (yAxisMax - yAxisMin) / 6;

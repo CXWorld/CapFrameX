@@ -2,6 +2,7 @@
 			 Name="ComparisonViewUserControl"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:loc="clr-namespace:CapFrameX.MVVM.Localization;assembly=CapFrameX.MVVM"
+             xmlns:chart="clr-namespace:CapFrameX.Contracts.Data;assembly=CapFrameX.Contracts"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:prism="http://prismlibrary.com/"
@@ -81,7 +82,7 @@
 		    CloseOnClickAway="True">
 			<TabControl Name="GraphTab" Grid.Row="0" Grid.Column="0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
 					SelectedItem="{Binding SelectedChartItem}" FocusVisualStyle="{x:Null}">
-				<TabItem Header="{loc:Tr ComparisonView_BarCharts}">
+				<TabItem Tag="{x:Static chart:EChartTab.BarCharts}" Header="{loc:Tr ComparisonView_BarCharts}">
 					<DockPanel Margin="{StaticResource CxTabContentMargin}">
 						<TextBlock DockPanel.Dock="Top" Grid.Row="0" Margin="0 10 0 5" FontWeight="Bold" FontSize="18" Text="{Binding CurrentGameName}" HorizontalAlignment="Center"
 						    Visibility="{Binding ShowGameNameTitle, Converter={StaticResource TrueToVisibleConverter}}"/>
@@ -138,7 +139,7 @@
 						</ScrollViewer>
 					</DockPanel>
 				</TabItem>
-				<TabItem Header="{loc:Tr ComparisonView_LineChartsLShapes}">
+				<TabItem Tag="{x:Static chart:EChartTab.LineCharts}" Header="{loc:Tr ComparisonView_LineChartsLShapes}">
 					<Grid Name="ChartAndCuttingGrid" Margin="{StaticResource CxTabContentMargin}">
 						<Grid.RowDefinitions>
 							<!--Edit box for custom title-->
@@ -195,7 +196,7 @@
                                                               SelectedItem="{Binding SelectedFilterMode}" SelectedIndex="1" ItemsSource="{Binding FilterModes}">
 														<ComboBox.ItemTemplate>
 															<DataTemplate>
-																<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+																<TextBlock Text="{loc:LanguageBinding {Binding Converter={StaticResource EnumDescriptionConverter}}}"/>
 															</DataTemplate>
 														</ComboBox.ItemTemplate>
 													</ComboBox>
@@ -304,7 +305,7 @@
 					</Grid>
 				</TabItem>
 				<!-- Variances Tab -->
-				<TabItem Header="{loc:Tr ComparisonView_Variances}">
+				<TabItem Tag="{x:Static chart:EChartTab.Variances}" Header="{loc:Tr ComparisonView_Variances}">
 					<DockPanel Margin="{StaticResource CxTabContentMargin}">
 						<TextBlock DockPanel.Dock="Top" Grid.Row="0" Margin="0 10 0 0" FontWeight="Bold" FontSize="18" Text="{Binding CurrentGameName}" HorizontalAlignment="Center"
 							   Visibility="{Binding ShowGameNameTitle, Converter={StaticResource TrueToVisibleConverter}}"/>
@@ -340,7 +341,7 @@
 					</DockPanel>
 				</TabItem>
 				<!-- Frame Time Distribution Tab -->
-				<TabItem Header="{loc:Tr ComparisonView_FrameTimeDistribution}">
+				<TabItem Tag="{x:Static chart:EChartTab.Distribution}" Header="{loc:Tr ComparisonView_FrameTimeDistribution}">
 					<Grid Name="DistributionGrid" Margin="{StaticResource CxTabContentMargin}">
 						<Grid.RowDefinitions>
 							<!--Edit box for custom title-->
@@ -452,7 +453,7 @@
 					                ItemsSource="{Binding ComparisonContextItems}" SelectedItem="{Binding SelectedComparisonContext}">
 									<ComboBox.ItemTemplate>
 										<DataTemplate>
-											<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+											<TextBlock Text="{loc:LanguageBinding {Binding Converter={StaticResource EnumDescriptionConverter}}}"/>
 										</DataTemplate>
 									</ComboBox.ItemTemplate>
 								</ComboBox>
@@ -461,7 +462,7 @@
 					                ItemsSource="{Binding ComparisonContextItems}" SelectedItem="{Binding SelectedSecondComparisonContext}">
 									<ComboBox.ItemTemplate>
 										<DataTemplate>
-											<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+											<TextBlock Text="{loc:LanguageBinding {Binding Converter={StaticResource EnumDescriptionConverter}}}"/>
 										</DataTemplate>
 									</ComboBox.ItemTemplate>
 								</ComboBox>
@@ -495,7 +496,7 @@
 					                ItemsSource="{Binding FirstMetricItems}" SelectedItem="{Binding SelectedFirstMetric}">
 									<ComboBox.ItemTemplate>
 										<DataTemplate>
-											<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+											<TextBlock Text="{loc:LanguageBinding {Binding Converter={StaticResource EnumDescriptionConverter}}}"/>
 										</DataTemplate>
 									</ComboBox.ItemTemplate>
 								</ComboBox>
@@ -512,7 +513,7 @@
 					                ItemsSource="{Binding SecondMetricItems}" SelectedItem="{Binding SelectedSecondMetric}">
 									<ComboBox.ItemTemplate>
 										<DataTemplate>
-											<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+											<TextBlock Text="{loc:LanguageBinding {Binding Converter={StaticResource EnumDescriptionConverter}}}"/>
 										</DataTemplate>
 									</ComboBox.ItemTemplate>
 								</ComboBox>
@@ -528,7 +529,7 @@
 					                ItemsSource="{Binding ThirdMetricItems}" SelectedItem="{Binding SelectedThirdMetric}">
 									<ComboBox.ItemTemplate>
 										<DataTemplate>
-											<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+											<TextBlock Text="{loc:LanguageBinding {Binding Converter={StaticResource EnumDescriptionConverter}}}"/>
 										</DataTemplate>
 									</ComboBox.ItemTemplate>
 								</ComboBox>

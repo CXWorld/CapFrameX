@@ -34,6 +34,8 @@ public:
 	void						OnOSDOff();
 	void						OnOSDToggle();
 	std::vector<CString>		RunHistory;
+	std::vector<CString>		RunHistoryLabels;
+	CString						RunHistoryResultLabel = "Result:";
 	std::vector<BOOL>			RunHistoryOutlierFlags;
 	CString						RunHistoryAggregation;
 	std::vector<OverlayEntry>	OverlayEntries;

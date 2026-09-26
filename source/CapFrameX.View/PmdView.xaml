@@ -247,7 +247,7 @@
 						</StackPanel>
 						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 20 0">
 							<TextBlock VerticalAlignment="Center" FontSize="14" Text="{loc:Tr PmdView_PMDServiceStatus}"/>
-							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{Binding PmdCaptureStatus, Converter={StaticResource EnumDescriptionConverter}}" 
+							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{loc:LanguageBinding {Binding PmdCaptureStatus, Converter={StaticResource EnumDescriptionConverter}}}"
 								FontWeight="Bold" FontSize="14" Foreground="{Binding PoweneticsViewModel.PmdCaptureStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
 						</StackPanel>
 					</Grid>
@@ -289,7 +289,7 @@
 										</ComboBox.ToolTip>
 										<ComboBox.ItemTemplate>
 											<DataTemplate>
-												<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+												<TextBlock Text="{loc:LanguageBinding {Binding Converter={StaticResource EnumDescriptionConverter}}}"/>
 											</DataTemplate>
 										</ComboBox.ItemTemplate>
 									</ComboBox>
@@ -486,7 +486,7 @@
 						</StackPanel>
 						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 20 0">
 							<TextBlock VerticalAlignment="Center" FontSize="14" Text="{loc:Tr PmdView_PMDServiceStatus2}"/>
-							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{Binding BenchlabViewModel.PmdServiceStatus, Converter={StaticResource EnumDescriptionConverter}}" 
+							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{loc:LanguageBinding {Binding BenchlabViewModel.PmdServiceStatus, Converter={StaticResource EnumDescriptionConverter}}}"
 								FontWeight="Bold" FontSize="14" Foreground="{Binding BenchlabViewModel.PmdServiceStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
 						</StackPanel>
 					</Grid>

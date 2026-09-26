@@ -318,7 +318,8 @@ namespace CapFrameX.Overlay
                 if (e.PropertyName != nameof(ShowOnOverlayIsEnabled)
                     && e.PropertyName != nameof(ShowGraphIsEnabled)
                     && e.PropertyName != nameof(GroupNameFormat)
-                    && e.PropertyName != nameof(LocalizedDescription))
+                    && e.PropertyName != nameof(LocalizedDescription)
+                    && e.PropertyName != nameof(FormattedGroupName))
                 {
                     PropertyChangedAction?.Invoke();
                 }

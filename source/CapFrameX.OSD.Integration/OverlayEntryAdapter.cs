@@ -43,7 +43,7 @@ namespace CapFrameX.OSD.Integration
                 var o = new OsdEntry
                 {
                     Identifier = e.Identifier,
-                    Group = e.GroupName ?? string.Empty,
+                    Group = CxLang.Instance.TranslateOverlay(e.GroupName),
                     Label = CxLang.Instance.TranslateOverlay(string.IsNullOrEmpty(e.Description) ? e.Identifier : e.Description),
                     Unit = ExtractUnit(e.ValueUnitFormat),
                     Color = OsdColor.FromCapFrameXHex(e.Color),

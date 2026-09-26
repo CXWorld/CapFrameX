@@ -225,24 +225,11 @@ namespace CapFrameX.ViewModel
             {
                 _selectedChartItem = value;
                 RaisePropertyChanged();
-                RaisePropertyChanged(nameof(SelectedChartHeader));
+                RaisePropertyChanged(nameof(SelectedChart));
                 OnChartItemChanged();
             }
         }
-        public string SelectedChartHeader
-        {
-            get
-            {
-                if (_selectedChartItem is TabItem tab)
-                {
-                    if (tab.Header is Label label)
-                        return label.Content?.ToString();
-                    return tab.Header?.ToString();
-                }
-
-                return string.Empty;
-            }
-        }
+        public EChartTab SelectedChart => SelectedChartItem?.Tag is EChartTab chart ? chart : EChartTab.None;
 
         public List<ISystemInfoEntry> SystemInfos
         {
@@ -875,21 +862,21 @@ namespace CapFrameX.ViewModel
             _onUpdateChart.Subscribe(_ =>
             {
                 
-                if (SelectedChartHeader.Contains("Distribution") && _isDistributionChartDirty)
+                if (SelectedChart == EChartTab.Distribution && _isDistributionChartDirty)
                 {
                     FrametimeDistributionGraphDataContext.BuildPlotmodel(GetVisibleGraphs());
                     _isDistributionChartDirty = false;
                 }
                     
 
-                if (SelectedChartHeader.Contains("FPS") && _isFpsChartDirty)
+                if (SelectedChart == EChartTab.Fps && _isFpsChartDirty)
                 {
                     FpsGraphDataContext.BuildPlotmodel(GetVisibleGraphs());
                     _isFpsChartDirty = false;
                 }
                    
 
-                if (SelectedChartHeader.Contains("Times") && _isFrametimeChartDirty)
+                if (SelectedChart == EChartTab.Frametimes && _isFrametimeChartDirty)
                 {
                     FrametimeGraphDataContext.BuildPlotmodel(GetVisibleGraphs(), plotModel =>
                     {
@@ -1460,7 +1447,6 @@ namespace CapFrameX.ViewModel
             if (SelectedChartItem == null)
                 return;
 
-            var headerName = SelectedChartItem.Header.ToString();
             var frametimeSubset = GetFrametimesSubset();
             var sampleSubset = _appConfiguration.UseDisplayChangeMetrics
                ? GetDisplayChangeTimesSubset() : frametimeSubset;
@@ -1469,7 +1455,7 @@ namespace CapFrameX.ViewModel
             if (sampleSubset == null || fpsSubset == null)
                 return;
 
-            if (headerName.Contains("L-shape"))
+            if (SelectedChart == EChartTab.LShape)
             {
                 Task.Factory.StartNew(() => SetLShapeChart(sampleSubset, fpsSubset));
             }

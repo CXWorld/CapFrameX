@@ -863,7 +863,10 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 			for (int i = 0; i < RunHistory.size(); i++)
 			{
 				CString strGroup;
-				strGroup.Format("<C200>Run %d: <C>", i + 1);
+				if (i < RunHistoryLabels.size())
+					strGroup = "<C200>" + RunHistoryLabels[i] + " <C>";
+				else
+					strGroup.Format("<C200>Run %d: <C>", i + 1);
 
 				if (RunHistoryOutlierFlags.size() == RunHistory.size())
 				{
@@ -881,7 +884,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 			// add aggregation
 			if (RunHistoryAggregation != "")
 			{
-				groupedString->Add("<C250> " + RunHistoryAggregation + "<C>", "<C200>Result: <C>", "\n");
+				groupedString->Add("<C250> " + RunHistoryAggregation + "<C>", "<C200>" + RunHistoryResultLabel + " <C>", "\n");
 			}
 		}
 	}

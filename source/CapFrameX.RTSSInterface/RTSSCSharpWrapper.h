@@ -65,6 +65,13 @@ public:
 		{
 			{
 				msclr::lock l(m_lock);
+				_coreControl->RunHistoryLabels.clear();
+				for (size_t i = 0; i < _coreControl->RunHistory.size(); i++)
+				{
+					String^ label = String::Format("Run {0}:", static_cast<int>(i + 1));
+					_coreControl->RunHistoryLabels.push_back(RtssTextFormatter::Translate(label, GetACP()));
+				}
+				_coreControl->RunHistoryResultLabel = RtssTextFormatter::Translate("Result:", GetACP());
 				_coreControl->Refresh();
 			}
 		}
@@ -216,8 +223,8 @@ public:
 					entry.Identifier = managedEntry->Identifier;
 					entry.Description = managedEntry->Description;
 					entry.ShowOnOverlay = managedEntry->ShowOnOverlay;
-					entry.GroupName = managedEntry->FormattedGroupName;
-					entry.Value = managedEntry->FormattedValue;
+					entry.GroupName = RtssTextFormatter::FormatGroupName(managedEntry, GetACP());
+					entry.Value = RtssTextFormatter::FormatValue(managedEntry, GetACP());
 					entry.ShowGraph = managedEntry->ShowGraph;
 
 					_coreControl->OverlayEntries.push_back(entry);
@@ -246,8 +253,8 @@ public:
 						// mapping member
 						_coreControl->OverlayEntries[i].Description = managedEntry->Description;
 						_coreControl->OverlayEntries[i].ShowOnOverlay = managedEntry->ShowOnOverlay;
-						_coreControl->OverlayEntries[i].GroupName = managedEntry->FormattedGroupName;
-						_coreControl->OverlayEntries[i].Value = managedEntry->FormattedValue;
+						_coreControl->OverlayEntries[i].GroupName = RtssTextFormatter::FormatGroupName(managedEntry, GetACP());
+						_coreControl->OverlayEntries[i].Value = RtssTextFormatter::FormatValue(managedEntry, GetACP());
 						_coreControl->OverlayEntries[i].ShowGraph = managedEntry->ShowGraph;
 						_coreControl->OverlayEntries[i].Color = managedEntry->Color;
 						break;

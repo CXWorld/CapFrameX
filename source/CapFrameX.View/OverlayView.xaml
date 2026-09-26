@@ -197,7 +197,7 @@
 									  ToolTip="{loc:Tr OverlayView_FilterByEntryType}">
 								<ComboBox.ItemTemplate>
 									<DataTemplate>
-										<TextBlock Text="{Binding Converter={StaticResource EnumShortDescriptionConverter}, TargetNullValue='All Types'}"/>
+										<TextBlock Text="{loc:LanguageBinding {Binding Converter={StaticResource EnumShortDescriptionConverter}, TargetNullValue='All Types'}}"/>
 									</DataTemplate>
 								</ComboBox.ItemTemplate>
 							</ComboBox>
@@ -320,7 +320,7 @@
 								<DataGridTemplateColumn Header="{loc:Tr OverlayView_GroupName}" SortMemberPath="GroupName" MinWidth="120">
 									<DataGridTemplateColumn.CellTemplate>
 										<DataTemplate>
-											<TextBlock Margin="4 0" VerticalAlignment="Center" Text="{Binding GroupName, Converter={StaticResource OverlayLabelConverter}}"/>
+											<TextBlock Margin="4 0" VerticalAlignment="Center" Text="{loc:LanguageBinding {Binding GroupName, Converter={StaticResource OverlayLabelConverter}}, Overlay=True}"/>
 										</DataTemplate>
 									</DataGridTemplateColumn.CellTemplate>
 									<DataGridTemplateColumn.CellEditingTemplate>
@@ -330,7 +330,7 @@
 									</DataGridTemplateColumn.CellEditingTemplate>
 								</DataGridTemplateColumn>
 
-								<DataGridTextColumn Binding="{Binding OverlayEntryType, Mode=OneWay, Converter={StaticResource EnumShortDescriptionConverter}}"
+								<DataGridTextColumn Binding="{loc:LanguageBinding {Binding OverlayEntryType, Mode=OneWay, Converter={StaticResource EnumShortDescriptionConverter}}}"
 									Header="{loc:Tr OverlayView_EntryType2}"
 									IsReadOnly="True"/>
 
@@ -557,7 +557,7 @@
 								SelectedItem="{Binding SelectedOverlayTemplate}">
 								<ComboBox.ItemTemplate>
 									<DataTemplate>
-										<TextBlock Text="{Binding Converter={StaticResource EnumDescriptionConverter}}"/>
+										<TextBlock Text="{loc:LanguageBinding {Binding Converter={StaticResource EnumDescriptionConverter}}}"/>
 									</DataTemplate>
 								</ComboBox.ItemTemplate>
 							</ComboBox>
@@ -861,7 +861,7 @@
 							</Style>
 						</DataGrid.Resources>
 						<DataGrid.Columns>
-							<DataGridTextColumn Binding="{Binding GroupName, Mode=OneWay, Converter={StaticResource OverlayLabelConverter}}"
+							<DataGridTextColumn Binding="{loc:LanguageBinding {Binding GroupName, Mode=OneWay, Converter={StaticResource OverlayLabelConverter}}, Overlay=True}"
                                             Header="{loc:Tr OverlayView_GroupName2}"
                                             IsReadOnly="True"/>
 							<DataGridTextColumn Binding="{Binding GroupSeparators, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"

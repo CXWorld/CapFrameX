@@ -32,7 +32,7 @@
             <mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>
             <mvvm:InvertBoolConverter x:Key="InvertBoolConverter"/>
             <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
-            <mvvm:OverlayLabelConverter x:Key="OverlayLabelConverter"/>
+            <mvvm:UiLabelConverter x:Key="UiLabelConverter"/>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid HorizontalAlignment="Center">
@@ -133,9 +133,9 @@
                             </Style>
                         </DataGrid.Resources>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding Name, Mode=OneWay, Converter={StaticResource OverlayLabelConverter}}"
+                            <DataGridTextColumn Binding="{loc:LanguageBinding {Binding Name, Mode=OneWay, Converter={StaticResource UiLabelConverter}}}"
                                                 Header="{loc:Tr SensorView_Sensor}" IsReadOnly="True" MinWidth="185"/>
-                            <DataGridTextColumn Binding="{Binding SensorType, Mode=OneWay, Converter={StaticResource OverlayLabelConverter}}"
+                            <DataGridTextColumn Binding="{loc:LanguageBinding {Binding SensorType, Mode=OneWay, Converter={StaticResource UiLabelConverter}}}"
                                                 Header="{loc:Tr SensorView_Type}" IsReadOnly="True" MinWidth="100"/>
                             <DataGridCheckBoxColumn Binding="{Binding UseForLogging, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="{loc:Tr SensorView_UseForLogging}" Width="100">
                                 <DataGridCheckBoxColumn.CellStyle>
@@ -409,7 +409,7 @@
                                   Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                         <ComboBox.ItemTemplate>
                             <DataTemplate>
-                                <TextBlock Text="{Binding Converter={StaticResource OverlayLabelConverter}}"/>
+                                <TextBlock Text="{loc:LanguageBinding {Binding Converter={StaticResource UiLabelConverter}}}"/>
                             </DataTemplate>
                         </ComboBox.ItemTemplate>
                         <ComboBox.SelectedItem>

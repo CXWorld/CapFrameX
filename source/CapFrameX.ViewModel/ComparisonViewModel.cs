@@ -805,22 +805,22 @@ namespace CapFrameX.ViewModel
 
         public bool IsBarChartTabActive
         {
-            get { return SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false; }
+            get { return SelectedChartItem?.Tag is EChartTab chart && chart == EChartTab.BarCharts; }
         }
 
         public bool IsLineChartTabActive
         {
-            get { return SelectedChartItem?.Header.ToString().Contains("Line") ?? false; }
+            get { return SelectedChartItem?.Tag is EChartTab chart && chart == EChartTab.LineCharts; }
         }
 
         public bool IsVarianceChartTabActive
         {
-            get { return SelectedChartItem?.Header.ToString().Contains("Variances") ?? false; }
+            get { return SelectedChartItem?.Tag is EChartTab chart && chart == EChartTab.Variances; }
         }
 
         public bool IsDistributionTabActive
         {
-            get { return SelectedChartItem?.Header.ToString().Contains("Distribution") ?? false; }
+            get { return SelectedChartItem?.Tag is EChartTab chart && chart == EChartTab.Distribution; }
         }
 
         public bool IsDistributionChartDirty
@@ -1362,13 +1362,11 @@ namespace CapFrameX.ViewModel
             ComparisonLShapeCollection.Clear();
             ResetLShapeChart.OnNext(default);
 
-            var header = SelectedChartItem?.Header?.ToString();
-
-            if (header?.Contains("Bar charts") ?? false)
+            if (IsBarChartTabActive)
                 SetColumnChart();
-            else if (header?.Contains("Variances") ?? false)
+            else if (IsVarianceChartTabActive)
                 SetVarianceChart();
-            else if (header?.Contains("Line") ?? false)
+            else if (IsLineChartTabActive)
             {
                 if (_isFrametimeChartDirty)
                 {
@@ -1382,7 +1380,7 @@ namespace CapFrameX.ViewModel
                 }
                 SetLShapeChart();
             }
-            else if (_isDistributionChartDirty)
+            else if (IsDistributionTabActive && _isDistributionChartDirty)
             {
                 SetDistributionChart();
                 _isDistributionChartDirty = false;
@@ -1511,12 +1509,7 @@ namespace CapFrameX.ViewModel
 
         private void OnChartItemChanged()
         {
-            if (SelectedChartItem?.Header.ToString().Contains("Line") ?? false)
-                ColorPickerVisibility = true;
-            else if (SelectedChartItem?.Header.ToString().Contains("Distribution") ?? false)
-                ColorPickerVisibility = true;
-            else
-                ColorPickerVisibility = false;
+            ColorPickerVisibility = IsLineChartTabActive || IsDistributionTabActive;
         }
 
         private void OnSortModeChanged()
