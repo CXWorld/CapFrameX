@@ -260,6 +260,7 @@ namespace CapFrameX.ViewModel
                 UpdateCpuDetails();
                 UpdateRamName();
                 UpdateGpuDetails();
+                RefreshSoftwareComponents();
                 if (_lastSnapshot != null)
                 {
                     UpdateLiveMetrics(_lastSnapshot);
@@ -615,25 +616,26 @@ namespace CapFrameX.ViewModel
         private string BuildSystemReport()
         {
             var report = new StringBuilder();
-            report.AppendLine($"CapFrameX {_appVersionProvider.GetAppVersion()} ({_appVersionProvider.GetReleaseChannel()})");
-            AppendReportLine(report, "Operating system", OsVersion);
-            AppendReportLine(report, "Processor", DescribeWithDetails(CpuName, CpuDetails));
-            AppendReportLine(report, "Graphics card", DescribeWithDetails(GpuName, GpuDetails));
-            AppendReportLine(report, "Mainboard", DescribeWithDetails(MainboardName, MainboardDetails));
-            AppendReportLine(report, "Memory", DescribeWithDetails(RamName, RamDetails));
+            report.AppendLine(CxLang.Format("InfoViewModel_ReportHeader01",
+                _appVersionProvider.GetAppVersion(), _appVersionProvider.GetReleaseChannel()));
+            AppendReportLine(report, CxLang.T("InfoViewModel_OperatingSystem"), OsVersion);
+            AppendReportLine(report, CxLang.T("InfoViewModel_Processor"), DescribeWithDetails(CpuName, CpuDetails));
+            AppendReportLine(report, CxLang.T("InfoViewModel_GraphicsCard"), DescribeWithDetails(GpuName, GpuDetails));
+            AppendReportLine(report, CxLang.T("InfoViewModel_Mainboard"), DescribeWithDetails(MainboardName, MainboardDetails));
+            AppendReportLine(report, CxLang.T("InfoViewModel_Memory"), DescribeWithDetails(RamName, RamDetails));
             report.AppendLine();
-            AppendReportLine(report, "Resizable BAR", DescribeStatus(ResizableBarStatus));
-            AppendReportLine(report, "Hardware-accelerated GPU scheduling", DescribeStatus(_systemInfo.HardwareAcceleratedGPUSchedulingStatus));
-            AppendReportLine(report, "Windows Game Mode", DescribeStatus(_systemInfo.GameModeStatus));
-            AppendReportLine(report, "Secure Boot", SecureBootStatus.State);
-            AppendReportLine(report, "Test signing", TestSigningStatus.State);
-            AppendReportLine(report, "Virtualization-based security", VbsStatus.State);
-            AppendReportLine(report, "Memory integrity", MemoryIntegrityStatus.State);
+            AppendReportLine(report, CxLang.T("InfoView_ResizableBAR"), DescribeStatus(ResizableBarStatus));
+            AppendReportLine(report, CxLang.T("InfoView_HardwareAcceleratedGPUScheduling"), DescribeStatus(_systemInfo.HardwareAcceleratedGPUSchedulingStatus));
+            AppendReportLine(report, CxLang.T("InfoView_WindowsGameMode"), DescribeStatus(_systemInfo.GameModeStatus));
+            AppendReportLine(report, CxLang.T("InfoView_SecureBoot"), SecureBootStatus.State);
+            AppendReportLine(report, CxLang.T("InfoView_TestSigning"), TestSigningStatus.State);
+            AppendReportLine(report, CxLang.T("InfoViewModel_VirtualizationBasedSecurity"), VbsStatus.State);
+            AppendReportLine(report, CxLang.T("InfoView_MemoryIntegrity"), MemoryIntegrityStatus.State);
             report.AppendLine();
-            AppendReportLine(report, "PawnIO driver", DescribeComponent(PawnIoStatus));
-            AppendReportLine(report, "PresentMon", DescribeComponent(PresentMonStatus));
-            AppendReportLine(report, "RTSS", DescribeComponent(RtssStatus));
-            AppendReportLine(report, "Vulkan layer", DescribeComponent(VulkanLayerStatus));
+            AppendReportLine(report, CxLang.T("InfoView_PawnIODriver"), DescribeComponent(PawnIoStatus));
+            AppendReportLine(report, CxLang.T("InfoView_PresentMon"), DescribeComponent(PresentMonStatus));
+            AppendReportLine(report, CxLang.T("InfoView_RTSS"), DescribeComponent(RtssStatus));
+            AppendReportLine(report, CxLang.T("InfoView_VulkanLayer"), DescribeComponent(VulkanLayerStatus));
             return report.ToString();
         }
 
@@ -648,11 +650,11 @@ namespace CapFrameX.ViewModel
             switch (status)
             {
                 case ESystemInfoTertiaryStatus.Enabled:
-                    return "Enabled";
+                    return CxLang.T("InfoViewModel_Enabled");
                 case ESystemInfoTertiaryStatus.Disabled:
-                    return "Disabled";
+                    return CxLang.T("InfoViewModel_Disabled");
                 default:
-                    return "Unknown";
+                    return CxLang.T("InfoViewModel_Unknown");
             }
         }
 
@@ -684,7 +686,13 @@ namespace CapFrameX.ViewModel
         {
             _isViewActive = true;
             UpdateSensorEvaluationState();
+            RefreshSoftwareComponents();
+        }
 
+        // Cheap enough for every visit of the tab. It also rebuilds the texts that are resolved at
+        // query time (the Vulkan layer details), which is why a language switch takes this path too.
+        private void RefreshSoftwareComponents()
+        {
             if (_sensorService.SensorServiceCompletionSource.Task.IsCompleted)
                 _ = Task.Run(UpdateSoftwareComponents);
         }

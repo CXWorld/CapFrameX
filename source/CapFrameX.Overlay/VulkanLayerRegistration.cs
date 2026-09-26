@@ -1,3 +1,4 @@
+using CapFrameX.Contracts.Localization;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -72,7 +73,8 @@ namespace CapFrameX.Overlay
         public string Version { get; }
 
         /// <summary>
-        /// Registered manifests per bitness and, for a conflict, what is wrong with them.
+        /// Registered manifests per bitness and, for a conflict, what is wrong with them - in the
+        /// interface language at the time of the query.
         /// </summary>
         public string Detail { get; }
     }
@@ -168,7 +170,7 @@ namespace CapFrameX.Overlay
             AppendDetail(detail, "x86", x86);
 
             foreach (var stale in entries.Where(entry => entry.IsEnabled && !entry.ManifestReadable))
-                detail.AppendLine($"Leftover registration without manifest: {stale.ManifestPath}");
+                detail.AppendLine(CxLang.Format("VulkanLayerRegistrationProbe_LeftoverRegistration0", stale.ManifestPath));
 
             VulkanLayerRegistrationState state;
             if (x64.Broken != null || x86.Broken != null)
@@ -222,16 +224,18 @@ namespace CapFrameX.Overlay
         /// </summary>
         private static string GetBreakage(VulkanLayerRegistryEntry entry, VulkanLayerLibraryBitness bitness)
         {
-            string where = entry.Location == VulkanLayerRegistryLocation.CurrentUser ? "registered in HKCU, " : string.Empty;
+            string where = entry.Location == VulkanLayerRegistryLocation.CurrentUser
+                ? CxLang.T("VulkanLayerRegistrationProbe_RegisteredInHkcu") + ", "
+                : string.Empty;
 
             switch (entry.LibraryBitness)
             {
                 case VulkanLayerLibraryBitness.Missing:
-                    return where + "layer DLL is missing";
+                    return where + CxLang.T("VulkanLayerRegistrationProbe_LayerDllIsMissing");
                 case VulkanLayerLibraryBitness.X86 when bitness == VulkanLayerLibraryBitness.X64:
-                    return where + "points to a 32-bit DLL";
+                    return where + CxLang.T("VulkanLayerRegistrationProbe_PointsTo32BitDll");
                 case VulkanLayerLibraryBitness.X64 when bitness == VulkanLayerLibraryBitness.X86:
-                    return where + "points to a 64-bit DLL";
+                    return where + CxLang.T("VulkanLayerRegistrationProbe_PointsTo64BitDll");
                 default:
                     return null;
             }
@@ -244,7 +248,7 @@ namespace CapFrameX.Overlay
             else if (verdict.Working != null)
                 detail.AppendLine($"{label}: {verdict.Working.ManifestPath}");
             else
-                detail.AppendLine($"{label}: not registered");
+                detail.AppendLine($"{label}: {CxLang.T("VulkanLayerRegistrationProbe_NotRegistered")}");
         }
 
         private static void ReadEntries(List<VulkanLayerRegistryEntry> entries, RegistryHive hive, RegistryView view,
