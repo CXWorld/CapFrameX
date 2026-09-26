@@ -50,6 +50,11 @@ namespace CapFrameX.ViewModel
         // Repaint rate of the live telemetry on the Info tab.
         private const int LiveMetricsSampleMs = 1000;
 
+        private string _rawCpuDetails;
+        private string _rawRamName;
+        private string _rawDriverVersion;
+        private Dictionary<ISensorEntry, float> _lastSnapshot;
+
         private string _cpuName = "Detecting...";
         private string _cpuDetails = string.Empty;
         private VendorBadge _cpuVendorBadge;
@@ -139,6 +144,8 @@ namespace CapFrameX.ViewModel
             _appConfiguration = appConfiguration;
             _logger = logger;
 
+            CxLang.Instance.PropertyChanged += OnLanguageChanged;
+
             UpdateSensorEvaluationState();
 
             // Pause the telemetry while the shell is minimized or hidden to the tray.
@@ -206,6 +213,41 @@ namespace CapFrameX.ViewModel
             UpdateLiveMetricsSubscription();
         }
 
+        private void OnLanguageChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(CxLang.UiLanguage))
+            {
+                UpdateCpuDetails();
+                UpdateRamName();
+                UpdateGpuDetails();
+                if (_lastSnapshot != null)
+                {
+                    UpdateLiveMetrics(_lastSnapshot);
+                }
+            }
+        }
+
+        private void UpdateCpuDetails()
+        {
+            CpuDetails = !string.IsNullOrEmpty(_rawCpuDetails)
+                ? CxLang.Instance.TranslateUiText(_rawCpuDetails)
+                : string.Empty;
+        }
+
+        private void UpdateRamName()
+        {
+            RamName = !string.IsNullOrEmpty(_rawRamName)
+                ? CxLang.Instance.TranslateUiText(_rawRamName)
+                : string.Empty;
+        }
+
+        private void UpdateGpuDetails()
+        {
+            GpuDetails = IsUsable(_rawDriverVersion)
+                ? CxLang.Format("InfoView_Driver0", _rawDriverVersion)
+                : string.Empty;
+        }
+
         /// <summary>
         /// Everything WMI can answer without the sensor service. The first call collects the
         /// whole set in one go (see <c>SystemInfo</c>), so the individual getters below cost
@@ -215,14 +257,16 @@ namespace CapFrameX.ViewModel
         {
             try
             {
-                CpuDetails = _systemInfo.GetProcessorCoreCountInfo();
+                _rawCpuDetails = _systemInfo.GetProcessorCoreCountInfo();
+                UpdateCpuDetails();
 
                 MainboardName = _systemInfo.GetMotherboardName();
                 MainboardVendorBadge = VendorBadge.FromVendorName(_systemInfo.GetMotherboardManufacturerBrand());
                 var biosVersion = _systemInfo.GetBiosVersion();
                 MainboardDetails = IsUsable(biosVersion) ? $"BIOS {biosVersion}" : string.Empty;
 
-                RamName = _systemInfo.GetSystemRAMInfoName();
+                _rawRamName = _systemInfo.GetSystemRAMInfoName();
+                UpdateRamName();
                 var ramManufacturer = _systemInfo.GetSystemRAMManufacturer();
                 RamVendorBadge = VendorBadge.FromVendorName(ramManufacturer);
                 RamDetails = ramManufacturer;
@@ -275,8 +319,8 @@ namespace CapFrameX.ViewModel
             {
                 GpuName = _sensorService.GetGpuName();
                 GpuVendorBadge = VendorBadge.FromGpuVendor(_sensorService.GetGpuVendor());
-                var driverVersion = _sensorService.GetGpuDriverVersion();
-                GpuDetails = IsUsable(driverVersion) ? $"Driver {driverVersion}" : string.Empty;
+                _rawDriverVersion = _sensorService.GetGpuDriverVersion();
+                UpdateGpuDetails();
             }
             catch (Exception ex)
             {
@@ -289,6 +333,7 @@ namespace CapFrameX.ViewModel
 
         private void UpdateLiveMetrics(Dictionary<ISensorEntry, float> snapshot)
         {
+            _lastSnapshot = snapshot;
             try
             {
                 float? cpuLoad = null, cpuPower = null, cpuTemp = null, cpuMaxClock = null, cpuCoreClockMax = null;

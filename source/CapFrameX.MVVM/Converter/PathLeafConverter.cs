@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Windows.Data;
+using CapFrameX.Contracts.Localization;
 
 namespace CapFrameX.MVVM.Converter
 {
@@ -20,6 +21,9 @@ namespace CapFrameX.MVVM.Converter
 
 			var trimmed = path.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 			var leaf = Path.GetFileName(trimmed);
+			if (string.Equals(leaf, "Captures", StringComparison.OrdinalIgnoreCase))
+				return CxLang.T("ControlView_Captures");
+
 			return string.IsNullOrEmpty(leaf) ? trimmed : leaf;
 		}
 

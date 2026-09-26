@@ -406,6 +406,7 @@
     "ControlView_CPU": "ЦП",
     "ControlView_CPU2": "ЦП",
     "ControlView_CPUDescription": "Описание ЦП",
+    "ControlView_Captures": "Записи",
     "ControlView_ColumnOptions": "Столбцы",
     "ControlView_Comment": "Комментарий",
     "ControlView_Comment2": "Комментарий",
@@ -752,6 +753,7 @@
     "InfoView_Available": "Доступно",
     "InfoView_Clock": "Частота",
     "InfoView_Clock2": "Частота",
+    "InfoView_Driver0": "Драйвер {0}",
     "InfoView_GRAPHICSCARD": "ВИДЕОКАРТА",
     "InfoView_HardwareAcceleratedGPUScheduling": "Аппаратное планирование ГП",
     "InfoView_InUse": "Занято",
@@ -1665,6 +1667,38 @@
     {
       "pattern": "(\\d+(?:\\.\\d+)?)\\s*V\\b",
       "replacement": "$1 В"
+    },
+    {
+      "pattern": "(\\b1[1-4]|[0-9]*[05-9])\\s*Cores\\b",
+      "replacement": "$1 ядер"
+    },
+    {
+      "pattern": "(\\b[0-9]*[2-4])\\s*Cores\\b",
+      "replacement": "$1 ядра"
+    },
+    {
+      "pattern": "(\\b[0-9]*1)\\s*Cores?\\b",
+      "replacement": "$1 ядро"
+    },
+    {
+      "pattern": "(\\b1[1-4]|[0-9]*[05-9])\\s*Threads\\b",
+      "replacement": "$1 потоков"
+    },
+    {
+      "pattern": "(\\b[0-9]*[2-4])\\s*Threads\\b",
+      "replacement": "$1 потока"
+    },
+    {
+      "pattern": "(\\b[0-9]*1)\\s*Threads?\\b",
+      "replacement": "$1 поток"
+    },
+    {
+      "pattern": "(\\d+)\\s*GB\\b",
+      "replacement": "$1 ГБ"
+    },
+    {
+      "pattern": "(\\d+)\\s*MB\\b",
+      "replacement": "$1 МБ"
     },
     {
       "pattern": "\\bGB\\b",
