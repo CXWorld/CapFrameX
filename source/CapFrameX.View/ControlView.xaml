@@ -392,7 +392,7 @@
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
                             <DataGridTextColumn x:Name="CommentColumn" Binding="{Binding Comment, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-										Width="100"
+										Width="110"
                                         Header="{loc:Tr ControlView_Comment2}"
                                         IsReadOnly="False"
                                         Visibility="{Binding DataContext.ShowComment, Source={x:Reference ColumnHeaders}, Converter={StaticResource TrueToVisibleConverter}}">

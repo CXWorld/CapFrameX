@@ -278,14 +278,14 @@
 					<materialDesign:PopupBox.ToggleContent>
 						<materialDesign:PackIcon Kind="Cog" Width="30" Height="30" Foreground="White"/>
 					</materialDesign:PopupBox.ToggleContent>
-					<!--820 fits the tallest page (Options) without scrolling in a maximized 1080p window.-->
-					<Border Width="960" Height="820"
+					<!--850 fits the tallest page (Application) without scrolling in a maximized 1080p window.-->
+					<Border Width="960" Height="850"
 							MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height, Converter={StaticResource SettingsPopupMaxHeightConverter}}"
 							Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
 							CornerRadius="10" SnapsToDevicePixels="True">
 						<Grid>
 							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="184"/>
+								<ColumnDefinition Width="204"/>
 								<ColumnDefinition Width="*"/>
 							</Grid.ColumnDefinitions>
 

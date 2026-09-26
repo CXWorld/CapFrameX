@@ -335,26 +335,25 @@
                             </TabItem>
                             <TabItem x:Name="ThresholdTab" Header="{loc:Tr DataView_FPSThresholds}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
-                                    <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                 ToolTip="{loc:Tr DataView_ShowTimeAboveOrBelow}"
-                                                 Style="{StaticResource MaterialDesignTabRadioButton}"
-                                                 Margin="0 -5 0 0"
-                                                 Width="80"
-                                                 MinWidth="80"
-                                                 Height="25"
-                                                 IsChecked="{Binding ShowThresholdTimes}"
-                                                 Content="{loc:Tr DataView_Times}"
-                                                 Command="{Binding ThresholdTimesCommand}"/>
-                                    <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                 ToolTip="{loc:Tr DataView_ShowNumberOfFramesAbove}"
-                                                 Style="{StaticResource MaterialDesignTabRadioButton}"
-                                                 Margin="80 -5 0 0"
-                                                 Width="80"
-                                                 MinWidth="80"
-                                                 Height="25"
-                                                 IsChecked="{Binding ShowThresholdTimes, Converter={StaticResource InvertBoolConverter}}"
-                                                 Content="{loc:Tr DataView_Counts}"
-                                                 Command="{Binding ThresholdCountsCommand}"/>
+                                    <!--Side by side without fixed widths: "Counts" is longer in translations.-->
+                                    <StackPanel Panel.ZIndex="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0 -5 0 0">
+                                        <RadioButton
+                                                     ToolTip="{loc:Tr DataView_ShowTimeAboveOrBelow}"
+                                                     Style="{StaticResource MaterialDesignTabRadioButton}"
+                                                     MinWidth="80"
+                                                     Height="25"
+                                                     IsChecked="{Binding ShowThresholdTimes}"
+                                                     Content="{loc:Tr DataView_Times}"
+                                                     Command="{Binding ThresholdTimesCommand}"/>
+                                        <RadioButton
+                                                     ToolTip="{loc:Tr DataView_ShowNumberOfFramesAbove}"
+                                                     Style="{StaticResource MaterialDesignTabRadioButton}"
+                                                     MinWidth="80"
+                                                     Height="25"
+                                                     IsChecked="{Binding ShowThresholdTimes, Converter={StaticResource InvertBoolConverter}}"
+                                                     Content="{loc:Tr DataView_Counts}"
+                                                     Command="{Binding ThresholdCountsCommand}"/>
+                                    </StackPanel>
                                     <Grid Margin="0 0 40 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
                                         <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}" Foreground="White" 
 												  ToolTip="{loc:Tr DataView_ToggleBetweenAbsoluteAndRelative}" IsChecked="{Binding ThresholdShowAbsoluteValues}">
@@ -546,26 +545,25 @@
                         <TabControl Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" FocusVisualStyle="{x:Null}" >
                             <TabItem Header="{loc:Tr DataView_FPSThresholds2}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
-                                    <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                 ToolTip="{loc:Tr DataView_ShowTimeAboveOrBelow2}"
-                                                 Style="{StaticResource MaterialDesignTabRadioButton}"
-                                                 Margin="0 -5 0 0"
-                                                 Width="80"
-                                                 MinWidth="80"
-                                                 Height="25"
-                                                 IsChecked="{Binding ShowThresholdTimes}"
-                                                 Content="{loc:Tr DataView_Times2}"
-                                                 Command="{Binding ThresholdTimesCommand}"/>
-                                    <RadioButton Panel.ZIndex="1" HorizontalAlignment="Left" VerticalAlignment="Top"
-                                                 ToolTip="{loc:Tr DataView_ShowNumberOfFramesAbove2}"
-                                                 Style="{StaticResource MaterialDesignTabRadioButton}"
-                                                 Margin="80 -5 0 0"
-                                                 Width="80"
-                                                 MinWidth="80"
-                                                 Height="25"
-                                                 IsChecked="{Binding ShowThresholdTimes, Converter={StaticResource InvertBoolConverter}}"
-                                                 Content="{loc:Tr DataView_Counts2}"
-                                                 Command="{Binding ThresholdCountsCommand}"/>
+                                    <!--Side by side without fixed widths: "Counts" is longer in translations.-->
+                                    <StackPanel Panel.ZIndex="1" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="0 -5 0 0">
+                                        <RadioButton
+                                                     ToolTip="{loc:Tr DataView_ShowTimeAboveOrBelow2}"
+                                                     Style="{StaticResource MaterialDesignTabRadioButton}"
+                                                     MinWidth="80"
+                                                     Height="25"
+                                                     IsChecked="{Binding ShowThresholdTimes}"
+                                                     Content="{loc:Tr DataView_Times2}"
+                                                     Command="{Binding ThresholdTimesCommand}"/>
+                                        <RadioButton
+                                                     ToolTip="{loc:Tr DataView_ShowNumberOfFramesAbove2}"
+                                                     Style="{StaticResource MaterialDesignTabRadioButton}"
+                                                     MinWidth="80"
+                                                     Height="25"
+                                                     IsChecked="{Binding ShowThresholdTimes, Converter={StaticResource InvertBoolConverter}}"
+                                                     Content="{loc:Tr DataView_Counts2}"
+                                                     Command="{Binding ThresholdCountsCommand}"/>
+                                    </StackPanel>
                                     <Grid Margin="0 0 40 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
                                         <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}" Foreground="White" 
 												  ToolTip="{loc:Tr DataView_ToggleBetweenAbsoluteAndRelative2}" IsChecked="{Binding ThresholdShowAbsoluteValues}">

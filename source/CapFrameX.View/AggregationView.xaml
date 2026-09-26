@@ -132,7 +132,7 @@
                 <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="2*"/>
             </Grid.ColumnDefinitions>
-            <Button Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="150" Height="45" BorderBrush="Transparent"
+            <Button Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="150" Height="45" Padding="8 4" BorderBrush="Transparent"
 					Command="{Binding AggregateIncludeCommand}" IsEnabled="{Binding EnableAggregationButton}" Visibility="{Binding ShowIncludeExcludeButtons, Converter={StaticResource FalseToVisibleConverter}}"
                     ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
                 <TextBlock Text="{loc:Tr AggregationView_Aggregate}" TextWrapping="Wrap" TextAlignment="Center"/>
@@ -144,7 +144,7 @@
                     </ToolTip>
                 </Button.ToolTip>
             </Button>
-            <Button Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="150" Height="45" BorderBrush="Transparent"
+            <Button Grid.Row="0" Grid.Column="0" VerticalAlignment="Top" Width="150" Height="45" Padding="8 4" BorderBrush="Transparent"
 					Command="{Binding AggregateIncludeCommand}" Visibility="{Binding ShowIncludeExcludeButtons, Converter={StaticResource TrueToVisibleConverter}}"
                     ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
                 <TextBlock Text="{loc:Tr AggregationView_AggregateIncludingOutliers}" TextWrapping="Wrap" TextAlignment="Center"/>
@@ -156,7 +156,7 @@
                     </ToolTip>
                 </Button.ToolTip>
             </Button>
-            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Width="150" Height="45" BorderBrush="Transparent"
+            <Button Grid.Row="0" Grid.Column="1" VerticalAlignment="Top" Width="150" Height="45" Padding="8 4" BorderBrush="Transparent"
 					Command="{Binding AggregateExcludeCommand}" Visibility="{Binding ShowIncludeExcludeButtons, Converter={StaticResource TrueToVisibleConverter}}"
                     ToolTipService.ShowDuration="25000" Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
                 <TextBlock Text="{loc:Tr AggregationView_AggregateExcludingOutliers}" TextWrapping="Wrap"  TextAlignment="Center"/>

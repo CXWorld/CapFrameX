@@ -47,16 +47,16 @@
 						<RowDefinition Height="50"/>
 					</Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="200"/>
+						<ColumnDefinition Width="230"/>
 						<ColumnDefinition Width="1*"/>
-						<ColumnDefinition Width="170"/>
+						<ColumnDefinition Width="230"/>
 					</Grid.ColumnDefinitions>
 					<!--Style="{StaticResource MaterialDesignOutlinedTextBox}"-->
 					<ScrollViewer Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="5 0 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 						<StackPanel>
 							<GroupBox Header="{loc:Tr PmdView_GPUTotalPower}" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
-									<materialDesign:PackIcon Foreground="Red" Margin="140 -55 0 0" Visibility="{Binding PoweneticsViewModel.PmdMetrics.GpuPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
+									<materialDesign:PackIcon Foreground="Red" HorizontalAlignment="Right" Margin="0 -55 6 0" Visibility="{Binding PoweneticsViewModel.PmdMetrics.GpuPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
 										Kind="Information" VerticalAlignment="Center" >
 										<materialDesign:PackIcon.ToolTip>
 											<TextBlock Text="{loc:Tr PmdView_SomeNeededPowerSourcesAre}"/>
@@ -142,7 +142,7 @@
 							</GroupBox>
 							<GroupBox Header="{loc:Tr PmdView_SystemPower}" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
-									<materialDesign:PackIcon Foreground="Red" Margin="120 -55 0 0" Visibility="{Binding PoweneticsViewModel.PmdMetrics.SystemPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
+									<materialDesign:PackIcon Foreground="Red" HorizontalAlignment="Right" Margin="0 -55 6 0" Visibility="{Binding PoweneticsViewModel.PmdMetrics.SystemPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
 										Kind="Information" VerticalAlignment="Center" >
 										<materialDesign:PackIcon.ToolTip>
 											<TextBlock Text="{loc:Tr PmdView_SomeNeededPowerSourcesAre2}"/>
@@ -343,9 +343,9 @@
 						<RowDefinition Height="50"/>
 					</Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="200"/>
+						<ColumnDefinition Width="230"/>
 						<ColumnDefinition Width="1*"/>
-						<ColumnDefinition Width="170"/>
+						<ColumnDefinition Width="230"/>
 					</Grid.ColumnDefinitions>
 					<!--Style="{StaticResource MaterialDesignOutlinedTextBox}"-->
 					<ScrollViewer Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="5 0 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
@@ -715,8 +715,9 @@
 						<Border Grid.Row="4" Height="Auto" Margin="5 5 5 0" Style="{StaticResource SectionCardInset}"
                                 VerticalAlignment="Top" HorizontalAlignment="Stretch">
 							<Grid Margin="10">
+								<!--Auto header row: longer translations wrap the title without stretching the value rows.-->
 								<Grid.RowDefinitions>
-									<RowDefinition Height="1*"></RowDefinition>
+									<RowDefinition Height="Auto"></RowDefinition>
 									<RowDefinition Height="1*"></RowDefinition>
 									<RowDefinition Height="1*"></RowDefinition>
 									<RowDefinition Height="1*"></RowDefinition>
@@ -727,7 +728,7 @@
 									<ColumnDefinition Width="120"/>
 									<ColumnDefinition Width="1*"/>
 								</Grid.ColumnDefinitions>
-								<TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 10" FontWeight="Bold" Text="{loc:Tr PmdView_EfficiencyFPS10W}" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+								<TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 10" FontWeight="Bold" Text="{loc:Tr PmdView_EfficiencyFPS10W}" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18" TextWrapping="Wrap"/>
 
 								<TextBlock Grid.Row="1" Grid.Column="0" Margin="0 0 0 5" Text="{loc:Tr PmdView_GPU}" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
 								<TextBlock Grid.Row="1" Grid.Column="1" Margin="0 0 0 5" Text="{Binding GpuEfficiency}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>

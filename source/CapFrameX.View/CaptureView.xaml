@@ -145,7 +145,7 @@
 									<ColumnDefinition Width="Auto"/>
 								</Grid.ColumnDefinitions>
 								<!--Running processes card-->
-								<Border Style="{StaticResource SectionCard}" Grid.Column="0" Width="264" Margin="0 0 12 0" Padding="16 12 16 16">
+								<Border Style="{StaticResource SectionCard}" Grid.Column="0" Width="290" Margin="0 0 12 0" Padding="16 12 16 16">
 									<StackPanel>
 										<DockPanel LastChildFill="False">
 											<materialDesign:PackIcon Kind="ApplicationOutline" Width="20" Height="20" VerticalAlignment="Center"
@@ -181,7 +181,7 @@
 									</StackPanel>
 								</Border>
 								<!--Process ignore list card-->
-								<Border Style="{StaticResource SectionCard}" Grid.Column="1" Width="264" Margin="12 0 0 0" Padding="16 12 16 16">
+								<Border Style="{StaticResource SectionCard}" Grid.Column="1" Width="290" Margin="12 0 0 0" Padding="16 12 16 16">
 									<StackPanel>
 										<DockPanel LastChildFill="False" Height="26">
 											<materialDesign:PackIcon Kind="EyeOffOutline" Width="20" Height="20" VerticalAlignment="Center"
