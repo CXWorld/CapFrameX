@@ -765,7 +765,7 @@
     "InfoView_PROCESSOR": "ПРОЦЕССОР",
     "InfoView_Power": "Мощность",
     "InfoView_Power2": "Мощность",
-    "InfoView_ResizableBAR": "Resizable BAR",
+    "InfoView_ResizableBAR": "Поддержка Resizable BAR",
     "InfoView_Temperature": "Температура",
     "InfoView_Temperature2": "Температура",
     "InfoView_Usage": "Использование",
@@ -1222,7 +1222,7 @@
     "StateView_On": "Вкл.",
     "StateView_Overlay": "Оверлей:",
     "StateView_Ready": "Готово",
-    "StateView_ResizableBar": "Resizable BAR:",
+    "StateView_ResizableBar": "Поддержка Resizable BAR:",
     "StateView_ResizableBarD3D": "Resizable BAR, D3D:",
     "StateView_ResizableBarHW": "Resizable BAR, оборудование:",
     "StateView_ResizableBarVulkan": "Resizable BAR, Vulkan:",
@@ -1631,6 +1631,10 @@
     {
       "pattern": "\\bVirtual\\b",
       "replacement": "виртуальная"
+    },
+    {
+      "pattern": "(\\d+)\\s*MT/s\\b",
+      "replacement": "$1 МТ/с"
     },
     {
       "pattern": "\\bMT/s\\b",
