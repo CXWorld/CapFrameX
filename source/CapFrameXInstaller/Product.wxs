@@ -47,13 +47,17 @@
 		       rescheduling one of their actions needs the override modifier. -->
 		  <Custom Action="override Wix4CloseApplications_X64" Before="InstallValidate" Condition="Installed" />
       <Custom Action="ResourceManagement" Before="InstallFinalize" Condition="NOT Installed" />
-		  <Custom Action="CleanRegistry" Before="InstallFinalize" Condition="Installed OR NOT Installed" />
+		  <!-- Only on a real uninstall: a repair or modify must keep the autostart task, and the
+		       removal half of a major upgrade must not delete it either. -->
+		  <Custom Action="CleanRegistry" Before="InstallFinalize" Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
       <!-- Unconditional on purpose: install, repair, uninstall and both halves of a major upgrade
            must all end with at most one layer registration. The anchor is load-bearing — running
            after WriteRegistryValues would delete the registration this package just wrote. -->
       <Custom Action="PurgeVulkanLayers" Before="WriteRegistryValues" />
       <Custom Action="PurgeVulkanLayersPerUser" Before="InstallInitialize" />
-      <Custom Action="AppdataConfigFiles" Before="InstallFinalize" Condition="Installed" />
+      <!-- Same: a repair must not delete the user's UI config files. Stays immediate, because it
+           has to run as the user to reach the user's %appdata%. -->
+      <Custom Action="AppdataConfigFiles" Before="InstallFinalize" Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
       <!-- Immediate and therefore in the client process: launched from the elevated in-app
            updater, CapFrameX starts elevated without a further prompt, as its manifest demands. -->
       <Custom Action="LaunchCapFrameX" After="InstallFinalize" Condition="NOT Installed AND LAUNCHAPP=&quot;1&quot;" />
@@ -72,7 +76,9 @@
   </Fragment>
 
   <Fragment>
-    <CustomAction Id="CleanRegistry" BinaryRef="CustomActionsBin" DllEntry="RemoveAutoStartKey" Execute="immediate" Return="check"/>
+    <!-- Deferred and non-impersonated like PurgeVulkanLayers: HKLM and the Task Scheduler root
+         folder need the elevated service context. -->
+    <CustomAction Id="CleanRegistry" BinaryRef="CustomActionsBin" DllEntry="RemoveAutoStartKey" Execute="deferred" Impersonate="no" Return="check"/>
 	</Fragment>
 
   <Fragment>
