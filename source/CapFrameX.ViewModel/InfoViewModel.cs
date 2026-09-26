@@ -261,6 +261,12 @@ namespace CapFrameX.ViewModel
                 UpdateRamName();
                 UpdateGpuDetails();
                 RefreshSoftwareComponents();
+                // The security statuses are shared instances, so the periodic refresh assigns the
+                // same object and raises nothing; the bindings would keep the previous language.
+                RaisePropertyChanged(nameof(SecureBootStatus));
+                RaisePropertyChanged(nameof(TestSigningStatus));
+                RaisePropertyChanged(nameof(VbsStatus));
+                RaisePropertyChanged(nameof(MemoryIntegrityStatus));
                 if (_lastSnapshot != null)
                 {
                     UpdateLiveMetrics(_lastSnapshot);

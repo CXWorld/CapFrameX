@@ -65,8 +65,8 @@ namespace CapFrameX.ViewModel
 			{
 				string hotkey = _appConfiguration.OverlayHotKey;
 				return string.IsNullOrWhiteSpace(hotkey)
-					? "Switch the overlay on or off."
-					: $"Switch the overlay on or off (hotkey {hotkey}).";
+					? CxLang.T("StateViewModel_SwitchTheOverlayOnOrOff")
+					: CxLang.Format("StateViewModel_SwitchTheOverlayOnOrOffHotkey0", hotkey);
 			}
 		}
 
@@ -185,6 +185,7 @@ namespace CapFrameX.ViewModel
 				RaisePropertyChanged(nameof(IsHAGSEnabled));
 				RaisePropertyChanged(nameof(HookOverlayStatusText));
 				RaisePropertyChanged(nameof(ResizableBarStatus));
+				RaisePropertyChanged(nameof(OverlayToggleToolTip));
 			};
 
 			IsCaptureModeActive = false;

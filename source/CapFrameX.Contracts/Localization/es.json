@@ -1079,6 +1079,7 @@
     "OverlayView_HideTheOSDWhileA": "Oculta el OSD mientras se ejecuta una captura de benchmark.",
     "OverlayView_HookFreeAppliesLiveRestart": "El modo sin hook se aplica al momento. Reinicia CapFrameX y el juego para el log dentro del juego.",
     "OverlayView_HookFreeOutputDisplay": "Pantalla de salida sin hook",
+    "OverlayView_Hotkey": "Atajo",
     "OverlayView_HotkeyCombinableWithUpTo": "Atajo combinable con hasta dos teclas modificadoras (Ctrl, Shift o Alt)",
     "OverlayView_HotkeyPressBackspaceDeleteOrEsc": "Atajo combinable con hasta dos teclas modificadoras (Ctrl, Shift o Alt). Pulsa Retroceso, Supr o Esc para borrarlo.",
     "OverlayView_IncludeSecondsInTheSystem": "Incluye los segundos en la entrada de hora del sistema del overlay.",
@@ -1143,6 +1144,7 @@
     "OverlayView_SetsTheThreadAffinityFor": "Define la afinidad de hilos para arquitecturas híbridas de Intel y CPU Ryzen con 2 CCD.",
     "OverlayView_ShareOverlayCompatibilityReports": "Compartir informes de compatibilidad del overlay",
     "OverlayView_ShortcutsAndTiming": "Atajos y tiempos",
+    "OverlayView_ShowOrHideTheOverlay": "Muestra u oculta el overlay",
     "OverlayView_ShowOrHideTheSelected": "Muestra u oculta el renderizador de overlay seleccionado.",
     "OverlayView_SmoothNumericValues": "Suavizar valores numéricos",
     "OverlayView_SortEntriesByType": "Ordenar las entradas por tipo",
@@ -1506,6 +1508,8 @@
     "StateViewModelSystemStatus_Partial": "Parcial",
     "StateViewModel_NoInfoAvailable": "No hay información disponible",
     "StateViewModel_Revision0": "Revisión: {0}",
+    "StateViewModel_SwitchTheOverlayOnOrOff": "Activa o desactiva el overlay.",
+    "StateViewModel_SwitchTheOverlayOnOrOffHotkey0": "Activa o desactiva el overlay (atajo {0}).",
     // Tooltip shown while waiting for game process detection hook
     "StateViewModel_WaitingForHookStatus": "Esperando el estado del hook.",
     "StateView_CaptureService": "Servicio de captura:",
@@ -1743,6 +1747,58 @@
     {
       "pattern": "^Aggregate$",
       "replacement": "agregación"
+    },
+    {
+      "pattern": "^Data$",
+      "replacement": "datos"
+    },
+    {
+      "pattern": "^SmallData$",
+      "replacement": "datos"
+    },
+    {
+      "pattern": "^DataRate$",
+      "replacement": "velocidad de datos"
+    },
+    {
+      "pattern": "^Throughput$",
+      "replacement": "transferencia"
+    },
+    {
+      "pattern": "^Level$",
+      "replacement": "nivel"
+    },
+    {
+      "pattern": "^Factor$",
+      "replacement": "factor"
+    },
+    {
+      "pattern": "^Control$",
+      "replacement": "control"
+    },
+    {
+      "pattern": "^TimeSpan$",
+      "replacement": "duración"
+    },
+    {
+      "pattern": "^Timing$",
+      "replacement": "temporización"
+    },
+    {
+      "pattern": "^Energy$",
+      "replacement": "energía"
+    },
+    {
+      "pattern": "^Noise$",
+      "replacement": "ruido"
+    },
+    {
+      "pattern": "^Humidity$",
+      "replacement": "humedad"
+    },
+    {
+      "pattern": "^Latency$",
+      "replacement": "latencia"
     },
     {
       "pattern": "Run (\\d+):",
@@ -2063,6 +2119,30 @@
     {
       "pattern": "\\bVoltage Limit\\b",
       "replacement": "límite de voltaje"
+    },
+    {
+      "pattern": "\\bDrive Controller Writes to NAND\\b",
+      "replacement": "escrituras del controlador a NAND del disco"
+    },
+    {
+      "pattern": "\\bDrive Host Writes to Controller\\b",
+      "replacement": "escrituras del host al controlador del disco"
+    },
+    {
+      "pattern": "\\bDrive Total Bytes Written\\b",
+      "replacement": "total de bytes escritos en el disco"
+    },
+    {
+      "pattern": "\\bDrive Remaining Life\\b",
+      "replacement": "vida útil restante del disco"
+    },
+    {
+      "pattern": "\\bDrive Host Writes\\b",
+      "replacement": "escrituras del host en el disco"
+    },
+    {
+      "pattern": "\\bDrive Host Reads\\b",
+      "replacement": "lecturas del host del disco"
     },
     {
       "pattern": "\\bDrive Available Spare Threshold\\b",
