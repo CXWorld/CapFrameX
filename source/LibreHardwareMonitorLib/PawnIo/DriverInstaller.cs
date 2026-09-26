@@ -1,3 +1,4 @@
+using LibreHardwareMonitor.PawnIo;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 using Serilog;
@@ -82,6 +83,7 @@ public static class DriverInstaller
     private const int ERROR_NO_MORE_ITEMS = 259;
     private const int ERROR_INSUFFICIENT_BUFFER = 122;
     private const int ERROR_INVALID_IMAGE_HASH = 577;
+    private const int ERROR_SERVICE_DOES_NOT_EXIST = 1060;
 
     // SetupAPI
     private const uint DIGCF_PRESENT = 0x00000002;
@@ -246,6 +248,69 @@ public static class DriverInstaller
             Log.Fatal(ex, "EnsureDriverReady failed for PawnIO driver.");
             return false;
         }
+    }
+
+    /// <summary>
+    /// Reports the state of the PawnIO service and the file version of the driver image it points at.
+    /// Read-only: nothing is started or installed.
+    /// </summary>
+    public static PawnIoDriverStatus QueryStatus()
+    {
+        try
+        {
+            using var scm = OpenSCManager(null, null, SC_MANAGER_CONNECT);
+            if (scm.IsInvalid)
+                return new PawnIoDriverStatus(PawnIoDriverState.Unknown, null);
+
+            using var service = OpenService(scm, PAWNIO_SERVICE_NAME, SERVICE_QUERY_STATUS);
+            if (service.IsInvalid)
+            {
+                bool missing = Marshal.GetLastWin32Error() == ERROR_SERVICE_DOES_NOT_EXIST;
+                return new PawnIoDriverStatus(missing ? PawnIoDriverState.NotInstalled : PawnIoDriverState.Unknown, null);
+            }
+
+            PawnIoDriverState state = QueryServiceStatus(service, out var status)
+                ? ClassifyServiceState(status.dwCurrentState, status.dwWin32ExitCode)
+                : PawnIoDriverState.Unknown;
+
+            return new PawnIoDriverStatus(state, ReadRegisteredImageVersion(PAWNIO_SERVICE_NAME));
+        }
+        catch (Exception ex)
+        {
+            Log.Debug(ex, "Querying the PawnIO driver status failed.");
+            return new PawnIoDriverStatus(PawnIoDriverState.Unknown, null);
+        }
+    }
+
+    /// <summary>
+    /// Maps a service status onto <see cref="PawnIoDriverState"/>. A stopped driver keeps the exit
+    /// code of its last start attempt, which is how a code integrity refusal stays visible.
+    /// </summary>
+    internal static PawnIoDriverState ClassifyServiceState(uint currentState, uint win32ExitCode)
+    {
+        switch (currentState)
+        {
+            case SERVICE_RUNNING:
+                return PawnIoDriverState.Running;
+            case SERVICE_STOPPED:
+                return win32ExitCode == ERROR_INVALID_IMAGE_HASH ? PawnIoDriverState.Blocked : PawnIoDriverState.Stopped;
+            default:
+                return PawnIoDriverState.Unknown;
+        }
+    }
+
+    /// <summary>
+    /// Reads the file version of the driver image a service is registered with.
+    /// </summary>
+    private static string ReadRegisteredImageVersion(string serviceName)
+    {
+        using RegistryKey key = Registry.LocalMachine.OpenSubKey($@"SYSTEM\CurrentControlSet\Services\{serviceName}");
+        string imageFile = ResolveServiceImagePath(key?.GetValue("ImagePath") as string, Environment.GetFolderPath(Environment.SpecialFolder.Windows));
+        if (imageFile is null || !File.Exists(imageFile))
+            return null;
+
+        string version = FileVersionInfo.GetVersionInfo(imageFile).FileVersion;
+        return string.IsNullOrWhiteSpace(version) ? null : version.Trim();
     }
 
     /// <summary>

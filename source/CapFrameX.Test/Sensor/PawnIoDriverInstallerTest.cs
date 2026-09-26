@@ -1,3 +1,4 @@
+using LibreHardwareMonitor.PawnIo;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CapFrameX.Test.Sensor
@@ -6,6 +7,34 @@ namespace CapFrameX.Test.Sensor
     public class PawnIoDriverInstallerTest
     {
         private const string WindowsDirectory = @"C:\Windows";
+
+        private const uint ServiceStopped = 1;
+        private const uint ServiceStartPending = 2;
+        private const uint ServiceRunning = 4;
+
+        [TestMethod]
+        public void ClassifyServiceState_Running_IsRunning()
+        {
+            Assert.AreEqual(PawnIoDriverState.Running, DriverInstaller.ClassifyServiceState(ServiceRunning, 0));
+        }
+
+        [TestMethod]
+        public void ClassifyServiceState_StoppedAfterInvalidImageHash_IsBlocked()
+        {
+            Assert.AreEqual(PawnIoDriverState.Blocked, DriverInstaller.ClassifyServiceState(ServiceStopped, 577));
+        }
+
+        [TestMethod]
+        public void ClassifyServiceState_StoppedWithoutError_IsStopped()
+        {
+            Assert.AreEqual(PawnIoDriverState.Stopped, DriverInstaller.ClassifyServiceState(ServiceStopped, 0));
+        }
+
+        [TestMethod]
+        public void ClassifyServiceState_Transitional_IsUnknown()
+        {
+            Assert.AreEqual(PawnIoDriverState.Unknown, DriverInstaller.ClassifyServiceState(ServiceStartPending, 0));
+        }
 
         [TestMethod]
         public void ResolveServiceImagePath_SystemRootPrefix_MapsIntoWindowsDirectory()

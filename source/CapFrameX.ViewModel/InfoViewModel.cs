@@ -1,8 +1,11 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Monitoring.Contracts;
+using CapFrameX.Overlay;
+using CapFrameX.PresentMonInterface;
 using CapFrameX.ViewModel.SubModels;
 using Microsoft.Extensions.Logging;
 using Prism.Events;
@@ -11,6 +14,7 @@ using Prism.Navigation.Regions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
@@ -24,7 +28,9 @@ namespace CapFrameX.ViewModel
     /// keeps delivering values even when neither overlay nor logging is running.
     /// Visible means: the info tab is the active view and the shell is neither
     /// minimized nor hidden to the tray - otherwise the telemetry pauses so the
-    /// tab causes no CPU load in the background.
+    /// tab causes no CPU load in the background. A software block lists the components the
+    /// measurements depend on (sensor driver, capture backend, RTSS, Vulkan layer) with version
+    /// and state.
     /// </summary>
     public class InfoViewModel : BindableBase, INavigationAware
     {
@@ -34,6 +40,7 @@ namespace CapFrameX.ViewModel
         private readonly ISensorConfig _sensorConfig;
         private readonly ISystemInfo _systemInfo;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IRTSSService _rtssService;
         private readonly ILogger<InfoViewModel> _logger;
 
         // This view is the startup page and the initial activation does not raise
@@ -85,6 +92,11 @@ namespace CapFrameX.ViewModel
         private string _hagsStatusColor = StatusGray;
         private string _gameModeStatusColor = StatusGray;
 
+        private SoftwareComponentStatus _pawnIoStatus = SoftwareComponentStatus.Detecting;
+        private SoftwareComponentStatus _presentMonStatus = SoftwareComponentStatus.Detecting;
+        private SoftwareComponentStatus _rtssStatus = SoftwareComponentStatus.Detecting;
+        private SoftwareComponentStatus _vulkanLayerStatus = SoftwareComponentStatus.Detecting;
+
         private const string StatusGreen = "#4CAF50";
         private const string StatusOrange = "#FF9800";
         private const string StatusGray = "#757575";
@@ -125,10 +137,16 @@ namespace CapFrameX.ViewModel
         public string HagsStatusColor { get => _hagsStatusColor; set => SetProperty(ref _hagsStatusColor, value); }
         public string GameModeStatusColor { get => _gameModeStatusColor; set => SetProperty(ref _gameModeStatusColor, value); }
 
+        public SoftwareComponentStatus PawnIoStatus { get => _pawnIoStatus; set => SetProperty(ref _pawnIoStatus, value); }
+        public SoftwareComponentStatus PresentMonStatus { get => _presentMonStatus; set => SetProperty(ref _presentMonStatus, value); }
+        public SoftwareComponentStatus RtssStatus { get => _rtssStatus; set => SetProperty(ref _rtssStatus, value); }
+        public SoftwareComponentStatus VulkanLayerStatus { get => _vulkanLayerStatus; set => SetProperty(ref _vulkanLayerStatus, value); }
+
         public InfoViewModel(ISensorService sensorService,
                              ISensorConfig sensorConfig,
                              ISystemInfo systemInfo,
                              IAppConfiguration appConfiguration,
+                             IRTSSService rtssService,
                              IEventAggregator eventAggregator,
                              ILogger<InfoViewModel> logger)
         {
@@ -136,6 +154,7 @@ namespace CapFrameX.ViewModel
             _sensorConfig = sensorConfig;
             _systemInfo = systemInfo;
             _appConfiguration = appConfiguration;
+            _rtssService = rtssService;
             _logger = logger;
 
             UpdateSensorEvaluationState();
@@ -249,6 +268,10 @@ namespace CapFrameX.ViewModel
 
                 UpdateGpuInfo();
 
+                // PawnIO is installed and started while the sensor service opens the hardware,
+                // so its state is only meaningful from here on.
+                UpdateSoftwareComponents();
+
                 // Keep the GPU block in sync with the graphics adapter selection
                 // (auto mode: discrete GPU, otherwise the configured adapter).
                 _appConfiguration.OnValueChanged
@@ -280,6 +303,28 @@ namespace CapFrameX.ViewModel
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while updating GPU information.");
+            }
+        }
+
+        /// <summary>
+        /// Versions and states of the software the measurements depend on. Everything here is a
+        /// service query, a registry read or a version resource, so it is cheap enough to refresh
+        /// on every visit of the tab.
+        /// </summary>
+        private void UpdateSoftwareComponents()
+        {
+            try
+            {
+                PawnIoStatus = SoftwareComponentStatus.FromPawnIo(DriverInstaller.QueryStatus());
+                PresentMonStatus = SoftwareComponentStatus.ForPresentMon(
+                    CaptureServiceConfiguration.GetPresentMonVersion(),
+                    File.Exists(CaptureServiceConfiguration.GetPresentMonPath()));
+                RtssStatus = SoftwareComponentStatus.ForRtss(_rtssService.GetRTSSVersion());
+                VulkanLayerStatus = SoftwareComponentStatus.FromVulkanLayer(VulkanLayerRegistrationProbe.Query());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while collecting software component information.");
             }
         }
 
@@ -498,6 +543,9 @@ namespace CapFrameX.ViewModel
         {
             _isViewActive = true;
             UpdateSensorEvaluationState();
+
+            if (_sensorService.SensorServiceCompletionSource.Task.IsCompleted)
+                _ = Task.Run(UpdateSoftwareComponents);
         }
     }
 }

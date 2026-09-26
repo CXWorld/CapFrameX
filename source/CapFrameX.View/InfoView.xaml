@@ -109,6 +109,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!--System header: OS info-->
@@ -406,6 +407,63 @@
                     </Grid>
                 </Border>
             </UniformGrid>
+
+            <!--Software the measurements depend on: version, state and a status dot per component-->
+            <Border Grid.Row="2" Style="{StaticResource SectionCard}" Margin="5" Padding="20 16">
+                <StackPanel>
+                    <TextBlock Style="{StaticResource CardCaption}" Text="SOFTWARE COMPONENTS"/>
+                    <UniformGrid Columns="4" Margin="0 10 0 0">
+                        <Border Style="{StaticResource MetricTile}" ToolTip="{Binding PawnIoStatus.ToolTip}">
+                            <StackPanel>
+                                <DockPanel>
+                                    <Ellipse DockPanel.Dock="Right" Width="10" Height="10" VerticalAlignment="Center"
+                                             Fill="{Binding PawnIoStatus.StatusColor}"/>
+                                    <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="Chip"/>
+                                    <TextBlock Style="{StaticResource MetricLabel}" Text="PawnIO driver"/>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource MetricValue}" Text="{Binding PawnIoStatus.Version}"/>
+                                <TextBlock Style="{StaticResource HardwareDetail}" Margin="0 2 0 0" Text="{Binding PawnIoStatus.State}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource MetricTile}" ToolTip="{Binding PresentMonStatus.ToolTip}">
+                            <StackPanel>
+                                <DockPanel>
+                                    <Ellipse DockPanel.Dock="Right" Width="10" Height="10" VerticalAlignment="Center"
+                                             Fill="{Binding PresentMonStatus.StatusColor}"/>
+                                    <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="ChartTimelineVariant"/>
+                                    <TextBlock Style="{StaticResource MetricLabel}" Text="PresentMon"/>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource MetricValue}" Text="{Binding PresentMonStatus.Version}"/>
+                                <TextBlock Style="{StaticResource HardwareDetail}" Margin="0 2 0 0" Text="{Binding PresentMonStatus.State}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource MetricTile}" ToolTip="{Binding RtssStatus.ToolTip}">
+                            <StackPanel>
+                                <DockPanel>
+                                    <Ellipse DockPanel.Dock="Right" Width="10" Height="10" VerticalAlignment="Center"
+                                             Fill="{Binding RtssStatus.StatusColor}"/>
+                                    <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="MonitorDashboard"/>
+                                    <TextBlock Style="{StaticResource MetricLabel}" Text="RTSS"/>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource MetricValue}" Text="{Binding RtssStatus.Version}"/>
+                                <TextBlock Style="{StaticResource HardwareDetail}" Margin="0 2 0 0" Text="{Binding RtssStatus.State}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource MetricTile}" Margin="0" ToolTip="{Binding VulkanLayerStatus.ToolTip}">
+                            <StackPanel>
+                                <DockPanel>
+                                    <Ellipse DockPanel.Dock="Right" Width="10" Height="10" VerticalAlignment="Center"
+                                             Fill="{Binding VulkanLayerStatus.StatusColor}"/>
+                                    <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="LayersOutline"/>
+                                    <TextBlock Style="{StaticResource MetricLabel}" Text="Vulkan layer"/>
+                                </DockPanel>
+                                <TextBlock Style="{StaticResource MetricValue}" Text="{Binding VulkanLayerStatus.Version}"/>
+                                <TextBlock Style="{StaticResource HardwareDetail}" Margin="0 2 0 0" Text="{Binding VulkanLayerStatus.State}"/>
+                            </StackPanel>
+                        </Border>
+                    </UniformGrid>
+                </StackPanel>
+            </Border>
         </Grid>
     </ScrollViewer>
 </UserControl>
