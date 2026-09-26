@@ -20,6 +20,8 @@
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" TrueValue="Visible" FalseValue="Collapsed"/>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-320"/>
+			<!--The settings popup hangs below the colour bar; keep it on screen on small displays.-->
+			<mvvm:AddValueConverter x:Key="SettingsPopupMaxHeightConverter" Offset="-110"/>
 
 			<Style x:Key="SettingsNavigationButton" TargetType="{x:Type RadioButton}">
 				<Setter Property="Height" Value="44"/>
@@ -276,7 +278,9 @@
 					<materialDesign:PopupBox.ToggleContent>
 						<materialDesign:PackIcon Kind="Cog" Width="30" Height="30" Foreground="White"/>
 					</materialDesign:PopupBox.ToggleContent>
-					<Border Width="960" Height="672"
+					<!--820 fits the tallest page (Options) without scrolling in a maximized 1080p window.-->
+					<Border Width="960" Height="820"
+							MaxHeight="{Binding Source={x:Static SystemParameters.WorkArea}, Path=Height, Converter={StaticResource SettingsPopupMaxHeightConverter}}"
 							Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
 							CornerRadius="10" SnapsToDevicePixels="True">
 						<Grid>
