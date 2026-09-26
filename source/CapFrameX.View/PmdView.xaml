@@ -645,15 +645,11 @@
 						<!--Sits in the chart's bottom-left corner, below the Y axis title and left of the X axis
 						    title. A row of its own below the chart left it too short for the "Frametime [ms]" title.-->
 						<ComboBox Grid.Row="1" Panel.ZIndex="1" Margin="10 0 0 4" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="{loc:Tr PmdView_Values}"
-					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="110" Height="40">
-							<ComboBoxItem IsSelected="True" Content="{loc:Tr PmdView_Frametimes}"/>
-							<ComboBoxItem>FPS</ComboBoxItem>
-							<ComboBox.Text>
-								<Binding Path="SelectedChartView"
-									Mode="TwoWay"
-									UpdateSourceTrigger="PropertyChanged">
-								</Binding>
-							</ComboBox.Text>
+					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="110" Height="40"
+					              SelectedValuePath="Tag" SelectedValue="{Binding SelectedChartView, Mode=TwoWay}">
+							<!--The chart manager keys on the Tag, never on the translated text.-->
+							<ComboBoxItem Tag="Frametimes" Content="{loc:Tr PmdView_Frametimes}"/>
+							<ComboBoxItem Tag="FPS" Content="FPS"/>
 						</ComboBox>
 					</Grid>
 					<Grid Grid.RowSpan="3" Grid.Column="1" Margin="5 0 0 2" Background="Transparent">
