@@ -372,7 +372,7 @@
     "ComparisonViewModel_DisplayFPS": "FPS de pantalla",
     // Chart Y-axis label: time between display change samples
     "ComparisonViewModel_DisplayTime": "Tiempo de pantalla",
-    "ComparisonViewModel_Distribution": "Distribución [%]",
+    "ComparisonViewModel_Distribution0": "{0}: distribución [%]",
     "ComparisonViewModel_FPS": "FPS",
     "ComparisonViewModel_FPS1S": "FPS [1/s]",
     "ComparisonViewModel_FrameTimeDistribution": "Distribución de frametimes [%]",
@@ -470,7 +470,7 @@
     // =========================================================================
     // RECORD LIST (CONTROL VIEW) - Capture folders, record list and record details
     // =========================================================================
-    "ControlViewModel_SearchIn01Items": "Buscar en \"{0}\" ({1} elementos)",
+    "ControlViewModel_SearchIn01Items": "Buscar en \"{0}\" ({1})",
     "ControlView_Aggregated": "Agregado",
     "ControlView_Aggregated2": "Agregado",
     "ControlView_ApplyTheDescriptionsToThe": "Aplica las descripciones a los registros seleccionados. Pulsar Intro dentro de un campo también guarda.",
@@ -1166,7 +1166,7 @@
     "PmdSampleFilterMode_Average": "Prom. de N",
     "PmdSampleFilterMode_Single": "Último de N",
     "PmdView_ATXPower": "Potencia ATX",
-    "PmdView_AutoStartPMD": "Iniciar PMD automáticamente",
+    "PmdView_AutoStartPMD": "Autoiniciar PMD",
     "PmdView_AverageMetrics": "Métricas promedio",
     "PmdView_Avg": "Prom.",
     "PmdView_Avg10": "Prom.",
@@ -1214,7 +1214,7 @@
     "PmdView_LogPMDData": "Registrar PMD",
     "PmdView_LogPMDData2": "Registrar PMD",
     "PmdView_LostPackets": "Paquetes perdidos:",
-    "PmdView_MainboardPower": "Potencia de la placa base",
+    "PmdView_MainboardPower": "Potencia placa base",
     "PmdView_Max": "Máx.",
     "PmdView_Max10": "Máx.",
     "PmdView_Max2": "Máx.",
@@ -1225,7 +1225,7 @@
     "PmdView_Max7": "Máx.",
     "PmdView_Max8": "Máx.",
     "PmdView_Max9": "Máx.",
-    "PmdView_MonitoringIntervalMs": "Intervalo de monitorización [ms]",
+    "PmdView_MonitoringIntervalMs": "Intervalo [ms]",
     "PmdView_PCIePower": "Potencia PCIe",
     "PmdView_PCIeSlotPower": "Ranura PCIe",
     "PmdView_PMDAnalysis": "Análisis PMD",

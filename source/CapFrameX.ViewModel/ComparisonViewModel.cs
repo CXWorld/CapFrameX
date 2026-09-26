@@ -927,7 +927,13 @@ namespace CapFrameX.ViewModel
             CxLang.Instance.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(CxLang.UiLanguage))
+                {
                     RefreshSortMetricNames();
+                    UpdateComparisonMetricSourceLabels();
+                    ComparisonFrametimesModel?.InvalidatePlot(false);
+                    ComparisonFpsModel?.InvalidatePlot(false);
+                    ComparisonDistributionModel?.InvalidatePlot(false);
+                }
             };
 
             InitializeMetricsFromConfig();
@@ -1456,6 +1462,14 @@ namespace CapFrameX.ViewModel
             string fpsSource = CxLang.T(_useDisplayChangeSamplesForComparison
                 ? "ComparisonViewModel_DisplayFPS" : "ComparisonViewModel_PresentFPS");
 
+            var frametimeXAxis = ComparisonFrametimesModel?.Axes.FirstOrDefault(axis => axis.Key == "xAxis");
+            if (frametimeXAxis != null)
+                frametimeXAxis.Title = CxLang.T("ComparisonViewModel_RecordingTimeS");
+
+            var fpsXAxis = ComparisonFpsModel?.Axes.FirstOrDefault(axis => axis.Key == "xAxis");
+            if (fpsXAxis != null)
+                fpsXAxis.Title = CxLang.T("ComparisonViewModel_RecordingTimeS2");
+
             var frametimeAxis = ComparisonFrametimesModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (frametimeAxis != null)
                 frametimeAxis.Title = ShowGpuActiveLineCharts ? CxLang.T("ComparisonViewModel_GPUActiveTimeMs") : timingSource + " [ms]";
@@ -1470,7 +1484,7 @@ namespace CapFrameX.ViewModel
 
             var distributionYAxis = ComparisonDistributionModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (distributionYAxis != null)
-                distributionYAxis.Title = timingSource + " " + CxLang.T("ComparisonViewModel_Distribution");
+                distributionYAxis.Title = CxLang.Format("ComparisonViewModel_Distribution0", timingSource);
 
             if (!ShowGpuActiveLineCharts)
             {

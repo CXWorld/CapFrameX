@@ -372,7 +372,7 @@
     "ComparisonViewModel_DisplayFPS": "Display FPS",
     // Chart Y-axis label: time between display change samples
     "ComparisonViewModel_DisplayTime": "Display time",
-    "ComparisonViewModel_Distribution": "Distribution [%]",
+    "ComparisonViewModel_Distribution0": "{0} Distribution [%]",
     "ComparisonViewModel_FPS": "FPS",
     "ComparisonViewModel_FPS1S": "FPS [1/s]",
     "ComparisonViewModel_FrameTimeDistribution": "Frame Time Distribution [%]",
