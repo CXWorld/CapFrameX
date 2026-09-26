@@ -27,8 +27,8 @@
     "AggregationView_Game": "Juego",
     "AggregationView_MetricUsedToDetermineOutliers": "Métrica usada para detectar valores atípicos",
     "AggregationView_OnlyUseEntiresThatAre": "Usar solo las entradas que no sean valores atípicos para la agregación",
-    "AggregationView_OutlierMetric": "Métrica de valores atípicos",
-    "AggregationView_OutlierPercentage": "Porcentaje de valores atípicos",
+    "AggregationView_OutlierMetric": "Métrica de atípicos",
+    "AggregationView_OutlierPercentage": "% de atípicos",
     "AggregationView_RemoveAllEntries": "Quitar todas las entradas",
     "AggregationView_SecondMetric": "Segunda métrica",
     "AggregationView_SecondMetricShownInAggregation": "Segunda métrica mostrada en la tabla de agregación",
@@ -109,8 +109,8 @@
     "CaptureView_NumberOfRuns": "Número de pasadas",
     "CaptureView_OnceTheRunHistoryIs": "Cuando el historial de pasadas está lleno, combina y guarda todos los datos de frametime en un nuevo archivo de registro único.\n\n\nEsto NO es lo mismo que calcular parámetros promedio a partir de varios archivos de registro individuales. Simula ejecutar la misma escena varias veces en un único benchmark.\nLos parámetros de rendimiento se calculan una sola vez, con todos los datos de frametime.",
     "CaptureView_OutlierHandling": "Tratamiento de valores atípicos",
-    "CaptureView_OutlierMetric": "Métrica de valores atípicos",
-    "CaptureView_OutlierPercentage": "Porcentaje de valores atípicos",
+    "CaptureView_OutlierMetric": "Métrica de atípicos",
+    "CaptureView_OutlierPercentage": "% de atípicos",
     "CaptureView_ProcessIgnoreList": "Lista de procesos ignorados",
     "CaptureView_RememberForThisGame": "Recordar para este juego",
     "CaptureView_RemoveFromIgnoreList": "Quitar de la lista de ignorados",
@@ -136,7 +136,7 @@
     // =========================================================================
     "CloudViewModel_UploadSizeLimitExceeded0": "Las sesiones seleccionadas superan el límite de {0} bytes por subida",
     "CloudView_AnyNewGameNameOr": "Cualquier nombre de juego nuevo o proceso ignorado que añadas se nos enviará para que podamos añadirlo a nuestra propia lista",
-    "CloudView_AutoUpdateList": "Actualizar la lista automáticamente",
+    "CloudView_AutoUpdateList": "Actualización automática",
     "CloudView_Comment": "Comentario",
     "CloudView_CopyToClipboard": "Copiar al portapapeles",
     "CloudView_Date": "Fecha",
@@ -1033,7 +1033,7 @@
     "OverlayView_DisplayUsedByTheHook": "Pantalla usada por el overlay sin hook",
     "OverlayView_DragDropToChangeOrder": "Arrastra y suelta para cambiar el orden",
     "OverlayView_EntryType": "Tipo de entrada",
-    "OverlayView_EntryType2": "Tipo de entrada",
+    "OverlayView_EntryType2": "Tipo",
     "OverlayView_ExtendedOSDLogging": "Log extendido del OSD",
     "OverlayView_FilterByEntryType": "Filtrar por tipo de entrada",
     "OverlayView_Format": "Formato",
@@ -1046,7 +1046,7 @@
     "OverlayView_GroupName": "Nombre del grupo",
     "OverlayView_GroupName2": "Nombre del grupo",
     "OverlayView_GroupName3": "Nombre del grupo",
-    "OverlayView_GroupNameFontSize": "Tamaño de fuente del nombre del grupo",
+    "OverlayView_GroupNameFontSize": "Tamaño del nombre",
     "OverlayView_Groups": "Grupos",
     "OverlayView_HardwareController": "Controlador de hardware",
     "OverlayView_HideTheOSDWhileA": "Oculta el OSD mientras se ejecuta una captura de benchmark.",
@@ -1075,7 +1075,7 @@
     "OverlayView_OverlayCoordinates": "Coordenadas del overlay",
     "OverlayView_OverlayHotkey": "Atajo del overlay",
     "OverlayView_OverlayItems": "Elementos del overlay",
-    "OverlayView_OverlayItems2": "Elementos del overlay",
+    "OverlayView_OverlayItems2": "Elementos",
     "OverlayView_OverlayPosition": "Posición del overlay",
     "OverlayView_OverlayRefresh": "Actualización del overlay",
     "OverlayView_OverlayRenderer": "Renderizador del overlay",
@@ -1091,7 +1091,7 @@
     "OverlayView_RealTimeMetrics": "Métricas en tiempo real",
     "OverlayView_RealTimeMetrics2": "Métricas en tiempo real",
     "OverlayView_RefreshPeriodMs": "Periodo de actualización (ms)",
-    "OverlayView_RefreshRate": "Frecuencia de actualización",
+    "OverlayView_RefreshRate": "Frecuencia",
     "OverlayView_RequiresRivaTunerStatisticsServer": "Requiere RivaTuner Statistics Server.",
     "OverlayView_ResetMetrics": "Reiniciar métricas",
     "OverlayView_ResetMetricsHotkey": "Atajo para reiniciar métricas",
@@ -1120,7 +1120,7 @@
     "OverlayView_SmoothNumericValues": "Suavizar valores numéricos",
     "OverlayView_SortEntriesByType": "Ordenar las entradas por tipo",
     "OverlayView_SpecialCXOverlayItemsCapture": "Elementos especiales del overlay de CX:\n\n\nEstado del servicio de captura:\n\nEstado actual del servicio de captura (proceso encontrado, varios procesos encontrados, benchmark en curso...)\n\n\nTemporizador de captura:\n\nTiempo restante de la captura activa (duración definida) o tiempo de captura actual (ilimitado)\n\n\nHistorial de pasadas:\n\nMuestra los datos de las pasadas anteriores y los resultados agregados (configuración en la página de captura)\n\n\nMétricas de FPS en tiempo real:\n\nValores promediados de FPS promedio y percentiles\n\n\nTiempo de stuttering:\n\nPorcentaje de tiempo de los fotogramas por encima del umbral de stuttering\n\n\nLatencia de la aplicación:\n\nInput lag aproximado promediado\n\n\nPotencias PMD:\n\nValores de potencia para usar con la herramienta Powenetics v2",
-    "OverlayView_StandardValueColor": "Color estándar del valor:",
+    "OverlayView_StandardValueColor": "Color del valor:",
     "OverlayView_SwitchConfig": "Cambiar de config.",
     "OverlayView_SystemInfos": "Información del sistema",
     "OverlayView_SystemTimeSeconds": "Segundos de la hora del sistema",
@@ -1145,7 +1145,7 @@
     "OverlayView_UpperLimitColorHint": "Cambia el color del valor si es igual o superior\nVacía este cuadro para desactivar el límite",
     "OverlayView_UsePresentMonFrameTimes": "Usar los frametimes de PresentMon",
     "OverlayView_UsesDWMDirectCompositionWithoutGame": "Usa DWM/DirectComposition sin inyectarse en el juego y es seguro para títulos protegidos por anti-cheat.",
-    "OverlayView_ValueFontSize": "Tamaño de fuente del valor",
+    "OverlayView_ValueFontSize": "Tamaño del valor",
     "OverlayView_Values": "Valores",
 
     // =========================================================================
@@ -1163,7 +1163,7 @@
     "PmdChart_GpuPowerW": "Potencia de GPU [W]",
     "PmdChart_PowerW": "Potencia [W]",
     "PmdChart_TimeS": "Tiempo [s]",
-    "PmdSampleFilterMode_Average": "Promedio de N",
+    "PmdSampleFilterMode_Average": "Prom. de N",
     "PmdSampleFilterMode_Single": "Último de N",
     "PmdView_ATXPower": "Potencia ATX",
     "PmdView_AutoStartPMD": "Iniciar PMD automáticamente",
@@ -1183,7 +1183,7 @@
     "PmdView_COMPort": "Puerto COM",
     "PmdView_CPU": "CPU :",
     "PmdView_CPUPower": "Potencia de CPU",
-    "PmdView_CPUTotalPower": "Potencia total de CPU",
+    "PmdView_CPUTotalPower": "CPU total",
     "PmdView_ChartLengthS": "Duración del gráfico [s]",
     "PmdView_ChartLengthS2": "Duración del gráfico [s]",
     "PmdView_CopyCPUPowerFrameTimes": "Copiar potencia de CPU/frametimes (t, f(t), p(t))",
@@ -1209,10 +1209,10 @@
     "PmdView_Frametimes": "Frametimes",
     "PmdView_GPU": "GPU :",
     "PmdView_GPUPower": "Potencia de GPU",
-    "PmdView_GPUTotalPower": "Potencia total de GPU",
+    "PmdView_GPUTotalPower": "GPU total",
     "PmdView_GraphSelection": "Selección de gráficos",
-    "PmdView_LogPMDData": "Registrar datos de PMD",
-    "PmdView_LogPMDData2": "Registrar datos de PMD",
+    "PmdView_LogPMDData": "Registrar PMD",
+    "PmdView_LogPMDData2": "Registrar PMD",
     "PmdView_LostPackets": "Paquetes perdidos:",
     "PmdView_MainboardPower": "Potencia de la placa base",
     "PmdView_Max": "Máx.",
@@ -1227,7 +1227,7 @@
     "PmdView_Max9": "Máx.",
     "PmdView_MonitoringIntervalMs": "Intervalo de monitorización [ms]",
     "PmdView_PCIePower": "Potencia PCIe",
-    "PmdView_PCIeSlotPower": "Potencia de la ranura PCIe",
+    "PmdView_PCIeSlotPower": "Ranura PCIe",
     "PmdView_PMDAnalysis": "Análisis PMD",
     "PmdView_PMDCPU": "PMD CPU :",
     "PmdView_PMDGPU": "PMD GPU :",
@@ -1405,7 +1405,7 @@
     "SensorView_ResetToDefaults": "Restablecer valores predeterminados",
     "SensorView_ResyncWindowsPerformanceMonitorWhen": "Resincroniza el monitor de rendimiento de Windows si tienes problemas con contadores de memoria en 0. Reinicia CX después de ejecutarlo.",
     "SensorView_SaveSelectedSensorsForLogging": "Guardar los sensores seleccionados para el registro",
-    "SensorView_SelectTheMethodForEvaluating": "Selecciona el método para evaluar varias entradas.\n\n\nAgregar: genera el informe a partir de los datos de sensores combinados de todas las entradas.\n\n\nPromedio: genera el informe a partir del promedio de cada informe individual.\n\n(solo incluye los sensores presentes en todas las entradas)",
+    "SensorView_SelectTheMethodForEvaluating": "Selecciona el método para evaluar varias entradas.\n\n\nAgregación: genera el informe a partir de los datos de sensores combinados de todas las entradas.\n\n\nPromedio: genera el informe a partir del promedio de cada informe individual.\n\n(solo incluye los sensores presentes en todas las entradas)",
     "SensorView_Sensor": "Sensor",
     "SensorView_Sensor2": "Sensor",
     "SensorView_SensorItems": "Elementos de sensores",
@@ -1417,7 +1417,7 @@
     "SensorView_UncheckCPUCoreClocks": "Desmarcar relojes de núcleos de CPU",
     "SensorView_UncheckCPUThreadLoads": "Desmarcar cargas de hilos de CPU",
     "SensorView_UncheckGPUBasics": "Desmarcar lo básico de GPU",
-    "SensorView_UseForLogging": "Usar para el registro",
+    "SensorView_UseForLogging": "Registrar",
 
     // =========================================================================
     // SHELL, SOUNDS & SPLASH SCREEN - Tray menu, capture sound modes, startup screen
@@ -1545,7 +1545,7 @@
     "UpdateViewModel_CapFrameXHasNotCheckedFor": "CapFrameX todavía no ha buscado actualizaciones.",
     "UpdateViewModel_CapFrameXIsUpToDate": "CapFrameX está actualizado.",
     // {0}: channel name, {1}: count of versions available
-    "UpdateViewModel_CapFrameXUpToDateOnChannel": "CapFrameX está actualizado en el canal {0}. Hay {1} versiones disponibles.",
+    "UpdateViewModel_CapFrameXUpToDateOnChannel": "CapFrameX está actualizado en el canal {0}. Versiones disponibles: {1}.",
     "UpdateViewModel_CapFrameXUpdate": "Actualización de CapFrameX",
     "UpdateViewModel_DownloadSize0MB": "Tamaño de la descarga: {0} MB",
     // Dialog message when installing a beta release
@@ -1557,7 +1557,7 @@
     "UpdateViewModel_InstallVersion": "INSTALAR VERSIÓN",
     "UpdateViewModel_LookingForUpdates": "Buscando actualizaciones...",
     // {0}: channel name (e.g. Beta), {1}: count of other versions available
-    "UpdateViewModel_NoChannelBuildPublished": "Ahora mismo no hay ninguna versión {0} publicada. Hay {1} versiones más disponibles.",
+    "UpdateViewModel_NoChannelBuildPublished": "Ahora mismo no hay ninguna versión {0} publicada. Otras versiones disponibles: {1}.",
     "UpdateViewModel_NoDescriptionWasProvidedFor": "Esta actualización no incluye descripción.",
     "UpdateViewModel_NoUpdateServerIsConfigured": "No hay ningún servidor de actualizaciones configurado.",
     "UpdateViewModel_RollBack": "REVERTIR",
@@ -1664,6 +1664,14 @@
   // Replacements are lowercase: the first letter of the result is capitalized afterwards.
   // Spanish puts the device after the noun: "GPU Core" -> "Núcleo GPU".
   "phrases": [
+    {
+      "pattern": "\\bDistance to TjMax\\b",
+      "replacement": "distancia a TjMax"
+    },
+    {
+      "pattern": "^Aggregate$",
+      "replacement": "agregación"
+    },
     {
       "pattern": "Run (\\d+):",
       "replacement": "Pasada $1:"

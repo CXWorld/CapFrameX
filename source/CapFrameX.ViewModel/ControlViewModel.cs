@@ -302,10 +302,17 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public string SearchBarText => string.Format(
-            CxLang.T("ControlViewModel_SearchIn01Items"),
-            new DirectoryInfo(_appConfiguration.ObservedDirectory).Name,
-            RecordInfoList.Count);
+        public string SearchBarText
+        {
+            get
+            {
+                // Same rule as PathLeafConverter: the default "Captures" folder is shown translated.
+                var folder = new DirectoryInfo(_appConfiguration.ObservedDirectory).Name;
+                if (string.Equals(folder, "Captures", StringComparison.OrdinalIgnoreCase))
+                    folder = CxLang.T("ControlView_Captures");
+                return string.Format(CxLang.T("ControlViewModel_SearchIn01Items"), folder, RecordInfoList.Count);
+            }
+        }
 
         public string ObservedDirectory { get; private set; }
 
