@@ -370,9 +370,14 @@
     "ComparisonDataView_ShowContextLegend2": "Mostrar la leyenda de contexto",
     // Chart Y-axis label: frames per second calculated from display change
     "ComparisonViewModel_DisplayFPS": "FPS de pantalla",
-    // Chart Y-axis label: time between display change samples
-    "ComparisonViewModel_DisplayTime": "Tiempo de pantalla",
-    "ComparisonViewModel_Distribution0": "{0}: distribución [%]",
+    // Chart Y-axis label with unit: frames per second calculated from display change
+    "ComparisonViewModel_DisplayFPSPerSecond": "FPS de pantalla [1/s]",
+    // Distribution chart Y-axis label: share of time per display-change interval
+    "ComparisonViewModel_DisplayTimeDistribution": "Distribución del tiempo de pantalla [%]",
+    // Chart axis label with unit: time between display change samples
+    "ComparisonViewModel_DisplayTimeMs": "Tiempo de pantalla [ms]",
+    // L-shape chart axis label: time between display change samples
+    "ComparisonViewModel_DisplayTimeMsLShape": "Tiempo de pantalla (ms)",
     "ComparisonViewModel_FPS": "FPS",
     "ComparisonViewModel_FPS1S": "FPS [1/s]",
     "ComparisonViewModel_FrameTimeDistribution": "Distribución de frametimes [%]",
@@ -387,8 +392,14 @@
     "ComparisonViewModel_MetricFps01": "{0} de FPS ({1})",
     // Chart Y-axis label: frames per second calculated from present calls
     "ComparisonViewModel_PresentFPS": "FPS de present",
-    // Chart Y-axis label: time between present calls
-    "ComparisonViewModel_PresentFrametime": "Frametime de present",
+    // Chart Y-axis label with unit: frames per second calculated from present calls
+    "ComparisonViewModel_PresentFPSPerSecond": "FPS de present [1/s]",
+    // Distribution chart Y-axis label: share of time per present interval
+    "ComparisonViewModel_PresentFrametimeDistribution": "Distribución de frametimes de present [%]",
+    // Chart axis label with unit: time between present calls
+    "ComparisonViewModel_PresentFrametimeMs": "Frametime de present [ms]",
+    // L-shape chart axis label: time between present calls
+    "ComparisonViewModel_PresentFrametimeMsLShape": "Frametime de present (ms)",
     "ComparisonViewModel_RecordAlreadyInList": "La lista ya contiene este registro, así que no se puede insertar. Selecciona otro registro para la comparación.",
     "ComparisonViewModel_RecordingTimeS": "Tiempo de grabación [s]",
     "ComparisonViewModel_RecordingTimeS2": "Tiempo de grabación [s]",
