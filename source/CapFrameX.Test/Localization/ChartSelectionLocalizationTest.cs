@@ -107,6 +107,44 @@ namespace CapFrameX.Test.Localization
             }
         }
 
+        // Axis titles used to be a translated source name plus a hard-coded unit or "Distribution" suffix,
+        // which left "[ms]" and English word order in other languages.
+        [DataTestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void ComparisonAxisTitles_ComeWholeFromTheCatalog(bool displayTimes)
+        {
+            string previous = CxLang.Instance.UiLanguage;
+            try
+            {
+                CxLang.Instance.SetUiLanguage("ru");
+                var model = new ComparisonViewModel(Mock.Of<IStatisticProvider>(), Mock.Of<IFrametimeAnalyzer>(),
+                    new EventAggregator(), Configuration(), null, Mock.Of<ILogger<ComparisonViewModel>>());
+                typeof(ComparisonViewModel).GetMethod("InitializePlotModels", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Invoke(model, null);
+                typeof(ComparisonViewModel).GetField("_useDisplayChangeSamplesForComparison", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .SetValue(model, displayTimes);
+                typeof(ComparisonViewModel).GetMethod("UpdateComparisonMetricSourceLabels", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Invoke(model, null);
+
+                string source = displayTimes ? "DisplayTime" : "PresentFrametime";
+                Assert.AreEqual(CxLang.T($"ComparisonViewModel_{source}Distribution"),
+                    model.ComparisonDistributionModel.Axes.Single(axis => axis.Key == "yAxis").Title);
+                Assert.AreEqual(CxLang.T($"ComparisonViewModel_{source}Ms"),
+                    model.ComparisonDistributionModel.Axes.Single(axis => axis.Key == "xAxis").Title);
+
+                var titles = new[] { model.ComparisonFrametimesModel, model.ComparisonFpsModel, model.ComparisonDistributionModel }
+                    .SelectMany(plot => plot.Axes).Select(axis => axis.Title).Append(model.ComparisonLShapeYAxisLabel);
+                foreach (string title in titles.Where(t => t != null))
+                    Assert.IsFalse(title.Contains("[ms]") || title.Contains("(ms)") || title.Contains("[1/s]"),
+                        $"'{title}' keeps an English unit.");
+            }
+            finally
+            {
+                CxLang.Instance.SetUiLanguage(previous);
+            }
+        }
+
         // The Values selectors show translated item texts, but the view models, the chart manager and the
         // Comparison view's triggers compare SelectedChartView with the English keys.
         [DataTestMethod]

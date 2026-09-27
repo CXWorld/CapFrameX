@@ -366,9 +366,14 @@
     "ComparisonDataView_ShowContextLegend2": "Show context legend",
     // Chart Y-axis label: frames per second calculated from display change
     "ComparisonViewModel_DisplayFPS": "Display FPS",
-    // Chart Y-axis label: time between display change samples
-    "ComparisonViewModel_DisplayTime": "Display time",
-    "ComparisonViewModel_Distribution": "Distribution [%]",
+    // Chart Y-axis label with unit: frames per second calculated from display change
+    "ComparisonViewModel_DisplayFPSPerSecond": "Display FPS [1/s]",
+    // Distribution chart Y-axis label: share of time per display-change interval
+    "ComparisonViewModel_DisplayTimeDistribution": "Display time Distribution [%]",
+    // Chart axis label with unit: time between display change samples
+    "ComparisonViewModel_DisplayTimeMs": "Display time [ms]",
+    // L-shape chart axis label: time between display change samples
+    "ComparisonViewModel_DisplayTimeMsLShape": "Display time (ms)",
     "ComparisonViewModel_FPS": "FPS",
     "ComparisonViewModel_FPS1S": "FPS [1/s]",
     "ComparisonViewModel_FrameTimeDistribution": "Frame Time Distribution [%]",
@@ -378,8 +383,14 @@
     "ComparisonViewModel_GPUActiveTimeMs": "GPU active time [ms]",
     // Chart Y-axis label: frames per second calculated from present calls
     "ComparisonViewModel_PresentFPS": "Present FPS",
-    // Chart Y-axis label: time between present calls
-    "ComparisonViewModel_PresentFrametime": "Present frametime",
+    // Chart Y-axis label with unit: frames per second calculated from present calls
+    "ComparisonViewModel_PresentFPSPerSecond": "Present FPS [1/s]",
+    // Distribution chart Y-axis label: share of time per present interval
+    "ComparisonViewModel_PresentFrametimeDistribution": "Present frametime Distribution [%]",
+    // Chart axis label with unit: time between present calls
+    "ComparisonViewModel_PresentFrametimeMs": "Present frametime [ms]",
+    // L-shape chart axis label: time between present calls
+    "ComparisonViewModel_PresentFrametimeMsLShape": "Present frametime (ms)",
     "ComparisonViewModel_RecordAlreadyInList": "The list already contains this record and therefore cannot be inserted. Select a different record for the comparison.",
     "ComparisonViewModel_RecordingTimeS": "Recording time [s]",
     "ComparisonViewModel_RecordingTimeS2": "Recording time [s]",
