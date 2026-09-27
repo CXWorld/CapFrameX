@@ -10,7 +10,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 		mc:Ignorable="d"
         Title="{loc:Tr Shell_CapFrameX}"
-        Height="800" Width="1400" MinHeight="740" MinWidth="1250" Icon="Icons/cx_icon_BUC.ico"
+        Height="768" Width="1488" MinHeight="768" MinWidth="1488" Icon="Icons/cx_icon_BUC.ico"
         Background="{DynamicResource MaterialDesign.Brush.Background}"
         FontFamily="{materialDesign:MaterialDesignFont}">
     <Window.Resources>
