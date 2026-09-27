@@ -30,8 +30,8 @@
 			<mvvm:EnumShortDescriptionConverter x:Key="EnumShortDescriptionConverter"/>
 			<mvvm:StringColorConverter x:Key="StringColorConverter"/>
 			<Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource CxTabHeaderItem}" />
+			<!--No margin: OsdColumnsPanel spaces the cards.-->
 			<Style x:Key="OsdOptionsCard" TargetType="{x:Type Border}">
-				<Setter Property="Margin" Value="6"/>
 				<Setter Property="Padding" Value="18"/>
 				<Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"/>
 				<Setter Property="BorderThickness" Value="0"/>
@@ -1000,12 +1000,11 @@
 			</TabItem>
 			<TabItem Header="{loc:Tr OverlayView_OSDOptions}">
 				<ScrollViewer Margin="{StaticResource CxTabContentMargin}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-					<!-- Independent vertical sections keep future options local to their topic. Three fixed-width
-					     stacks sit side by side from about 1400 px (a maximized 1080p window); narrower windows
-					     wrap the third stack below the first and the page scrolls. -->
-					<WrapPanel Margin="8 0 8 14" HorizontalAlignment="Center">
-						<StackPanel Width="456">
-							<Border Margin="6 0 6 6" Style="{StaticResource OsdOptionsCard}">
+					<!-- Independent sections keep future options local to their topic. Three columns from about
+					     1400 px (a maximized 1080p window), two in narrower windows, one below that; each card
+					     names its column for both layouts so the columns stay balanced. -->
+					<ctrls:OsdColumnsPanel Margin="14 0 14 20" HorizontalAlignment="Center" ColumnWidth="444" Spacing="12">
+							<Border ctrls:OsdColumnsPanel.ThreeColumnIndex="0" ctrls:OsdColumnsPanel.TwoColumnIndex="0" Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr OverlayView_General}"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
@@ -1047,7 +1046,7 @@
 								</StackPanel>
 							</Border>
 
-							<Border Style="{StaticResource OsdOptionsCard}">
+							<Border ctrls:OsdColumnsPanel.ThreeColumnIndex="0" ctrls:OsdColumnsPanel.TwoColumnIndex="0" Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr OverlayView_AppearanceAndPosition}"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
@@ -1152,10 +1151,8 @@
 									</DockPanel>
 								</StackPanel>
 							</Border>
-						</StackPanel>
 
-						<StackPanel Width="456">
-							<Border Margin="6 0 6 6" Style="{StaticResource OsdOptionsCard}">
+							<Border ctrls:OsdColumnsPanel.ThreeColumnIndex="1" ctrls:OsdColumnsPanel.TwoColumnIndex="1" Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr OverlayView_OverlayRenderer}"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
@@ -1277,10 +1274,8 @@
 								</StackPanel>
 
 							</Border>
-						</StackPanel>
 
-						<StackPanel Width="456">
-							<Border Margin="6 0 6 6" Style="{StaticResource OsdOptionsCard}">
+							<Border ctrls:OsdColumnsPanel.ThreeColumnIndex="2" ctrls:OsdColumnsPanel.TwoColumnIndex="1" Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr OverlayView_ShortcutsAndTiming}"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
@@ -1394,7 +1389,7 @@
 								</StackPanel>
 							</Border>
 
-							<Border Style="{StaticResource OsdOptionsCard}">
+							<Border ctrls:OsdColumnsPanel.ThreeColumnIndex="2" ctrls:OsdColumnsPanel.TwoColumnIndex="0" Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr OverlayView_Diagnostics}"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
@@ -1426,8 +1421,7 @@
 											   Text="{Binding ExtendedOsdLogging.Error}"/>
 								</StackPanel>
 							</Border>
-						</StackPanel>
-					</WrapPanel>
+					</ctrls:OsdColumnsPanel>
 				</ScrollViewer>
 			</TabItem>
 		</TabControl>
