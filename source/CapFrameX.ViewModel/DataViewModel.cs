@@ -72,12 +72,6 @@ namespace CapFrameX.ViewModel
         private bool _messageDialogContentIsOpen;
         private string _messageText;
         private int _barMaxValue = 100;
-        private bool _showGpuLoad;
-        private bool _showCpuLoad;
-        private bool _showCpuMaxThreadLoad;
-        private bool _showGpuPowerLimit;
-        private bool _showPcLatency;
-        private bool _showAnimationError;
         private bool _aggregationSeparators;
         private bool _showStutteringThresholds;
         private string _avgPcLatency;
@@ -88,9 +82,7 @@ namespace CapFrameX.ViewModel
         private bool _isGpuLoadAvailable;
         private bool _isGpuPowerLimitAvailable;
         private bool _isGpuActiveChartAvailable;
-        private bool _showGpuActiveChart;
         private bool _isCpuActiveChartAvailable;
-        private bool _showCpuActiveChart;
         private bool _useFrametimeStatisticParameters;
         private EFilterMode _selectedFilterMode = EFilterMode.None;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
@@ -451,6 +443,7 @@ namespace CapFrameX.ViewModel
             {
                 _isPcLatencyAvailable = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(ShowPcLatency));
             }
         }
 
@@ -461,6 +454,7 @@ namespace CapFrameX.ViewModel
             {
                 _isAnimationErrorAvailable = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(ShowAnimationError));
             }
         }
 
@@ -471,6 +465,7 @@ namespace CapFrameX.ViewModel
             {
                 _isCpuLoadAvailable = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(ShowCpuLoad));
             }
         }
 
@@ -481,6 +476,7 @@ namespace CapFrameX.ViewModel
             {
                 _isCpuMaxLoadAvailable = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(ShowCpuMaxThreadLoad));
             }
         }
 
@@ -491,6 +487,7 @@ namespace CapFrameX.ViewModel
             {
                 _isGpuLoadAvailable = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(ShowGpuLoad));
             }
         }
 
@@ -501,6 +498,7 @@ namespace CapFrameX.ViewModel
             {
                 _isGpuPowerLimitAvailable = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(ShowGpuPowerLimit));
             }
         }
 
@@ -511,6 +509,7 @@ namespace CapFrameX.ViewModel
             {
                 _isGpuActiveChartAvailable = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(ShowGpuActiveChart));
             }
         }
 
@@ -521,6 +520,7 @@ namespace CapFrameX.ViewModel
             {
                 _isCpuActiveChartAvailable = value;
                 RaisePropertyChanged();
+                RaisePropertyChanged(nameof(ShowCpuActiveChart));
             }
         }
 
@@ -591,12 +591,14 @@ namespace CapFrameX.ViewModel
 
         public ICommand CutRecordInverseCommand { get; }
 
+        // Keep the saved selection independent of the current record's metrics.
+        // Availability only controls whether the selected graph can be shown.
         public bool ShowGpuLoad
         {
-            get => _showGpuLoad;
+            get => _appConfiguration.AnalysisShowGpuLoad && IsGpuLoadAvailable;
             set
             {
-                _showGpuLoad = value;
+                _appConfiguration.AnalysisShowGpuLoad = value;
                 RaisePropertyChanged();
                 SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
@@ -605,10 +607,10 @@ namespace CapFrameX.ViewModel
 
         public bool ShowCpuLoad
         {
-            get => _showCpuLoad;
+            get => _appConfiguration.AnalysisShowCpuLoad && IsCpuLoadAvailable;
             set
             {
-                _showCpuLoad = value;
+                _appConfiguration.AnalysisShowCpuLoad = value;
                 RaisePropertyChanged();
                 SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
@@ -617,10 +619,10 @@ namespace CapFrameX.ViewModel
 
         public bool ShowCpuMaxThreadLoad
         {
-            get => _showCpuMaxThreadLoad;
+            get => _appConfiguration.AnalysisShowCpuMaxThreadLoad && IsCpuMaxLoadAvailable;
             set
             {
-                _showCpuMaxThreadLoad = value;
+                _appConfiguration.AnalysisShowCpuMaxThreadLoad = value;
                 RaisePropertyChanged();
                 SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
@@ -629,10 +631,10 @@ namespace CapFrameX.ViewModel
 
         public bool ShowGpuPowerLimit
         {
-            get => _showGpuPowerLimit && IsGpuPowerLimitAvailable;
+            get => _appConfiguration.AnalysisShowGpuPowerLimit && IsGpuPowerLimitAvailable;
             set
             {
-                _showGpuPowerLimit = value;
+                _appConfiguration.AnalysisShowGpuPowerLimit = value;
                 RaisePropertyChanged();
                 SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
@@ -641,10 +643,10 @@ namespace CapFrameX.ViewModel
 
         public bool ShowPcLatency
         {
-            get => _showPcLatency;
+            get => _appConfiguration.AnalysisShowPcLatency && IsPcLatencyAvailable;
             set
             {
-                _showPcLatency = value;
+                _appConfiguration.AnalysisShowPcLatency = value;
                 RaisePropertyChanged();
                 SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
@@ -653,10 +655,10 @@ namespace CapFrameX.ViewModel
 
         public bool ShowAnimationError
         {
-            get => _showAnimationError;
+            get => _appConfiguration.AnalysisShowAnimationError && IsAnimationErrorAvailable;
             set
             {
-                _showAnimationError = value;
+                _appConfiguration.AnalysisShowAnimationError = value;
                 RaisePropertyChanged();
                 SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
@@ -665,10 +667,10 @@ namespace CapFrameX.ViewModel
 
         public bool ShowGpuActiveChart
         {
-            get => _showGpuActiveChart;
+            get => _appConfiguration.AnalysisShowGpuActiveChart && IsGpuActiveChartAvailable;
             set
             {
-                _showGpuActiveChart = value;
+                _appConfiguration.AnalysisShowGpuActiveChart = value;
                 RaisePropertyChanged();
                 SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
@@ -677,10 +679,10 @@ namespace CapFrameX.ViewModel
 
         public bool ShowCpuActiveChart
         {
-            get => _showCpuActiveChart;
+            get => _appConfiguration.AnalysisShowCpuActiveChart && IsCpuActiveChartAvailable;
             set
             {
-                _showCpuActiveChart = value;
+                _appConfiguration.AnalysisShowCpuActiveChart = value;
                 RaisePropertyChanged();
                 SetChartUpdateFlags(true, true, false);
                 _onUpdateChart.OnNext(default);
@@ -1357,12 +1359,6 @@ namespace CapFrameX.ViewModel
                     return true;
                 });
 
-                if (!IsPcLatencyAvailable)
-                {
-                    _showPcLatency = false;
-                    RaisePropertyChanged(nameof(ShowPcLatency));
-                }
-
                 if (IsPcLatencyAvailable)
                 {
                     var averagePcLatency = _session.Runs.Average(run => run.CaptureData.PcLatency.Where(x => !double.IsNaN(x)).Average());
@@ -1376,56 +1372,17 @@ namespace CapFrameX.ViewModel
                     return filteredValues.Any();
                 });
 
-                if (!IsAnimationErrorAvailable)
-                {
-                    _showAnimationError = false;
-                    RaisePropertyChanged(nameof(ShowAnimationError));
-                }
-
                 // Check load metrics
                 IsCpuLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.CpuUsage.IsNullOrEmpty());
-                if (!IsCpuLoadAvailable)
-                {
-                    _showCpuLoad = false;
-                    RaisePropertyChanged(nameof(ShowCpuLoad));
-                }
-
                 IsCpuMaxLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.CpuMaxThreadUsage.IsNullOrEmpty());
-                if (!IsCpuMaxLoadAvailable)
-                {
-                    _showCpuMaxThreadLoad = false;
-                    RaisePropertyChanged(nameof(ShowCpuMaxThreadLoad));
-                }
-
                 IsGpuLoadAvailable = _session.Runs.All(run => run.SensorData2 != null && !run.SensorData2.GpuUsage.IsNullOrEmpty());
-                if (!IsGpuLoadAvailable)
-                {
-                    _showGpuLoad = false;
-                    RaisePropertyChanged(nameof(ShowGpuLoad));
-                }
-
                 IsGpuPowerLimitAvailable = GetIsPowerLimitAvailable();
-                if (!IsGpuPowerLimitAvailable)
-                {
-                    _showGpuPowerLimit = false;
-                    RaisePropertyChanged(nameof(ShowGpuPowerLimit));
-                }
 
                 //Check GPU Active metric
                 IsGpuActiveChartAvailable = GetIsGpuActiveChartAvailable();
-                if (!IsGpuActiveChartAvailable)
-                {
-                    _showGpuActiveChart = false;
-                    RaisePropertyChanged(nameof(ShowGpuActiveChart));
-                }
 
                 //Check CPU Active metric
                 IsCpuActiveChartAvailable = GetIsCpuActiveChartAvailable();
-                if (!IsCpuActiveChartAvailable)
-                {
-                    _showCpuActiveChart = false;
-                    RaisePropertyChanged(nameof(ShowCpuActiveChart));
-                }
 
                 // Do update actions
                 FrametimeGraphDataContext.RecordSession = _session;

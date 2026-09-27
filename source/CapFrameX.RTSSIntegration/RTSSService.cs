@@ -18,10 +18,13 @@ namespace CapFrameX.RTSSIntegration
         private static ILogger<RTSSService> _logger;
 
         private readonly BehaviorSubject<int> _processIdStream;
+        private readonly BehaviorSubject<int> _processCountStream;
         private readonly object _launchGate = new object();
         private string _lastLaunchState;
 
         public ISubject<int> ProcessIdStream => _processIdStream;
+
+        public ISubject<int> ProcessCountStream => _processCountStream;
 
         public Func<int, bool> VulkanPresentationProbe { get; set; }
 
@@ -29,12 +32,33 @@ namespace CapFrameX.RTSSIntegration
         {
             _logger = logger;
             _processIdStream = new BehaviorSubject<int>(default);
+            _processCountStream = new BehaviorSubject<int>(default);
             _isRTSSInstalled = !string.IsNullOrEmpty(GetRTSSFullPath());
         }
 
         public bool IsRTSSInstalled()
         {
             return _isRTSSInstalled;
+        }
+
+        public string GetRTSSVersion()
+        {
+            try
+            {
+                string path = GetRTSSFullPath();
+                if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+                    return null;
+
+                var versionInfo = FileVersionInfo.GetVersionInfo(path);
+                string version = string.IsNullOrWhiteSpace(versionInfo.ProductVersion)
+                    ? versionInfo.FileVersion : versionInfo.ProductVersion;
+                return string.IsNullOrWhiteSpace(version) ? null : version.Trim();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Reading the RTSS version failed");
+                return null;
+            }
         }
 
         public Task CheckRTSSRunningAndRefresh()

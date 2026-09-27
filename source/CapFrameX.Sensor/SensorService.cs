@@ -1,5 +1,4 @@
 ﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.Contracts.Latency;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
@@ -32,11 +31,11 @@ namespace CapFrameX.Sensor
         private readonly ISensorConfig _sensorConfig;
         private readonly IRTSSService _rTSSService;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly IRemoteOverlayDemand _remoteOverlayDemand;
         private readonly ILogger<SensorService> _logger;
         private readonly IDisposable _logDisposable;
         private readonly IDisposable _sensorPollTimerDisposable;
         private readonly Task<IPmcReaderSensorPlugin> _pmcReaderInitializationTask;
-        private readonly AmdFlmSensorSource _amdFlmSensorSource;
         private readonly BehaviorSubject<(DateTime, Dictionary<ISensorEntry, float>)> _coreSensorSnapshotSubject;
         private readonly SingleFlightSensorPoller<(DateTime, Dictionary<ISensorEntry, float>)> _sensorPoller;
 
@@ -81,14 +80,15 @@ namespace CapFrameX.Sensor
            = new TaskCompletionSource<bool>();
 
         public SensorService(IAppConfiguration appConfig, ISensorConfig sensorConfig,
-            IAmdFlmService amdFlmService, IRTSSService rTSSService,
+            IRTSSService rTSSService,
+            IRemoteOverlayDemand remoteOverlayDemand,
             ILogger<SensorService> logger)
         {
             _appConfiguration = appConfig;
+            _remoteOverlayDemand = remoteOverlayDemand;
             _sensorConfig = sensorConfig;
             _rTSSService = rTSSService;
             _logger = logger;
-            _amdFlmSensorSource = new AmdFlmSensorSource(amdFlmService, appConfig);
             _currentOSDTimespan = TimeSpan.FromMilliseconds(_appConfiguration.OSDRefreshPeriod);
             _currentLoggingTimespan = TimeSpan.FromMilliseconds(_appConfiguration.SensorLoggingRefreshPeriod);
             _loggingUpdateSubject = new BehaviorSubject<TimeSpan>(_currentLoggingTimespan);
@@ -308,17 +308,7 @@ namespace CapFrameX.Sensor
                     {
                         if (sensor != null)
                         {
-                            entries.Add(new SensorEntry()
-                            {
-                                Identifier = sensor.Identifier.ToString(),
-                                SortKey = sensor.PresentationSortKey,
-                                Value = sensor.Value,
-                                Name = sensor.Name,
-                                SensorType = sensor.SensorType.ToString(),
-                                HardwareType = sensor.Hardware.HardwareType.ToString(),
-                                HardwareName = sensor.Hardware.Name,
-                                IsPresentationDefault = sensor.IsPresentationDefault
-                            });
+                            entries.Add(SensorEntry.FromSensor(sensor));
                         }
                     }
                 }
@@ -336,7 +326,6 @@ namespace CapFrameX.Sensor
                 // Don't write periodic log entries
             }
 
-            entries.Add(_amdFlmSensorSource.CreateEntry());
             return entries;
         }
 
@@ -451,12 +440,6 @@ namespace CapFrameX.Sensor
                 }
             }
 
-            if (_appConfiguration.UseAmdFlmLatency)
-            {
-                var amdFlmEntry = _amdFlmSensorSource.CreateEntry();
-                dict.Add(amdFlmEntry, (float)amdFlmEntry.Value);
-            }
-
             return (DateTime.UtcNow, dict);
         }
 
@@ -467,27 +450,35 @@ namespace CapFrameX.Sensor
                     ?? Observable.Empty<(DateTime, Dictionary<ISensorEntry, float>)>());
         }
 
-        private bool HasActiveSensorConsumer()
+        internal bool HasActiveSensorConsumer()
         {
-            return IsOverlayActive
-                || (_isLoggingActive && UseSensorLogging)
-                || IsSensorWebsocketActive()
-                || _sensorConfig.EvaluateAllSensors;
+            return SelectSensorPollTimerState(
+                IsOverlayActive,
+                _remoteOverlayDemand.IsActive,
+                _isLoggingActive,
+                UseSensorLogging,
+                IsSensorWebsocketActive(),
+                _sensorConfig.EvaluateAllSensors);
         }
 
-        private bool ShouldPollHardwareSensors()
+        internal bool ShouldPollHardwareSensors()
         {
-            return (IsOverlayActive && _sensorConfig.HasSelectedOverlaySensors)
-                || (_isLoggingActive && UseSensorLogging)
-                || IsSensorWebsocketActive()
-                || _sensorConfig.EvaluateAllSensors;
+            return SelectHardwarePollingState(
+                IsOverlayActive,
+                _remoteOverlayDemand.IsActive,
+                _sensorConfig.HasSelectedOverlaySensors,
+                _isLoggingActive,
+                UseSensorLogging,
+                IsSensorWebsocketActive(),
+                _sensorConfig.EvaluateAllSensors);
         }
 
-        private bool ShouldPollPmcReaderSensors()
+        internal bool ShouldPollPmcReaderSensors()
         {
             bool websocketActive = IsSensorWebsocketActive();
             return SelectPmcReaderPollingState(
                 IsOverlayActive,
+                _remoteOverlayDemand.IsActive,
                 _sensorConfig.HasSelectedPmcOverlaySensors,
                 _isLoggingActive,
                 UseSensorLogging,
@@ -498,8 +489,42 @@ namespace CapFrameX.Sensor
                 _sensorConfig.EvaluateAllSensors);
         }
 
+        // The overlay entries, including the selected overlay sensors, have two consumers: the
+        // active overlay and remote API clients (IRemoteOverlayDemand), which read them with the
+        // overlay switched off.
+        internal static bool SelectSensorPollTimerState(
+            bool overlayActive,
+            bool remoteOverlayDemand,
+            bool loggingActive,
+            bool useSensorLogging,
+            bool websocketActive,
+            bool evaluateAllSensors)
+        {
+            return overlayActive
+                || remoteOverlayDemand
+                || (loggingActive && useSensorLogging)
+                || websocketActive
+                || evaluateAllSensors;
+        }
+
+        internal static bool SelectHardwarePollingState(
+            bool overlayActive,
+            bool remoteOverlayDemand,
+            bool hasSelectedOverlaySensors,
+            bool loggingActive,
+            bool useSensorLogging,
+            bool websocketActive,
+            bool evaluateAllSensors)
+        {
+            return ((overlayActive || remoteOverlayDemand) && hasSelectedOverlaySensors)
+                || (loggingActive && useSensorLogging)
+                || websocketActive
+                || evaluateAllSensors;
+        }
+
         internal static bool SelectPmcReaderPollingState(
             bool overlayActive,
+            bool remoteOverlayDemand,
             bool hasSelectedOverlayPmcSensors,
             bool loggingActive,
             bool useSensorLogging,
@@ -512,7 +537,7 @@ namespace CapFrameX.Sensor
             bool selectedLoggingConsumer = (loggingActive && useSensorLogging)
                 || (websocketActive && websocketActiveSensors);
 
-            return (overlayActive && hasSelectedOverlayPmcSensors)
+            return ((overlayActive || remoteOverlayDemand) && hasSelectedOverlayPmcSensors)
                 || (selectedLoggingConsumer && hasSelectedLoggingPmcSensors)
                 || (websocketActive && websocketAllSensors)
                 || evaluateAllSensors;
@@ -797,7 +822,6 @@ namespace CapFrameX.Sensor
             _logDisposable?.Dispose();
             _coreSensorSnapshotSubject?.OnCompleted();
             _coreSensorSnapshotSubject?.Dispose();
-            _amdFlmSensorSource.Dispose();
 
             // Initialization may still be running when the application closes. Dispose the plugin
             // on the default scheduler once that one-time task finishes without blocking shutdown.

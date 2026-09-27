@@ -19,6 +19,13 @@ namespace CapFrameX.Contracts.RTSS
         Func<int, bool> VulkanPresentationProbe { get; set; }
 
         bool IsRTSSInstalled();
+
+        /// <summary>
+        /// Product version of the installed RTSS executable; null when RTSS is not installed.
+        /// Read on every call, so an RTSS installed or updated while CapFrameX runs is reported.
+        /// </summary>
+        string GetRTSSVersion();
+
         string GetApiInfo(int processId);
         string GetResolution(int processId);
         Tuple<double, double> GetCurrentFramerate(int processId);

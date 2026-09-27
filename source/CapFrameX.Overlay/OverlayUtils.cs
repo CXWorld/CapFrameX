@@ -1,7 +1,8 @@
-﻿using CapFrameX.Contracts.Configuration;
-using CapFrameX.Contracts.Overlay;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Overlay;
 
 namespace CapFrameX.Overlay
 {
@@ -402,23 +403,6 @@ namespace CapFrameX.Overlay
                         Color = string.Empty,
                         IsEntryEnabled = appConfiguration.UsePcLatency,
                         SortKey = "1_1"
-                    },
-
-                    // AMD Frame Latency Meter
-                    new OverlayEntryWrapper("OnlineAmdFlmLatency")
-                    {
-                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
-                        ShowOnOverlay = false,
-                        ShowOnOverlayIsEnabled = appConfiguration.UseAmdFlmLatency,
-                        Description = "Click-to-Screen-Response Latency (ms)",
-                        GroupName = "AMD FLM Latency",
-                        Value = "0",
-                        ValueFormat = default,
-                        ShowGraph = false,
-                        ShowGraphIsEnabled = false,
-                        Color = string.Empty,
-                        IsEntryEnabled = appConfiguration.UseAmdFlmLatency,
-                        SortKey = "1_2"
                     },
 
                     // Animation Error

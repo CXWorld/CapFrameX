@@ -99,6 +99,16 @@ struct AdlxTelemetryData
 
 static_assert(sizeof(AdlxTelemetryData) == 256, "AdlxTelemetryData ABI layout changed");
 
+// System-wide metrics (IADLXSystemMetrics); not tied to a GPU index
+struct AdlxSystemMetrics
+{
+	// AMD SmartShift: -100 (power shifted to the CPU) .. +100 (power shifted to the GPU), 0 = no shift
+	bool smartShiftSupported = false;
+	int32_t smartShiftValue;
+};
+
+static_assert(sizeof(AdlxSystemMetrics) == 8, "AdlxSystemMetrics ABI layout changed");
+
 struct AdlxDeviceInfo
 {
 	char GpuName[MAX_GPU_NAME_LEN];
@@ -132,3 +142,5 @@ extern "C" ADLX_API bool GetAdlxTelemetry(const adlx_uint index, const adlx_uint
 extern "C" ADLX_API bool GetAdlxTelemetrySupport(const adlx_uint index, AdlxTelemetrySupport * adlxTelemetrySupport);
 
 extern "C" ADLX_API bool GetAdlxDeviceInfo(const adlx_uint index, AdlxDeviceInfo * adlxDeviceInfo);
+
+extern "C" ADLX_API bool GetAdlxSystemMetrics(const adlx_uint historyLength, AdlxSystemMetrics * adlxSystemMetrics);

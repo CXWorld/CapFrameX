@@ -296,6 +296,65 @@ namespace CapFrameX.Test.Data
             Assert.AreEqual(0.02d, run.CaptureData.TimeInSeconds[1], 1E-12);
         }
 
+        [TestMethod]
+        public void ConvertPresentData_DisplayMetadata_KeepsLayersOfIdentifiedPresents()
+        {
+            var recordManager = new RecordManager(
+                new Mock<ILogger<RecordManager>>().Object,
+                null, null, null, null, null, null, null,
+                new EventAggregator(), new MockCaptureService(), null);
+            // PresentMon writes LayerIndex 0 and PresentId 0 for presents without display layer data.
+            var lines = new List<string>
+            {
+                "Application,ProcessID,SwapChainAddress,VidPnSourceId,LayerIndex,TimeInSeconds,MsBetweenPresents,MsBetweenDisplayChange,PresentId",
+                "Game,1,A,0,0,1.00,10,10,0",
+                "Game,1,A,1,1,1.01,10,10,4711",
+                "Game,1,A,1,0,1.02,10,10,4712"
+            };
+
+            var run = recordManager.ConvertPresentDataLinesToSessionRun(lines);
+
+            CollectionAssert.AreEqual(new[] { -1, 1, 0 }, run.CaptureData.LayerIndex);
+        }
+
+        [TestMethod]
+        public void ConvertPresentData_DisplayMetadataWithoutLayers_StoresNoLayerIndex()
+        {
+            var recordManager = new RecordManager(
+                new Mock<ILogger<RecordManager>>().Object,
+                null, null, null, null, null, null, null,
+                new EventAggregator(), new MockCaptureService(), null);
+            var lines = new List<string>
+            {
+                "Application,ProcessID,SwapChainAddress,VidPnSourceId,LayerIndex,TimeInSeconds,MsBetweenPresents,MsBetweenDisplayChange,PresentId",
+                "Game,1,A,0,0,1.00,10,10,0",
+                "Game,1,A,0,0,1.01,10,10,0"
+            };
+
+            var run = recordManager.ConvertPresentDataLinesToSessionRun(lines);
+
+            Assert.AreEqual(0, run.CaptureData.LayerIndex.Length);
+        }
+
+        [TestMethod]
+        public void ConvertPresentData_WithoutDisplayMetadata_StoresNoLayerIndex()
+        {
+            var recordManager = new RecordManager(
+                new Mock<ILogger<RecordManager>>().Object,
+                null, null, null, null, null, null, null,
+                new EventAggregator(), new MockCaptureService(), null);
+            var lines = new List<string>
+            {
+                "Application,ProcessID,SwapChainAddress,TimeInSeconds,MsBetweenPresents,MsBetweenDisplayChange",
+                "Game,1,A,1.00,10,10",
+                "Game,1,A,1.01,10,10"
+            };
+
+            var run = recordManager.ConvertPresentDataLinesToSessionRun(lines);
+
+            Assert.AreEqual(0, run.CaptureData.LayerIndex.Length);
+        }
+
         private string CreateSessionFile(string fileName, string processName)
         {
             string path = Path.Combine(_testDirectory, fileName);

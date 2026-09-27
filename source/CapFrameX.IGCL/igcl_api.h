@@ -1130,6 +1130,10 @@ typedef struct _ctl_set_brightness_t ctl_set_brightness_t;
 typedef struct _ctl_get_brightness_t ctl_get_brightness_t;
 
 ///////////////////////////////////////////////////////////////////////////////
+/// @brief Forward-declare ctl_display_feature_reset_t
+typedef struct _ctl_display_feature_reset_t ctl_display_feature_reset_t;
+
+///////////////////////////////////////////////////////////////////////////////
 /// @brief Forward-declare ctl_pixtx_color_primaries_t
 typedef struct _ctl_pixtx_color_primaries_t ctl_pixtx_color_primaries_t;
 
@@ -1434,6 +1438,10 @@ typedef struct _ctl_psu_info_t ctl_psu_info_t;
 typedef struct _ctl_power_telemetry_t ctl_power_telemetry_t;
 
 ///////////////////////////////////////////////////////////////////////////////
+/// @brief Forward-declare ctl_power_telemetry_v2_t
+typedef struct _ctl_power_telemetry_v2_t ctl_power_telemetry_v2_t;
+
+///////////////////////////////////////////////////////////////////////////////
 /// @brief Forward-declare ctl_voltage_frequency_point_t
 typedef struct _ctl_voltage_frequency_point_t ctl_voltage_frequency_point_t;
 
@@ -1525,6 +1533,7 @@ typedef enum _ctl_3d_feature_t
     CTL_3D_FEATURE_FRAME_GENERATION = 17,           ///< Frame Generation
     CTL_3D_FEATURE_PREBUILT_SHADER_DOWNLOAD = 18,   ///< Download prebuilt shaders. Contains generic bool type fields
     CTL_3D_FEATURE_LIVE_STATE = 19,                 ///< Application Live State feature.
+    CTL_3D_FEATURE_FRAME_GENERATION_CONTROL = 20,   ///< Frame Generation Control
     CTL_3D_FEATURE_MAX
 
 } ctl_3d_feature_t;
@@ -2298,6 +2307,26 @@ typedef enum _ctl_encoder_config_flag_t
 } ctl_encoder_config_flag_t;
 
 ///////////////////////////////////////////////////////////////////////////////
+/// @brief Display feature reset bitmasks
+typedef uint32_t ctl_display_feature_reset_flags_t;
+typedef enum _ctl_display_feature_reset_flag_t
+{
+    CTL_DISPLAY_FEATURE_RESET_FLAG_SCALING = CTL_BIT(0),///< [in] Reset scaling to preferred mode
+    CTL_DISPLAY_FEATURE_RESET_FLAG_WIRE_FORMAT = CTL_BIT(1),///< [in] Reset wire format
+    CTL_DISPLAY_FEATURE_RESET_FLAG_LACE = CTL_BIT(2),   ///< [in] Reset LACE
+    CTL_DISPLAY_FEATURE_RESET_FLAG_COLOR = CTL_BIT(3),  ///< [in] Reset all color related settings
+    CTL_DISPLAY_FEATURE_RESET_FLAG_VRR = CTL_BIT(4),///< [in] Reset all VRR related settings
+    CTL_DISPLAY_FEATURE_RESET_FLAG_QUANTIZATION_RANGE = CTL_BIT(5), ///< [in] Reset Quantization Range
+    CTL_DISPLAY_FEATURE_RESET_FLAG_CONTENT_TYPE = CTL_BIT(6),   ///< [in] Reset Content Type
+    CTL_DISPLAY_FEATURE_RESET_FLAG_PSR = CTL_BIT(7),///< [in] Reset PSR
+    CTL_DISPLAY_FEATURE_RESET_FLAG_AUDIO = CTL_BIT(8),  ///< [in] Reset Audio
+    CTL_DISPLAY_FEATURE_RESET_FLAG_ALL = CTL_BIT(30),   ///< [in] Reset all features, equivalent to setting all available flags of
+                                                    ///< reset
+    CTL_DISPLAY_FEATURE_RESET_FLAG_MAX = 0x80000000
+
+} ctl_display_feature_reset_flag_t;
+
+///////////////////////////////////////////////////////////////////////////////
 /// @brief Display Timing
 typedef struct _ctl_display_timing_t
 {
@@ -3018,6 +3047,17 @@ typedef struct _ctl_get_brightness_t
     uint32_t ReservedFields[4];                     ///< [out] Reserved for future use
 
 } ctl_get_brightness_t;
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Display feature reset
+typedef struct _ctl_display_feature_reset_t
+{
+    uint32_t Size;                                  ///< [in] size of this structure
+    uint8_t Version;                                ///< [in] version of this structure
+    ctl_display_feature_reset_flags_t ResetFeature; ///< [in] Indicates Feature to be reset
+    ctl_display_feature_reset_flags_t ResetFeatureStatus;   ///< [out] Indicates Feature reset done successfully
+
+} ctl_display_feature_reset_t;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// @brief Get Power optimization setting
@@ -4720,6 +4760,35 @@ CTL_APIEXPORT ctl_result_t CTL_APICALL
 ctlGetSetDisplaySettings(
     ctl_display_output_handle_t hDisplayOutput,     ///< [in] Handle to display output
     ctl_display_settings_t* pDisplaySettings        ///< [in,out] End display capabilities
+    );
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Display feature reset
+/// 
+/// @details
+///     - Resets specified display features for a given display
+/// 
+/// @returns
+///     - CTL_RESULT_SUCCESS
+///     - CTL_RESULT_ERROR_UNINITIALIZED
+///     - CTL_RESULT_ERROR_DEVICE_LOST
+///     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
+///         + `nullptr == hDisplayOutput`
+///     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
+///         + `nullptr == pResetFeature`
+///     - ::CTL_RESULT_ERROR_UNSUPPORTED_VERSION - "Unsupported version"
+///     - ::CTL_RESULT_ERROR_NULL_OS_DISPLAY_OUTPUT_HANDLE - "Null OS display output handle"
+///     - ::CTL_RESULT_ERROR_NULL_OS_INTERFACE - "Null OS interface"
+///     - ::CTL_RESULT_ERROR_NULL_OS_ADAPATER_HANDLE - "Null OS adapter handle"
+///     - ::CTL_RESULT_ERROR_KMD_CALL - "Kernel mode driver call failure"
+///     - ::CTL_RESULT_ERROR_INVALID_NULL_HANDLE - "Invalid or Null handle passed"
+///     - ::CTL_RESULT_ERROR_INVALID_NULL_POINTER - "Invalid null pointer"
+///     - ::CTL_RESULT_ERROR_INVALID_OPERATION_TYPE - "Invalid operation type"
+///     - ::CTL_RESULT_ERROR_INVALID_ARGUMENT - "Invalid combination of parameters"
+CTL_APIEXPORT ctl_result_t CTL_APICALL
+ctlDisplayFeatureReset(
+    ctl_display_output_handle_t hDisplayOutput,     ///< [in][release] Handle to display output
+    ctl_display_feature_reset_t* pResetFeature      ///< [in] Indicates Features to be reset
     );
 
 
@@ -7241,6 +7310,130 @@ ctlPowerTelemetryGet(
     );
 
 ///////////////////////////////////////////////////////////////////////////////
+/// @brief Power Telemetry V2
+typedef struct _ctl_power_telemetry_v2_t
+{
+    uint32_t Size;                                  ///< [in] size of this structure
+    uint8_t Version;                                ///< [in] version of this structure
+    ctl_oc_telemetry_item_t timeStamp;              ///< [out] Snapshot of the timestamp counter, should only be used to
+                                                    ///< calculate delta between snapshots of this structure. It is a decimal
+                                                    ///< value in seconds with a minimum accuracy of 1 millisecond.
+    ctl_oc_telemetry_item_t gpuEnergyCounter;       ///< [out] Snapshot of the monotonic energy counter maintained by hardware.
+                                                    ///< It measures the total energy consumed by the GPU chip. By taking the
+                                                    ///< delta between two snapshots and dividing by the delta time in seconds,
+                                                    ///< an application can compute the average power.
+    ctl_oc_telemetry_item_t gpuVoltage;             ///< [out] Instantaneous snapshot of the voltage feeding the GPU chip. It
+                                                    ///< is measured at the power supply output - chip input will be lower.
+    ctl_oc_telemetry_item_t gpuCurrentClockFrequency;   ///< [out] Instantaneous snapshot of the GPU chip frequency.
+    ctl_oc_telemetry_item_t gpuCurrentTemperature;  ///< [out] Instantaneous snapshot of the GPU chip temperature, read from
+                                                    ///< the sensor reporting the highest value.
+    ctl_oc_telemetry_item_t globalActivityCounter;  ///< [out] Snapshot of the monotonic global activity counter. It measures
+                                                    ///< the average time in seconds (accurate down to 1 millisecond) across
+                                                    ///< all GPU engines. By taking the delta between two snapshots and
+                                                    ///< dividing by the delta time in seconds, an application can compute the
+                                                    ///< average percentage utilization of the GPU.
+    ctl_oc_telemetry_item_t renderComputeActivityCounter;   ///< [out] Snapshot of the monotonic 3D/compute activity counter. It
+                                                    ///< measures the average time in seconds (accurate down to 1 millisecond)
+                                                    ///< across all 3D render/compute engines. By taking the delta between two
+                                                    ///< snapshots and dividing by the delta time in seconds, an application
+                                                    ///< can compute the average percentage utilization of all 3D
+                                                    ///< render/compute blocks in the GPU.
+    ctl_oc_telemetry_item_t mediaActivityCounter;   ///< [out] Snapshot of the monotonic media activity counter. It measures
+                                                    ///< the average time in seconds (accurate down to 1 millisecond) across
+                                                    ///< all media engines. By taking the delta between two snapshots and
+                                                    ///< dividing by the delta time in seconds, an application can compute the
+                                                    ///< average percentage utilization of all media blocks in the GPU.
+    bool gpuPowerLimited;                           ///< [out] Instantaneous indication that the desired GPU frequency is being
+                                                    ///< throttled because the GPU chip is exceeding the maximum power limits.
+                                                    ///< Increasing the power limits using ::ctlOverclockPowerLimitSetV2() is
+                                                    ///< one way to remove this limitation.
+    bool gpuTemperatureLimited;                     ///< [out] Instantaneous indication that the desired GPU frequency is being
+                                                    ///< throttled because the GPU chip is exceeding the temperature limits.
+                                                    ///< Increasing the temperature limits using
+                                                    ///< ::ctlOverclockTemperatureLimitSetV2() is one way to reduce this
+                                                    ///< limitation. Improving the cooling solution is another way.
+    bool gpuCurrentLimited;                         ///< [out] Instantaneous indication that the desired GPU frequency is being
+                                                    ///< throttled because the GPU chip has exceeded the power supply current
+                                                    ///< limits. A better power supply is required to reduce this limitation.
+    bool gpuVoltageLimited;                         ///< [out] Instantaneous indication that the GPU frequency cannot be
+                                                    ///< increased because the voltage limits have been reached. Increase the
+                                                    ///< voltage offset using ::ctlOverclockGpuMaxVoltageOffsetSetV2() is one
+                                                    ///< way to reduce this limitation.
+    bool gpuUtilizationLimited;                     ///< [out] Instantaneous indication that due to lower GPU utilization, the
+                                                    ///< hardware has lowered the GPU frequency.
+    ctl_oc_telemetry_item_t vramEnergyCounter;      ///< [out] Snapshot of the monotonic energy counter maintained by hardware.
+                                                    ///< It measures the total energy consumed by the local memory modules. By
+                                                    ///< taking the delta between two snapshots and dividing by the delta time
+                                                    ///< in seconds, an application can compute the average power.
+    ctl_oc_telemetry_item_t vramVoltage;            ///< [out] Instantaneous snapshot of the voltage feeding the memory
+                                                    ///< modules.
+    ctl_oc_telemetry_item_t vramCurrentClockFrequency;  ///< [out] Instantaneous snapshot of the raw clock frequency driving the
+                                                    ///< memory modules.
+    ctl_oc_telemetry_item_t vramCurrentEffectiveFrequency;  ///< [out] Instantaneous snapshot of the effective data transfer rate that
+                                                    ///< the memory modules can sustain based on the current clock frequency..
+    ctl_oc_telemetry_item_t vramReadBandwidthCounter;   ///< [out] Instantaneous snapshot of the monotonic counter that measures
+                                                    ///< the read traffic from the memory modules. By taking the delta between
+                                                    ///< two snapshots and dividing by the delta time in seconds, an
+                                                    ///< application can compute the average read bandwidth.
+    ctl_oc_telemetry_item_t vramWriteBandwidthCounter;  ///< [out] Instantaneous snapshot of the monotonic counter that measures
+                                                    ///< the write traffic to the memory modules. By taking the delta between
+                                                    ///< two snapshots and dividing by the delta time in seconds, an
+                                                    ///< application can compute the average write bandwidth.
+    ctl_oc_telemetry_item_t vramCurrentTemperature; ///< [out] Instantaneous snapshot of the memory modules temperature, read
+                                                    ///< from the sensor reporting the highest value.
+    ctl_oc_telemetry_item_t totalCardEnergyCounter; ///< [out] Total Card Energy Counter.
+    ctl_psu_info_t psu[CTL_PSU_COUNT];              ///< [out] PSU voltage and power.
+    ctl_oc_telemetry_item_t fanSpeed[CTL_FAN_COUNT];///< [out] Fan speed.
+    ctl_oc_telemetry_item_t gpuVrTemp;              ///< [out] GPU VR temperature. Supported for Version > 0.
+    ctl_oc_telemetry_item_t vramVrTemp;             ///< [out] VRAM VR temperature. Supported for Version > 0.
+    ctl_oc_telemetry_item_t saVrTemp;               ///< [out] SA VR temperature. Supported for Version > 0.
+    ctl_oc_telemetry_item_t gpuEffectiveClock;      ///< [out] Effective frequency of the GPU. Supported for Version > 0.
+    ctl_oc_telemetry_item_t gpuOverVoltagePercent;  ///< [out] OverVoltage as a percent between 0 and 100. Positive values
+                                                    ///< represent fraction of the maximum over-voltage increment being
+                                                    ///< currently applied. Zero indicates operation at or below default
+                                                    ///< maximum frequency.  Supported for Version > 0.
+    ctl_oc_telemetry_item_t gpuPowerPercent;        ///< [out] GPUPower expressed as a percent representing the fraction of the
+                                                    ///< default maximum power being drawn currently. Values greater than 100
+                                                    ///< indicate power draw beyond default limits. Values above OC Power limit
+                                                    ///< imply throttling due to power. Supported for Version > 0.
+    ctl_oc_telemetry_item_t gpuTemperaturePercent;  ///< [out] GPUTemperature expressed as a percent of the thermal margin.
+                                                    ///< Values of 100 or greater indicate thermal throttling and 0 indicates
+                                                    ///< device at 0 degree Celcius. Supported for Version > 0.
+    ctl_oc_telemetry_item_t vramReadBandwidth;      ///< [out] VRAM Read Bandwidth. Supported for Version > 0.
+    ctl_oc_telemetry_item_t vramWriteBandwidth;     ///< [out] VRAM Write Bandwidth. Supported for Version > 0.
+
+} ctl_power_telemetry_v2_t;
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Get Power Telemetry V2.
+/// 
+/// @details
+///     - The purpose of this function is to retrieve multiple power and
+///       performance telemetry metrics from the adapter in a single efficient
+///       call.
+///     - Telemetry items include GPU/VRAM energy counters, voltage, clock
+///       frequency, temperature, activity counters, fan speed, VR temperatures,
+///       bandwidth, and throttling indicators.
+///     - Each telemetry item has a bSupported field indicating whether the
+///       value is available on the current hardware.
+///     - Limited rate of 50 ms, any call under 50 ms will return the same
+///       information.
+/// 
+/// @returns
+///     - CTL_RESULT_SUCCESS
+///     - CTL_RESULT_ERROR_UNINITIALIZED
+///     - CTL_RESULT_ERROR_DEVICE_LOST
+///     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
+///         + `nullptr == hDeviceHandle`
+///     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
+///         + `nullptr == pTelemetryInfo`
+CTL_APIEXPORT ctl_result_t CTL_APICALL
+ctlPowerTelemetryGetV2(
+    ctl_device_adapter_handle_t hDeviceHandle,      ///< [in][release] Handle to display adapter
+    ctl_power_telemetry_v2_t* pTelemetryInfo        ///< [out] The power telemetry data for the specified device.
+    );
+
+///////////////////////////////////////////////////////////////////////////////
 /// @brief Reset all Overclock Settings to stock
 /// 
 /// @details
@@ -8608,6 +8801,14 @@ typedef ctl_result_t (CTL_APICALL *ctl_pfnGetSetDisplaySettings_t)(
 
 
 ///////////////////////////////////////////////////////////////////////////////
+/// @brief Function-pointer for ctlDisplayFeatureReset 
+typedef ctl_result_t (CTL_APICALL *ctl_pfnDisplayFeatureReset_t)(
+    ctl_display_output_handle_t,
+    ctl_display_feature_reset_t*
+    );
+
+
+///////////////////////////////////////////////////////////////////////////////
 /// @brief Function-pointer for ctlEccGetProperties 
 typedef ctl_result_t (CTL_APICALL *ctl_pfnEccGetProperties_t)(
     ctl_device_adapter_handle_t,
@@ -9019,6 +9220,14 @@ typedef ctl_result_t (CTL_APICALL *ctl_pfnOverclockTemperatureLimitSet_t)(
 typedef ctl_result_t (CTL_APICALL *ctl_pfnPowerTelemetryGet_t)(
     ctl_device_adapter_handle_t,
     ctl_power_telemetry_t*
+    );
+
+
+///////////////////////////////////////////////////////////////////////////////
+/// @brief Function-pointer for ctlPowerTelemetryGetV2 
+typedef ctl_result_t (CTL_APICALL *ctl_pfnPowerTelemetryGetV2_t)(
+    ctl_device_adapter_handle_t,
+    ctl_power_telemetry_v2_t*
     );
 
 

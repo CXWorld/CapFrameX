@@ -51,10 +51,7 @@
 
   <ItemGroup Condition="'$(CfxOsdFromSource)' != 'true'">
     <Reference Include="CapFrameX.OSD.Interop">
-      <!-- The prebuilt OSD bridge currently ships in a net9.0-windows folder. The assembly is
-           compatible with a net10.0-windows consumer, so keep this physical path pinned until
-           the OSD repository publishes a matching net10.0-windows artifact. -->
-      <HintPath>$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\net9.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
+      <HintPath>$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\net10.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
     </Reference>
   </ItemGroup>
 
@@ -63,6 +60,9 @@
     <PackageReference Include="System.Reactive" />
     <!-- structured logging for the hook injection manager (same Serilog the app uses) -->
     <PackageReference Include="Serilog" />
+    <!-- learned compatibility profiles (HookLearnedProfileStore), the same JSON stack the
+         other per-user stores in the configuration folder use -->
+    <PackageReference Include="Newtonsoft.Json" />
     <!-- Win32_ProcessStartTrace subscription, so waiting for an early-injection target costs
          nothing instead of polling the full process list 40x per second. Same version the
          app already ships through CapFrameX.SystemInfo.NetStandard and LibreHardwareMonitorLib. -->

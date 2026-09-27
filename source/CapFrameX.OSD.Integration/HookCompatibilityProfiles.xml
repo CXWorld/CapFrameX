@@ -29,4 +29,8 @@
            enableGenericD3D12PresentRoute="true"
            earlyInjectionModule="d3d12.dll"
            source="CapFrameX validation and RTSS routing model: inject after D3D12 is mapped, use native DXGI Present plus observed DIRECT command queues instead of vendor presentation hooks, and keep control/status telemetry isolated" />
+  <!-- Resonance: A Plague Tale Legacy (Streamline DLSS-G plus an OptiScaler dxgi.dll proxy and
+       two resident FidelityFX loader copies) is deliberately NOT listed: it is the reference case
+       for the automatic probing. Its evidence signature (dxgiproxy+ffxloader2+…) starts the ladder
+       on the generic route without FidelityFX lifecycle hooks; see HookCompatibilityStagePlanner. -->
 </HookCompatibilityProfiles>

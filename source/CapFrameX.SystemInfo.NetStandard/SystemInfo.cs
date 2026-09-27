@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Management;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -49,6 +50,14 @@ namespace CapFrameX.SystemInfo.NetStandard
 
         public ESystemInfoTertiaryStatus HardwareAcceleratedGPUSchedulingStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
 
+        public ESystemInfoTertiaryStatus SecureBootStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
+
+        public ESystemInfoTertiaryStatus TestSigningStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
+
+        public ESystemInfoTertiaryStatus VirtualizationBasedSecurityStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
+
+        public ESystemInfoTertiaryStatus MemoryIntegrityStatus { get; private set; } = ESystemInfoTertiaryStatus.Error;
+
         public ulong PciBarSizeD3D { get; private set; } = 0UL;
 
         public ulong PciBarSizeHardware { get; private set; } = 0UL;
@@ -73,9 +82,9 @@ namespace CapFrameX.SystemInfo.NetStandard
         #region System Info
 
         /// <summary>
-        /// The four probes address unrelated subsystems (setup API, D3D KMT, the Vulkan loader and
-        /// the registry) and write disjoint properties, so they run concurrently - creating the
-        /// Vulkan instance alone costs more than the other three together.
+        /// The probes address unrelated subsystems (setup API, D3D KMT, the Vulkan loader, the
+        /// registry and the platform security state) and write disjoint properties, so they run
+        /// concurrently - creating the Vulkan instance alone costs more than the others together.
         /// </summary>
         public void SetSystemInfosStatus()
         {
@@ -83,7 +92,8 @@ namespace CapFrameX.SystemInfo.NetStandard
                 Task.Run(() => SetSystemInfoSetupApi()),
                 Task.Run(() => SetSystemInfoD3D()),
                 Task.Run(() => SetSystemInfoVulkan()),
-                Task.Run(() => SetSystemInfoRegistry()));
+                Task.Run(() => SetSystemInfoRegistry()),
+                Task.Run(() => SetSystemInfoPlatformSecurity()));
         }
 
         private void SetSystemInfoSetupApi()
@@ -182,7 +192,91 @@ namespace CapFrameX.SystemInfo.NetStandard
             }
         }
 
+        /// <summary>
+        /// Boot and code integrity state. It decides which kernel drivers load at all - a test-signed
+        /// PawnIO build stops loading the moment Secure Boot is turned on - and VBS and memory
+        /// integrity cost measurable performance, so runs are only comparable with the same state.
+        /// </summary>
+        private void SetSystemInfoPlatformSecurity()
+        {
+            try
+            {
+                using (RegistryKey stateKey = Registry.LocalMachine.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\SecureBoot\State"))
+                {
+                    // The key only exists on UEFI systems; a legacy BIOS boot has no Secure Boot.
+                    var val = stateKey?.GetValue("UEFISecureBootEnabled");
+                    SecureBootStatus = val != null && Convert.ToInt32(val) != 0
+                        ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting Secure Boot status.");
+            }
+
+            try
+            {
+                // What the running kernel enforces, not what the boot configuration asks for: with
+                // Secure Boot on, a "testsigning" BCD option is ignored.
+                var info = new SystemCodeIntegrityInformation { Length = (uint)Marshal.SizeOf<SystemCodeIntegrityInformation>() };
+                int status = NtQuerySystemInformation(SYSTEM_CODEINTEGRITY_INFORMATION_CLASS, ref info, info.Length, out _);
+                if (status == 0)
+                {
+                    TestSigningStatus = (info.CodeIntegrityOptions & CODEINTEGRITY_OPTION_TESTSIGN) != 0
+                        ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;
+                    MemoryIntegrityStatus = (info.CodeIntegrityOptions & CODEINTEGRITY_OPTION_HVCI_KMCI_ENABLED) != 0
+                        ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;
+                }
+                else
+                {
+                    _logger.LogWarning("Querying the code integrity options failed with NTSTATUS 0x{status:X8}.", status);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting code integrity status.");
+            }
+
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher(@"root\Microsoft\Windows\DeviceGuard",
+                    "SELECT VirtualizationBasedSecurityStatus FROM Win32_DeviceGuard"))
+                using (var results = searcher.Get())
+                {
+                    foreach (ManagementBaseObject result in results)
+                    {
+                        using (result)
+                        {
+                            // 0 = off, 1 = configured but not running, 2 = running.
+                            var val = result["VirtualizationBasedSecurityStatus"];
+                            VirtualizationBasedSecurityStatus = val != null && Convert.ToInt32(val) == 2
+                                ? ESystemInfoTertiaryStatus.Enabled : ESystemInfoTertiaryStatus.Disabled;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error while getting virtualization-based security status.");
+            }
+        }
+
         #endregion
+
+        private const int SYSTEM_CODEINTEGRITY_INFORMATION_CLASS = 103;
+        private const uint CODEINTEGRITY_OPTION_TESTSIGN = 0x02;
+        private const uint CODEINTEGRITY_OPTION_HVCI_KMCI_ENABLED = 0x400;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct SystemCodeIntegrityInformation
+        {
+            public uint Length;
+            public uint CodeIntegrityOptions;
+        }
+
+        [DllImport("ntdll.dll")]
+        private static extern int NtQuerySystemInformation(int systemInformationClass,
+            ref SystemCodeIntegrityInformation systemInformation, uint systemInformationLength, out uint returnLength);
 
         /// <summary>
         /// The computer name, i.e. what Windows shows as "Device name" in Settings → System → About.

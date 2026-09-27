@@ -63,7 +63,31 @@ namespace CapFrameX.PMD.Benchlab
                 throw new InvalidDataException("The BENCHLAB service returned no sensors.");
             }
 
-            return response.Sensors;
+            // Service 2.4 sends null for unavailable readings, including optional
+            // inputs. Keep their slots so capture/chart indices stay consistent.
+            return response.Sensors.Select(ToSensor).ToList();
+        }
+
+        private static Sensor ToSensor(BenchlabSensorReading reading)
+        {
+            if (reading == null)
+            {
+                return null;
+            }
+
+            var value = reading.Value ?? double.NaN;
+            var isValid = reading.IsValid && IsValidSensorValue(value);
+            return new Sensor(reading.Id, reading.ShortName, reading.Name, reading.Type)
+            {
+                Value = isValid ? value : double.NaN,
+                IsValid = isValid
+            };
+        }
+
+        private static bool IsValidSensorValue(double value)
+        {
+            // Older services used double.MinValue for unavailable inputs.
+            return double.IsFinite(value) && value != double.MinValue;
         }
 
         public static bool TryGetPowerSensorIndices(
@@ -95,6 +119,8 @@ namespace CapFrameX.PMD.Benchlab
             {
                 var sensor = sensors[index];
                 if (sensor != null
+                    && sensor.IsValid
+                    && IsValidSensorValue(sensor.Value)
                     && string.Equals(sensor.ShortName, shortName, StringComparison.OrdinalIgnoreCase))
                 {
                     return index;
@@ -140,6 +166,21 @@ namespace CapFrameX.PMD.Benchlab
         public bool SensorsUpdated { get; set; }
 
         [JsonProperty("sensors")]
-        public IList<Sensor> Sensors { get; set; }
+        public IList<BenchlabSensorReading> Sensors { get; set; }
+    }
+
+    internal sealed class BenchlabSensorReading
+    {
+        public int Id { get; set; }
+
+        public string ShortName { get; set; }
+
+        public string Name { get; set; }
+
+        public SensorType Type { get; set; }
+
+        public double? Value { get; set; }
+
+        public bool IsValid { get; set; }
     }
 }

@@ -153,9 +153,10 @@ internal sealed class SimulatedNvidiaGpu : SimulatedGpuBase
 
 /// <summary>
 /// Simulates Intel Arc A770.
-/// Sensors match IntelGclGpu.cs: Temperature (Core, Memory), Power (TDP, TBP, VRAM),
-/// Clock (Core, Memory), Voltage (Core, Memory), Load (Core, Computing, Media Engine),
-/// Throughput (Memory Read/Write), Fan.
+/// Sensors match IntelGclGpu.cs: Temperature (Core, Memory, VR, Memory VR, SA VR), Power (TDP, TBP, VRAM,
+/// PSU rails), Clock (Core, Memory, Effective), Voltage (Core, Memory, PSU rails), Load (Core, Computing,
+/// Media Engine, Power/Thermal Budget, Overvoltage), Throughput (Memory Read/Write), Fans.
+/// The PSU rails are the A770's PCIe slot, 8-pin and 6-pin connectors.
 /// </summary>
 internal sealed class SimulatedIntelGclGpu : SimulatedGpuBase
 {
@@ -170,24 +171,37 @@ internal sealed class SimulatedIntelGclGpu : SimulatedGpuBase
         // Temperature sensors - matches IntelGclGpu.cs
         AddSimulatedSensor("GPU Core", 0, SensorType.Temperature, 30f, 84f, 0.13f, 1.1f, true, $"{index}_2_0");
         AddSimulatedSensor("GPU Memory", 1, SensorType.Temperature, 32f, 86f, 0.13f, 1.1f, false, $"{index}_2_1");
+        AddSimulatedSensor("GPU VR", 2, SensorType.Temperature, 35f, 90f, 0.14f, 1.2f, false, $"{index}_2_2");
+        AddSimulatedSensor("GPU Memory VR", 3, SensorType.Temperature, 33f, 85f, 0.13f, 1.1f, false, $"{index}_2_3");
+        AddSimulatedSensor("GPU SA VR", 4, SensorType.Temperature, 32f, 80f, 0.12f, 1.0f, false, $"{index}_2_4");
 
         // Power sensors - matches IntelGclGpu.cs
         AddSimulatedSensor("GPU TDP", 0, SensorType.Power, 20f, 200f, 0.18f, 2.2f, false, $"{index}_3_0");
         AddSimulatedSensor("GPU TBP", 1, SensorType.Power, 25f, 230f, 0.2f, 2.5f, true, $"{index}_3_1");
         AddSimulatedSensor("GPU VRAM", 2, SensorType.Power, 5f, 45f, 0.16f, 1.0f, false, $"{index}_3_2");
+        AddSimulatedSensor("GPU PCIe Slot", 3, SensorType.Power, 5f, 60f, 0.18f, 1.5f, false, $"{index}_3_3");
+        AddSimulatedSensor("GPU 8-Pin", 4, SensorType.Power, 10f, 150f, 0.2f, 2.5f, false, $"{index}_3_4");
+        AddSimulatedSensor("GPU 6-Pin", 5, SensorType.Power, 5f, 75f, 0.2f, 1.8f, false, $"{index}_3_5");
 
         // Clock sensors - matches IntelGclGpu.cs
         AddSimulatedSensor("GPU Core", 0, SensorType.Clock, 300f, 2300f, 0.2f, 18f, true, $"{index}_0_0");
         AddSimulatedSensor("GPU Memory", 1, SensorType.Clock, 500f, 2000f, 0.17f, 10f, true, $"{index}_0_1");
+        AddSimulatedSensor("GPU Effective", 2, SensorType.Clock, 250f, 2250f, 0.2f, 18f, false, $"{index}_0_2");
 
         // Voltage sensors - matches IntelGclGpu.cs
         AddSimulatedSensor("GPU Core", 0, SensorType.Voltage, 0.6f, 1.1f, 0.18f, 0.02f, false, $"{index}_4_0");
         AddSimulatedSensor("GPU Memory", 1, SensorType.Voltage, 0.7f, 1.2f, 0.16f, 0.02f, false, $"{index}_4_1");
+        AddSimulatedSensor("GPU PCIe Slot", 2, SensorType.Voltage, 11.9f, 12.2f, 0.12f, 0.02f, false, $"{index}_4_2");
+        AddSimulatedSensor("GPU 8-Pin", 3, SensorType.Voltage, 11.8f, 12.2f, 0.12f, 0.02f, false, $"{index}_4_3");
+        AddSimulatedSensor("GPU 6-Pin", 4, SensorType.Voltage, 11.8f, 12.2f, 0.12f, 0.02f, false, $"{index}_4_4");
 
         // Load sensors - matches IntelGclGpu.cs
         AddSimulatedSensor("GPU Core", 0, SensorType.Load, 2f, 98f, 0.3f, 2f, true, $"{index}_1_0");
         AddSimulatedSensor("GPU Computing", 1, SensorType.Load, 0f, 95f, 0.26f, 1.8f, false, $"{index}_1_1");
         AddSimulatedSensor("GPU Media Engine", 2, SensorType.Load, 0f, 90f, 0.24f, 1.6f, false, $"{index}_1_2");
+        AddSimulatedSensor("GPU Power Budget", 3, SensorType.Load, 10f, 105f, 0.2f, 2f, false, $"{index}_1_3");
+        AddSimulatedSensor("GPU Thermal Budget", 4, SensorType.Load, 30f, 100f, 0.13f, 1.2f, false, $"{index}_1_4");
+        AddSimulatedSensor("GPU Overvoltage", 5, SensorType.Load, 0f, 100f, 0.18f, 2f, false, $"{index}_1_5");
 
         // Throughput sensors - matches IntelGclGpu.cs
         AddSimulatedSensor("GPU Memory Read", 4, SensorType.Throughput, 0f, 500f, 0.22f, 8f, false, $"{index}_6_0");
@@ -195,6 +209,7 @@ internal sealed class SimulatedIntelGclGpu : SimulatedGpuBase
 
         // Fan sensors - matches IntelGclGpu.cs
         AddSimulatedSensor("GPU Fan", 0, SensorType.Fan, 0f, 1800f, 0.25f, 20f, false, $"{index}_5_0");
+        AddSimulatedSensor("GPU Fan 2", 1, SensorType.Fan, 0f, 1800f, 0.25f, 20f, false, $"{index}_5_1");
     }
 
     public override HardwareType HardwareType => HardwareType.GpuIntel;

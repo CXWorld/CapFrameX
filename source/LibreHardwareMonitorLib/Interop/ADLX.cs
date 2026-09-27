@@ -170,6 +170,19 @@ internal static class ADLX
     }
 
     /// <summary>
+    /// System-wide metrics structure matching AdlxSystemMetrics in ADLXManager.h.
+    /// Must match the native struct layout exactly.
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct AdlxSystemMetrics
+    {
+        // AMD SmartShift: -100 (power shifted to the CPU) .. +100 (power shifted to the GPU), 0 = no shift
+        [MarshalAs(UnmanagedType.I1)]
+        public bool SmartShiftSupported;
+        public int SmartShiftValue;
+    }
+
+    /// <summary>
     /// Device info structure matching AdlxDeviceInfo in ADLXManager.h.
     /// Must match the native struct layout exactly.
     /// </summary>
@@ -221,6 +234,10 @@ internal static class ADLX
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "GetAdlxDeviceInfo")]
     [return: MarshalAs(UnmanagedType.I1)]
     private static extern bool GetAdlxDeviceInfo_Native(uint index, ref AdlxDeviceInfo deviceInfo);
+
+    [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "GetAdlxSystemMetrics")]
+    [return: MarshalAs(UnmanagedType.I1)]
+    private static extern bool GetAdlxSystemMetrics_Native(uint historyLength, ref AdlxSystemMetrics systemMetrics);
 
     /// <summary>
     /// Checks if the ADLX DLL is available and can be loaded.
@@ -392,6 +409,28 @@ internal static class ADLX
         }
         catch
         {
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Gets system-wide metrics (AMD SmartShift), which are not tied to a GPU adapter.
+    /// </summary>
+    /// <param name="historyLength">History length in milliseconds.</param>
+    /// <param name="systemMetrics">Output system metrics structure.</param>
+    /// <returns>True if system metrics were retrieved successfully, false otherwise.</returns>
+    public static bool GetSystemMetrics(uint historyLength, ref AdlxSystemMetrics systemMetrics)
+    {
+        if (!_initialized)
+            return false;
+
+        try
+        {
+            return GetAdlxSystemMetrics_Native(historyLength, ref systemMetrics);
+        }
+        catch
+        {
+            // An older CapFrameX.ADLX.dll without the export throws EntryPointNotFoundException.
             return false;
         }
     }

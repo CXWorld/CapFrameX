@@ -655,6 +655,31 @@ namespace CapFrameX.Statistics.NetStandard
             }
         }
 
+        /// <summary>
+        /// Display layer (PresentMon's LayerIndex) the frames were shown on, or null when the capture
+        /// carries no layer data. Several layers are listed with their share, the most frequent first.
+        /// </summary>
+        public static string GetDisplayLayer(this IEnumerable<ISessionRun> runs)
+        {
+            var layers = runs
+                .SelectMany(r => r.CaptureData.LayerIndex ?? Enumerable.Empty<int>())
+                .Where(layer => layer >= 0)
+                .ToList();
+            if (!layers.Any())
+                return null;
+
+            var byFrequency = layers
+                .GroupBy(layer => layer)
+                .OrderByDescending(group => group.Count())
+                .ThenBy(group => group.Key)
+                .ToList();
+            if (byFrequency.Count == 1)
+                return $"Layer {byFrequency[0].Key}";
+
+            return string.Join(", ", byFrequency.Select(group =>
+                $"Layer {group.Key} ({(int)Math.Round(100d * group.Count() / layers.Count, MidpointRounding.AwayFromZero)}%)"));
+        }
+
         public static double GetGpuActiveDeviationPercentage(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {

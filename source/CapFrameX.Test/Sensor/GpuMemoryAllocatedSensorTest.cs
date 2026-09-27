@@ -231,6 +231,8 @@ namespace CapFrameX.Test.Sensor
         {
             Assert.AreEqual(16, Marshal.SizeOf<ADLX.AdlxTelemetrySupport>());
             Assert.AreEqual(256, Marshal.SizeOf<ADLX.AdlxTelemetryData>());
+            Assert.AreEqual(8, Marshal.SizeOf<ADLX.AdlxSystemMetrics>());
+            Assert.AreEqual(4, Marshal.OffsetOf<ADLX.AdlxSystemMetrics>(nameof(ADLX.AdlxSystemMetrics.SmartShiftValue)).ToInt32());
         }
 
         private static void AssertAllocatedSensor(IHardware gpu, string expectedIdentifier)

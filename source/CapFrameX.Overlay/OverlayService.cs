@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.Latency;
 using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
@@ -36,6 +35,7 @@ namespace CapFrameX.Overlay
         private readonly IRTSSService _rTSSService;
         private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly ILogEntryManager _logEntryManager;
+        private readonly IRemoteOverlayDemand _remoteOverlayDemand;
         private readonly EventLoopScheduler _overlayRefreshScheduler;
 
         private IDisposable _disposableCaptureTimer;
@@ -57,6 +57,9 @@ namespace CapFrameX.Overlay
         private ISubject<IOverlayEntry[]> _onDictionaryUpdated = new Subject<IOverlayEntry[]>();
         private readonly ISubject<Unit> _refreshRequested = Subject.Synchronize(new Subject<Unit>());
         private volatile bool _isServiceAlive = true;
+        // Written only by the serialized entry refresh (Concat) when a read fails.
+        private DateTime _lastEntryRefreshFailureLogUtc = DateTime.MinValue;
+        private int _suppressedEntryRefreshFailures;
 
         public bool IsOverlayActive => _appConfiguration.IsOverlayActive;
 
@@ -89,7 +92,8 @@ namespace CapFrameX.Overlay
             IRecordManager recordManager,
             IRTSSService rTSSService,
             IOverlayEntryCore overlayEntryCore,
-            ILogEntryManager logEntryManager)
+            ILogEntryManager logEntryManager,
+            IRemoteOverlayDemand remoteOverlayDemand)
         {
             _statisticProvider = statisticProvider;
             _overlayEntryProvider = overlayEntryProvider;
@@ -98,6 +102,7 @@ namespace CapFrameX.Overlay
             _recordManager = recordManager;
             _sensorService = sensorService;
             _logEntryManager = logEntryManager;
+            _remoteOverlayDemand = remoteOverlayDemand;
             _rTSSService = rTSSService;
             _overlayEntryCore = overlayEntryCore;
             _overlayRefreshScheduler = new EventLoopScheduler(start =>
@@ -197,57 +202,84 @@ namespace CapFrameX.Overlay
                 .ContinueWith(t =>
                {
                    int rtssFeedLogState = -1; // logs only when the RTSS-feed decision flips (avoids per-tick spam)
-                   _overlayActiveStreamDisposable = IsOverlayActiveStream
+                   EntryFeedMode? loggedFeedMode = null;
+                   _overlayActiveStreamDisposable = SelectEntryFeedModes(IsOverlayActiveStream, _remoteOverlayDemand.IsActiveStream)
                        .Where(_ => _isServiceAlive)
-                       .Select(isActive =>
+                       .Select(mode =>
                        {
-                           if (isActive)
+                           if (mode != loggedFeedMode)
                            {
-                               // Serialize profile changes and regular ticks on the refresh thread.
-                               // FromAsync defers each read until the previous one has completed.
-                               var entryUpdates = _refreshRequested
-                                   .StartWith(Unit.Default)
-                                   .ObserveOn(_overlayRefreshScheduler)
-                                   .Select(_ => Observable.FromAsync(() => _overlayEntryProvider.GetOverlayEntries()))
-                                   .Concat();
-
-                               if (!_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay)
-                               {
-                                   // Deferred instead of awaited inline: this selector runs on the
-                                   // thread that pushed the value — the WPF dispatcher for the
-                                   // overlay hotkey and for the checkbox — while the RTSS check
-                                   // enumerates processes and may start RTSS. FromAsync preserves
-                                   // the ordering (entries only flow once RTSS is up) without
-                                   // blocking the caller, which .Wait() did.
-                                   return Observable
-                                       .FromAsync(cancellationToken => InitializeRTSSAsync(cancellationToken))
-                                       .SelectMany(_ => entryUpdates);
-                               }
-
-                               return entryUpdates;
+                               loggedFeedMode = mode;
+                               _logger.LogInformation("Overlay entry feed: {mode}", mode);
                            }
-                           else
+
+                           if (mode == EntryFeedMode.Off)
                            {
                                _rTSSService.ReleaseOSD();
-                               return Observable.Empty<IOverlayEntry[]>();
+                               return Observable.Empty<(IOverlayEntry[] Entries, bool MayFeedRtss)>();
                            }
+
+                           // Serialize profile changes and regular ticks on the refresh thread.
+                           // FromAsync defers each read until the previous one has completed.
+                           // A failed read skips its tick: the subscription below has no error
+                           // handler, so an error reaching it would be rethrown on the refresh
+                           // thread and terminate CapFrameX.
+                           var entryUpdates = _refreshRequested
+                               .StartWith(Unit.Default)
+                               .ObserveOn(_overlayRefreshScheduler)
+                               .Select(_ => Observable.FromAsync(() => _overlayEntryProvider.GetOverlayEntries())
+                                   .Catch((Exception ex) =>
+                                   {
+                                       LogEntryRefreshFailure(ex);
+                                       return Observable.Empty<IOverlayEntry[]>();
+                                   }))
+                               .Concat();
+
+                           if (mode == EntryFeedMode.RemoteOnly)
+                           {
+                               // The overlay is off, but a remote API client still reads the
+                               // entries. RTSS is released as in the Off mode and never fed.
+                               _rTSSService.ReleaseOSD();
+                               return entryUpdates.Select(entries => (Entries: entries, MayFeedRtss: false));
+                           }
+
+                           var overlayUpdates = entryUpdates.Select(entries => (Entries: entries, MayFeedRtss: true));
+
+                           if (!_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay)
+                           {
+                               // Deferred instead of awaited inline: this selector runs on the
+                               // thread that pushed the value — the WPF dispatcher for the
+                               // overlay hotkey and for the checkbox — while the RTSS check
+                               // enumerates processes and may start RTSS. FromAsync preserves
+                               // the ordering (entries only flow once RTSS is up) without
+                               // blocking the caller, which .Wait() did.
+                               return Observable
+                                   .FromAsync(cancellationToken => InitializeRTSSAsync(cancellationToken))
+                                   .SelectMany(_ => overlayUpdates);
+                           }
+
+                           return overlayUpdates;
                        })
                        .Switch()
-                       .Subscribe(async entries =>
+                       .Subscribe(async update =>
                        {
+                           var entries = update.Entries;
                            CurrentOverlayEntries = entries;
                            OSDUpdateNotifier(entries);
                            // Both CapFrameX renderers read CurrentOverlayEntries from this event.
                            // Publishing the raw tick first could make them render the old profile.
                            _onDictionaryUpdated.OnNext(entries);
 
-                           bool feedRtss = !overlayOnAPIOnly && !_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay;
+                           // IsOverlayActive is checked as well: an update already in flight when
+                           // the overlay is switched off must not refill the released RTSS slot.
+                           bool feedRtss = update.MayFeedRtss && IsOverlayActive && !overlayOnAPIOnly
+                               && !_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay;
                            int feedState = feedRtss ? 1 : 0;
                            if (feedState != rtssFeedLogState)
                            {
                                rtssFeedLogState = feedState;
-                               _logger.LogInformation("RTSS feed {state} (apiOnly={api}, hookFree={hf}, hook={h})",
-                                   feedRtss ? "ON" : "OFF", overlayOnAPIOnly,
+                               _logger.LogInformation("RTSS feed {state} (overlay={active}, apiOnly={api}, hookFree={hf}, hook={h})",
+                                   feedRtss ? "ON" : "OFF", IsOverlayActive, overlayOnAPIOnly,
                                    _appConfiguration.EnableHookFreeOverlay, _appConfiguration.EnableHookOverlay);
                            }
                            if (feedRtss)
@@ -272,7 +304,7 @@ namespace CapFrameX.Overlay
                         refreshTicks,
                         (DateTime.UtcNow, new Dictionary<ISensorEntry, float>()))
                        .Where(_ => _isServiceAlive)
-                       .Where((_, idx) => idx == 0 || IsOverlayActive)
+                       .Where((_, idx) => idx == 0 || IsOverlayActive || _remoteOverlayDemand.IsActive)
                        .Subscribe(sensorData =>
                        {
                            if (sensorData.Item2.Any())
@@ -287,6 +319,22 @@ namespace CapFrameX.Overlay
             PublishRunHistoryAggregation(string.Empty);
             PublishRunHistoryOutlierFlags();
             _rTSSService.SetIsCaptureTimerActive(false);
+        }
+
+        // A persistent failure repeats on every refresh tick; report it at most every 10 s.
+        private void LogEntryRefreshFailure(Exception ex)
+        {
+            var now = DateTime.UtcNow;
+            if (now - _lastEntryRefreshFailureLogUtc < TimeSpan.FromSeconds(10))
+            {
+                _suppressedEntryRefreshFailures++;
+                return;
+            }
+
+            _logger.LogError(ex, "Overlay entry refresh failed; the tick was skipped ({suppressed} further failures since the last report).",
+                _suppressedEntryRefreshFailures);
+            _lastEntryRefreshFailureLogUtc = now;
+            _suppressedEntryRefreshFailures = 0;
         }
 
         /// <summary>
@@ -341,6 +389,56 @@ namespace CapFrameX.Overlay
         {
             return configuredOverlayActive &&
                 (isRTSSInstalled || enableHookFreeOverlay || enableHookOverlay);
+        }
+
+        internal enum EntryFeedMode
+        {
+            Off,
+            /// <summary>Overlay switched off, entries refreshed for remote API clients only.</summary>
+            RemoteOnly,
+            Overlay
+        }
+
+        /// <summary>
+        /// Combines the overlay switch with the remote API demand. Every overlay value is passed on,
+        /// repeats included, because pushing true again is how a renderer switch re-drives the RTSS
+        /// initialization. A demand change only passes when it changes the mode, so a client
+        /// connecting to an active overlay does not run that initialization again.
+        /// </summary>
+        internal static IObservable<EntryFeedMode> SelectEntryFeedModes(
+            IObservable<bool> overlayActive,
+            IObservable<bool> remoteDemand)
+        {
+            return Observable.Defer(() =>
+            {
+                bool? active = null;
+                bool demand = false;
+                EntryFeedMode? lastMode = null;
+
+                // Merge serializes both sources, so the state above is never touched concurrently.
+                return Observable.Merge(
+                        overlayActive.Select(value => (FromOverlay: true, Value: value)),
+                        remoteDemand.DistinctUntilChanged().Select(value => (FromOverlay: false, Value: value)))
+                    .Select(change =>
+                    {
+                        if (change.FromOverlay)
+                            active = change.Value;
+                        else
+                            demand = change.Value;
+
+                        if (active == null)
+                            return (EntryFeedMode?)null;
+
+                        var mode = active.Value ? EntryFeedMode.Overlay
+                            : demand ? EntryFeedMode.RemoteOnly
+                            : EntryFeedMode.Off;
+                        bool emit = change.FromOverlay || mode != lastMode;
+                        lastMode = mode;
+                        return emit ? mode : (EntryFeedMode?)null;
+                    })
+                    .Where(mode => mode.HasValue)
+                    .Select(mode => mode.Value);
+            });
         }
 
         internal static bool ShouldDefaultToHookFreeOverlay(bool isRTSSInstalled,
@@ -423,14 +521,13 @@ namespace CapFrameX.Overlay
 
         public void SetCaptureServiceStatus(string status)
         {
-            if (IsOverlayActive)
+            // Not gated on IsOverlayActive: remote API clients read the entry with the overlay
+            // off, and SetOverlayEntry only updates the RTSS entry list, like SetCaptureTimerValue.
+            var captureStatus = _overlayEntryProvider.GetOverlayEntry("CaptureServiceStatus");
+            if (captureStatus != null)
             {
-                var captureStatus = _overlayEntryProvider.GetOverlayEntry("CaptureServiceStatus");
-                if (captureStatus != null)
-                {
-                    captureStatus.Value = status;
-                    _rTSSService.SetOverlayEntry(captureStatus);
-                }
+                captureStatus.Value = status;
+                _rTSSService.SetOverlayEntry(captureStatus);
             }
         }
 
@@ -623,11 +720,6 @@ namespace CapFrameX.Overlay
                 {
                     foreach (var sensor in sensors)
                     {
-                        // FLM already has a purpose-built live overlay metric. Keep its virtual
-                        // sensor for logging without presenting a duplicate overlay entry.
-                        if (sensor.Identifier == AmdFlmSensorMetadata.Identifier)
-                            continue;
-
                         var dictEntry = CreateOverlayEntry(sensor);
                         var id = sensor.Identifier.ToString();
                         if (!_overlayEntryCore.OverlayEntryDict.ContainsKey(id))
@@ -645,339 +737,7 @@ namespace CapFrameX.Overlay
 
         private IOverlayEntry CreateOverlayEntry(ISensorEntry sensor)
         {
-            return new OverlayEntryWrapper(sensor.Identifier.ToString())
-            {
-                StableIdentifier = SensorIdentifierHelper.BuildStableIdentifier(sensor),
-                SortKey = sensor.SortKey,
-                Description = GetDescription(sensor),
-                OverlayEntryType = MapType(sensor.HardwareType),
-                GroupName = GetGroupName(sensor),
-                ShowGraph = false,
-                ShowGraphIsEnabled = false,
-                ShowOnOverlayIsEnabled = true,
-                ShowOnOverlay = sensor.IsPresentationDefault,
-                Value = 0,
-                ValueUnitFormat = GetValueUnitString(sensor.SensorType),
-                ValueAlignmentAndDigits = GetValueAlignmentAndDigitsString(sensor.SensorType)
-            };
-        }
-
-        private string GetValueAlignmentAndDigitsString(string sensorTypeString)
-        {
-            string formatString = "{0}";
-            Enum.TryParse(sensorTypeString, out SensorType sensorType);
-            switch (sensorType)
-            {
-                case SensorType.Current:
-                    formatString = "{0,5:F1}";
-                    break;
-                case SensorType.Voltage:
-                    formatString = "{0,5:F2}";
-                    break;
-                case SensorType.Clock:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Temperature:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Load:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Fan:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Flow:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Control:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Level:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Factor:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Power:
-                    formatString = "{0,5:F1}";
-                    break;
-                case SensorType.Data:
-                    formatString = "{0,5:F2}";
-                    break;
-                case SensorType.SmallData:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Throughput:
-                    formatString = "{0,5:F1}";
-                    break;
-                case SensorType.Frequency:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.DataRate:
-                    formatString = "{0,5:F0}";
-                    break;
-                case SensorType.Timing:
-                    formatString = "{0,5:F1}";
-                    break;
-                case SensorType.Latency:
-                    formatString = "{0,5:F1}";
-                    break;
-            }
-
-            return formatString;
-        }
-
-        private string GetValueUnitString(string sensorTypeString)
-        {
-            string formatString = "{0}";
-            Enum.TryParse(sensorTypeString, out SensorType sensorType);
-            switch (sensorType)
-            {
-                case SensorType.Current:
-                    formatString = "A  ";
-                    break;  
-                case SensorType.Voltage:
-                    formatString = "V  ";
-                    break;
-                case SensorType.Clock:
-                    formatString = "MHz";
-                    break;
-                case SensorType.Temperature:
-                    formatString = "°C ";
-                    break;
-                case SensorType.Load:
-                    formatString = "%  ";
-                    break;
-                case SensorType.Fan:
-                    formatString = "RPM";
-                    break;
-                case SensorType.Flow:
-                    formatString = "L/h";
-                    break;
-                case SensorType.Control:
-                    formatString = "%  ";
-                    break;
-                case SensorType.Level:
-                    formatString = "%  ";
-                    break;
-                case SensorType.Factor:
-                    formatString = "   ";
-                    break;
-                case SensorType.Power:
-                    formatString = "W  ";
-                    break;
-                case SensorType.Data:
-                    formatString = "GB ";
-                    break;
-                case SensorType.SmallData:
-                    formatString = "MB ";
-                    break;
-                case SensorType.Throughput:
-                    formatString = "GB/s";
-                    break;
-                case SensorType.Frequency:
-                    formatString = "Hz ";
-                    break;
-                case SensorType.DataRate:
-                    formatString = "MT/s";
-                    break;
-                case SensorType.Timing:
-                    formatString = "ns ";
-                    break;
-                case SensorType.Latency:
-                    formatString = "ms ";
-                    break;
-            }
-
-            return formatString;
-        }
-
-        private string GetGroupName(ISensorEntry sensor)
-        {
-            var name = sensor.Name;
-            if (name.Contains("CPU Core #"))
-            {
-                name = name.Replace("Core #", "").Trim();
-            }
-            else if (name.Contains("CPU Max Clock"))
-            {
-                name = name.Replace("CPU Max Clock", "CPU Max");
-            }
-            else if (name.Contains("CPU Max Core Temp"))
-            {
-                name = name.Replace("Max Core Temp", "Max");
-            }
-            else if (name.Contains("GPU Core"))
-            {
-                name = name.Replace(" Core", "");
-            }
-            else if (name.Contains("Memory Controller"))
-            {
-                name = name.Replace("Memory Controller", "MemCtrl");
-            }
-            else if (name.Contains("Memory"))
-            {
-                name = name.Replace("Memory", "Mem");
-
-                if (name.Contains("Dedicated"))
-                    name = name.Replace("GPU Mem Dedicated", "GPU Mem");
-
-                else if (name.Contains("Shared"))
-                    name = name.Replace("GPU Mem Shared", "GPU Mem");
-            }
-            else if (name.Contains("Power Limit"))
-            {
-                name = name.Replace("Power Limit", "PL");
-            }
-            else if (name.Contains("Thermal Limit"))
-            {
-                name = name.Replace("Thermal Limit", "TL");
-            }
-            else if (name.Contains("Voltage Limit"))
-            {
-                name = name.Replace("Voltage Limit", "VL");
-            }
-
-            if (name.Contains("D3D"))
-            {
-                if (name.Contains("D3D Dedicated"))
-                    name = name.Replace("D3D Dedicated", "Dedicated");
-
-                if (name.Contains("D3D Shared"))
-                    name = name.Replace("D3D Shared", "Shared");
-            }
-
-            if (name.Contains(" - Thread #1"))
-            {
-                name = name.Replace(" - Thread #1", "").Trim();
-            }
-
-            if (name.Contains(" - Thread #2"))
-            {
-                name = name.Replace(" - Thread #2", "").Trim();
-            }
-
-            if (name.Contains("Thread #1"))
-            {
-                name = name.Replace("Thread #1", "").Trim();
-            }
-
-            if (name.Contains("Thread #2"))
-            {
-                name = name.Replace("Thread #2", "").Trim();
-            }
-
-            if (name.Contains("Monitor Refresh Rate"))
-            {
-                name = "MRR";
-            }
-
-            if (name.Contains("GPU Mem Junction"))
-            {
-                name = "VRAM Hot Spot";
-            }
-
-            return name;
-        }
-
-        private string GetDescription(ISensorEntry sensor)
-        {
-            string description = string.Empty;
-            Enum.TryParse(sensor.SensorType, out SensorType sensorType);
-            switch (sensorType)
-            {
-                case SensorType.Current:
-                    description = $"{sensor.Name} (A)";
-                    break;
-                case SensorType.Voltage:
-                    description = $"{sensor.Name} (V)";
-                    break;
-                case SensorType.Clock:
-                    description = $"{sensor.Name} (MHz)";
-                    break;
-                case SensorType.Temperature:
-                    description = $"{sensor.Name} (°C)";
-                    break;
-                case SensorType.Load:
-                    description = $"{sensor.Name} (%)";
-                    break;
-                case SensorType.Fan:
-                    description = $"{sensor.Name} (RPM)";
-                    break;
-                case SensorType.Flow:
-                    description = $"{sensor.Name} (L/h)";
-                    break;
-                case SensorType.Control:
-                    description = $"{sensor.Name} (%)";
-                    break;
-                case SensorType.Level:
-                    description = $"{sensor.Name} (%)";
-                    break;
-                case SensorType.Factor:
-                    description = sensor.Name;
-                    break;
-                case SensorType.Power:
-                    description = $"{sensor.Name} (W)";
-                    break;
-                case SensorType.Data:
-                    description = $"{sensor.Name} (GB)";
-                    break;
-                case SensorType.SmallData:
-                    description = $"{sensor.Name} (MB)";
-                    break;
-                case SensorType.Throughput:
-                    description = $"{sensor.Name} (GB/s)";
-                    break;
-                case SensorType.Frequency:
-                    description = $"{sensor.Name} (Hz)";
-                    break;
-                case SensorType.DataRate:
-                    description = $"{sensor.Name} (MT/s)";
-                    break;
-                case SensorType.Timing:
-                    description = $"{sensor.Name} (ns)";
-                    break;
-                case SensorType.Latency:
-                    description = $"{sensor.Name} (ms)";
-                    break;
-            }
-
-            return description;
-        }
-
-        private EOverlayEntryType MapType(string hardwareTypeString)
-        {
-            EOverlayEntryType type = EOverlayEntryType.Undefined;
-            Enum.TryParse(hardwareTypeString, out HardwareType hardwareType);
-            switch (hardwareType)
-            {
-                case HardwareType.Motherboard:
-                    type = EOverlayEntryType.Mainboard;
-                    break;
-                case HardwareType.SuperIO:
-                    type = EOverlayEntryType.Undefined;
-                    break;
-                case HardwareType.Cpu:
-                    type = EOverlayEntryType.CPU;
-                    break;
-                case HardwareType.Memory:
-                    type = EOverlayEntryType.RAM;
-                    break;
-                case HardwareType.GpuNvidia:
-                    type = EOverlayEntryType.GPU;
-                    break;
-                case HardwareType.GpuAmd:
-                    type = EOverlayEntryType.GPU;
-                    break;
-                case HardwareType.GpuIntel:
-                    type = EOverlayEntryType.GPU;
-                    break;
-                case HardwareType.Storage:
-                    type = EOverlayEntryType.HDD;
-                    break;
-            }
-
-            return type;
+            return SensorOverlayEntryFactory.Create(sensor);
         }
 
         private IDisposable GetCaptureTimer()

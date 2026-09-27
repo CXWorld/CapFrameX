@@ -508,6 +508,7 @@ namespace CapFrameX.Test.Mocks
         public string WinGameMode { get; private set; }
         public string HAGS { get; private set; }
         public string PresentationMode { get; private set; }
+        public string DisplayLayer { get; private set; }
         public string Resolution { get; private set; }
 
         public MockFileRecordInfo(FileInfo fileInfo, ISession session = null)
@@ -551,6 +552,7 @@ namespace CapFrameX.Test.Mocks
             WinGameMode = info.WinGameMode;
             HAGS = info.HAGS;
             PresentationMode = info.PresentationMode;
+            DisplayLayer = info.DisplayLayer;
             Resolution = info.ResolutionInfo;
 
             Id = info.Id.ToString();

@@ -52,6 +52,8 @@ namespace CapFrameX.PresentMonInterface
                 arguments += "--track_frame_type";
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--track_app_timing";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += "--write_display_metadata";
                 if (TrackPcLatency)
                 {
                     arguments += PARAMETER_SEPARATOR;
@@ -102,6 +104,8 @@ namespace CapFrameX.PresentMonInterface
                 arguments += "--track_frame_type";
                 arguments += PARAMETER_SEPARATOR;
                 arguments += "--track_app_timing";
+                arguments += PARAMETER_SEPARATOR;
+                arguments += "--write_display_metadata";
                 if (TrackPcLatency)
                 {
                     arguments += PARAMETER_SEPARATOR;

@@ -46,6 +46,10 @@ namespace CapFrameX.Hotkey
 
         public static CXHotkey Create(string[] keyStrings, Key defaultKey, ModifierKeys modifierKey = ModifierKeys.None)
         {
+            // An explicitly empty setting disables the hotkey. It must not fall back to a default.
+            if (keyStrings.Length == 1 && keyStrings[0] == string.Empty)
+                return null;
+
             CXHotkey hotkey = new CXHotkey(defaultKey, modifierKey);
 
             if (keyStrings.Length == 1)
@@ -70,6 +74,11 @@ namespace CapFrameX.Hotkey
             }
 
             return hotkey;
+        }
+
+        public static bool IsValidSetting(string hotkeyString)
+        {
+            return hotkeyString == string.Empty || IsValidHotkey(hotkeyString);
         }
 
         public static bool IsValidHotkey(string hotkeyString)

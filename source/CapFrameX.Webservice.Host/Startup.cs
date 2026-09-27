@@ -55,7 +55,7 @@ namespace CapFrameX.Webservice.Host
 				typeof(GetSessionCollectionByIdQuery).GetTypeInfo().Assembly, // Register Queries
 				typeof(UploadSessionsCommand).GetTypeInfo().Assembly // Register Commands
 			);
-			services.AddAutoMapper(typeof(SessionCollectionProfile).Assembly);
+			services.AddAutoMapper(_ => { }, typeof(SessionCollectionProfile).Assembly);
 
 			services.Configure<SmtpOptions>(Configuration.GetSection("SmtpOptions"));
 

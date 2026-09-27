@@ -62,8 +62,9 @@ namespace CapFrameX.OSD.Integration
                 .Where(x => x.key == nameof(IAppConfiguration.IsOverlayActive))
                 .Subscribe(x => OnOverlayActiveChanged((bool)x.value));
 
-            // The callback normally ticks only while active; the explicit active-state gate also
-            // clears TargetPid immediately on hide instead of waiting for SHM staleness.
+            // The callback also ticks while hidden when a remote API client reads the entries;
+            // OnEntries ignores those ticks. The explicit active-state gate also clears TargetPid
+            // immediately on hide instead of waiting for SHM staleness.
             _entriesSub = overlayService.OnDictionaryUpdated.Subscribe(_ => OnEntries());
         }
 
@@ -155,6 +156,10 @@ namespace CapFrameX.OSD.Integration
             {
                 lock (_gate)
                 {
+                    // Entries keep flowing with the overlay switched off while a remote API client
+                    // reads them; the hidden hook needs neither them nor the policy re-check.
+                    if (!_overlayActive) return;
+
                     bool wasAllowed = _targetAllowed;
                     RefreshTargetPolicyLocked();
                     if (wasAllowed != _targetAllowed)

@@ -31,10 +31,18 @@ double prevvramWriteBandwidthCounter = 0;
 ctl_api_handle_t hAPIHandle;
 ctl_device_adapter_handle_t* hDevices;
 
+// Highest ctl_power_telemetry_t version documented by igcl_api.h. Version 1 adds the VR
+// temperatures, the effective GPU clock, the power/thermal/overvoltage percentages and the
+// direct VRAM bandwidth; hardware without them still reports bSupported = false.
+static constexpr uint8_t MaxPowerTelemetryVersion = 1;
+
 // Keep ALL "prev/cur" values per device index.
 struct TelemetryDeltaState
 {
     bool   initialized = false;
+
+    // Structure version requested from the driver; lowered once a driver rejects it.
+    uint8_t telemetryVersion = MaxPowerTelemetryVersion;
 
     double prevTimestamp = 0.0;
     double curTimestamp = 0.0;
@@ -56,6 +64,9 @@ struct TelemetryDeltaState
 
     double prevVramEnergy = 0.0;
     double curVramEnergy = 0.0;
+
+    double prevPsuEnergy[CTL_PSU_COUNT] = {};
+    double curPsuEnergy[CTL_PSU_COUNT] = {};
 };
 
 // One state entry per hDevices[] slot.
@@ -216,23 +227,101 @@ static inline bool IsValidDelta(double dt)
 	return std::isfinite(dt) && dt > 0.0;
 }
 
+// Telemetry items carry their own data type; the driver is free to report integers.
+static double ItemValue(const ctl_oc_telemetry_item_t& item)
+{
+    switch (item.type)
+    {
+    case CTL_DATA_TYPE_INT8: return item.value.data8;
+    case CTL_DATA_TYPE_UINT8: return item.value.datau8;
+    case CTL_DATA_TYPE_INT16: return item.value.data16;
+    case CTL_DATA_TYPE_UINT16: return item.value.datau16;
+    case CTL_DATA_TYPE_INT32: return item.value.data32;
+    case CTL_DATA_TYPE_UINT32: return item.value.datau32;
+    case CTL_DATA_TYPE_INT64: return static_cast<double>(item.value.data64);
+    case CTL_DATA_TYPE_UINT64: return static_cast<double>(item.value.datau64);
+    case CTL_DATA_TYPE_FLOAT: return item.value.datafloat;
+    default: return item.value.datadouble;
+    }
+}
+
+// Direct VRAM bandwidth comes in MB/s or GB/s. Anything else is reported as unsupported
+// rather than published with a wrong scale.
+static bool ReadBandwidthGBps(const ctl_oc_telemetry_item_t& item, double* gbps)
+{
+    if (!item.bSupported) return false;
+
+    switch (item.units)
+    {
+    case CTL_UNITS_MEM_SPEED_GBPS:
+        *gbps = ItemValue(item);
+        return true;
+    case CTL_UNITS_BANDWIDTH_MBPS:
+        *gbps = ItemValue(item) / 1000.0;
+        return true;
+    default:
+        return false;
+    }
+}
+
+// Voltages are reported in volts unless the item says millivolts.
+static double ItemVolts(const ctl_oc_telemetry_item_t& item)
+{
+    const double value = ItemValue(item);
+    return item.units == CTL_UNITS_VOLTAGE_MILLIVOLTS ? value / 1000.0 : value;
+}
+
+// Errors that describe the device, not the requested structure version.
+static bool IsDeviceStateError(ctl_result_t status)
+{
+    return status == CTL_RESULT_ERROR_DEVICE_LOST
+        || status == CTL_RESULT_ERROR_DEVICE_UNAVAILABLE
+        || status == CTL_RESULT_ERROR_UNINITIALIZED
+        || status == CTL_RESULT_ERROR_INVALID_NULL_HANDLE;
+}
+
+// Requests the newest telemetry version the driver accepts. A lower version is only kept once
+// it has actually succeeded, so a transient failure cannot cost the newer items for the session.
+static ctl_result_t QueryPowerTelemetry(ctl_device_adapter_handle_t hDevice, TelemetryDeltaState& st,
+    ctl_power_telemetry_t* telemetry)
+{
+    ctl_result_t status = CTL_RESULT_ERROR_NOT_INITIALIZED;
+
+    for (int version = st.telemetryVersion; version >= 0; --version)
+    {
+        *telemetry = {};
+        telemetry->Size = sizeof(ctl_power_telemetry_t);
+        telemetry->Version = static_cast<uint8_t>(version);
+
+        status = ctlPowerTelemetryGet(hDevice, telemetry);
+        if (status == CTL_RESULT_SUCCESS)
+        {
+            st.telemetryVersion = static_cast<uint8_t>(version);
+            break;
+        }
+
+        if (IsDeviceStateError(status))
+            break;
+    }
+
+    return status;
+}
+
 bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData)
 {
     if (!telemetryData) return false;
     if (index >= g_state.size()) return false;
     if (hDevices[index] == NULL) return false;
 
-    ctl_power_telemetry_t pPowerTelemetry = {};
-    pPowerTelemetry.Size = sizeof(ctl_power_telemetry_t);
-
-    ctl_result_t status = ctlPowerTelemetryGet(hDevices[index], &pPowerTelemetry);
-    if (status != ctl_result_t::CTL_RESULT_SUCCESS) return false;
-
     auto& st = g_state[index];
+
+    ctl_power_telemetry_t pPowerTelemetry;
+    ctl_result_t status = QueryPowerTelemetry(hDevices[index], st, &pPowerTelemetry);
+    if (status != ctl_result_t::CTL_RESULT_SUCCESS) return false;
 
     // Update timestamps per device
     st.prevTimestamp = st.curTimestamp;
-    st.curTimestamp = pPowerTelemetry.timeStamp.value.datadouble;
+    st.curTimestamp = ItemValue(pPowerTelemetry.timeStamp);
 
     const double dt = st.curTimestamp - st.prevTimestamp;
 
@@ -245,7 +334,7 @@ bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData
         telemetryData->gpuEnergySupported = true;
 
         st.prevGpuEnergy = st.curGpuEnergy;
-        st.curGpuEnergy = pPowerTelemetry.gpuEnergyCounter.value.datadouble;
+        st.curGpuEnergy = ItemValue(pPowerTelemetry.gpuEnergyCounter);
 
         if (canComputeRates)
             telemetryData->gpuEnergyValue = (st.curGpuEnergy - st.prevGpuEnergy) / dt;
@@ -263,7 +352,7 @@ bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData
         telemetryData->totalCardEnergySupported = true;
 
         st.prevTotalCardEnergy = st.curTotalCardEnergy;
-        st.curTotalCardEnergy = pPowerTelemetry.totalCardEnergyCounter.value.datadouble;
+        st.curTotalCardEnergy = ItemValue(pPowerTelemetry.totalCardEnergyCounter);
 
         if (canComputeRates)
             telemetryData->totalCardEnergyValue = (st.curTotalCardEnergy - st.prevTotalCardEnergy) / dt;
@@ -276,13 +365,13 @@ bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData
     }
 
     telemetryData->gpuVoltageSupported = pPowerTelemetry.gpuVoltage.bSupported;
-    telemetryData->gpuVoltagValue = pPowerTelemetry.gpuVoltage.value.datadouble;
+    telemetryData->gpuVoltagValue = ItemValue(pPowerTelemetry.gpuVoltage);
 
     telemetryData->gpuCurrentClockFrequencySupported = pPowerTelemetry.gpuCurrentClockFrequency.bSupported;
-    telemetryData->gpuCurrentClockFrequencyValue = pPowerTelemetry.gpuCurrentClockFrequency.value.datadouble;
+    telemetryData->gpuCurrentClockFrequencyValue = ItemValue(pPowerTelemetry.gpuCurrentClockFrequency);
 
     telemetryData->gpuCurrentTemperatureSupported = pPowerTelemetry.gpuCurrentTemperature.bSupported;
-    telemetryData->gpuCurrentTemperatureValue = pPowerTelemetry.gpuCurrentTemperature.value.datadouble;
+    telemetryData->gpuCurrentTemperatureValue = ItemValue(pPowerTelemetry.gpuCurrentTemperature);
 
     // Global activity rate
     if (pPowerTelemetry.globalActivityCounter.bSupported)
@@ -290,7 +379,7 @@ bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData
         telemetryData->globalActivitySupported = true;
 
         st.prevGlobalActivity = st.curGlobalActivity;
-        st.curGlobalActivity = pPowerTelemetry.globalActivityCounter.value.datadouble;
+        st.curGlobalActivity = ItemValue(pPowerTelemetry.globalActivityCounter);
 
         if (canComputeRates)
             telemetryData->globalActivityValue = 100.0 * (st.curGlobalActivity - st.prevGlobalActivity) / dt;
@@ -308,7 +397,7 @@ bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData
         telemetryData->renderComputeActivitySupported = true;
 
         st.prevRenderComputeActivity = st.curRenderComputeActivity;
-        st.curRenderComputeActivity = pPowerTelemetry.renderComputeActivityCounter.value.datadouble;
+        st.curRenderComputeActivity = ItemValue(pPowerTelemetry.renderComputeActivityCounter);
 
         if (canComputeRates)
             telemetryData->renderComputeActivityValue =
@@ -327,7 +416,7 @@ bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData
         telemetryData->mediaActivitySupported = true;
 
         st.prevMediaActivity = st.curMediaActivity;
-        st.curMediaActivity = pPowerTelemetry.mediaActivityCounter.value.datadouble;
+        st.curMediaActivity = ItemValue(pPowerTelemetry.mediaActivityCounter);
 
         if (canComputeRates)
             telemetryData->mediaActivityValue = 100.0 * (st.curMediaActivity - st.prevMediaActivity) / dt;
@@ -345,7 +434,7 @@ bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData
         telemetryData->vramEnergySupported = true;
 
         st.prevVramEnergy = st.curVramEnergy;
-        st.curVramEnergy = pPowerTelemetry.vramEnergyCounter.value.datadouble;
+        st.curVramEnergy = ItemValue(pPowerTelemetry.vramEnergyCounter);
 
         if (canComputeRates)
             telemetryData->vramEnergyValue = (st.curVramEnergy - st.prevVramEnergy) / dt;
@@ -358,22 +447,99 @@ bool GetIgclTelemetryData(const uint32_t index, IgclTelemetryData* telemetryData
     }
 
     telemetryData->vramVoltageSupported = pPowerTelemetry.vramVoltage.bSupported;
-    telemetryData->vramVoltageValue = pPowerTelemetry.vramVoltage.value.datadouble;
+    telemetryData->vramVoltageValue = ItemValue(pPowerTelemetry.vramVoltage);
 
     telemetryData->vramCurrentClockFrequencySupported = pPowerTelemetry.vramCurrentClockFrequency.bSupported;
-    telemetryData->vramCurrentClockFrequencyValue = pPowerTelemetry.vramCurrentClockFrequency.value.datadouble;
+    telemetryData->vramCurrentClockFrequencyValue = ItemValue(pPowerTelemetry.vramCurrentClockFrequency);
 
     telemetryData->vramReadBandwidthSupported = pPowerTelemetry.vramReadBandwidthCounter.bSupported;
-    telemetryData->vramReadBandwidthValue = pPowerTelemetry.vramReadBandwidthCounter.value.datadouble;
+    telemetryData->vramReadBandwidthValue = ItemValue(pPowerTelemetry.vramReadBandwidthCounter);
 
     telemetryData->vramWriteBandwidthSupported = pPowerTelemetry.vramWriteBandwidthCounter.bSupported;
-    telemetryData->vramWriteBandwidthValue = pPowerTelemetry.vramWriteBandwidthCounter.value.datadouble;
+    telemetryData->vramWriteBandwidthValue = ItemValue(pPowerTelemetry.vramWriteBandwidthCounter);
 
     telemetryData->vramCurrentTemperatureSupported = pPowerTelemetry.vramCurrentTemperature.bSupported;
-    telemetryData->vramCurrentTemperatureValue = pPowerTelemetry.vramCurrentTemperature.value.datadouble;
+    telemetryData->vramCurrentTemperatureValue = ItemValue(pPowerTelemetry.vramCurrentTemperature);
 
     telemetryData->fanSpeedSupported = pPowerTelemetry.fanSpeed[0].bSupported;
-    telemetryData->fanSpeedValue = pPowerTelemetry.fanSpeed[0].value.datadouble;
+    telemetryData->fanSpeedValue = ItemValue(pPowerTelemetry.fanSpeed[0]);
+
+    // Version 1 items; a driver that fell back to version 0 leaves them unsupported.
+    telemetryData->gpuVrTemperatureSupported = pPowerTelemetry.gpuVrTemp.bSupported;
+    telemetryData->gpuVrTemperatureValue = ItemValue(pPowerTelemetry.gpuVrTemp);
+
+    telemetryData->vramVrTemperatureSupported = pPowerTelemetry.vramVrTemp.bSupported;
+    telemetryData->vramVrTemperatureValue = ItemValue(pPowerTelemetry.vramVrTemp);
+
+    telemetryData->saVrTemperatureSupported = pPowerTelemetry.saVrTemp.bSupported;
+    telemetryData->saVrTemperatureValue = ItemValue(pPowerTelemetry.saVrTemp);
+
+    telemetryData->gpuEffectiveClockSupported = pPowerTelemetry.gpuEffectiveClock.bSupported;
+    telemetryData->gpuEffectiveClockValue = ItemValue(pPowerTelemetry.gpuEffectiveClock);
+
+    telemetryData->gpuOverVoltagePercentSupported = pPowerTelemetry.gpuOverVoltagePercent.bSupported;
+    telemetryData->gpuOverVoltagePercentValue = ItemValue(pPowerTelemetry.gpuOverVoltagePercent);
+
+    telemetryData->gpuPowerPercentSupported = pPowerTelemetry.gpuPowerPercent.bSupported;
+    telemetryData->gpuPowerPercentValue = ItemValue(pPowerTelemetry.gpuPowerPercent);
+
+    telemetryData->gpuTemperaturePercentSupported = pPowerTelemetry.gpuTemperaturePercent.bSupported;
+    telemetryData->gpuTemperaturePercentValue = ItemValue(pPowerTelemetry.gpuTemperaturePercent);
+
+    telemetryData->vramReadBandwidthGBpsSupported =
+        ReadBandwidthGBps(pPowerTelemetry.vramReadBandwidth, &telemetryData->vramReadBandwidthGBpsValue);
+
+    telemetryData->vramWriteBandwidthGBpsSupported =
+        ReadBandwidthGBps(pPowerTelemetry.vramWriteBandwidth, &telemetryData->vramWriteBandwidthGBpsValue);
+
+    // Fans 2..5
+    static_assert(CTL_FAN_COUNT == 5, "IgclTelemetryData mirrors five fans");
+    IgclTelemetryItem* additionalFans[] =
+    {
+        &telemetryData->fan2Speed, &telemetryData->fan3Speed, &telemetryData->fan4Speed, &telemetryData->fan5Speed
+    };
+
+    for (int i = 0; i < CTL_FAN_COUNT - 1; i++)
+    {
+        const ctl_oc_telemetry_item_t& fan = pPowerTelemetry.fanSpeed[i + 1];
+        additionalFans[i]->supported = fan.bSupported;
+        additionalFans[i]->value = ItemValue(fan);
+    }
+
+    // Power supply rails: energy counter rate like the GPU and card energy above, plus voltage
+    static_assert(CTL_PSU_COUNT == 5, "IgclTelemetryData mirrors five PSU rails");
+    IgclPsuRail* rails[] =
+    {
+        &telemetryData->psu1, &telemetryData->psu2, &telemetryData->psu3, &telemetryData->psu4, &telemetryData->psu5
+    };
+
+    for (int i = 0; i < CTL_PSU_COUNT; i++)
+    {
+        const ctl_psu_info_t& psu = pPowerTelemetry.psu[i];
+        IgclPsuRail* rail = rails[i];
+
+        rail->type = psu.bSupported ? static_cast<int32_t>(psu.psuType) : CTL_PSU_TYPE_PSU_NONE;
+
+        if (psu.bSupported && psu.energyCounter.bSupported)
+        {
+            rail->power.supported = true;
+
+            st.prevPsuEnergy[i] = st.curPsuEnergy[i];
+            st.curPsuEnergy[i] = ItemValue(psu.energyCounter);
+
+            if (canComputeRates)
+                rail->power.value = (st.curPsuEnergy[i] - st.prevPsuEnergy[i]) / dt;
+            else
+                rail->power.value = 0.0;
+        }
+        else
+        {
+            rail->power.supported = false;
+        }
+
+        rail->voltage.supported = psu.bSupported && psu.voltage.bSupported;
+        rail->voltage.value = ItemVolts(psu.voltage);
+    }
 
     st.initialized = true;
     return true;

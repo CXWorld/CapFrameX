@@ -142,6 +142,8 @@ namespace CapFrameX.View
 			if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
 			{
 				OverlayHotkey = null;
+				(DataContext as OverlayViewModel).OverlayHotkeyString = string.Empty;
+				Keyboard.ClearFocus();
 				return;
 			}
 
@@ -175,6 +177,8 @@ namespace CapFrameX.View
 			if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
 			{
 				OverlayConfigHotkey = null;
+				(DataContext as OverlayViewModel).OverlayConfigHotkeyString = string.Empty;
+				Keyboard.ClearFocus();
 				return;
 			}
 
@@ -208,6 +212,8 @@ namespace CapFrameX.View
 			if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
 			{
 				OverlayPositionHotkey = null;
+				(DataContext as OverlayViewModel).OverlayPositionHotkeyString = string.Empty;
+				Keyboard.ClearFocus();
 				return;
 			}
 
@@ -241,6 +247,8 @@ namespace CapFrameX.View
 			if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
 			{
 				ThreadAffinityHotkey = null;
+				(DataContext as OverlayViewModel).ThreadAffinityHotkeyString = string.Empty;
+				Keyboard.ClearFocus();
 				return;
 			}
 
@@ -274,6 +282,8 @@ namespace CapFrameX.View
 			if (modifiers == ModifierKeys.None && key.IsEither(Key.Delete, Key.Back, Key.Escape))
 			{
 				ResetMetricsHotkey = null;
+				(DataContext as OverlayViewModel).ResetMetricsHotkeyString = string.Empty;
+				Keyboard.ClearFocus();
 				return;
 			}
 

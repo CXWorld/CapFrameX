@@ -38,7 +38,7 @@
 
   <ItemGroup>
     <Reference Include="CapFrameX.OSD.Interop">
-      <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net9.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
+      <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net10.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>

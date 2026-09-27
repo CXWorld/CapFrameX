@@ -131,8 +131,16 @@ ADLX_RESULT             ADLXHelper_InitializeWithCallerAdl (adlx_handle adlConte
 * @detaileddesc
 * @ENG_START_DOX
 * @details
+* All the interfaces obtained from ADLX must be released with their __Release__ method before __ADLXHelper_Terminate__ is called.<br>
 * Any interface obtained from ADLX that is not released becomes invalid.<br>
 * Any attempt of calling ADLX interface after termination could result in errors such as exceptions or crashes.<br>
+* __ADLXHelper_Terminate__ unloads the ADLX library. Calling __Release__ on an interface after this call dispatches into
+* unloaded code and results in an access violation.<br>
+* In an application that initializes ADLX at startup and terminates it from an unrelated shutdown path, the interfaces must be
+* released explicitly before __ADLXHelper_Terminate__ is called. This applies to every code path that calls
+* __ADLXHelper_Terminate__, including the early-exit paths of a partially completed initialization, where some interfaces are
+* already obtained and others are not.<br>
+* For more information, see @ref c_sample_InterfaceLifetime "Interface lifetime sample".<br>
 * @ENG_END_DOX
 *
 * @requirements

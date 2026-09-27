@@ -44,7 +44,7 @@ namespace CapFrameX.Contracts.Overlay
         void StoreCurrentState(IEnumerable<IOverlayEntry> entries);
 
         /// <summary>
-        /// Gets the stored overlay entries.
+        /// Gets copies of the stored overlay entries, or an empty sequence when nothing is stored.
         /// </summary>
         /// <returns></returns>
         IEnumerable<IOverlayEntry> GetStoredOverlayEntries();
@@ -53,5 +53,11 @@ namespace CapFrameX.Contracts.Overlay
         /// Checks if there is a stored state available for revert.
         /// </summary>
         bool HasStoredState { get; }
+
+        /// <summary>
+        /// Discards the stored state. The state belongs to the profile it was taken from and must
+        /// not be restored once another profile has been loaded.
+        /// </summary>
+        void ClearStoredState();
     }
 }

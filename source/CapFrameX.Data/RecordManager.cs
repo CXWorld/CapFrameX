@@ -280,6 +280,8 @@ namespace CapFrameX.Data
                 systemInfos.Add(new SystemInfoEntry() { Key = "HAGS", Value = recordInfo.HAGS });
             if (!string.IsNullOrWhiteSpace(recordInfo.PresentationMode))
                 systemInfos.Add(new SystemInfoEntry() { Key = "Presentation Mode", Value = recordInfo.PresentationMode });
+            if (!string.IsNullOrWhiteSpace(recordInfo.DisplayLayer))
+                systemInfos.Add(new SystemInfoEntry() { Key = "Display Layer", Value = recordInfo.DisplayLayer });
             if (!string.IsNullOrWhiteSpace(recordInfo.Resolution))
                 systemInfos.Add(new SystemInfoEntry() { Key = "Resolution", Value = recordInfo.Resolution });
 
@@ -578,6 +580,17 @@ namespace CapFrameX.Data
                 return array[index] ?? string.Empty;
             }
             return string.Empty;
+        }
+
+        // PresentMon writes LayerIndex 0 for presents it has no display layer for; their PresentId of 0
+        // tells them apart from frames on layer 0. Files without a PresentId column keep every value.
+        private bool HasDisplayLayer(string[] values, int indexPresentId)
+        {
+            if (indexPresentId < 0)
+                return true;
+
+            return ulong.TryParse(GetStringFromArray(values, indexPresentId), NumberStyles.Integer, CultureInfo.InvariantCulture, out var presentId)
+                && presentId != 0;
         }
 
         public async Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo)
@@ -1051,6 +1064,7 @@ namespace CapFrameX.Data
                         WinGameMode = winGameMode,
                         HAGS = hAGS,
                         PresentationMode = runs.GetPresentationMode(),
+                        DisplayLayer = runs.GetDisplayLayer(),
                         Comment = comment,
                         ResolutionInfo = resolutionInfo
                     }
@@ -1332,6 +1346,8 @@ namespace CapFrameX.Data
                 int indexmsCPUActive = -1;
                 int indexCPUStartQPCTime = -1;
                 int indexCPUStartQPCTimeInMs = -1;
+                int indexLayerIndex = -1;
+                int indexPresentId = -1;
 
                 string headerLine;
                 string firstLine = presentLines.First();
@@ -1356,10 +1372,10 @@ namespace CapFrameX.Data
                 };
 
                 // With FrameType and app timing enabled
-                // Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,AllowsTearing,PresentMode,
+                // Application,ProcessID,SwapChainAddress,PresentRuntime,SyncInterval,PresentFlags,VidPnSourceId,LayerIndex,AllowsTearing,PresentMode,
                 // FrameType,TimeInSeconds,MsBetweenSimulationStart,MsBetweenPresents,MsBetweenDisplayChange,MsInPresentAPI,MsRenderPresentLatency,
                 // MsUntilDisplayed,MsPCLatency,CPUStartQPCTimeInMs,MsBetweenAppStart,MsCPUBusy,MsCPUWait,MsGPULatency,MsGPUTime,MsGPUBusy,
-                // MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency
+                // MsGPUWait,MsAnimationError,AnimationTime,MsFlipDelay,MsInstrumentedLatency,PresentId
 
                 string frameStartUnit = "s";
                 var metrics = Array.ConvertAll(headerLine.Split(','), p => p.Trim());
@@ -1448,6 +1464,14 @@ namespace CapFrameX.Data
                     {
                         indexCPUStartQPCTimeInMs = i;
                     }
+                    if (string.Compare(metrics[i], "LayerIndex") == 0)
+                    {
+                        indexLayerIndex = i;
+                    }
+                    if (string.Compare(metrics[i], "PresentId") == 0)
+                    {
+                        indexPresentId = i;
+                    }
                 }
 
                 var presentLineCount = dataLines.Count;
@@ -1462,6 +1486,11 @@ namespace CapFrameX.Data
                     captureData.PcLatency = new double[presentLineCount];
                 }
 
+                if (indexLayerIndex > -1)
+                {
+                    captureData.LayerIndex = Enumerable.Repeat(-1, presentLineCount).ToArray();
+                }
+
                 var presentModeMapping = Enum.GetValues(typeof(EPresentMode)).Cast<EPresentMode>()
                     .ToDictionary(e => e.GetDescription(), e => (int)e);
                 var requiredColumns = new bool[metrics.Length];
@@ -1470,7 +1499,7 @@ namespace CapFrameX.Data
                     indexPresentMode, indexMsInPresentAPI, indexDisplayTimes, indexQPCTimes,
                     indexRuntime, indexAllowsTearing, indexSyncInterval, indexFrameType,
                     indexPcLatency, indexMsAnimationError, indexmsGPUActive, indexmsCPUActive,
-                    indexCPUStartQPCTime, indexCPUStartQPCTimeInMs);
+                    indexCPUStartQPCTime, indexCPUStartQPCTimeInMs, indexLayerIndex, indexPresentId);
                 var values = new string[metrics.Length];
 
                 for (int lineIndex = 0; lineIndex < dataLines.Count; lineIndex++)
@@ -1629,6 +1658,19 @@ namespace CapFrameX.Data
                             captureData.CpuActive[lineIndex] = cpuActive;
                         }
                     }
+                    if (indexLayerIndex > -1 && HasDisplayLayer(values, indexPresentId))
+                    {
+                        if (int.TryParse(GetStringFromArray(values, indexLayerIndex), NumberStyles.Integer, CultureInfo.InvariantCulture, out var layerIndex))
+                        {
+                            captureData.LayerIndex[lineIndex] = layerIndex;
+                        }
+                    }
+                }
+
+                // No frame on a known layer: spare composed and older captures a -1 per frame.
+                if (captureData.LayerIndex.Length > 0 && captureData.LayerIndex.All(layer => layer < 0))
+                {
+                    captureData.LayerIndex = new int[0];
                 }
 
                 //Normalize times

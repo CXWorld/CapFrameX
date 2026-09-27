@@ -43,6 +43,8 @@ namespace CapFrameX.ViewModel
         private readonly IThreadAffinityController _threadAffinityController;
         private readonly IOnlineMetricService _onlineMetricService;
         private readonly IOverlayTemplateService _overlayTemplateService;
+        private readonly IHookLearnedProfileService _hookLearnedProfiles;
+        private readonly IHookOverlayStatusService _hookOverlayStatus;
         private int _selectedOverlayEntryIndex = -1;
         private IOverlayEntry _selectedOverlayEntry;
         private IOverlayEntryFormatChange _checkboxes = new OverlayEntryFormatChange();
@@ -53,6 +55,7 @@ namespace CapFrameX.ViewModel
         private Subject<object> _configSubject = new Subject<object>();
         private ResetOverlayConfigDialog _resetOverlayConfigContent;
         private bool _resetOverlayConfigContentIsOpen;
+        private string _hookLearnedProfileText = "No learned compatibility profiles yet.";
         private string _filterText = string.Empty;
         private EOverlayEntryType? _selectedEntryTypeFilter;
         private ICollectionView _overlayEntriesView;
@@ -96,25 +99,15 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.IsOverlayActive; }
             set
             {
-                // Missing renderer dependencies may prevent activation, but they must never trap
-                // a stale active state. In particular, a portable configuration can still contain
-                // IsOverlayActive=true after being moved to a machine without RTSS.
-                if (CanSetOverlayActive(value, IsRTSSInstalled,
-                    _appConfiguration.EnableHookFreeOverlay, _appConfiguration.EnableHookOverlay))
-                {
-                    _appConfiguration.IsOverlayActive = value;
-                    _overlayService.IsOverlayActiveStream.OnNext(value);
-                }
-
+                // A refused activation still raises the change, so the toggle springs back.
+                OverlayActivation.TrySet(_appConfiguration, _overlayService, IsRTSSInstalled, value);
                 RaisePropertyChanged();
             }
         }
 
         internal static bool CanSetOverlayActive(bool requestedActive, bool isRTSSInstalled,
             bool enableHookFreeOverlay, bool enableHookOverlay)
-        {
-            return !requestedActive || isRTSSInstalled || enableHookFreeOverlay || enableHookOverlay;
-        }
+            => OverlayActivation.CanSet(requestedActive, isRTSSInstalled, enableHookFreeOverlay, enableHookOverlay);
 
         //public bool ToggleGlobalRTSSOSD
         //{
@@ -165,7 +158,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.OverlayHotKey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.OverlayHotKey = value;
@@ -178,7 +171,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.OverlayConfigHotKey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.OverlayConfigHotKey = value;
@@ -192,7 +185,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.OverlayPositionHotkey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.OverlayPositionHotkey = value;
@@ -206,7 +199,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.ThreadAffinityHotkey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.ThreadAffinityHotkey = value;
@@ -220,7 +213,7 @@ namespace CapFrameX.ViewModel
             get { return _appConfiguration.ResetMetricsHotkey; }
             set
             {
-                if (!CXHotkey.IsValidHotkey(value))
+                if (!CXHotkey.IsValidSetting(value))
                     return;
 
                 _appConfiguration.ResetMetricsHotkey = value;
@@ -486,6 +479,28 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        public bool ShareOverlayCompatibilityProfiles
+        {
+            get { return _appConfiguration.ShareOverlayCompatibilityProfiles; }
+            set
+            {
+                _appConfiguration.ShareOverlayCompatibilityProfiles = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        // What the learned store knows about the currently selected game, kept current by the
+        // store's change stream and the hook status stream (which carries the selected PID).
+        public string HookLearnedProfileText
+        {
+            get { return _hookLearnedProfileText; }
+            private set
+            {
+                _hookLearnedProfileText = value;
+                RaisePropertyChanged();
+            }
+        }
+
         // PresentMon replay baseline shared by the hook-free renderer and the in-game hook's
         // PresentMon source. A larger value bridges wider delivery gaps but adds graph latency.
         public int OsdReplayBufferSize
@@ -745,7 +760,7 @@ namespace CapFrameX.ViewModel
 
         public ICommand ApplyOverlayTemplateCommand { get; }
 
-        public ICommand RevertOverlayTemplateCommand { get; }
+        public DelegateCommand RevertOverlayTemplateCommand { get; }
 
         public bool IsRTSSInstalled
             => _rTSSService.IsRTSSInstalled();
@@ -789,8 +804,9 @@ namespace CapFrameX.ViewModel
         public OverlayGroupSeparating OverlaySubModelGroupSeparating { get; }
 
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider, IAppConfiguration appConfiguration,
-            IPathService pathService, ISensorService sensorService, IRTSSService rTSSService, IThreadAffinityController threadAffinityController, 
-            IOnlineMetricService onlineMetricService, IOverlayTemplateService overlayTemplateService)
+            IPathService pathService, ISensorService sensorService, IRTSSService rTSSService, IThreadAffinityController threadAffinityController,
+            IOnlineMetricService onlineMetricService, IOverlayTemplateService overlayTemplateService,
+            IHookLearnedProfileService hookLearnedProfileService, IHookOverlayStatusService hookOverlayStatusService)
         {
             _overlayService = overlayService;
             _overlayEntryProvider = overlayEntryProvider;
@@ -801,6 +817,8 @@ namespace CapFrameX.ViewModel
             _overlayTemplateService = overlayTemplateService;
             _threadAffinityController = threadAffinityController;
             _onlineMetricService = onlineMetricService;
+            _hookLearnedProfiles = hookLearnedProfileService ?? NullHookLearnedProfileService.Instance;
+            _hookOverlayStatus = hookOverlayStatusService;
             ExtendedOsdLogging = new ExtendedOsdLoggingViewModel(new ExtendedOsdLoggingController());
             RefreshHookFreeDisplayItems();
 
@@ -829,6 +847,14 @@ namespace CapFrameX.ViewModel
                 .ObserveOnDispatcher()
                 .Subscribe(ApplyReloadedOverlayEntries);
 
+            // The template revert state was taken from the profile that was active when the
+            // template was applied. Restored into another profile it would replace that profile's
+            // entries, so a switch discards it as soon as it starts. The hotkey requests the
+            // switch from a worker thread, hence the dispatcher.
+            _configSubject
+                .ObserveOnDispatcher()
+                .Subscribe(_ => DiscardTemplateRevertState());
+
             // The provider gates renderer-dependent items in place. A renderer change must not use
             // the profile-switch path: that reloads JSON and discards unsaved item edits.
             _appConfiguration.OnValueChanged
@@ -838,6 +864,12 @@ namespace CapFrameX.ViewModel
                 .Throttle(TimeSpan.FromMilliseconds(50))
                 .ObserveOnDispatcher()
                 .Subscribe(_ => RaiseOverlayRendererProperties());
+
+            // The overlay is also switched by the status bar, by the auto-disable during a capture
+            // and by remote clients; the toggles on this page have to follow all of them.
+            _overlayService.IsOverlayActiveStream
+                ?.ObserveOnDispatcher()
+                .Subscribe(_ => RaisePropertyChanged(nameof(IsOverlayActive)));
 
             // Keep the "RTSS output is hidden" hint (ShowRtssHiddenHint) in sync when the user
             // toggles "Hide OSD on RTSS" from the other settings view.
@@ -867,6 +899,16 @@ namespace CapFrameX.ViewModel
             OpenResetDialogCommand = new DelegateCommand(() => ResetOverlayConfigContentIsOpen = true);
             ResetConfigCommand = new DelegateCommand(async () => await OnResetDefaults());
 
+            _hookLearnedProfiles.Changes
+                .ObserveOnDispatcher()
+                .Subscribe(_ => RefreshHookLearnedProfileText());
+            _hookOverlayStatus?.StatusStream
+                .Select(status => status?.ProcessId ?? 0)
+                .DistinctUntilChanged()
+                .ObserveOnDispatcher()
+                .Subscribe(_ => RefreshHookLearnedProfileText());
+            RefreshHookLearnedProfileText();
+
             SetFormatForGroupNameCommand = new DelegateCommand(
                () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
 
@@ -890,7 +932,10 @@ namespace CapFrameX.ViewModel
             ClearFilterCommand = new DelegateCommand(OnClearFilter);
             LaunchOverlayPreviewAppCommand = new DelegateCommand(OnLaunchOverlayPreviewApp);
             ApplyOverlayTemplateCommand = new DelegateCommand(OnApplyOverlayTemplate);
-            RevertOverlayTemplateCommand = new DelegateCommand(OnRevertOverlayTemplate);
+            // Without an applied template there is nothing to revert to; the stored state would be
+            // empty and the revert would clear the whole list.
+            RevertOverlayTemplateCommand = new DelegateCommand(OnRevertOverlayTemplate,
+                () => _overlayTemplateService.HasStoredState);
 
             SetGlobalHookEventOverlayHotkey();
             SetGlobalHookEventOverlayConfigHotkey();
@@ -923,10 +968,79 @@ namespace CapFrameX.ViewModel
             OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries.ForEach(entry => entry.PropertyChangedAction = SetSaveButtonIsEnable);
         }
 
+        // Every path that swaps in new entry objects (template apply and revert, reset to defaults)
+        // has to hook them up again: without PropertyChangedAction an edit no longer enables the
+        // save button, without UpdateGroupName a renamed group no longer reaches the separator list.
+        private void AttachEntryCallbacks()
+        {
+            OverlayEntries.ForEach(entry => entry.UpdateGroupName = OverlaySubModelGroupSeparating.UpdateGroupName);
+            SetSaveButtonIsEnableAction();
+        }
+
         private void SetSaveButtonIsEnable()
         {
             _overlayEntryProvider.MarkPendingChanges();
             SaveButtonIsEnable = true;
+        }
+
+        private void RefreshHookLearnedProfileText()
+        {
+            string text;
+            try
+            {
+                int total = _hookLearnedProfiles.GetAll().Count;
+                string processName = ResolveHookTargetProcessName();
+                if (processName == null)
+                {
+                    text = total == 0
+                        ? "No learned compatibility profiles yet."
+                        : $"{total} learned compatibility profile(s); no game selected.";
+                }
+                else
+                {
+                    IReadOnlyList<HookLearnedProfileSummary> entries =
+                        _hookLearnedProfiles.GetForProcess(processName);
+                    if (entries.Count == 0)
+                    {
+                        text = $"No learned compatibility profile for {processName} yet ({total} in total).";
+                    }
+                    else
+                    {
+                        HookLearnedProfileSummary entry = entries[0];
+                        if (entry.PendingStageName != null)
+                            text = $"{processName}: the next launch starts on {entry.PendingStageName}.";
+                        else if (entry.Exhausted)
+                            text = $"{processName}: compatibility could not be established; the next game launch probes again.";
+                        else if (entry.Verified)
+                            text = $"{processName}: {entry.StageName} (verified {entry.UpdatedUtc.ToLocalTime():g}).";
+                        else
+                            text = $"{processName}: last tried {entry.StageName}, not verified yet.";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                text = $"Learned compatibility profiles unavailable ({ex.Message}).";
+            }
+            HookLearnedProfileText = text;
+        }
+
+        private string ResolveHookTargetProcessName()
+        {
+            int pid = _hookOverlayStatus?.Current?.ProcessId ?? 0;
+            if (pid <= 0) return null;
+            try
+            {
+                using (var process = Process.GetProcessById(pid))
+                    return process.ProcessName;
+            }
+            catch (Exception ex) when (ex is ArgumentException ||
+                                       ex is InvalidOperationException ||
+                                       ex is System.ComponentModel.Win32Exception ||
+                                       ex is NotSupportedException)
+            {
+                return null;
+            }
         }
 
         private async Task OnResetDefaults()
@@ -948,7 +1062,7 @@ namespace CapFrameX.ViewModel
                 OverlayEntries.Clear();
                 OverlayEntries.AddRange(overlayEntries);
                 SetupOverlayEntriesView();
-                SetSaveButtonIsEnableAction();
+                AttachEntryCallbacks();
                 OverlayItemsOptionsEnabled = false;
                 _overlayEntryProvider.UpdateOverlayEntryFormats();
 
@@ -983,9 +1097,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventOverlayHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(OverlayHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.Overlay, () =>
             {
                 IsOverlayActive = !IsOverlayActive;
@@ -994,9 +1105,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventOverlayConfigHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(OverlayConfigHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.OverlayConfig, () =>
             {
                 var nextConfig = GetNextConfig();
@@ -1006,9 +1114,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventOverlayPositionHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(OverlayPositionHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.OverlayPosition, () =>
             {
                 OsdAnchor = OsdAnchorPositionCycle.GetNext(OsdAnchor);
@@ -1017,9 +1122,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventThreadAffinityHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(ThreadAffinityHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ThreadAffinity, () =>
             {
                 Task.Run(() => _threadAffinityController.ToggleAffinity());
@@ -1028,9 +1130,6 @@ namespace CapFrameX.ViewModel
 
         private void SetGlobalHookEventResetMetricsHotkey()
         {
-            if (!CXHotkey.IsValidHotkey(ResetMetricsHotkeyString))
-                return;
-
             HotkeyDictionaryBuilder.SetHotkey(AppConfiguration, HotkeyAction.ResetMetrics, () =>
             {
                 Task.Run(() => _onlineMetricService.ResetRealtimeMetrics());
@@ -1097,8 +1196,14 @@ namespace CapFrameX.ViewModel
 
         private void OnApplyOverlayTemplate()
         {
+            // An empty list (entries not loaded yet) would be stored as the revert state and pushed
+            // to the provider, wiping its entries.
+            if (!OverlayEntries.Any())
+                return;
+
             // Store current state before applying template
             _overlayTemplateService.StoreCurrentState(OverlayEntries);
+            RevertOverlayTemplateCommand.RaiseCanExecuteChanged();
             var clonedEntries = OverlayEntries.Select(entry => entry.Clone()).ToList();
 
             // Apply the selected template
@@ -1119,15 +1224,25 @@ namespace CapFrameX.ViewModel
             // Setup view, refresh Separators list, and notify overlay
             SetupOverlayEntriesView();
             OverlaySubModelGroupSeparating.SetOverlayEntries(sortedEntries);
+            AttachEntryCallbacks();
 
             SetSaveButtonIsEnable();
 
             _overlayService.RequestRefresh();
         }
 
+        private void DiscardTemplateRevertState()
+        {
+            _overlayTemplateService.ClearStoredState();
+            RevertOverlayTemplateCommand.RaiseCanExecuteChanged();
+        }
+
         private void OnRevertOverlayTemplate()
         {
-            var storedOverlayEntries = _overlayTemplateService.GetStoredOverlayEntries();
+            if (!_overlayTemplateService.HasStoredState)
+                return;
+
+            var storedOverlayEntries = _overlayTemplateService.GetStoredOverlayEntries().ToList();
 
             OverlayEntries.ForEach(entry => entry.Dispose());
             OverlayEntries.Clear();
@@ -1139,6 +1254,7 @@ namespace CapFrameX.ViewModel
             // Setup view, refresh Separators list, and notify overlay
             SetupOverlayEntriesView();
             OverlaySubModelGroupSeparating.SetOverlayEntries(OverlayEntries);
+            AttachEntryCallbacks();
 
             SetSaveButtonIsEnable();
 

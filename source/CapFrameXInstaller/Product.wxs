@@ -16,10 +16,17 @@
 			<ComponentGroupRef Id="CapFrameXBinaries" />
 			<ComponentRef Id="ApplicationShortcut"/>
 			<ComponentRef Id="ApplicationShortcutDesktop" />
+			<ComponentRef Id="VulkanLayerRegistration" />
+			<ComponentRef Id="VulkanLayerRegistrationX86" />
 		</Feature>
 
     <Property Id="INSTALLSHORTCUT" Value="1" Secure="yes"/>
     <Property Id="DOTNETDESKTOPRUNTIMEX64FOUND" Secure="yes" />
+    <!-- LAUNCHAPP=1 starts CapFrameX once the files are in place. The in-app updater passes it,
+         because the app shuts itself down to let the installer replace it and would otherwise
+         stay closed. WixShellExecTarget is the path WixShellExec opens. -->
+    <Property Id="LAUNCHAPP" Secure="yes" />
+    <Property Id="WixShellExecTarget" Value="[INSTALLFOLDER]CapFrameX.exe" />
 
     <Condition Message="CapFrameX requires the .NET 10 Desktop Runtime (x64). Install it from https://dotnet.microsoft.com/download/dotnet/10.0 and run setup again.">
       Installed OR DOTNETDESKTOPRUNTIMEX64FOUND
@@ -44,12 +51,18 @@
 		  <Custom Action="CleanRegistry" Before="InstallFinalize">
         Installed OR NOT Installed
       </Custom>
-      <!-- Remove registrations left by the earlier 1.9.0 package. This revision
-           ships no in-game layers and writes no replacement registrations. -->
+      <!-- Unconditional on purpose: install, repair, uninstall and both halves of a major upgrade
+           must all end with at most one layer registration. The anchor is load-bearing — running
+           after WriteRegistryValues would delete the registration this package just wrote. -->
       <Custom Action="PurgeVulkanLayers" Before="WriteRegistryValues" />
       <Custom Action="PurgeVulkanLayersPerUser" Before="InstallInitialize" />
       <Custom Action="AppdataConfigFiles" Before="InstallFinalize">
         Installed
+      </Custom>
+      <!-- Immediate and therefore in the client process: launched from the elevated in-app
+           updater, CapFrameX starts elevated without a further prompt, as its manifest demands. -->
+      <Custom Action="LaunchCapFrameX" After="InstallFinalize">
+        NOT Installed AND LAUNCHAPP="1"
       </Custom>
 	  </InstallExecuteSequence>
 
@@ -85,9 +98,48 @@
   <Fragment>
     <CustomAction Id="ResourceManagement" BinaryKey="CustomActionsBin" DllEntry="CopyConfigResources" Execute="immediate" Return="check"/>
   </Fragment>
+
+  <Fragment>
+    <CustomAction Id="LaunchCapFrameX" BinaryKey="WixCA" DllEntry="WixShellExec" Execute="immediate" Impersonate="yes" Return="check"/>
+  </Fragment>
   
   <Fragment>
     <Binary Id="CustomActionsBin" SourceFile="$(var.CapFrameX.CustomInstallerActions.TargetDir)$(var.CapFrameX.CustomInstallerActions.TargetName).CA.dll" />
+  </Fragment>
+
+  <Fragment>
+    <DirectoryRef Id="INSTALLFOLDER">
+      <!-- One implicit-layer registration per bitness, each in its OWN registry view. The
+           Vulkan loader identifies a layer by the name inside the manifest, so a manifest
+           registered in a view whose processes cannot load its DLL does not merely fail —
+           it shadows the correct registration and disables the layer for that bitness.
+           Win64="yes" writes the 64-bit view, Win64="no" writes WOW6432Node.
+           A future manifest filename/version must get a new component GUID as well. The major
+           upgrade then removes this component and its old path-valued registry entry. -->
+      <Component Id="VulkanLayerRegistration" Guid="4B3D5A2F-E00E-4930-A9E1-9F4BE8E91D58" Win64="yes">
+        <RegistryValue Root="HKLM"
+                       Key="SOFTWARE\Khronos\Vulkan\ImplicitLayers"
+                       Name="[INSTALLFOLDER]vulkan\cfx_osd_vklayer_v1.json"
+                       Type="integer"
+                       Value="0"
+                       KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+    <!-- The 32-bit twin cannot be anchored under INSTALLFOLDER: that sits below
+         ProgramFiles64Folder, and ICE80 rejects a 32-bit component in a 64-bit directory. It
+         carries nothing but a registry value, so the bitness-neutral TARGETDIR is the correct
+         anchor — [INSTALLFOLDER] in the value name is a property reference and resolves to the
+         real install path regardless of where the component lives. -->
+    <DirectoryRef Id="TARGETDIR">
+      <Component Id="VulkanLayerRegistrationX86" Guid="D4B42033-310B-40B4-9CE3-D56FBE4A3F42" Win64="no">
+        <RegistryValue Root="HKLM"
+                       Key="SOFTWARE\Khronos\Vulkan\ImplicitLayers"
+                       Name="[INSTALLFOLDER]vulkan\x86\cfx_osd_vklayer_v1.json"
+                       Type="integer"
+                       Value="0"
+                       KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
   </Fragment>
 
   <!--https://stackoverflow.com/questions/4658220/create-shortcut-checkbox-->

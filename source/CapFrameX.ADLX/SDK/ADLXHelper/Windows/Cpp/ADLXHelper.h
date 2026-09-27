@@ -54,7 +54,10 @@ public:
     *
     * @detaileddesc
     * @ENG_START_DOX
-    * @details This method calls @ref page_cppHelpTerminate.
+    * @details This method calls @ref page_cppHelpTerminate.<br>
+    * All the interfaces obtained from ADLX must be released before the ADLXHelper instance is destroyed. When the instance
+    * is a global or static object, its destructor runs during process shutdown, and any interface still held at that point
+    * is released after ADLX has been terminated and the ADLX library unloaded, which results in an access violation.
     * @ENG_END_DOX
     *
     * @requirements
@@ -169,6 +172,9 @@ public:
     //Destruction.
     //WARNING: No outstanding interfaces from ADLX must exist when calling this method.
     //After this call they will be invalid and calls into them will result in access violation.
+    //This method unloads the ADLX library, so a later Release() - including one issued by the destructor
+    //of a global or static smart pointer during process shutdown - dispatches into unloaded code.
+    //Release every interface explicitly before calling this method, on every path that reaches it.
 
     /**
     * @page page_cppHelpTerminate Terminate
@@ -193,8 +199,17 @@ public:
     * @detaileddesc
     * @ENG_START_DOX
     * @details
+    * All the interfaces obtained from ADLX must be released before __Terminate__ is called.<br>
     * Any interface obtained from ADLX that is not released becomes invalid.<br>
     * Any attempt of calling ADLX interface after termination could result in errors such as exceptions or crashes.<br>
+    * __Terminate__ unloads the ADLX library. Releasing an interface after this call, including a release performed
+    * implicitly by the destructor of a smart pointer, dispatches into unloaded code and results in an access violation.<br>
+    * In an application that initializes ADLX at startup and terminates it from an unrelated shutdown path, the interfaces
+    * must be released explicitly before __Terminate__ is called. Holding interfaces in global or static smart pointers is
+    * not sufficient, because their destruction order is not controlled by the application and can run after __Terminate__.
+    * This applies to every code path that calls __Terminate__, including the early-exit paths of a partially completed
+    * initialization, where some interfaces are already obtained and others are not.<br>
+    * For more information, see @ref cpp_sample_InterfaceLifetime "Interface lifetime sample".<br>
     * @ENG_END_DOX
     *
     * @requirements

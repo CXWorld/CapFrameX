@@ -91,6 +91,7 @@ namespace CapFrameX.Mcp.Tools
                 ApiInfo = session.Info.ApiInfo,
                 Resolution = session.Info.ResolutionInfo,
                 PresentationMode = session.Info.PresentationMode,
+                DisplayLayer = session.Info.DisplayLayer,
                 ResizableBar = session.Info.ResizableBar,
                 Hags = session.Info.HAGS,
                 WinGameMode = session.Info.WinGameMode,

@@ -1,4 +1,3 @@
-using CapFrameX.Contracts.Latency;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Extensions;
 using CapFrameX.Monitoring.Contracts;
@@ -132,7 +131,6 @@ namespace CapFrameX.Sensor
                 case "GPU Memory Dedicated" when sensorType == SensorType.Data:
                 case "GPU Memory Allocated" when sensorType == SensorType.Data:
                 case "GPU Memory Dedicated Game" when sensorType == SensorType.Data:
-                case AmdFlmSensorMetadata.Name when sensorType == SensorType.Latency:
                     isDefault = true;
                     break;
             }

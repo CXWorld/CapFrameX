@@ -363,18 +363,57 @@ namespace CapFrameX.Test.Sensor
                 Assert.IsTrue(entryIds.Contains(configEntry.Identifier),
                     $"Entry '{configEntry.Identifier}' should be present.");
             }
+        }
 
-            var amdFlmEntry = entries.Single(entry => entry.Identifier == "OnlineAmdFlmLatency");
-            Assert.IsFalse(amdFlmEntry.IsEntryEnabled,
-                "Disabled FLM should remain in migrated configs without being activated.");
-            Assert.IsFalse(amdFlmEntry.ShowOnOverlayIsEnabled,
-                "The FLM overlay toggle should remain disabled until FLM is enabled.");
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task IdenticalHardware_RetiredEntriesAreRemovedFromSavedProfiles(bool useStableIdentifier)
+        {
+            var retiredIdentifiers = new[]
+            {
+                "OnlineAmdFlmLatency", "OnlineClickToPhotonLatency",
+                "/capframex/amd-flm/0/latency/0", "/capframex/presentmon/0/latency/0"
+            };
+            var retiredEntries = retiredIdentifiers.Select(identifier =>
+                new OverlayEntryWrapper(useStableIdentifier ? identifier + "_legacy" : identifier)
+                {
+                    StableIdentifier = useStableIdentifier ? identifier : null,
+                    OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                    IsEntryEnabled = true,
+                    ShowOnOverlayIsEnabled = true,
+                    ShowOnOverlay = true,
+                    GroupName = "Retired metric",
+                    Description = "Retired metric",
+                    Value = 23.5
+                }).ToList();
+            var persistence = new OverlayEntryPersistence
+            {
+                OverlayEntries = _loadedConfigEntries.Concat(retiredEntries).ToList()
+            };
+            File.WriteAllText(Path.Combine(_testConfigFolder, "OverlayEntryConfiguration_0.json"),
+                JsonConvert.SerializeObject(persistence));
+            PopulateOverlayEntryCoreFromConfig();
+
+            var provider = CreateProvider();
+            var entries = await provider.GetOverlayEntries(updateFormats: false);
+            var entryIds = entries.Select(entry => entry.Identifier).ToHashSet();
+
+            foreach (var entry in retiredEntries)
+                Assert.IsFalse(entryIds.Contains(entry.Identifier), "Retired entries must not be restored.");
+            foreach (var entry in _loadedConfigEntries)
+                Assert.IsTrue(entryIds.Contains(entry.Identifier), "Existing metrics must be preserved.");
+
+            var framerate = entries.Single(entry => entry.Identifier == "Framerate");
+            var savedFramerate = _loadedConfigEntries.Single(entry => entry.Identifier == "Framerate");
+            Assert.AreEqual(savedFramerate.ShowOnOverlay, framerate.ShowOnOverlay);
+            Assert.AreEqual(savedFramerate.GroupName, framerate.GroupName);
         }
 
         [TestMethod]
         public async Task IdenticalHardware_DisabledPcLatency_StaysInListDeactivated()
         {
-            // PC latency off: like FLM, the entry has to survive the load filter so the
+            // PC latency off: the entry has to survive the load filter so the
             // live config toggle can enable it in place without a restart.
             _appConfigMock.Setup(x => x.UsePcLatency).Returns(false);
             PopulateOverlayEntryCoreFromConfig();

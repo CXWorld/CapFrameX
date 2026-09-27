@@ -37,6 +37,7 @@ namespace CapFrameX.Contracts.Data
 		string WinGameMode { get; }
 		string HAGS { get; }
 		string PresentationMode { get; }
+		string DisplayLayer { get; }
 		string Resolution { get; }
 	}
 }

@@ -3,8 +3,51 @@ using CapFrameX.Contracts.Overlay;
 
 namespace CapFrameX.OSD.Integration
 {
+    /// <summary>What the status needs to know about a running compatibility probe.</summary>
+    internal readonly struct HookProbeStatusView
+    {
+        internal HookProbeStatusView(bool observing, int stageNumber, int stageCount,
+            string stageName, long remainingMs)
+        {
+            Observing = observing;
+            StageNumber = stageNumber;
+            StageCount = stageCount;
+            StageName = stageName;
+            RemainingMs = remainingMs;
+        }
+
+        internal bool Observing { get; }
+        internal int StageNumber { get; }
+        internal int StageCount { get; }
+        internal string StageName { get; }
+        internal long RemainingMs { get; }
+    }
+
     internal static class HookOverlayStatusEvaluator
     {
+        /// <summary>
+        /// While a stage is under observation, a not-yet-active native status reads as
+        /// <see cref="EHookOverlayStatus.Probing"/> with the stage and its remaining budget.
+        /// An active or errored status is left alone: the first is the answer, the second is
+        /// not a routing question.
+        /// </summary>
+        internal static HookOverlayStatus WithProbe(HookOverlayStatus native,
+            in HookProbeStatusView probe)
+        {
+            if (native == null || !probe.Observing ||
+                native.State == EHookOverlayStatus.Active ||
+                native.State == EHookOverlayStatus.Error)
+                return native;
+            string remaining = probe.RemainingMs > 0
+                ? $"{Math.Ceiling(probe.RemainingMs / 1000.0):0} s left"
+                : "budget exhausted";
+            return new HookOverlayStatus(EHookOverlayStatus.Probing, native.ProcessId,
+                native.Runtime,
+                $"{native.Detail} Probing compatibility stage {probe.StageNumber}/{probe.StageCount}: {probe.StageName} ({remaining}).",
+                native.HeartbeatAgeMilliseconds, native.SteadyRefcount,
+                native.ReleaseThreshold, native.RenderResolution, native.RenderApi);
+        }
+
         internal static HookOverlayStatus EvaluateNative(int processId, string runtime,
             NativeHookStatusSnapshot native, ulong nowTickMs)
         {
@@ -27,15 +70,25 @@ namespace CapFrameX.OSD.Integration
             }
             if ((flags & NativeHookStatusFlags.ForeignPresenter) != 0)
             {
+                string technology = DescribeFrameGenerationTechnology(native.FgTechnology);
+                string runtimeText = technology == null
+                    ? "a frame-generation runtime"
+                    : $"a frame-generation runtime ({technology})";
                 return Status(EHookOverlayStatus.Initializing,
-                    $"{target}: a frame-generation runtime is presenting; the in-game overlay stands down.",
+                    $"{target}: {runtimeText} is presenting; the in-game overlay stands down.",
                     heartbeatAge, native, processId, runtime);
             }
             if ((flags & NativeHookStatusFlags.HooksArmed) == 0)
             {
+                // A version-2 hook names the InstallHooks step it is in. If that step never
+                // changes again, the install stopped there; the reason belongs in the status
+                // rather than only in the opt-in native file log.
+                string phase = DescribeInstallPhase(native.InstallPhase, native.InstallDetail);
                 return Status(EHookOverlayStatus.Initializing,
-                    $"{target}: hook loaded; installing DXGI hooks.", heartbeatAge, native,
-                    processId, runtime);
+                    phase == null
+                        ? $"{target}: hook loaded; installing DXGI hooks."
+                        : $"{target}: hook loaded; installing DXGI hooks (phase {phase}).",
+                    heartbeatAge, native, processId, runtime);
             }
             if ((flags & NativeHookStatusFlags.PresentSeen) == 0 || heartbeatAge < 0)
             {
@@ -58,7 +111,9 @@ namespace CapFrameX.OSD.Integration
             if ((flags & NativeHookStatusFlags.Visible) == 0)
             {
                 return Status(EHookOverlayStatus.Hidden,
-                    $"{target}: hook and Present heartbeat are live; rendering is hidden or suppressed.",
+                    AppendDeclineReason(
+                        $"{target}: hook and Present heartbeat are live; rendering is hidden or suppressed.",
+                        native.LastDeclineReason, ignoreHidden: true),
                     heartbeatAge, native, processId, runtime);
             }
 
@@ -68,7 +123,9 @@ namespace CapFrameX.OSD.Integration
             if ((flags & ready) != ready)
             {
                 return Status(EHookOverlayStatus.Initializing,
-                    $"{target}: Present is live; waiting for renderer resources and metrics.",
+                    AppendDeclineReason(
+                        $"{target}: Present is live; waiting for renderer resources and metrics.",
+                        native.LastDeclineReason, ignoreHidden: false),
                     heartbeatAge, native, processId, runtime);
             }
 
@@ -84,6 +141,93 @@ namespace CapFrameX.OSD.Integration
                 native.SteadyRefcount, native.ReleaseThreshold,
                 FormatResolution(native.ResolutionX, native.ResolutionY),
                 FormatApi(native.Api));
+        }
+
+        /// <summary>
+        /// Names the InstallHooks step a version-2 hook last published. Null for a version-1
+        /// hook (phase None), so the plain text stays unchanged for it.
+        /// </summary>
+        internal static string DescribeInstallPhase(NativeHookInstallPhase phase, int detail)
+        {
+            if (phase == NativeHookInstallPhase.None) return null;
+            string text = phase == NativeHookInstallPhase.Unknown
+                ? "unknown"
+                : phase.ToString();
+            if (phase == NativeHookInstallPhase.FidelityFxExports && detail != 0)
+            {
+                int module = detail >> 8;
+                int export = detail & 0xFF;
+                text += export == 0
+                    ? $", module {module}"
+                    : $", module {module}, export {export}";
+            }
+            return text;
+        }
+
+        /// <summary>
+        /// Human-readable form of the hook's last decline reason. Null for None, so a caller can
+        /// append it only when there is something to say.
+        /// </summary>
+        internal static string DescribeDeclineReason(NativeHookDeclineReason reason)
+        {
+            switch (reason)
+            {
+                case NativeHookDeclineReason.None: return null;
+                case NativeHookDeclineReason.ExternalMutation:
+                    return "a vendor swapchain mutation is in flight";
+                case NativeHookDeclineReason.Dormant:
+                    return "the CapFrameX host is dormant";
+                case NativeHookDeclineReason.FidelityFxOwnsPresentation:
+                    return "a FidelityFX replacement swapchain owns presentation";
+                case NativeHookDeclineReason.StreamlineBlocksNative:
+                    return "Streamline owns the D3D12 presentation contract";
+                case NativeHookDeclineReason.XeFgProxyNoQueue:
+                    return "the XeSS-FG proxy has no authoritative queue";
+                case NativeHookDeclineReason.ForeignNativePresent:
+                    return "a frame-generation runtime issued the native Present";
+                case NativeHookDeclineReason.FgAuthoritativeNoRoute:
+                    return "frame generation is active without an admitted route";
+                case NativeHookDeclineReason.FgStandDown:
+                    return "the in-game renderer stood down for a frame-generation runtime";
+                case NativeHookDeclineReason.OwnerDeferral:
+                    return "the previous resource owner has not released the swapchain";
+                case NativeHookDeclineReason.Hidden:
+                    return "rendering is hidden";
+                case NativeHookDeclineReason.StreamlineNoCreationQueue:
+                    return "the Streamline proxy exposed no creation queue";
+                case NativeHookDeclineReason.XeFgIndeterminateNoDraw:
+                    return "the indeterminate XeSS-FG route produced no draw";
+                case NativeHookDeclineReason.D3D12NoQueue:
+                    return "no compatible D3D12 command queue was observed";
+                case NativeHookDeclineReason.D3D12DeviceMismatch:
+                    return "the observed D3D12 queue belongs to another device";
+                case NativeHookDeclineReason.D3D12TransitionDeferred:
+                    return "a D3D12 queue transition is settling";
+                default:
+                    return $"native decline reason {(int)reason}";
+            }
+        }
+
+        /// <summary>FrameGenerationTechnology as the OSD spells it; null while unknown.</summary>
+        internal static string DescribeFrameGenerationTechnology(int technology)
+        {
+            switch (technology)
+            {
+                case 1: return "DLSS-FG";
+                case 2: return "XeSS-FG";
+                case 3: return "FSR-FG";
+                default: return null;
+            }
+        }
+
+        private static string AppendDeclineReason(string detail, NativeHookDeclineReason reason,
+            bool ignoreHidden)
+        {
+            if (reason == NativeHookDeclineReason.None ||
+                (ignoreHidden && reason == NativeHookDeclineReason.Hidden))
+                return detail;
+            string text = DescribeDeclineReason(reason);
+            return text == null ? detail : $"{detail} Last decline: {text}.";
         }
 
         /// <summary>

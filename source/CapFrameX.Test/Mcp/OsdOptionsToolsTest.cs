@@ -165,6 +165,37 @@ namespace CapFrameX.Test.Mcp
         }
 
         [TestMethod]
+        public void SetOsdOptions_EmptyHotkeysDisableAndOmittedHotkeysRemainUnchanged()
+        {
+            var config = CreateConfiguration();
+            var tool = CreateOsdOptionsTool(config);
+
+            var cleared = tool.SetOsdOptions(overlayHotkey: string.Empty, overlayConfigHotkey: string.Empty,
+                overlayPositionHotkey: string.Empty, resetMetricsHotkey: string.Empty);
+
+            Assert.AreEqual(4, cleared.ChangedCount);
+            Assert.AreEqual(string.Empty, config.Object.OverlayHotKey);
+            Assert.AreEqual(string.Empty, config.Object.OverlayConfigHotKey);
+            Assert.AreEqual(string.Empty, config.Object.OverlayPositionHotkey);
+            Assert.AreEqual(string.Empty, config.Object.ResetMetricsHotkey);
+            Assert.AreEqual(string.Empty, cleared.Options.OverlayHotkey);
+            Assert.AreEqual(string.Empty, cleared.Options.OverlayConfigHotkey);
+            Assert.AreEqual(string.Empty, cleared.Options.OverlayPositionHotkey);
+            Assert.AreEqual(string.Empty, cleared.Options.ResetMetricsHotkey);
+
+            var unchanged = tool.SetOsdOptions(zoom: config.Object.OsdZoom);
+            Assert.AreEqual(0, unchanged.ChangedCount);
+            Assert.AreEqual(string.Empty, unchanged.Options.OverlayHotkey);
+
+            var reassigned = tool.SetOsdOptions(overlayHotkey: "Control+F9");
+            Assert.AreEqual(1, reassigned.ChangedCount);
+            Assert.AreEqual("Control+F9", reassigned.Options.OverlayHotkey);
+            Assert.AreEqual(string.Empty, reassigned.Options.OverlayConfigHotkey);
+            Assert.AreEqual(string.Empty, reassigned.Options.OverlayPositionHotkey);
+            Assert.AreEqual(string.Empty, reassigned.Options.ResetMetricsHotkey);
+        }
+
+        [TestMethod]
         public void SetOsdOptions_InvalidInputDoesNotPartiallyApply()
         {
             var config = CreateConfiguration();
@@ -187,12 +218,15 @@ namespace CapFrameX.Test.Mcp
                 tool.SetOsdOptions(autoDisableOverlay: false, hookFreeRefreshRate: 3));
             Assert.ThrowsException<ArgumentException>(() =>
                 tool.SetOsdOptions(autoDisableOverlay: false, overlayPositionHotkey: "Alt+NotAKey"));
+            Assert.ThrowsException<ArgumentException>(() =>
+                tool.SetOsdOptions(overlayHotkey: string.Empty, overlayPositionHotkey: "Alt+NotAKey"));
 
             Assert.IsTrue(config.Object.AutoDisableOverlay);
             Assert.AreEqual(100, config.Object.OsdZoom);
             Assert.AreEqual(750, config.Object.OsdReplayBufferSize);
             Assert.AreEqual(1, config.Object.HookFreeRefreshRate);
             Assert.AreEqual("Alt+P", config.Object.OverlayPositionHotkey);
+            Assert.AreEqual("Alt+O", config.Object.OverlayHotKey);
             Assert.AreEqual(0, publishedCount);
         }
 

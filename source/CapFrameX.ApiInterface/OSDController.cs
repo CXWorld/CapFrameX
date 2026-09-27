@@ -14,16 +14,20 @@ namespace CapFrameX.ApiInterface
     public class OSDController: WebApiController
     {
         private readonly IOverlayService _overlayService;
+        private readonly IRemoteOverlayDemand _remoteOverlayDemand;
 
-        public OSDController(IOverlayService overlayService)
+        public OSDController(IOverlayService overlayService, IRemoteOverlayDemand remoteOverlayDemand)
         {
             _overlayService = overlayService;
+            _remoteOverlayDemand = remoteOverlayDemand;
         }
 
         [Route(HttpVerbs.Get, "/osd")]
         public Task<string[]> GetOsd([QueryField] bool showAll)
         {
-            
+            // Keeps the entries refreshing while the overlay is off. The first read after a pause
+            // still returns the values from the moment the refresh stopped.
+            _remoteOverlayDemand.RegisterRequest();
             return Task.FromResult(GetEntries(_overlayService, showAll));
         }
 

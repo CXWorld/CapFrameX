@@ -23,7 +23,7 @@ namespace CapFrameX.Test.Integration
         // be a deliberate edit here as well).
         private const int OffMagic = 0, OffEntryCount = 12;
         private const int HeaderSize = 32;
-        private const int RecordSize = 368;
+        private const int RecordSize = 376; // v4: v2's 368 bytes + the two text-scale fields
         private const int RId = 0;
 
         [TestMethod]

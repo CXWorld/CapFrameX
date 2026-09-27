@@ -12,6 +12,9 @@ internal sealed class IntelGclGpu : GenericGpu
 
     private readonly Sensor _temperatureCore;
     private readonly Sensor _temperatureMemory;
+    private readonly Sensor _temperatureCoreVr;
+    private readonly Sensor _temperatureMemoryVr;
+    private readonly Sensor _temperatureSaVr;
 
     private readonly Sensor _powerTdp;
     private readonly Sensor _powerTbp;
@@ -20,6 +23,7 @@ internal sealed class IntelGclGpu : GenericGpu
 
     private readonly Sensor _clockCore;
     private readonly Sensor _clockVram;
+    private readonly Sensor _clockCoreEffective;
 
     private readonly Sensor _voltageCore;
     private readonly Sensor _voltageVram;
@@ -28,11 +32,21 @@ internal sealed class IntelGclGpu : GenericGpu
     private readonly Sensor _usageRenderEngine;
     private readonly Sensor _usageMediaEngine;
 
+    // Percentages of the power, thermal and over-voltage budgets
+    private readonly Sensor _budgetPower;
+    private readonly Sensor _budgetThermal;
+    private readonly Sensor _budgetOverVoltage;
+
     private readonly Sensor _bandwidthReadVram;
     private readonly Sensor _bandwidthWriteVram;
 
-    // ToDo: get all fans info
     private readonly Sensor _speedFan;
+    private readonly Sensor[] _speedAdditionalFans;
+
+    // Created when a rail is first reported: their names depend on the connector type.
+    private const int PsuRailCount = 5;
+    private readonly Sensor[] _powerPsuRails = new Sensor[PsuRailCount];
+    private readonly Sensor[] _voltagePsuRails = new Sensor[PsuRailCount];
 
     public IntelGclGpu(uint index, IgclDeviceInfo deviceInfo, ISettings settings)
         : base(deviceInfo.DeviceName, new Identifier("gpu-intel", index.ToString()), settings, enableProcessMemorySensors: false)
@@ -54,6 +68,15 @@ internal sealed class IntelGclGpu : GenericGpu
         _temperatureMemory = new Sensor("GPU Memory", 1, SensorType.Temperature, this, settings)
         { PresentationSortKey = $"{index}_2_1" };
 
+        // Names of the additional sensors must not contain "GPU Core": session data and the
+        // basic sensor/overlay presets pick the core temperature, clock and load by that name.
+        _temperatureCoreVr = new Sensor("GPU VR", 2, SensorType.Temperature, this, settings)
+        { PresentationSortKey = $"{index}_2_2" };
+        _temperatureMemoryVr = new Sensor("GPU Memory VR", 3, SensorType.Temperature, this, settings)
+        { PresentationSortKey = $"{index}_2_3" };
+        _temperatureSaVr = new Sensor("GPU SA VR", 4, SensorType.Temperature, this, settings)
+        { PresentationSortKey = $"{index}_2_4" };
+
         _powerTbp = new Sensor("GPU TBP", 1, SensorType.Power, this, settings)
         { IsPresentationDefault = true, PresentationSortKey = $"{index}_3_0" };
         _powerTdp = new Sensor("GPU TDP", 0, SensorType.Power, this, settings)
@@ -65,6 +88,8 @@ internal sealed class IntelGclGpu : GenericGpu
         { IsPresentationDefault = true, PresentationSortKey = $"{index}_0_0" };
         _clockVram = new Sensor("GPU Memory", 1, SensorType.Clock, this, settings)
         { IsPresentationDefault = true, PresentationSortKey = $"{index}_0_1" };
+        _clockCoreEffective = new Sensor("GPU Effective", 2, SensorType.Clock, this, settings)
+        { PresentationSortKey = $"{index}_0_2" };
 
         _voltageCore = new Sensor("GPU Core", 0, SensorType.Voltage, this, settings)
         { PresentationSortKey = $"{index}_4_0" };
@@ -78,6 +103,13 @@ internal sealed class IntelGclGpu : GenericGpu
         _usageMediaEngine = new Sensor("GPU Media Engine", 2, SensorType.Load, this, settings)
         { PresentationSortKey = $"{index}_1_2" };
 
+        _budgetPower = new Sensor("GPU Power Budget", 3, SensorType.Load, this, settings)
+        { PresentationSortKey = $"{index}_1_3" };
+        _budgetThermal = new Sensor("GPU Thermal Budget", 4, SensorType.Load, this, settings)
+        { PresentationSortKey = $"{index}_1_4" };
+        _budgetOverVoltage = new Sensor("GPU Overvoltage", 5, SensorType.Load, this, settings)
+        { PresentationSortKey = $"{index}_1_5" };
+
         _bandwidthReadVram = new Sensor("GPU Memory Read", 4, SensorType.Throughput, this, settings)
         { PresentationSortKey = $"{index}_6_0" };
         _bandwidthWriteVram = new Sensor("GPU Memory Write", 5, SensorType.Throughput, this, settings)
@@ -85,6 +117,15 @@ internal sealed class IntelGclGpu : GenericGpu
 
         _speedFan = new Sensor("GPU Fan", 0, SensorType.Fan, this, settings)
         { PresentationSortKey = $"{index}_5_0" };
+
+        // Numbered from 2 so the first fan keeps its established name (it is part of the
+        // stable sensor identifier).
+        _speedAdditionalFans = new Sensor[4];
+        for (int i = 0; i < _speedAdditionalFans.Length; i++)
+        {
+            _speedAdditionalFans[i] = new Sensor($"GPU Fan {i + 2}", i + 1, SensorType.Fan, this, settings)
+            { PresentationSortKey = $"{index}_5_{i + 1}" };
+        }
 
         Update();
     }
@@ -131,6 +172,11 @@ internal sealed class IntelGclGpu : GenericGpu
         {
             _temperatureMemory.Value = null;
         }
+
+        // VR Temperatures
+        UpdateSensor(_temperatureCoreVr, igclTelemetryData.gpuVrTemperatureSupported, igclTelemetryData.gpuVrTemperatureValue);
+        UpdateSensor(_temperatureMemoryVr, igclTelemetryData.vramVrTemperatureSupported, igclTelemetryData.vramVrTemperatureValue);
+        UpdateSensor(_temperatureSaVr, igclTelemetryData.saVrTemperatureSupported, igclTelemetryData.saVrTemperatureValue);
 
         // GPU Core Power
         if (igclTelemetryData.gpuEnergySupported)
@@ -187,6 +233,9 @@ internal sealed class IntelGclGpu : GenericGpu
             _clockVram.Value = null;
         }
 
+        // GPU Effective Frequency
+        UpdateSensor(_clockCoreEffective, igclTelemetryData.gpuEffectiveClockSupported, igclTelemetryData.gpuEffectiveClockValue);
+
         // GPU Core Frequency
         if (igclTelemetryData.gpuVoltageSupported)
         {
@@ -242,8 +291,18 @@ internal sealed class IntelGclGpu : GenericGpu
             _usageMediaEngine.Value = null;
         }
 
-        // VRAM Read Bandwidth
-        if (igclTelemetryData.vramReadBandwidthSupported)
+        // Power, thermal and over-voltage budgets (%)
+        UpdateSensor(_budgetPower, igclTelemetryData.gpuPowerPercentSupported, igclTelemetryData.gpuPowerPercentValue);
+        UpdateSensor(_budgetThermal, igclTelemetryData.gpuTemperaturePercentSupported, igclTelemetryData.gpuTemperaturePercentValue);
+        UpdateSensor(_budgetOverVoltage, igclTelemetryData.gpuOverVoltagePercentSupported, igclTelemetryData.gpuOverVoltagePercentValue);
+
+        // VRAM Read Bandwidth: prefer the driver's direct GB/s value over the counter-based estimate
+        if (igclTelemetryData.vramReadBandwidthGBpsSupported)
+        {
+            _bandwidthReadVram.Value = (float)igclTelemetryData.vramReadBandwidthGBpsValue;
+            ActivateSensor(_bandwidthReadVram);
+        }
+        else if (igclTelemetryData.vramReadBandwidthSupported)
         {
             _bandwidthReadVram.Value = (float)(igclTelemetryData.vramReadBandwidthValue * _busWidth / 1024);
             ActivateSensor(_bandwidthReadVram);
@@ -254,7 +313,12 @@ internal sealed class IntelGclGpu : GenericGpu
         }
 
         // VRAM Write Bandwidth
-        if (igclTelemetryData.vramWriteBandwidthSupported)
+        if (igclTelemetryData.vramWriteBandwidthGBpsSupported)
+        {
+            _bandwidthWriteVram.Value = (float)igclTelemetryData.vramWriteBandwidthGBpsValue;
+            ActivateSensor(_bandwidthWriteVram);
+        }
+        else if (igclTelemetryData.vramWriteBandwidthSupported)
         {
             _bandwidthWriteVram.Value = (float)(igclTelemetryData.vramWriteBandwidthValue * _busWidth / 1024);
             ActivateSensor(_bandwidthWriteVram);
@@ -264,7 +328,6 @@ internal sealed class IntelGclGpu : GenericGpu
             _bandwidthWriteVram.Value = null;
         }
 
-        // ToDo: get all fans info
         // Fanspeed (n Fans)
         if (igclTelemetryData.fanSpeedSupported)
         {
@@ -274,6 +337,80 @@ internal sealed class IntelGclGpu : GenericGpu
         else
         {
             _speedFan.Value = null;
+        }
+
+        IgclTelemetryItem[] additionalFans =
+        {
+            igclTelemetryData.fan2Speed, igclTelemetryData.fan3Speed, igclTelemetryData.fan4Speed, igclTelemetryData.fan5Speed
+        };
+
+        for (int i = 0; i < additionalFans.Length; i++)
+            UpdateSensor(_speedAdditionalFans[i], additionalFans[i].supported, additionalFans[i].value);
+
+        // Power supply rails (power and voltage per connector)
+        IgclPsuRail[] rails =
+        {
+            igclTelemetryData.psu1, igclTelemetryData.psu2, igclTelemetryData.psu3, igclTelemetryData.psu4, igclTelemetryData.psu5
+        };
+
+        for (int i = 0; i < rails.Length; i++)
+        {
+            if (_powerPsuRails[i] == null)
+            {
+                if (!IsPsuRailReported(rails[i]))
+                    continue;
+
+                string name = GetPsuRailName(i, rails);
+                _powerPsuRails[i] = new Sensor(name, 3 + i, SensorType.Power, this, _settings)
+                { PresentationSortKey = $"{_index}_3_{3 + i}" };
+                _voltagePsuRails[i] = new Sensor(name, 2 + i, SensorType.Voltage, this, _settings)
+                { PresentationSortKey = $"{_index}_4_{2 + i}" };
+            }
+
+            UpdateSensor(_powerPsuRails[i], rails[i].power.supported, rails[i].power.value);
+            UpdateSensor(_voltagePsuRails[i], rails[i].voltage.supported, rails[i].voltage.value);
+        }
+    }
+
+    private static bool IsPsuRailReported(IgclPsuRail rail) => rail.power.supported || rail.voltage.supported;
+
+    // "GPU 8-Pin", or "GPU 8-Pin 1" / "GPU 8-Pin 2" when the card has several connectors of that type.
+    internal static string GetPsuRailName(int rail, IgclPsuRail[] rails)
+    {
+        int type = rails[rail].type;
+        string baseName = type switch
+        {
+            IGCL.CTL_PSU_TYPE_PSU_PCIE => "GPU PCIe Slot",
+            IGCL.CTL_PSU_TYPE_PSU_6PIN => "GPU 6-Pin",
+            IGCL.CTL_PSU_TYPE_PSU_8PIN => "GPU 8-Pin",
+            _ => "GPU PSU"
+        };
+
+        int count = 0;
+        int ordinal = 0;
+        for (int i = 0; i < rails.Length; i++)
+        {
+            if (!IsPsuRailReported(rails[i]) || rails[i].type != type)
+                continue;
+
+            count++;
+            if (i == rail)
+                ordinal = count;
+        }
+
+        return count > 1 ? $"{baseName} {ordinal}" : baseName;
+    }
+
+    private void UpdateSensor(Sensor sensor, bool supported, double value)
+    {
+        if (supported)
+        {
+            sensor.Value = (float)value;
+            ActivateSensor(sensor);
+        }
+        else
+        {
+            sensor.Value = null;
         }
     }
 }

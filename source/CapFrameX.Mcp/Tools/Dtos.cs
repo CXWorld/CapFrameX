@@ -45,6 +45,9 @@ namespace CapFrameX.Mcp.Tools
         [JsonProperty("presentationMode", NullValueHandling = NullValueHandling.Ignore)]
         public string PresentationMode { get; set; }
 
+        [JsonProperty("displayLayer", NullValueHandling = NullValueHandling.Ignore)]
+        public string DisplayLayer { get; set; }
+
         [JsonProperty("resizableBar", NullValueHandling = NullValueHandling.Ignore)]
         public string ResizableBar { get; set; }
 
