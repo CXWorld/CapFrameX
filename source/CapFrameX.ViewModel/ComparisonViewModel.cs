@@ -1457,10 +1457,13 @@ namespace CapFrameX.ViewModel
         {
             UpdateRowSeriesTitles();
 
-            string timingSource = CxLang.T(_useDisplayChangeSamplesForComparison
-                ? "ComparisonViewModel_DisplayTime" : "ComparisonViewModel_PresentFrametime");
-            string fpsSource = CxLang.T(_useDisplayChangeSamplesForComparison
-                ? "ComparisonViewModel_DisplayFPS" : "ComparisonViewModel_PresentFPS");
+            // Whole titles per source rather than a source name plus unit or suffix: translations
+            // need their own unit spelling and word order (a distribution "of" the time).
+            bool display = _useDisplayChangeSamplesForComparison;
+            string timingTitle = CxLang.T(display
+                ? "ComparisonViewModel_DisplayTimeMs" : "ComparisonViewModel_PresentFrametimeMs");
+            string fpsTitle = CxLang.T(display
+                ? "ComparisonViewModel_DisplayFPSPerSecond" : "ComparisonViewModel_PresentFPSPerSecond");
 
             var frametimeXAxis = ComparisonFrametimesModel?.Axes.FirstOrDefault(axis => axis.Key == "xAxis");
             if (frametimeXAxis != null)
@@ -1472,25 +1475,27 @@ namespace CapFrameX.ViewModel
 
             var frametimeAxis = ComparisonFrametimesModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (frametimeAxis != null)
-                frametimeAxis.Title = ShowGpuActiveLineCharts ? CxLang.T("ComparisonViewModel_GPUActiveTimeMs") : timingSource + " [ms]";
+                frametimeAxis.Title = ShowGpuActiveLineCharts ? CxLang.T("ComparisonViewModel_GPUActiveTimeMs") : timingTitle;
 
             var fpsAxis = ComparisonFpsModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (fpsAxis != null)
-                fpsAxis.Title = fpsSource + " [1/s]";
+                fpsAxis.Title = fpsTitle;
 
             var distributionXAxis = ComparisonDistributionModel?.Axes.FirstOrDefault(axis => axis.Key == "xAxis");
             if (distributionXAxis != null)
-                distributionXAxis.Title = timingSource + " [ms]";
+                distributionXAxis.Title = timingTitle;
 
             var distributionYAxis = ComparisonDistributionModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (distributionYAxis != null)
-                distributionYAxis.Title = CxLang.Format("ComparisonViewModel_Distribution0", timingSource);
+                distributionYAxis.Title = CxLang.T(display
+                    ? "ComparisonViewModel_DisplayTimeDistribution" : "ComparisonViewModel_PresentFrametimeDistribution");
 
             if (!ShowGpuActiveLineCharts)
             {
-                ComparisonLShapeYAxisLabel = SelectedChartView == "FPS"
-                    ? fpsSource + Environment.NewLine + " "
-                    : timingSource + " (ms)" + Environment.NewLine + " ";
+                ComparisonLShapeYAxisLabel = (SelectedChartView == "FPS"
+                    ? CxLang.T(display ? "ComparisonViewModel_DisplayFPS" : "ComparisonViewModel_PresentFPS")
+                    : CxLang.T(display ? "ComparisonViewModel_DisplayTimeMsLShape" : "ComparisonViewModel_PresentFrametimeMsLShape"))
+                    + Environment.NewLine + " ";
             }
         }
 

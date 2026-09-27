@@ -29,6 +29,10 @@
 			<mvvm:PmdStatusColorConverter x:Key="PmdStatusColorConverter"/>
 			<system:Double x:Key="FontSizeMetrics">17</system:Double>
 			<system:Double x:Key="LabelHeight">28</system:Double>
+			<!--Tighter than the MDIX default so all six Powenetics metric boxes fit a maximized 1080p window.-->
+			<Style x:Key="PmdMetricGroupBox" TargetType="{x:Type GroupBox}" BasedOn="{StaticResource MaterialDesignGroupBox}">
+				<Setter Property="Padding" Value="9 3"/>
+			</Style>
 			<Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource CxTabHeaderItem}" />
 		</ResourceDictionary>
 	</UserControl.Resources>
@@ -43,16 +47,16 @@
 						<RowDefinition Height="50"/>
 					</Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="200"/>
+						<ColumnDefinition Width="230"/>
 						<ColumnDefinition Width="1*"/>
-						<ColumnDefinition Width="170"/>
+						<ColumnDefinition Width="230"/>
 					</Grid.ColumnDefinitions>
 					<!--Style="{StaticResource MaterialDesignOutlinedTextBox}"-->
 					<ScrollViewer Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="5 0 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 						<StackPanel>
-							<GroupBox Header="{loc:Tr PmdView_GPUTotalPower}" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="{loc:Tr PmdView_GPUTotalPower}" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
-									<materialDesign:PackIcon Foreground="Red" Margin="140 -55 0 0" Visibility="{Binding PoweneticsViewModel.PmdMetrics.GpuPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
+									<materialDesign:PackIcon Foreground="Red" HorizontalAlignment="Right" Margin="0 -55 6 0" Visibility="{Binding PoweneticsViewModel.PmdMetrics.GpuPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
 										Kind="Information" VerticalAlignment="Center" >
 										<materialDesign:PackIcon.ToolTip>
 											<TextBlock Text="{loc:Tr PmdView_SomeNeededPowerSourcesAre}"/>
@@ -72,7 +76,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="{loc:Tr PmdView_PCIePower}" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="{loc:Tr PmdView_PCIePower}" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{loc:Tr PmdView_Cur2}"/>
@@ -88,7 +92,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="{loc:Tr PmdView_PCIeSlotPower}" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="{loc:Tr PmdView_PCIeSlotPower}" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{loc:Tr PmdView_Cur3}"/>
@@ -104,7 +108,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="{loc:Tr PmdView_CPUTotalPower}" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="{loc:Tr PmdView_CPUTotalPower}" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{loc:Tr PmdView_Cur4}"/>
@@ -120,7 +124,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="{loc:Tr PmdView_ATXPower}" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="{loc:Tr PmdView_ATXPower}" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{loc:Tr PmdView_Cur5}"/>
@@ -136,9 +140,9 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="{loc:Tr PmdView_SystemPower}" FontSize="17" Style="{StaticResource MaterialDesignGroupBox}">
+							<GroupBox Header="{loc:Tr PmdView_SystemPower}" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
-									<materialDesign:PackIcon Foreground="Red" Margin="120 -55 0 0" Visibility="{Binding PoweneticsViewModel.PmdMetrics.SystemPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
+									<materialDesign:PackIcon Foreground="Red" HorizontalAlignment="Right" Margin="0 -55 6 0" Visibility="{Binding PoweneticsViewModel.PmdMetrics.SystemPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
 										Kind="Information" VerticalAlignment="Center" >
 										<materialDesign:PackIcon.ToolTip>
 											<TextBlock Text="{loc:Tr PmdView_SomeNeededPowerSourcesAre2}"/>
@@ -339,14 +343,14 @@
 						<RowDefinition Height="50"/>
 					</Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="200"/>
+						<ColumnDefinition Width="230"/>
 						<ColumnDefinition Width="1*"/>
-						<ColumnDefinition Width="170"/>
+						<ColumnDefinition Width="230"/>
 					</Grid.ColumnDefinitions>
 					<!--Style="{StaticResource MaterialDesignOutlinedTextBox}"-->
 					<ScrollViewer Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="5 0 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
 						<StackPanel>
-							<GroupBox Header="{loc:Tr PmdView_GPUPower}" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="{loc:Tr PmdView_GPUPower}" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{loc:Tr PmdView_Cur7}"/>
@@ -362,7 +366,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="{loc:Tr PmdView_CPUPower}" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="{loc:Tr PmdView_CPUPower}" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{loc:Tr PmdView_Cur8}"/>
@@ -378,7 +382,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="{loc:Tr PmdView_MainboardPower}" FontSize="17" Style="{DynamicResource MaterialDesignGroupBox}">
+							<GroupBox Header="{loc:Tr PmdView_MainboardPower}" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{loc:Tr PmdView_Cur9}"/>
@@ -394,7 +398,7 @@
 									</StackPanel>
 								</StackPanel>
 							</GroupBox>
-							<GroupBox Header="{loc:Tr PmdView_SystemPower2}" FontSize="17" Style="{StaticResource MaterialDesignGroupBox}">
+							<GroupBox Header="{loc:Tr PmdView_SystemPower2}" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
 										<Label Width="55" Height="{StaticResource LabelHeight}" FontSize="{StaticResource FontSizeMetrics}" Content="{loc:Tr PmdView_Cur10}"/>
@@ -621,27 +625,14 @@
 					</Grid>
 					<Grid Grid.Row="2" Grid.Column="0" Visibility="{Binding DrawPerformanceChart, Converter={StaticResource TrueToVisibleConverter}}">
 						<Grid.RowDefinitions>
-							<RowDefinition Height="50"/>
+							<RowDefinition Height="35"/>
 							<RowDefinition Height="1*"/>
 						</Grid.RowDefinitions>
 						<Border Grid.RowSpan="2" Margin="0 2 0 2" Style="{StaticResource SectionCard}" />
-						<!--The values selector shares the header row with the title: a row of its own below the
-						    chart left this third of the page too short for the "Frametime [ms]" axis title.-->
-						<Grid Height="35" Margin="0 2 0 0" VerticalAlignment="Top" Background="Transparent">
+						<Grid Margin="0 2 0 0" Background="Transparent">
 							<TextBlock Text="{loc:Tr PmdView_Performance}" HorizontalAlignment="Center" VerticalAlignment="Center" IsHitTestVisible="False"
 								FontWeight="Bold" FontSize="18"/>
 						</Grid>
-						<ComboBox Margin="10 0 0 2" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="{loc:Tr PmdView_Values}"
-					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="110" Height="40">
-							<ComboBoxItem IsSelected="True" Content="{loc:Tr PmdView_Frametimes}"/>
-							<ComboBoxItem>FPS</ComboBoxItem>
-							<ComboBox.Text>
-								<Binding Path="SelectedChartView"
-									Mode="TwoWay"
-									UpdateSourceTrigger="PropertyChanged">
-								</Binding>
-							</ComboBox.Text>
-						</ComboBox>
 						<controls:PlotViewCustomZoom Grid.Row="1" Background="Transparent" x:Name="FrametimeAnalysis"
                                                      Model="{Binding FrametimeModel}" Tag="{Binding ElementName=PmdViewControl, Path=DataContext}" Margin="0 4 0 2"
 										             MouseDoubleClick="ResetFrametimeChart_MouseDoubleClick">
@@ -655,6 +646,15 @@
 								</ControlTemplate>
 							</controls:PlotViewCustomZoom.DefaultTrackerTemplate>
 						</controls:PlotViewCustomZoom>
+						<!--Sits in the chart's bottom-left corner, below the Y axis title and left of the X axis
+						    title. A row of its own below the chart left it too short for the "Frametime [ms]" title.-->
+						<ComboBox Grid.Row="1" Panel.ZIndex="1" Margin="10 0 0 10" HorizontalAlignment="Left" VerticalAlignment="Bottom" materialDesign:HintAssist.Hint="{loc:Tr PmdView_Values}"
+					              materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="100" Width="110" Height="40"
+					              SelectedValuePath="Tag" SelectedValue="{Binding SelectedChartView, Mode=TwoWay}">
+							<!--The chart manager keys on the Tag, never on the translated text.-->
+							<ComboBoxItem Tag="Frametimes" Content="{loc:Tr PmdView_Frametimes}"/>
+							<ComboBoxItem Tag="FPS" Content="FPS"/>
+						</ComboBox>
 					</Grid>
 					<Grid Grid.RowSpan="3" Grid.Column="1" Margin="5 0 0 2" Background="Transparent">
 						<Grid.RowDefinitions>
@@ -715,8 +715,9 @@
 						<Border Grid.Row="4" Height="Auto" Margin="5 5 5 0" Style="{StaticResource SectionCardInset}"
                                 VerticalAlignment="Top" HorizontalAlignment="Stretch">
 							<Grid Margin="10">
+								<!--Auto header row: longer translations wrap the title without stretching the value rows.-->
 								<Grid.RowDefinitions>
-									<RowDefinition Height="1*"></RowDefinition>
+									<RowDefinition Height="Auto"></RowDefinition>
 									<RowDefinition Height="1*"></RowDefinition>
 									<RowDefinition Height="1*"></RowDefinition>
 									<RowDefinition Height="1*"></RowDefinition>
@@ -727,7 +728,7 @@
 									<ColumnDefinition Width="120"/>
 									<ColumnDefinition Width="1*"/>
 								</Grid.ColumnDefinitions>
-								<TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 10" FontWeight="Bold" Text="{loc:Tr PmdView_EfficiencyFPS10W}" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
+								<TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0 0 0 10" FontWeight="Bold" Text="{loc:Tr PmdView_EfficiencyFPS10W}" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18" TextWrapping="Wrap"/>
 
 								<TextBlock Grid.Row="1" Grid.Column="0" Margin="0 0 0 5" Text="{loc:Tr PmdView_GPU}" HorizontalAlignment="Left" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>
 								<TextBlock Grid.Row="1" Grid.Column="1" Margin="0 0 0 5" Text="{Binding GpuEfficiency}" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False" FontSize="18"/>

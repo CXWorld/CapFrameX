@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using System.Windows.Markup;
+using System.Windows.Threading;
 using System.Xml.Linq;
 using CapFrameX.Configuration;
 using CapFrameX.Contracts.Data;
@@ -107,14 +109,122 @@ namespace CapFrameX.Test.Localization
             }
         }
 
+        // Axis titles used to be a translated source name plus a hard-coded unit or "Distribution" suffix,
+        // which left "[ms]" and English word order in other languages.
+        [DataTestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void ComparisonAxisTitles_ComeWholeFromTheCatalog(bool displayTimes)
+        {
+            string previous = CxLang.Instance.UiLanguage;
+            try
+            {
+                CxLang.Instance.SetUiLanguage("ru");
+                var model = new ComparisonViewModel(Mock.Of<IStatisticProvider>(), Mock.Of<IFrametimeAnalyzer>(),
+                    new EventAggregator(), Configuration(), null, Mock.Of<ILogger<ComparisonViewModel>>());
+                typeof(ComparisonViewModel).GetMethod("InitializePlotModels", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Invoke(model, null);
+                typeof(ComparisonViewModel).GetField("_useDisplayChangeSamplesForComparison", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .SetValue(model, displayTimes);
+                typeof(ComparisonViewModel).GetMethod("UpdateComparisonMetricSourceLabels", BindingFlags.NonPublic | BindingFlags.Instance)
+                    .Invoke(model, null);
+
+                string source = displayTimes ? "DisplayTime" : "PresentFrametime";
+                Assert.AreEqual(CxLang.T($"ComparisonViewModel_{source}Distribution"),
+                    model.ComparisonDistributionModel.Axes.Single(axis => axis.Key == "yAxis").Title);
+                Assert.AreEqual(CxLang.T($"ComparisonViewModel_{source}Ms"),
+                    model.ComparisonDistributionModel.Axes.Single(axis => axis.Key == "xAxis").Title);
+
+                var titles = new[] { model.ComparisonFrametimesModel, model.ComparisonFpsModel, model.ComparisonDistributionModel }
+                    .SelectMany(plot => plot.Axes).Select(axis => axis.Title).Append(model.ComparisonLShapeYAxisLabel);
+                foreach (string title in titles.Where(t => t != null))
+                    Assert.IsFalse(title.Contains("[ms]") || title.Contains("(ms)") || title.Contains("[1/s]"),
+                        $"'{title}' keeps an English unit.");
+            }
+            finally
+            {
+                CxLang.Instance.SetUiLanguage(previous);
+            }
+        }
+
+        // The Values selectors show translated item texts, but the view models, the chart manager and the
+        // Comparison view's triggers compare SelectedChartView with the English keys.
+        [DataTestMethod]
+        [DataRow("ComparisonView.xaml", "en")]
+        [DataRow("ComparisonView.xaml", "ru")]
+        [DataRow("PmdView.xaml", "en")]
+        [DataRow("PmdView.xaml", "ru")]
+        public void ValuesSelectors_PassTheLanguageIndependentKey(string view, string language)
+        {
+            string previous = CxLang.Instance.UiLanguage;
+            try
+            {
+                CxLang.Instance.SetUiLanguage(language);
+                var selector = ReadChartViewSelector(view);
+                var model = new ChartViewModel();
+                selector.DataContext = model;
+                DrainBindings();
+
+                var items = selector.Items.Cast<ComboBoxItem>().ToList();
+                CollectionAssert.AreEqual(new[] { "Frametimes", "FPS" }, items.Select(item => item.Tag).ToArray());
+                Assert.AreEqual("Frametimes", ((ComboBoxItem)selector.SelectedItem).Tag, "The model's default must select its item.");
+                if (language != "en")
+                    Assert.AreNotEqual("Frametimes", items[0].Content, "The item text is expected to be translated.");
+
+                foreach (var item in items)
+                {
+                    selector.SelectedItem = item;
+                    DrainBindings();
+                    Assert.AreEqual(item.Tag, model.SelectedChartView, $"Selecting '{item.Content}' in {view}.");
+                }
+
+                model.SelectedChartView = "Frametimes";
+                DrainBindings();
+                Assert.AreSame(items[0], selector.SelectedItem);
+            }
+            finally
+            {
+                CxLang.Instance.SetUiLanguage(previous);
+            }
+        }
+
+        private static ComboBox ReadChartViewSelector(string view)
+        {
+            var document = LoadView(view);
+            XNamespace wpf = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+            var selector = document.Descendants(wpf + "ComboBox")
+                .Single(box => ((string)box.Attribute("SelectedValue"))?.Contains("SelectedChartView") == true);
+            var declaration = new XElement(wpf + "ComboBox",
+                selector.Attributes().Where(a => a.Name == "SelectedValuePath" || a.Name == "SelectedValue"),
+                selector.Elements(wpf + "ComboBoxItem"));
+            declaration.Add(document.Root.Attributes().Where(a => a.IsNamespaceDeclaration));
+            return (ComboBox)XamlReader.Parse(declaration.ToString());
+        }
+
+        private static void DrainBindings()
+            => Dispatcher.CurrentDispatcher.Invoke(() => { }, DispatcherPriority.ApplicationIdle);
+
+        private sealed class ChartViewModel : INotifyPropertyChanged
+        {
+            private string _selectedChartView = "Frametimes";
+
+            public event PropertyChangedEventHandler PropertyChanged;
+
+            public string SelectedChartView
+            {
+                get => _selectedChartView;
+                set
+                {
+                    _selectedChartView = value;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedChartView)));
+                }
+            }
+        }
+
         // Read the real XAML declarations so missing or mismatched tags in a view also fail the test.
         private static List<TabItem> ReadTabs(string view)
         {
-            var directory = new DirectoryInfo(AppContext.BaseDirectory);
-            while (directory != null && !File.Exists(Path.Combine(directory.FullName, "CapFrameX.sln")))
-                directory = directory.Parent;
-            Assert.IsNotNull(directory);
-            var document = XDocument.Load(Path.Combine(directory.FullName, "source", "CapFrameX.View", view));
+            var document = LoadView(view);
             XNamespace wpf = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
             return document.Descendants(wpf + "TabItem").Where(tab => tab.Attribute("Tag") != null).Select(tab =>
             {
@@ -122,6 +232,15 @@ namespace CapFrameX.Test.Localization
                 declaration.Add(document.Root.Attributes().Where(a => a.IsNamespaceDeclaration));
                 return (TabItem)XamlReader.Parse(declaration.ToString());
             }).ToList();
+        }
+
+        private static XDocument LoadView(string view)
+        {
+            var directory = new DirectoryInfo(AppContext.BaseDirectory);
+            while (directory != null && !File.Exists(Path.Combine(directory.FullName, "CapFrameX.sln")))
+                directory = directory.Parent;
+            Assert.IsNotNull(directory);
+            return XDocument.Load(Path.Combine(directory.FullName, "source", "CapFrameX.View", view));
         }
 
         private static CapFrameXConfiguration Configuration()
