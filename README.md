@@ -2,9 +2,7 @@
 # CapFrameX
 Capture, analyze, and compare game performance on Windows. CapFrameX combines Intel's [PresentMon](https://github.com/GameTechDev/PresentMon) with hardware monitoring, frametime and FPS charts, and configurable overlays.
 
-Version **1.9.0** introduces a refreshed interface, a system information dashboard, a built-in hook-free overlay, expanded GPU telemetry, and lower background polling overhead. The application now runs on **.NET 10**.
-
-This branch develops **1.9.1.1-beta**. It enables the experimental in-game overlay again and includes the DirectX hook and Vulkan layer DLLs for both x64 and x86, plus the bundled BENCHLAB service, in installer and portable builds. Compatible separately installed BENCHLAB services remain supported. The installer registers each Vulkan layer in its matching HKLM registry view.
+Version **1.9.1** restores the experimental in-game overlay with digitally signed DirectX and Vulkan components for x64 and x86, bundles BENCHLAB Service 2.4.0, and updates PresentMon to 2.6.0. It also expands the Info dashboard, GPU telemetry, and overlay compatibility handling. The application runs on **.NET 10**.
 
 # Remark in our own interest
 If you are a reviewer or a youtuber using CapFrameX to get your data, it would be nice to mention us and link to our software.
@@ -20,26 +18,26 @@ CapFrameX is sponsored by [Hone](https://hone.gg). We thank Hone for supporting 
 
 # Release
 
-Download **[CapFrameX v1.9.0](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.0)**:
+Download **[CapFrameX v1.9.1](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.1)**:
 
-The revised packages contain application version **1.9.0.8**. The CapFrameX in-game overlay is disabled and its injection components are omitted until our code-signing certificate is available. BENCHLAB monitoring remains available with a separately installed compatible service; the service is no longer bundled.
+The packages contain stable application build **1.9.1.4**. CapFrameX binaries, native overlay components, the bundled BENCHLAB executable, and setup are digitally signed with the CapFrameX publisher's Certum certificate. Compatible separately installed BENCHLAB services remain supported.
 
-When replacing an earlier 1.9.0 portable package, extract this revision into a **new folder** and copy over your `Portable` data folder if needed. This prevents old hook, Vulkan, or service files from remaining beside the new application.
+For a portable update, extract the package into a **new folder**, then copy your `Portable` data folder and customized `portable.json` if needed.
 
 | Package | Use |
 | --- | --- |
-| [Installer](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.0/release_1.9.0_installer.zip) | Extract the ZIP and run `CapFrameXBootstrapper.exe`. Setup installs the application and removes obsolete CapFrameX Vulkan layer registrations. |
-| [Portable](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.0/release_1.9.0_portable.zip) | Extract the complete ZIP and run `CapFrameX.exe`. Keep `portable.json` beside it to store settings, captures, and logs in the portable folder. |
+| [Installer](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.1/release_1.9.1_installer.zip) | Extract the ZIP and run `CapFrameXBootstrapper.exe`. Setup installs the application and registers each Vulkan layer in its matching 64-bit or 32-bit HKLM registry view. |
+| [Portable](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.1/release_1.9.1_portable.zip) | Extract the complete ZIP and run `CapFrameX.exe`. Keep `portable.json` beside it to store settings, captures, and logs in the portable folder. Vulkan integration requires separate layer registration. |
 
 Install the **[.NET 10 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/10.0)** before running setup or the portable application. The Desktop Runtime is required even if another .NET version or the plain .NET Runtime is already installed.
 
-See the [release notes](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.0) for changes and package checksums, [Portable Mode](PORTABLE_MODE.md) for configuration, and [all releases](https://github.com/CXWorld/CapFrameX/releases) for older versions. Development builds are available from the [build archive](https://archive.capframex.com/).
+See the [release notes](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.1) for changes and package checksums, [Portable Mode](PORTABLE_MODE.md) for configuration, and [all releases](https://github.com/CXWorld/CapFrameX/releases) for older versions. Development builds are available from the [build archive](https://archive.capframex.com/).
 
 # Troubleshooting & Known Issues
 The following tips address the most common issues reported by users and can help resolve stability, overlay, and capture-related problems efficiently. We recommend working through them in order if you encounter unexpected behavior.
 
 1. **Ensure you are running the latest version**  
-   Install the latest [stable release](https://github.com/CXWorld/CapFrameX/releases/latest) and its required .NET Desktop Runtime. Version 1.9.0 requires **.NET 10 Desktop Runtime (x64)**; the installer checks for it before proceeding.
+   Install the latest [stable release](https://github.com/CXWorld/CapFrameX/releases/latest) and its required .NET Desktop Runtime. Version 1.9.1 requires **.NET 10 Desktop Runtime (x64)**; the installer checks for it before proceeding.
 
 2. **Reset application settings**  
    In some cases, corrupted or outdated configuration files may cause problems. Close CapFrameX, back up your configuration, and rename
@@ -71,24 +69,24 @@ Configure the capture hotkey, duration, sensor logging, and run history. The pro
 
 # System information
 
-The Info tab brings together CPU, GPU, memory, and mainboard details with live telemetry and system features such as Resizable BAR, HAGS, and Windows Game Mode.
+The Info tab brings together CPU, GPU, memory, and mainboard details with live telemetry, software component versions, and platform security status. Copy the system information directly from the dashboard.
 
-![CapFrameX 1.9.0 system information dashboard](images/1.9.0/info.png)
+![CapFrameX 1.9.1 system information dashboard](images/1.9.1/info.png)
 
 # Overlay
 
-Choose a renderer under **Overlay → OSD options**. The following describes 1.9.1 development builds; the screenshots show the stable 1.9.0 release.
+Choose a renderer under **Overlay → OSD options**.
 
 | Renderer | Behavior |
 | --- | --- |
 | **CapFrameX hook-free** | Built-in overlay without injecting into the game. This is the default for new configurations and offers an output-display picker and chart refresh control. |
-| **CapFrameX in-game (Experimental)** | Enabled in 1.9.1 development builds, with DirectX and Vulkan integration, game compatibility profiles, and hook-free fallback routing. Unavailable in the stable v1.9.0 packages. |
+| **CapFrameX in-game (Experimental)** | DirectX and Vulkan integration with signed x64/x86 components, game compatibility profiles, and hook-free fallback routing. |
 | **RTSS** | Uses [RivaTuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html), which must be installed separately. |
 
 Configure individual entries, colors, groups, and three profiles in **Overlay items**. OSD options include opacity, zoom, placement, a position hotkey, and PresentMon replay buffering. Existing renderer selections are preserved. If v1.9.0 migrated your in-game selection to hook-free, you can select in-game again in 1.9.1.
 
-![CapFrameX 1.9.0 overlay entries](images/1.9.0/overlay.png)
-![CapFrameX 1.9.0 renderer and OSD options](images/1.9.0/overlay-options.png)
+![CapFrameX 1.9.1 overlay entries](images/1.9.1/overlay.png)
+![CapFrameX 1.9.1 renderer and OSD options](images/1.9.1/overlay-options.png)
 
 # Analysis
 

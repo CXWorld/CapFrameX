@@ -55,9 +55,9 @@ When running in portable mode, the following dependencies must be installed on t
 The native .NET application host checks the Desktop Runtime before managed startup. Once CapFrameX
 starts, its dependency checker validates the expected .NET 10 Desktop Runtime and Visual C++ runtime.
 
-## 1.9.1 development builds
+## 1.9.1 release
 
-Installer and portable builds of **1.9.1.1-beta** include the in-game overlay again: keep the `hook` and `vulkan` folders, including their x86 subfolders, alongside the application. The `benchlab-service` folder contains the bundled service, which CapFrameX starts when needed; compatible separately installed services are also supported.
+Installer and portable builds of **1.9.1.4** include the signed in-game overlay: keep the `hook` and `vulkan` folders, including their x86 subfolders, alongside the application. The `benchlab-service` folder contains the signed, self-contained BENCHLAB Service 2.4.0, which CapFrameX starts when needed; compatible separately installed services are also supported.
 
 The installer registers the Vulkan layers for x64 and x86 in their respective HKLM registry views. Portable extraction does not register them; Vulkan integration requires the matching layers to be registered separately.
 

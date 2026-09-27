@@ -9,6 +9,30 @@ the OSD is built from source instead and these files are ignored.
 
 ## Build provenance
 
+### Signed v1.9.1 release rebuild (2026-09-27)
+
+Rebuilt all five native DLLs from the same pinned OSD revision
+`9f82ac1fd6651a0c8dd0671045c54fa87cb91ca5` in fresh CMake output directories,
+using VS 2026/v145, Windows SDK 10.0.26100.0 and Vulkan SDK 1.4.335.0,
+`RelWithDebInfo`. The managed .NET 10 x64 bridge was rebuilt as well.
+
+All 79 native tests passed: core 15, DXGI hook 30 per architecture, Vulkan 2 per
+architecture. All six staged binaries carry a valid Authenticode signature from
+the CapFrameX publisher's Certum certificate
+`C0D5481E2ACBB9DD104A825A81EECF55557BA783`, applied through SimplySign CSP with
+SHA-256 and an RFC 3161 timestamp. PE architectures and both identical Vulkan
+manifests were checked. The hashes below refer to the final signed files;
+older sections retain their historical unsigned build hashes.
+
+| Binary | Signed SHA-256 |
+| --- | --- |
+| Core x64 | `355D5CF33A4898047E9AB4BA841552B5362A7C110782D6260BCD77A592639184` |
+| Hook x64 | `CC2489399696CE77658E391550D46DAA5B36FCBEF32BAABD5393C8F23C532EFC` |
+| Hook x86 | `BBEB432E0D8629C7FF7597944EC1A3E4F4F8F5F9A6F211D4DD502D860F953AB8` |
+| Vulkan x64 | `C77E2330576E84A0E89809A682F1D0ACAEE5BB4F0F2EE9A3E68FFFB10D604483` |
+| Vulkan x86 | `D293858C04040FEBD31BC0651869882B0144D6C1DD1327FD0F2214794474123F` |
+| Managed bridge x64 | `C495C71F3CF5FE63B2AB4C69D4224F6DC1116D3952C01C157372B7AE9D546E94` |
+
 All five native DLLs (core, hook x64/x86, Vulkan layer x64/x86) were rebuilt on **2026-09-26**
 with VS 2026/v145 (MSVC 19.51.36260.0), Windows SDK 10.0.26100.0 and Vulkan SDK 1.4.335.0 in
 `RelWithDebInfo`, from private OSD revision `9f82ac1fd6651a0c8dd0671045c54fa87cb91ca5`, which
