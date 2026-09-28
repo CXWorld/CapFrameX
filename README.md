@@ -20,7 +20,7 @@ CapFrameX is sponsored by [Hone](https://hone.gg). We thank Hone for supporting 
 
 Download **[CapFrameX v1.9.1](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.1)**:
 
-The packages contain stable application build **1.9.1.4**. CapFrameX binaries, native overlay components, the bundled BENCHLAB executable, and setup are digitally signed with the CapFrameX publisher's Certum certificate. Compatible separately installed BENCHLAB services remain supported.
+The packages contain stable application build **1.9.1.5**. This revision adds missing Authenticode signatures to managed dependencies, including LiveCharts.Wpf, and verifies every packaged Windows binary. CapFrameX binaries, native overlay components, the bundled BENCHLAB executable, and setup are digitally signed with the CapFrameX publisher's Certum certificate. Compatible separately installed BENCHLAB services remain supported.
 
 For a portable update, extract the package into a **new folder**, then copy your `Portable` data folder and customized `portable.json` if needed.
 

@@ -7,35 +7,49 @@ CapFrameX 1.9.1 restores the experimental in-game overlay with signed binaries, 
 | `release_1.9.1_installer.zip` | Extract and run `CapFrameXBootstrapper.exe`. Setup installs CapFrameX and registers the x64 and x86 Vulkan layers in their matching HKLM registry views. |
 | `release_1.9.1_portable.zip` | Extract the complete archive and run `CapFrameX.exe`. Keep the included `portable.json` for an isolated portable configuration. Vulkan integration requires separate layer registration. |
 
-Install the [.NET 10 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/10.0) first. Another .NET major version, the plain .NET Runtime, or the legacy .NET Framework does not replace this requirement. Portable installations also require the Visual C++ x64 runtime; see [Portable Mode](https://github.com/CXWorld/CapFrameX/blob/v1.9.1/PORTABLE_MODE.md).
+Install the [.NET 10 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/10.0) first. Another .NET major version, the plain .NET Runtime, or the legacy .NET Framework does not replace this requirement. Portable installations also require the Visual C++ x64 runtime; see [Portable Mode](https://github.com/CXWorld/CapFrameX/blob/v1.9.1.5/PORTABLE_MODE.md).
 
-The internal application version is **1.9.1.4**, with the release channel. CapFrameX binaries, native overlay components, BENCHLAB, and setup carry the CapFrameX publisher's Certum code-signing certificate with SHA-256 timestamps. Original vendor signatures are preserved. Package hashes are supplied in `SHA256SUMS.txt`.
+The internal application version is **1.9.1.5**, with the release channel. CapFrameX binaries, native overlay components, BENCHLAB, and setup carry the CapFrameX publisher's Certum code-signing certificate with SHA-256 timestamps. Original vendor signatures are preserved. Package hashes are supplied in `SHA256SUMS.txt`.
+
+**VirusTotal scan (original build 1.9.1.4):** [`release_1.9.1_portable.zip`](https://www.virustotal.com/gui/file/0e95c6e8893e67aafa3bf14cb9bf0e1f35ad3302dc39b89ec0365d8a24ad04a8)
 
 Close CapFrameX and games before updating. Portable users should extract into a new folder, then copy their previous `Portable` data folder and customized `portable.json`.
 
+## Revised v1.9.1 packages (build 1.9.1.5)
+
+The packages have been rebuilt to correct the missing Authenticode signature on `LiveCharts.Wpf.dll` reported in [#451](https://github.com/CXWorld/CapFrameX/issues/451). All packaged Windows DLLs, including managed dependencies and satellite resources, now have valid Authenticode signatures. Installer custom-action dependencies are signed before embedding. Existing valid vendor signatures are preserved.
+
+The release verification now rejects any unsigned or invalidly signed packaged binary. Package hashes in `SHA256SUMS.txt` have been updated; the VirusTotal link above refers to the original build. This addresses the unsigned-component cause of the Smart App Control report; verification on the reporter's SAC-enabled system is still pending.
+
+Update using the revised installer, or extract the revised portable archive into a new folder and copy your previous `Portable` data folder and customized `portable.json`. Source for this packaging revision: [`v1.9.1.5`](https://github.com/CXWorld/CapFrameX/tree/v1.9.1.5).
+
 ## Overlay and OSD
 
-- Restored **CapFrameX in-game (Experimental)** for DirectX and Vulkan titles, including signed x64 and x86 hook and layer DLLs. Hook-free and RTSS renderers remain available.
-- Improved compatibility probing, per-game learned profiles, and recovery after frame-generation changes, including FSR and XeSS routing.
-- Smoother in-game frametime charts, sharper antialiased lines, and corrected frame cadence under frame generation.
+- Restored **CapFrameX in-game (Experimental)** for DirectX 11, DirectX 12, and Vulkan titles, including signed x64 and x86 hook and layer DLLs. If the in-game renderer cannot be used, the hook-free overlay takes over. Hook-free and RTSS renderers remain available.
+- Automatic compatibility probing with per-game learned profiles, revalidated when conditions change, and recovery after frame-generation changes during a session, including FSR and XeSS routing. Some compatibility changes require restarting the game.
+- Smoother in-game frametime charts, sharper antialiased lines, and corrected frame cadence under frame generation. The FPS graph now works without the frametime graph and can be toggled live.
+- **Improved column layout** in the Overlay tab: OSD options arrange in three columns, wrapping to two in narrower windows, and the overlay item grid shows all columns without horizontal scrolling.
 - Overlay toggles in the Overlay tab and status bar, per-entry text sizes, and an OSD log-folder shortcut.
-- Fixed template apply/revert, profile switching, and the save button. Improved hook-free placement and averaged metrics at each refresh.
-- Optional compatibility reports require explicit user consent. Extended diagnostics remain opt-in.
+- The hook-free overlay shows only while a capture process is detected, is placed on the selected monitor regardless of the taskbar, and averages its metrics at each refresh.
+- The remote OSD API (`/api/osd`, `/ws/osd`) keeps updating while the overlay is switched off.
+- Fixed template apply/revert, profile switching, and the save button.
+- **Share overlay compatibility reports** (Overlay → OSD options) is off by default and requires explicit consent. Reports use a random participant ID and exclude full paths, account details, and raw logs; turning sharing off deletes unsent reports. Extended diagnostics remain opt-in; native overlay logging overhead is reduced.
 
 ## Sensors and system information
 
-- Bundled **BENCHLAB Service 2.4.0**, rebuilt as a signed, self-contained .NET 10 executable. Compatible separately installed services remain supported; fixed null sensor readings.
+- Bundled **BENCHLAB Service 2.4.0**, rebuilt as a signed, self-contained .NET 10 executable that needs no separate ASP.NET runtime. Compatible separately installed services remain supported; fixed null sensor readings.
 - Updated **Intel IGCL v298** and **AMD ADLX 2.0**, with expanded Intel telemetry, fan and PSU readings, and AMD SmartShift monitoring.
-- Added software component versions, platform security status, and **Copy system info** to the Info dashboard.
-- Corrected Intel memory gear decoding and improved overlay entries across CPU changes.
-- Removed the click-to-photon latency feature.
+- The Info dashboard shows software components (PawnIO, PresentMon, RTSS, Vulkan layer) and platform security (Secure Boot, test signing, VBS, memory integrity), and adds **Copy system info**. The log explains when Windows code integrity blocks the PawnIO driver.
+- Corrected Intel Alder/Raptor Lake memory gear decoding and kept per-core overlay entries consistent across CPU changes.
+- Removed the AMD FLM click-to-photon latency feature with its settings, sensors, and overlay entries.
 
 ## Capture, interface, and reliability
 
 - Updated to **PresentMon 2.6.0** and added stored display-layer metadata to captures.
-- Restored per-game capture durations, added persistent hotkey disabling, and preserved additional analysis graph selections.
-- Fixed dragging multiple records into analysis views, modern .NET autostart registration, and update confirmation/relaunch behavior.
-- Improved layouts and clipping across tabs, including maximized 1080p windows. The minimum/default main-window size is now 1488 × 768.
+- Restored per-game capture durations (**Global** or **This game**), added persistent hotkey disabling, and preserved additional analysis graph selections. The capture file mode moved to the Options tab.
+- Fixed dragging multiple records into aggregation, comparison, cloud, and report views, modern .NET autostart registration, and update confirmation/relaunch behavior.
+- Improved layouts and clipping across tabs; every tab now fits a maximized 1080p window. The minimum/default main-window size is now 1488 × 768.
+- Completed the **.NET 10** migration of the remaining projects and managed OSD components.
 - Removed unused AvalonDock files and empty localization folders from packages.
 
 Full changelog: [`v1.9.0...v1.9.1`](https://github.com/CXWorld/CapFrameX/compare/v1.9.0...v1.9.1)
