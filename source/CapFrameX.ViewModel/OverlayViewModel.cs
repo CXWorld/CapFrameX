@@ -725,6 +725,8 @@ namespace CapFrameX.ViewModel
           => SelectedOverlayEntry == null ? null
           : _sensorService.GetSensorTypeString(SelectedOverlayEntry.OverlayEntryType, SelectedOverlayEntry.StableIdentifier);
 
+        private bool HasSelectedOverlayEntry() => SelectedOverlayEntry != null;
+
         public ICommand ConfigSwitchCommand { get; }
 
         public ICommand SaveConfigCommand { get; }
@@ -919,20 +921,32 @@ namespace CapFrameX.ViewModel
             };
             CxLang.Instance.OverlayLanguageChanged += OnOverlayLanguageChanged;
 
+            // Every format command copies from (or resets) the selected entry, and the selection is
+            // empty until the user picks a row and again whenever the entry list is reloaded.
             SetFormatForGroupNameCommand = new DelegateCommand(
-               () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
+               () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes),
+               HasSelectedOverlayEntry)
+                .ObservesProperty(() => SelectedOverlayEntry);
 
             SetFormatForSensorTypeCommand = new DelegateCommand(
-               () => _overlayEntryProvider.SetFormatForSensorType(_sensorService.GetSensorTypeString(SelectedOverlayEntry.OverlayEntryType, SelectedOverlayEntry.StableIdentifier), SelectedOverlayEntry, Checkboxes));
+               () => _overlayEntryProvider.SetFormatForSensorType(_sensorService.GetSensorTypeString(SelectedOverlayEntry.OverlayEntryType, SelectedOverlayEntry.StableIdentifier), SelectedOverlayEntry, Checkboxes),
+               HasSelectedOverlayEntry)
+                .ObservesProperty(() => SelectedOverlayEntry);
 
             ResetColorAndLimitDefaultsCommand = new DelegateCommand(
-                () => _overlayEntryProvider.ResetColorAndLimits(SelectedOverlayEntry));
+                () => _overlayEntryProvider.ResetColorAndLimits(SelectedOverlayEntry),
+                HasSelectedOverlayEntry)
+                .ObservesProperty(() => SelectedOverlayEntry);
 
             SetFormatForAllGroupsCommand = new DelegateCommand(
-               () => _overlayEntryProvider.SetFormatForAllGroups(SelectedOverlayEntry, Checkboxes));
+               () => _overlayEntryProvider.SetFormatForAllGroups(SelectedOverlayEntry, Checkboxes),
+               HasSelectedOverlayEntry)
+                .ObservesProperty(() => SelectedOverlayEntry);
 
             SetFormatForAllValuesCommand = new DelegateCommand(
-               () => _overlayEntryProvider.SetFormatForAllValues(SelectedOverlayEntry, Checkboxes));
+               () => _overlayEntryProvider.SetFormatForAllValues(SelectedOverlayEntry, Checkboxes),
+               HasSelectedOverlayEntry)
+                .ObservesProperty(() => SelectedOverlayEntry);
 
             SetToMinOsdCommand = new DelegateCommand(
                 () => OnSetMinOsd());
