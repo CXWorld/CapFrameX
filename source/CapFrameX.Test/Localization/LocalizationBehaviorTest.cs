@@ -176,6 +176,47 @@ namespace CapFrameX.Test.Localization
                 "API and MCP formatted values must stay neutral.");
         }
 
+        [DataTestMethod]
+        [DataRow(1252, true)]
+        [DataRow(65001, true)]
+        [DataRow(1251, false)]
+        public void RtssOutput_SpanishAccentsNeedAWesternCodePage(int codePage, bool supportsSpanish)
+        {
+            CxLang.Instance.SetOverlayLanguage("es");
+            using var entry = new OverlayEntryWrapper("CaptureServiceStatus")
+            {
+                GroupName = "Animation Error", GroupNameFormat = "<C1>{0}<C>",
+                Value = "Ready to capture...", ValueFormat = "<S2><C3>{0}<C><S>"
+            };
+            Assert.AreEqual(supportsSpanish ? "<C1>Error de animación<C>" : "<C1>Animation Error<C>",
+                RtssTextFormatter.FormatGroupName(entry, codePage));
+            // Translations without accents fit every ANSI code page.
+            Assert.AreEqual("<S2><C3>Listo para capturar...<C><S>", RtssTextFormatter.FormatValue(entry, codePage));
+        }
+
+        [TestMethod]
+        public void SpanishPhrases_PutTheDeviceAfterTheNoun()
+        {
+            CxLang.Instance.SetOverlayLanguage("es");
+            var expected = new Dictionary<string, string>
+            {
+                ["CPU Package (W)"] = "Paquete CPU (W)",
+                ["GPU Core (°C)"] = "Núcleo GPU (°C)",
+                ["GPU Memory Used (GB)"] = "Memoria GPU usada (GB)",
+                ["GPU Mem Used"] = "Mem. GPU usada",
+                ["GPU Hot Spot (°C)"] = "Punto caliente GPU (°C)",
+                ["GPU Power Limit"] = "Límite de potencia GPU",
+                ["GPU Temp"] = "Temp. GPU",
+                ["CPU Max Core Temp"] = "Temp. máx. núcleos CPU",
+                ["P-Core #1 Thread #2 (Effective) (MHz)"] = "Núcleo P #1 hilo #2 (efectivo) (MHz)",
+                ["Drive Temperature (°C)"] = "Temperatura del disco (°C)",
+                ["Run 3:"] = "Pasada 3:",
+                ["<APP>"] = "<APP>"
+            };
+            foreach (var pair in expected)
+                Assert.AreEqual(pair.Value, CxLang.Instance.TranslateOverlay(pair.Key), pair.Key);
+        }
+
         [TestMethod]
         public void RtssUnits_LeaveNumbersFormatTagsAndHardwareNamesIntact()
         {

@@ -47,8 +47,9 @@ namespace CapFrameX.ViewModel
         private bool _saveButtonIsEnable;
         private bool _isActive;
         private bool _aggregateButtonIsEnable = true;
-        private string _aggregationButtonText = CxLang.T("SensorViewModel_EvaluateMultipleEntries");
-        private string _sensorStatisticsText = CxLang.T("SensorViewModel_SensorStatisticsForSelectedRecord");
+        // Kept as keys (LocalizedText) so the texts follow a UI language change.
+        private LocalizedText _aggregationButtonText = new LocalizedText("SensorViewModel_EvaluateMultipleEntries");
+        private LocalizedText _sensorStatisticsText = new LocalizedText("SensorViewModel_SensorStatisticsForSelectedRecord");
         private bool _selectedRecordChanged;
 
         public IFileRecordInfo RecordInfo { get; private set; }
@@ -136,24 +137,20 @@ namespace CapFrameX.ViewModel
 
         public bool CopyRawSensorsEnable { get; set; }
 
-        public string AggregateButtonText
+        public string AggregateButtonText => _aggregationButtonText.Resolve();
+
+        public string SensorStatisticsText => _sensorStatisticsText.Resolve();
+
+        private void SetAggregateButtonText(LocalizedText text)
         {
-            get { return CxLang.T(_aggregationButtonText); }
-            set
-            {
-                _aggregationButtonText = value;
-                RaisePropertyChanged();
-            }
+            _aggregationButtonText = text;
+            RaisePropertyChanged(nameof(AggregateButtonText));
         }
 
-        public string SensorStatisticsText
+        private void SetSensorStatisticsText(LocalizedText text)
         {
-            get { return CxLang.T(_sensorStatisticsText); }
-            set
-            {
-                _sensorStatisticsText = value;
-                RaisePropertyChanged();
-            }
+            _sensorStatisticsText = text;
+            RaisePropertyChanged(nameof(SensorStatisticsText));
         }
 
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
@@ -205,6 +202,15 @@ namespace CapFrameX.ViewModel
             // define submodels
             SensorSubModelGroupControl = new SensorGroupControl(this);
 
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage))
+                {
+                    RaisePropertyChanged(nameof(AggregateButtonText));
+                    RaisePropertyChanged(nameof(SensorStatisticsText));
+                }
+            };
+
             SaveConfigCommand = new DelegateCommand(
                 async () =>
                 {
@@ -223,7 +229,7 @@ namespace CapFrameX.ViewModel
                 {
                     if (_applicationState.SelectedRecords != null && _applicationState.SelectedRecords.Count > 1)
                     {
-                        AggregateButtonText = CxLang.T("SensorViewModel_Working");
+                        SetAggregateButtonText(new LocalizedText("SensorViewModel_Working"));
                         AggregateButtonIsEnable = false;
                         CopyRawSensorsEnable = false;
                         _selectedRecordChanged = false;
@@ -238,8 +244,8 @@ namespace CapFrameX.ViewModel
                         else
                             AggregateSensorDataOfSessions(sessions);
 
-                        AggregateButtonText = CxLang.T("SensorViewModel_EvaluateMultipleEntries");
-                        SensorStatisticsText = CxLang.T("SensorViewModel_SensorStatisticsForMultipleSelected");
+                        SetAggregateButtonText(new LocalizedText("SensorViewModel_EvaluateMultipleEntries"));
+                        SetSensorStatisticsText(new LocalizedText("SensorViewModel_SensorStatisticsForMultipleSelected"));
                         AggregateButtonIsEnable = true;
                     }
                 });
@@ -283,7 +289,7 @@ namespace CapFrameX.ViewModel
                     UpdateSensorSessionReport(msg.CurrentSession);
                     CopyRawSensorsEnable = true;
                     _selectedRecordChanged = true;
-                    SensorStatisticsText = CxLang.T("SensorViewModel_SensorStatisticsForSelectedRecord2");
+                    SetSensorStatisticsText(new LocalizedText("SensorViewModel_SensorStatisticsForSelectedRecord2"));
                 });
         }
 

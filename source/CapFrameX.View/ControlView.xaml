@@ -367,6 +367,7 @@
                         <DataGrid.Columns>
                             <DataGridTextColumn x:Name="GameColumn" Binding="{Binding GameName, Mode=OneWay}"
                                         Width="Auto"
+                                        MinWidth="90"
                                         Header="{loc:Tr ControlView_Game}"
                                         FontSize="13"
                                         IsReadOnly="True">

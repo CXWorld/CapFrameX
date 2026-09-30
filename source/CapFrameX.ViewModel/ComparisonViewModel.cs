@@ -927,7 +927,13 @@ namespace CapFrameX.ViewModel
             CxLang.Instance.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(CxLang.UiLanguage))
+                {
                     RefreshSortMetricNames();
+                    UpdateComparisonMetricSourceLabels();
+                    ComparisonFrametimesModel?.InvalidatePlot(false);
+                    ComparisonFpsModel?.InvalidatePlot(false);
+                    ComparisonDistributionModel?.InvalidatePlot(false);
+                }
             };
 
             InitializeMetricsFromConfig();
@@ -1458,6 +1464,14 @@ namespace CapFrameX.ViewModel
                 ? "ComparisonViewModel_DisplayTimeMs" : "ComparisonViewModel_PresentFrametimeMs");
             string fpsTitle = CxLang.T(display
                 ? "ComparisonViewModel_DisplayFPSPerSecond" : "ComparisonViewModel_PresentFPSPerSecond");
+
+            var frametimeXAxis = ComparisonFrametimesModel?.Axes.FirstOrDefault(axis => axis.Key == "xAxis");
+            if (frametimeXAxis != null)
+                frametimeXAxis.Title = CxLang.T("ComparisonViewModel_RecordingTimeS");
+
+            var fpsXAxis = ComparisonFpsModel?.Axes.FirstOrDefault(axis => axis.Key == "xAxis");
+            if (fpsXAxis != null)
+                fpsXAxis.Title = CxLang.T("ComparisonViewModel_RecordingTimeS2");
 
             var frametimeAxis = ComparisonFrametimesModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (frametimeAxis != null)
@@ -2319,25 +2333,21 @@ namespace CapFrameX.ViewModel
 
         private string GetDescriptionAndFpsUnit(EMetric metric)
         {
-            string description;
-            if (metric == EMetric.CpuFpsPerWatt || metric == EMetric.GpuFpsPerWatt)
-            {
-                description = metric.GetDescription();
-            }
-            else
-                description = $"{metric.GetDescription()} FPS";
-
             string source;
             if (metric == EMetric.GpuActiveAverage || metric == EMetric.GpuActiveP1
                 || metric == EMetric.GpuActiveOnePercentLowAverage)
-                source = "GPU active";
+                source = CxLang.T("ComparisonViewModel_LegendGPUActive");
             else if (metric == EMetric.Average || metric == EMetric.CpuFpsPerWatt
                 || metric == EMetric.GpuFpsPerWatt)
-                source = "Present";
+                source = CxLang.T("ComparisonViewModel_LegendPresent");
             else
-                source = _useDisplayChangeSamplesForComparison ? "Display" : "Present";
+                source = CxLang.T(_useDisplayChangeSamplesForComparison
+                    ? "ComparisonViewModel_LegendDisplay" : "ComparisonViewModel_LegendPresent");
 
-            return description + " (" + source + ")";
+            if (metric == EMetric.CpuFpsPerWatt || metric == EMetric.GpuFpsPerWatt)
+                return CxLang.TranslateEnum(metric) + " (" + source + ")";
+
+            return CxLang.Format("ComparisonViewModel_MetricFps01", CxLang.TranslateEnum(metric), source);
         }
 
         private EMetric GetMetricByIndex(int index)
@@ -2364,7 +2374,8 @@ namespace CapFrameX.ViewModel
             {
                 var newLine = Environment.NewLine;
                 infoText += $"{fileRecordInfo.CreationDate} {fileRecordInfo.CreationTime}" + newLine +
-                    $"{frameTimes.Count()} frames in {Math.Round(recordTime, 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}s";
+                    CxLang.Format("ComparisonViewModel_FramesIn01", frameTimes.Count(),
+                        Math.Round(recordTime, 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture));
             }
 
             return new ComparisonRecordInfo
