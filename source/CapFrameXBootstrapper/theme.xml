@@ -36,7 +36,7 @@
             <Richedit Name="EulaRichedit" X="12" Y="92" Width="-12" Height="-141" TabStop="yes" FontId="0" />
             <Label Name="InstallVersion" X="12" Y="-115" Width="200" Height="17" FontId="3" DisablePrefix="yes" VisibleCondition="WixStdBAShowVersion">#(loc.InstallVersion)</Label>
             <Checkbox Name="EulaAcceptCheckbox" X="-11" Y="-115" Width="260" Height="17" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
-            <Label X="12" Y="-44" Width="-10" Height="68" FontId="5">Import your configuration: if this is the first installation on this PC, you can transfer your settings from another system. Place your "Configuration" folder in the same directory as this setup before you continue. Its settings files will be copied to AppData\CapFrameX\Configuration.</Label>
+            <Label X="12" Y="-44" Width="-10" Height="68" FontId="5">Import your configuration: if this is the first installation on this PC, you can transfer your settings from another system. Place your "Configuration" folder in the same directory as this setup before you continue. Its settings files will be copied to %AppData%\CapFrameX\Configuration.</Label>
             <Button Name="OptionsButton" X="-171" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" VisibleCondition="NOT WixStdBASuppressOptionsUI">
                 <Text>#(loc.InstallOptionsButton)</Text>
                 <ChangePageAction Page="Options" />
