@@ -17,7 +17,7 @@
     <Font Id="5" Height="-12" Weight="700" Foreground="000000">Segoe UI</Font>
     <Font Id="6" Height="-11" Weight="500" Foreground="FDFDFD" Background="0271F9">Segoe UI</Font>
 
-    <Window Width="500" Height="555" HexStyle="100a0000" FontId="0" Caption="#(loc.Caption)" IconFile="cx_icon.ico">
+    <Window Width="500" Height="610" HexStyle="100a0000" FontId="0" Caption="#(loc.Caption)" IconFile="cx_icon.ico">
         <ImageControl X="0" Y="0" Width="500" Height="80" ImageFile="logo.png" Visible="yes"/>
 
         <Page Name="Help">
@@ -36,7 +36,7 @@
             <Richedit Name="EulaRichedit" X="12" Y="92" Width="-12" Height="-141" TabStop="yes" FontId="0" />
             <Label Name="InstallVersion" X="12" Y="-115" Width="200" Height="17" FontId="3" DisablePrefix="yes" VisibleCondition="WixStdBAShowVersion">#(loc.InstallVersion)</Label>
             <Checkbox Name="EulaAcceptCheckbox" X="-11" Y="-115" Width="260" Height="17" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
-            <Label X="12" Y="-44" Width="-10" Height="68" FontId="5">Import your configuration: If this is the first installation on this system you can&#x0a;transfer your settings from another system. Just have your "Configuration"&#x0a;folder in the same directory you're running this setup from before you continue.&#x0a;All configs within that folder will be copied  to Documents/CapFrameX.</Label>
+            <Label X="12" Y="-44" Width="-10" Height="68" FontId="5">Import your configuration: if this is the first installation on this PC, you can transfer your settings from another system. Place your "Configuration" folder in the same directory as this setup before you continue. Its settings files will be copied to AppData\CapFrameX\Configuration.</Label>
             <Button Name="OptionsButton" X="-171" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" VisibleCondition="NOT WixStdBASuppressOptionsUI">
                 <Text>#(loc.InstallOptionsButton)</Text>
                 <ChangePageAction Page="Options" />
