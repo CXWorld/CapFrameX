@@ -9,6 +9,7 @@ namespace CapFrameX.Test.PresentMonInterface
         [TestMethod]
         public void ParseVersionFromAppName_BundledName_ReturnsVersionWithoutArchitecture()
         {
+            Assert.AreEqual("2.6.1", CaptureServiceConfiguration.ParseVersionFromAppName(CaptureServiceConfiguration.PresentMonAppName));
             Assert.AreEqual("2.6.0", CaptureServiceConfiguration.ParseVersionFromAppName("PresentMon-2.6.0-x64"));
         }
 

@@ -171,7 +171,7 @@ function Stop-RunningOutputProcesses
                 {
                     $trackedChildProcessIds = @(Get-CimInstance Win32_Process `
                         -Filter "ParentProcessId = $trackedProcessId" -ErrorAction SilentlyContinue |
-                        Where-Object { $_.Name -like "PresentMon*.exe" } |
+                        Where-Object { $_.Name -like "*PresentMon*.exe" } |
                         Select-Object -ExpandProperty ProcessId)
                     $trackedProcessIds = @($trackedProcessId) + $trackedChildProcessIds
                     try
@@ -222,7 +222,7 @@ function Stop-RunningOutputProcesses
         }
     }
 
-    $processes = Get-CimInstance Win32_Process -Filter "Name = 'CapFrameX.exe' OR Name LIKE 'PresentMon%.exe'" -ErrorAction SilentlyContinue
+    $processes = Get-CimInstance Win32_Process -Filter "Name = 'CapFrameX.exe' OR Name LIKE '%PresentMon%.exe'" -ErrorAction SilentlyContinue
     foreach ($process in $processes)
     {
         if (-not $process.ExecutablePath)

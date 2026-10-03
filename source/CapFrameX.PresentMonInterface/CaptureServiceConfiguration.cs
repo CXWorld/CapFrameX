@@ -7,7 +7,8 @@ namespace CapFrameX.PresentMonInterface
 {
     public static class CaptureServiceConfiguration
     {
-        public static string PresentMonAppName = "PresentMon-2.6.0-x64";
+        // CapFrameX's own PresentMon build: Intel's 2.6.0 release plus fixes, see PresentMon\README.md.
+        public static string PresentMonAppName = "CX-PresentMon-2.6.1-x64";
 
         /// <summary>
         /// Full path of the bundled PresentMon executable.
