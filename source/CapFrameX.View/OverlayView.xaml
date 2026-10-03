@@ -1207,8 +1207,6 @@
 									<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 									<StackPanel Margin="0 8">
 										<RadioButton GroupName="OverlayModeHook" Content="{loc:Tr OverlayView_CapFrameXInGame}"
-                                                     IsEnabled="{Binding IsInGameOverlayAvailable}"
-                                                     ToolTip="{Binding InGameOverlayDescription}" ToolTipService.ShowOnDisabled="True"
 													 IsChecked="{Binding OverlayModeHook, Mode=TwoWay}"
 													 Style="{StaticResource MaterialDesignRadioButton}"/>
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
@@ -1227,7 +1225,6 @@
 										<StackPanel Margin="26 10 0 0">
 											<CheckBox Content="{loc:Tr OverlayView_ShareOverlayCompatibilityReports}"
 													  IsChecked="{Binding ShareOverlayCompatibilityProfiles, Mode=TwoWay}"
-													  IsEnabled="{Binding IsInGameOverlayAvailable}"
 													  Style="{StaticResource MaterialDesignCheckBox}"/>
 											<TextBlock Margin="26 2 0 0" Style="{StaticResource OsdOptionsDescription}" TextWrapping="Wrap"
 													   Text="{loc:Tr OverlayView_SendFutureSessionProfilesGame}"/>

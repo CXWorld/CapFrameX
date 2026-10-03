@@ -127,21 +127,11 @@ namespace CapFrameX.Overlay
             {
                 // With neither CapFrameX renderer selected, the two false flags mean "RTSS".
                 // Do not leave a configuration on a renderer that cannot exist: persist the default
-                // renderer (in-game where available, otherwise hook-free) so the UI and every
-                // downstream consumer observe the same usable mode. Explicit in-game/hook-free
-                // choices are preserved.
-                if (OverlayAvailability.IsInGameAvailable)
-                {
-                    _appConfiguration.EnableHookOverlay = true;
-                    _logger.LogInformation(
-                        "RTSS is not installed. Selecting the CapFrameX in-game overlay as the default renderer.");
-                }
-                else
-                {
-                    _appConfiguration.EnableHookFreeOverlay = true;
-                    _logger.LogInformation(
-                        "RTSS is not installed. Selecting the CapFrameX hook-free overlay as the default renderer.");
-                }
+                // in-game renderer so the UI and every downstream consumer observe the same usable
+                // mode. Explicit in-game/hook-free choices are preserved.
+                _appConfiguration.EnableHookOverlay = true;
+                _logger.LogInformation(
+                    "RTSS is not installed. Selecting the CapFrameX in-game overlay as the default renderer.");
             }
 
             bool configuredOverlayActive = _appConfiguration.IsOverlayActive;

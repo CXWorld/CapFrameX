@@ -49,7 +49,6 @@ namespace CapFrameX
     {
         // Keeps the hook-free OSD bridge alive for the app lifetime.
         private OSD.Integration.OsdOverlayBridge _osdOverlayBridge;
-#if CFX_INGAME_OVERLAY
         // Manages in-game hook injection into the detected game process.
         private OSD.Integration.HookOverlayManager _hookOverlayManager;
         // Publishes CapFrameX's overlay entries to the in-game hook via shared memory.
@@ -59,7 +58,6 @@ namespace CapFrameX
         // Learned in-game compatibility profiles (JSON in the configuration folder).
         private OSD.Integration.HookLearnedProfileStore _hookLearnedProfileStore;
         private OSD.Integration.HookProfileReportService _hookProfileReports;
-#endif
         private OSD.Integration.HookOverlayStatusService _hookOverlayStatusService;
 
         // The existing composition root uses DryIoc-specific registration APIs. PrismApplication
@@ -141,7 +139,6 @@ namespace CapFrameX
                 rtssService.VulkanPresentationProbe =
                     OSD.Integration.VulkanPresentation.IsActive;
 
-#if CFX_INGAME_OVERLAY
                 // In-game hook overlay: inject cfx_osd_hook.dll into the game CapFrameX already
                 // detected. The PID flows through IRTSSService.ProcessIdStream (IProcessService),
                 // the same stream the overlay/capture pipeline uses — so we address the process
@@ -160,8 +157,6 @@ namespace CapFrameX
                         profileReports: _hookProfileReports);
                 }
 
-#endif
-
                 // CapFrameX.OSD: hook-free DWM/DirectComposition overlay. Scalars come from the
                 // same IOverlayEntry[] stream RTSS uses; per-present frametimes from the capture
                 // service. Besides the explicit hook-free mode, it takes over transiently when the
@@ -176,9 +171,7 @@ namespace CapFrameX
                         PresentMonCaptureService.PresentRuntime_INDEX,
                         PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
                         () => osdCaptureService.CPUStartQPCTimeInMs_Index,
-#if CFX_INGAME_OVERLAY
                         hookFreeFallbackStream: _hookOverlayManager.HookFreeFallbackStream,
-#endif
                         processIdStream: rtssService.ProcessIdStream,
                         processIdColumnIndex:
                             PresentMonCaptureService.ProcessID_INDEX,
@@ -189,7 +182,6 @@ namespace CapFrameX
                         processCountStream: rtssService.ProcessCountStream);
                 }
 
-#if CFX_INGAME_OVERLAY
                 // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries
                 // (fps/lows/sensors/static rows — the same set RTSS/hook-free render) into shared memory
                 // so the injected hook shows authoritative values, not just its local frame ring.
@@ -216,8 +208,6 @@ namespace CapFrameX
                         PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
                         () => osdCaptureService.CPUStartQPCTimeInMs_Index);
                 }
-
-#endif
 
                 using (StartupPerformanceLogger.Measure("Shell configuration"))
                 {
@@ -303,15 +293,10 @@ namespace CapFrameX
                     _hookOverlayStatusService = new OSD.Integration.HookOverlayStatusService();
                     Container.RegisterInstance<IHookOverlayStatusService>(
                         _hookOverlayStatusService);
-#if CFX_INGAME_OVERLAY
                     // Same folder as the other per-user stores; portable mode redirects it.
                     _hookLearnedProfileStore =
                         OSD.Integration.HookLearnedProfileStore.Create(pathService.ConfigFolder);
                     Container.RegisterInstance<IHookLearnedProfileService>(_hookLearnedProfileStore);
-#else
-                    Container.RegisterInstance<IHookLearnedProfileService>(
-                        NullHookLearnedProfileService.Instance);
-#endif
                 }
 
                 using (StartupPerformanceLogger.Measure("Prism and core service registrations"))
@@ -364,7 +349,6 @@ namespace CapFrameX
                 {
                     Container.Register<ISystemInfo, SystemInfo.NetStandard.SystemInfo>(Reuse.Singleton);
                     Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
-#if CFX_INGAME_OVERLAY
                     var reportVersionProvider = Container.Resolve<IAppVersionProvider>();
                     _hookProfileReports = new OSD.Integration.HookProfileReportService(
                         appConfiguration, pathService.ConfigFolder,
@@ -372,7 +356,6 @@ namespace CapFrameX
                         reportVersionProvider.GetAppVersion().ToString(),
                         reportVersionProvider.GetReleaseChannel().ToString());
                     Exit += (_, _) => _hookProfileReports.Dispose();
-#endif
 
 					// The update service needs its catalog URI and the staging folder, neither of
 					// which the container can supply, so it is built here like the process list below.

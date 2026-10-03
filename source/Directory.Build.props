@@ -4,12 +4,6 @@
        outside this folder and must not inherit central package management from here. -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <!-- In-game rendering and its native payloads are enabled for 1.9.2 development. -->
-    <CfxEnableInGameOverlay Condition="'$(CfxEnableInGameOverlay)' == ''">true</CfxEnableInGameOverlay>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(CfxEnableInGameOverlay)' == 'true'">
-    <DefineConstants>$(DefineConstants);CFX_INGAME_OVERLAY</DefineConstants>
   </PropertyGroup>
 
 </Project>

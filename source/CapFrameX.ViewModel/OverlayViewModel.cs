@@ -600,14 +600,10 @@ namespace CapFrameX.ViewModel
         public bool OverlayModeHook
         {
             get { return _appConfiguration.EnableHookOverlay; }
-            set { if (value && IsInGameOverlayAvailable) SetOverlayMode(hook: true, hookFree: false); }
+            set { if (value) SetOverlayMode(hook: true, hookFree: false); }
         }
 
-        public bool IsInGameOverlayAvailable => OverlayAvailability.IsInGameAvailable;
-
-        public string InGameOverlayDescription => IsInGameOverlayAvailable
-            ? CxLang.T("OverlayViewModel_InjectedIntoTheGameFor")
-            : OverlayAvailability.InGameUnavailableMessage;
+        public string InGameOverlayDescription => CxLang.T("OverlayViewModel_InjectedIntoTheGameFor");
 
         public bool OverlayModeHookFree
         {

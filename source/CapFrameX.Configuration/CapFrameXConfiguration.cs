@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using Microsoft.Extensions.Logging;
-using CapFrameX.Contracts.Overlay;
 using System;
 using System.Collections.Generic;
 using LibreHardwareMonitor.Hardware.Simulation;
@@ -779,7 +778,7 @@ namespace CapFrameX.Configuration
 
         public bool EnableHookFreeOverlay
         {
-            // Hook-free is the default only where the in-game overlay is unavailable.
+            // Hook-free is only the default when the in-game overlay was switched off.
             get => Get<bool>(!EnableHookOverlay);
             set => Set(value);
         }
@@ -807,9 +806,9 @@ namespace CapFrameX.Configuration
 
         public bool EnableHookOverlay
         {
-            // The in-game overlay is the default renderer wherever it is available.
-            get => OverlayAvailability.IsInGameAvailable && Get<bool>(true);
-            set => Set(value && OverlayAvailability.IsInGameAvailable);
+            // The in-game overlay is the default renderer.
+            get => Get<bool>(true);
+            set => Set(value);
         }
 
         public bool HookOverlayUsePresentMonFrametimes
@@ -1101,13 +1100,6 @@ namespace CapFrameX.Configuration
             try
             {
                 _settingsStorage.Load().Wait();
-                if (!OverlayAvailability.IsInGameAvailable &&
-                    Get<bool>(false, nameof(EnableHookOverlay)))
-                {
-                    // Migrate the earlier 1.9.0 selection before any renderer subscribes.
-                    EnableHookFreeOverlay = true;
-                    EnableHookOverlay = false;
-                }
             }
             catch (Exception ex)
             {

@@ -8,9 +8,8 @@ using Moq;
 
 namespace CapFrameX.Test.Integration
 {
-#if CFX_INGAME_OVERLAY
     [TestClass]
-    public class InGameOverlayAvailabilityTest
+    public class OverlayRendererConfigurationTest
     {
         [TestMethod]
         public void Configuration_DefaultsToInGameForNewSettings()
@@ -55,7 +54,7 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void Configuration_CanReactivateInGameAfterReleaseMigration()
+        public void Configuration_CanSwitchFromHookFreeToInGame()
         {
             var settings = CreateSettings();
             settings.SetValue(nameof(IAppConfiguration.EnableHookOverlay), false);
@@ -111,5 +110,4 @@ namespace CapFrameX.Test.Integration
             return settings.Object;
         }
     }
-#endif
 }

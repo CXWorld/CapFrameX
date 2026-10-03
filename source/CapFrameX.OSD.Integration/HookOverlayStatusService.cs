@@ -15,9 +15,7 @@ namespace CapFrameX.OSD.Integration
         public HookOverlayStatusService()
         {
             _current = new HookOverlayStatus(EHookOverlayStatus.Disabled,
-                detail: OverlayAvailability.IsInGameAvailable
-                    ? "The in-game hook overlay is disabled."
-                    : OverlayAvailability.InGameUnavailableMessage);
+                detail: "The in-game hook overlay is disabled.");
             _statusStream = new BehaviorSubject<HookOverlayStatus>(_current);
         }
 
