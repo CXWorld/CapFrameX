@@ -904,7 +904,7 @@
     "OverlayView_CPUCoreVoltages": "Напряжения ядер ЦП",
     "OverlayView_CalculationTimeFrame": "Окно расчёта",
     "OverlayView_CapFrameXHookFree": "CapFrameX без внедрения",
-    "OverlayView_CapFrameXInGameExperimental": "CapFrameX в игре (эксперимент)",
+    "OverlayView_CapFrameXInGame": "CapFrameX в игре",
     "OverlayView_CaptureItems": "Элементы захвата",
     "OverlayView_ChartRefreshRate": "Частота обновления графика",
     "OverlayView_CheckCPUClocks": "Отметить частоты ЦП",

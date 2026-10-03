@@ -779,7 +779,7 @@ namespace CapFrameX.Configuration
 
         public bool EnableHookFreeOverlay
         {
-            // Use hook-free by default while preserving an existing in-game selection.
+            // Hook-free is the default only where the in-game overlay is unavailable.
             get => Get<bool>(!EnableHookOverlay);
             set => Set(value);
         }
@@ -807,7 +807,8 @@ namespace CapFrameX.Configuration
 
         public bool EnableHookOverlay
         {
-            get => OverlayAvailability.IsInGameAvailable && Get<bool>(false);
+            // The in-game overlay is the default renderer wherever it is available.
+            get => OverlayAvailability.IsInGameAvailable && Get<bool>(true);
             set => Set(value && OverlayAvailability.IsInGameAvailable);
         }
 

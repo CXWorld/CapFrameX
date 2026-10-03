@@ -36,10 +36,10 @@ namespace CapFrameX.Test.Overlay
         [DataRow(false, true, false, false)]
         [DataRow(false, false, true, false)]
         [DataRow(false, true, true, false)]
-        public void ShouldDefaultToHookFreeOverlay_OnlyReplacesUnavailableRtss(
+        public void ShouldReplaceUnavailableRtss_OnlyReplacesUnavailableRtss(
             bool rtssInstalled, bool hookFreeEnabled, bool hookEnabled, bool expected)
         {
-            bool actual = OverlayService.ShouldDefaultToHookFreeOverlay(
+            bool actual = OverlayService.ShouldReplaceUnavailableRtss(
                 rtssInstalled, hookFreeEnabled, hookEnabled);
 
             Assert.AreEqual(expected, actual);

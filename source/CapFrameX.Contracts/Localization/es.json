@@ -1037,7 +1037,7 @@
     "OverlayView_CPUCoreVoltages": "Voltajes de núcleos de CPU",
     "OverlayView_CalculationTimeFrame": "Intervalo de cálculo",
     "OverlayView_CapFrameXHookFree": "CapFrameX sin hook",
-    "OverlayView_CapFrameXInGameExperimental": "CapFrameX en el juego (experimental)",
+    "OverlayView_CapFrameXInGame": "CapFrameX en el juego",
     "OverlayView_CaptureItems": "Elementos de captura",
     "OverlayView_ChartRefreshRate": "Frecuencia de actualización del gráfico",
     "OverlayView_CheckCPUClocks": "Marcar relojes de CPU",

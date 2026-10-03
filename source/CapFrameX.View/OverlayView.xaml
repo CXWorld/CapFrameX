@@ -1206,7 +1206,7 @@
 
 									<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 									<StackPanel Margin="0 8">
-										<RadioButton GroupName="OverlayModeHook" Content="{loc:Tr OverlayView_CapFrameXInGameExperimental}"
+										<RadioButton GroupName="OverlayModeHook" Content="{loc:Tr OverlayView_CapFrameXInGame}"
                                                      IsEnabled="{Binding IsInGameOverlayAvailable}"
                                                      ToolTip="{Binding InGameOverlayDescription}" ToolTipService.ShowOnDisabled="True"
 													 IsChecked="{Binding OverlayModeHook, Mode=TwoWay}"

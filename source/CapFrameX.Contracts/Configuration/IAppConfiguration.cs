@@ -165,7 +165,8 @@ namespace CapFrameX.Contracts.Configuration
 		bool HideOverlay { get; set; }
 
 		/// <summary>
-		/// Use the hook-free DWM/DirectComposition overlay (CapFrameX.OSD), the default renderer.
+		/// Use the hook-free DWM/DirectComposition overlay (CapFrameX.OSD). The default renderer only in
+		/// builds without the in-game overlay (<see cref="CapFrameX.Contracts.Overlay.OverlayAvailability.IsInGameAvailable"/>).
 		/// </summary>
 		bool EnableHookFreeOverlay { get; set; }
 
@@ -182,9 +183,9 @@ namespace CapFrameX.Contracts.Configuration
 		int HookFreeRefreshRate { get; set; }
 
 		/// <summary>
-		/// Inject the experimental in-game hook overlay (cfx_osd_hook.dll) into the detected game process
-		/// for smooth in-swapchain graphs. Opt-in, per detected process; injection targets the
-		/// PID CapFrameX already detected via <see cref="CapFrameX.Monitoring.Contracts.IProcessService.ProcessIdStream"/>.
+		/// Inject the in-game hook overlay (cfx_osd_hook.dll) into the detected game process for smooth
+		/// in-swapchain graphs. The default renderer wherever the in-game overlay is available; injection
+		/// targets the PID CapFrameX already detected via <see cref="CapFrameX.Monitoring.Contracts.IProcessService.ProcessIdStream"/>.
 		/// </summary>
 		bool EnableHookOverlay { get; set; }
 

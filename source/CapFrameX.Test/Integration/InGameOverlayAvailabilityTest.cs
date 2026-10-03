@@ -13,6 +13,33 @@ namespace CapFrameX.Test.Integration
     public class InGameOverlayAvailabilityTest
     {
         [TestMethod]
+        public void Configuration_DefaultsToInGameForNewSettings()
+        {
+            var settings = CreateSettings();
+
+            var configuration = new CapFrameXConfiguration(
+                NullLogger<CapFrameXConfiguration>.Instance, settings);
+
+            Assert.IsTrue(configuration.EnableHookOverlay);
+            Assert.IsFalse(configuration.EnableHookFreeOverlay);
+            Assert.IsTrue(settings.GetValue<bool>(nameof(IAppConfiguration.EnableHookOverlay)));
+        }
+
+        [TestMethod]
+        public void Configuration_PreservesExistingHookFreeSelection()
+        {
+            var settings = CreateSettings();
+            settings.SetValue(nameof(IAppConfiguration.EnableHookOverlay), false);
+            settings.SetValue(nameof(IAppConfiguration.EnableHookFreeOverlay), true);
+
+            var configuration = new CapFrameXConfiguration(
+                NullLogger<CapFrameXConfiguration>.Instance, settings);
+
+            Assert.IsFalse(configuration.EnableHookOverlay);
+            Assert.IsTrue(configuration.EnableHookFreeOverlay);
+        }
+
+        [TestMethod]
         public void Configuration_PreservesExistingInGameSelection()
         {
             var settings = CreateSettings();
