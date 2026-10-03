@@ -44,6 +44,15 @@
 				<Setter Property="BorderThickness" Value="0"/>
 				<Setter Property="CornerRadius" Value="6"/>
 			</Style>
+			<!--Labels beside fixed-width controls in the overlay item cards: a translation that does not
+			    fit ends in an ellipsis and shows in full as the tool tip.-->
+			<Style x:Key="OverlayCardLabel" TargetType="{x:Type TextBlock}">
+				<Setter Property="Margin" Value="0 0 8 0"/>
+				<Setter Property="VerticalAlignment" Value="Center"/>
+				<Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+				<Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+				<Setter Property="ctrls:TrimmedTextToolTip.IsEnabled" Value="True"/>
+			</Style>
 			<Style x:Key="OsdOptionsSectionHeader" TargetType="{x:Type TextBlock}">
 				<Setter Property="Margin" Value="0 0 0 4"/>
 				<Setter Property="FontSize" Value="16"/>
@@ -65,14 +74,22 @@
 	<Grid>
 		<TabControl Margin="10" Background="{DynamicResource MaterialDesign.Brush.Card.Background}" BorderThickness="0" FocusVisualStyle="{x:Null}">
 			<TabItem Header="{loc:Tr OverlayView_OverlayItems}">
-				<Grid Margin="{StaticResource CxTabContentMargin}" HorizontalAlignment="Left">
+				<!--Narrower than the column MinWidths together (a wide record list on the smallest window), the
+				    page scrolls sideways instead of cutting the settings off. MinWidth below is their sum.-->
+				<ScrollViewer x:Name="OverlayItemsScrollViewer" Margin="{StaticResource CxTabContentMargin}"
+							  HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+				<Grid Width="{Binding ViewportWidth, ElementName=OverlayItemsScrollViewer}" MinWidth="990">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="*"/>
 					</Grid.RowDefinitions>
+					<!--The smallest window (1488 px) leaves 1000-1050 px here, depending on the record list:
+					    both columns fit, the entry list giving up the most. A wider window widens the list first,
+					    then the settings, each up to its MaxWidth (the list's fits the longest translated
+					    entries); further space stays free.-->
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="540"/>
+						<ColumnDefinition Width="3*" MinWidth="460" MaxWidth="660"/>
 						<ColumnDefinition Width="10"/>
-						<ColumnDefinition Width="540"/>
+						<ColumnDefinition Width="2*" MinWidth="520" MaxWidth="620"/>
 					</Grid.ColumnDefinitions>
 		<!--Margin keeps the top edge level with the first card of the right column (spacer-less grid + 5px card margin)-->
 		<Border Style="{StaticResource SectionCard}" Margin="0 0 0 5" Grid.Row="0" Grid.Column="0" >
@@ -209,7 +226,7 @@
 								<materialDesign:PackIcon Kind="FilterRemove" Height="16" Width="16" />
 							</Button>
 						</StackPanel>
-						<DataGrid Grid.Row="2" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Width="520" FontSize="12"
+						<DataGrid Grid.Row="2" x:Name="OverlayItemDataGrid" FocusVisualStyle="{x:Null}" Height="Auto" Margin="10 0" FontSize="12"
 					          SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntriesView}"
 					          SelectionMode="Extended" CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" ColumnHeaderHeight="17"
 					          materialDesign:DataGridAssist.CellPadding="13 5 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="14 0 0 2" IsSynchronizedWithCurrentItem="False"
@@ -530,7 +547,7 @@
 			the page at the default window height, so the column scrolls instead of cutting them off.-->
 		<Border Grid.Row="0" Grid.Column="2" Margin="0 0 0 0" Background="Transparent" BorderThickness="0">
 		<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-			<Grid HorizontalAlignment="Center">
+			<Grid>
 				<Grid.RowDefinitions>
 					<RowDefinition Height="55"></RowDefinition>
 					<RowDefinition Height="120"></RowDefinition>
@@ -538,10 +555,11 @@
 					<RowDefinition Height="320"></RowDefinition>
 					<RowDefinition Height="1*"></RowDefinition>
 				</Grid.RowDefinitions>
-				<!--260 each: the card labels are up to a third longer in translations.-->
+				<!--Two equal card columns that follow the outer column. Labels that do not fit their card
+					end in an ellipsis (OverlayCardLabel).-->
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="260"/>
-					<ColumnDefinition Width="260"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
 				</Grid.ColumnDefinitions>
 				<!--<TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Text="{Binding SelectedOverlayItemName}"/>-->
 				<!-- Overlay switch: its own card above the template, the first thing in the column. Same
@@ -633,10 +651,12 @@
 								<RowDefinition Height="40"></RowDefinition>
 								<RowDefinition Height="40"></RowDefinition>
 							</Grid.RowDefinitions>
+							<!--Labels take the rest; limit boxes and color pickers keep a column each, so the controls
+							    of every row line up under the reset button.-->
 							<Grid.ColumnDefinitions>
-								<ColumnDefinition Width="150"/>
-								<ColumnDefinition Width="40"/>
-								<ColumnDefinition Width="1*"/>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="48"/>
+								<ColumnDefinition Width="34"/>
 							</Grid.ColumnDefinitions>
 							<TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{loc:Tr OverlayView_ColorsAndLimits}" FontSize="16"/>
 							<Button Grid.Row="0" Grid.Column="2" Width="20" Height="20" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
@@ -644,7 +664,7 @@
 								materialDesign:RippleAssist.Feedback="#DD000000">
 								<materialDesign:PackIcon Kind="Restore" Height="15" Width="15" />
 							</Button>
-							<TextBlock Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" Text="{loc:Tr OverlayView_GroupColor}"/>
+							<TextBlock Grid.Row="1" Style="{StaticResource OverlayCardLabel}" Text="{loc:Tr OverlayView_GroupColor}"/>
 							<ctrls:CXColorPicker Grid.Row="1" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" SelectedColor="{Binding SelectedOverlayEntry.GroupColor, Converter={StaticResource StringColorConverter}}" 
 								SelectedColorChanged="SelectedColorChanged" UsingAlphaChannel="True" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
 								<ctrls:CXColorPicker.ButtonStyle>
@@ -672,7 +692,7 @@
 									</Style>
 								</ctrls:CXColorPicker.ButtonStyle>
 							</ctrls:CXColorPicker>
-							<TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" Text="{loc:Tr OverlayView_StandardValueColor}"/>
+							<TextBlock Grid.Row="2" Style="{StaticResource OverlayCardLabel}" Text="{loc:Tr OverlayView_StandardValueColor}"/>
 							<ctrls:CXColorPicker Grid.Row="2" Grid.Column="2" Width="25" Height="25" Margin="0 0 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" SelectedColor="{Binding SelectedOverlayEntry.Color, Converter={StaticResource StringColorConverter}}" 
 								SelectedColorChanged="SelectedColorChanged" UsingAlphaChannel="True" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
 								<ctrls:CXColorPicker.ButtonStyle>
@@ -700,13 +720,23 @@
 									</Style>
 								</ctrls:CXColorPicker.ButtonStyle>
 							</ctrls:CXColorPicker>
-							<StackPanel Grid.Row="3" Grid.ColumnSpan="3" Orientation="Horizontal" Visibility="{Binding SelectedOverlayEntry.IsNumeric, Converter={StaticResource FalseToCollapsedConverter}}">
-								<TextBlock VerticalAlignment="Center" Text="{loc:Tr OverlayView_UpperLimitColor}"></TextBlock>
-								<TextBox Margin="20 0 2 0" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
+							<!--Limits exist for numeric entries only. Same columns as the grid around it.-->
+							<Grid Grid.Row="3" Grid.RowSpan="2" Grid.ColumnSpan="3" Visibility="{Binding SelectedOverlayEntry.IsNumeric, Converter={StaticResource FalseToCollapsedConverter}}">
+								<Grid.RowDefinitions>
+									<RowDefinition Height="40"/>
+									<RowDefinition Height="40"/>
+								</Grid.RowDefinitions>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="48"/>
+									<ColumnDefinition Width="34"/>
+								</Grid.ColumnDefinitions>
+								<TextBlock Style="{StaticResource OverlayCardLabel}" Text="{loc:Tr OverlayView_UpperLimitColor}"/>
+								<TextBox Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
 									ToolTip="{loc:Tr OverlayView_UpperLimitColorHint}"
 									Text="{Binding SelectedOverlayEntry.UpperLimitValue, UpdateSourceTrigger=LostFocus}" IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
 								</TextBox>
-								<ctrls:CXColorPicker Width="25" Height="25" Margin="5 0 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" SelectedColor="{Binding SelectedOverlayEntry.UpperLimitColor, Converter={StaticResource StringColorConverter}}" 
+								<ctrls:CXColorPicker Grid.Column="2" Width="25" Height="25" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" SelectedColor="{Binding SelectedOverlayEntry.UpperLimitColor, Converter={StaticResource StringColorConverter}}" 
 									SelectedColorChanged="SelectedColorChanged" UsingAlphaChannel="True" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness">
 									<ctrls:CXColorPicker.ButtonStyle>
 										<Style TargetType="ToggleButton">
@@ -733,15 +763,13 @@
 										</Style>
 									</ctrls:CXColorPicker.ButtonStyle>
 								</ctrls:CXColorPicker>
-							</StackPanel>
-							<StackPanel Grid.Row="4" Grid.ColumnSpan="3" Orientation="Horizontal" Visibility="{Binding SelectedOverlayEntry.IsNumeric, Converter={StaticResource FalseToCollapsedConverter}}">
-								<TextBlock Grid.Row="4" Grid.Column="0"  VerticalAlignment="Center" Text="{loc:Tr OverlayView_LowerLimitColor}"></TextBlock>
-								<TextBox Margin="20 0 2 0" Grid.Row="4" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
+								<TextBlock Grid.Row="1" Style="{StaticResource OverlayCardLabel}" Text="{loc:Tr OverlayView_LowerLimitColor}"/>
+								<TextBox Grid.Row="1" Grid.Column="1" Width="40" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
 									ToolTip="{loc:Tr OverlayView_LowerLimitColorHint}"
 									Text="{Binding SelectedOverlayEntry.LowerLimitValue, UpdateSourceTrigger=LostFocus}"
 									IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
 								</TextBox>
-								<ctrls:CXColorPicker Width="25" Height="25" Margin="5 0 0 0" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" SelectedColor="{Binding SelectedOverlayEntry.LowerLimitColor, Converter={StaticResource StringColorConverter}}" 
+								<ctrls:CXColorPicker Grid.Row="1" Grid.Column="2" Width="25" Height="25" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" SelectedColor="{Binding SelectedOverlayEntry.LowerLimitColor, Converter={StaticResource StringColorConverter}}" 
 									SelectedColorChanged="SelectedColorChanged" UsingAlphaChannel="True" DisplayColorAndName="False" AvailableColorsSortingMode="HueSaturationBrightness"
 									IsEnabled="{Binding SelectedOverlayEntry.IsNumeric}">
 									<ctrls:CXColorPicker.ButtonStyle>
@@ -769,7 +797,7 @@
 										</Style>
 									</ctrls:CXColorPicker.ButtonStyle>
 								</ctrls:CXColorPicker>
-							</StackPanel>
+							</Grid>
 						</Grid>
 					</StackPanel>
 				</Border>
@@ -791,13 +819,13 @@
 								<ColumnDefinition Width="20"/>
 							</Grid.ColumnDefinitions>
 							<TextBlock Grid.Row="0" Grid.ColumnSpan="3" VerticalAlignment="Center" HorizontalAlignment="Center" Text="{loc:Tr OverlayView_FormatOptions}" FontSize="16"/>
-							<TextBlock Grid.Row="1" Grid.Column="0"  VerticalAlignment="Center" Text="{loc:Tr OverlayView_GroupNameFontSize}"></TextBlock>
+							<TextBlock Grid.Row="1" Style="{StaticResource OverlayCardLabel}" Text="{loc:Tr OverlayView_GroupNameFontSize}"/>
 							<TextBox Grid.Row="1" Grid.Column="1" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
 								ToolTip="{loc:Tr OverlayView_PercentageFormatHint}"
 								Text="{Binding SelectedOverlayEntry.GroupFontSize, UpdateSourceTrigger=LostFocus}">
 							</TextBox>
 							<Label Grid.Row="1" Grid.Column="2" VerticalAlignment="Center" Content="%"/>
-							<TextBlock Grid.Row="2" Grid.Column="0"  VerticalAlignment="Center" Text="{loc:Tr OverlayView_ValueFontSize}"></TextBlock>
+							<TextBlock Grid.Row="2" Style="{StaticResource OverlayCardLabel}" Text="{loc:Tr OverlayView_ValueFontSize}"/>
 							<TextBox Grid.Row="2" Grid.Column="1" Width="25" VerticalAlignment="Center" PreviewKeyDown="LostFocus_PreviewKeyDown" PreviewTextInput="NumberValidationTextBox" 
                                          ToolTip="{loc:Tr OverlayView_PositivePercentageSuperscriptNegativePercentage}"
                                          Text="{Binding SelectedOverlayEntry.ValueFontSize, UpdateSourceTrigger=LostFocus}">
@@ -999,6 +1027,7 @@
 		</ScrollViewer>
 		</Border>
 				</Grid>
+				</ScrollViewer>
 			</TabItem>
 			<TabItem Header="{loc:Tr OverlayView_OSDOptions}">
 				<ScrollViewer Margin="{StaticResource CxTabContentMargin}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
