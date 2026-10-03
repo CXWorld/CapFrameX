@@ -29,6 +29,7 @@
 			<mvvm:OverlayLabelConverter x:Key="OverlayLabelConverter"/>
 			<mvvm:EnumShortDescriptionConverter x:Key="EnumShortDescriptionConverter"/>
 			<mvvm:StringColorConverter x:Key="StringColorConverter"/>
+			<Style TargetType="{x:Type TabControl}" BasedOn="{StaticResource CxTabControl}" />
 			<Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource CxTabHeaderItem}" />
 			<!--No margin: OsdColumnsPanel spaces the cards.-->
 			<Style x:Key="OsdOptionsCard" TargetType="{x:Type Border}">
@@ -60,12 +61,11 @@
 			</Style>
 		</ResourceDictionary>
 	</UserControl.Resources>
-	<!--Wide enough for three OSD option columns at 1920 px; narrower windows shrink it and the
-	    OSD options wrap to two columns. Stretch with MaxWidth keeps it centred.-->
+	<!--The content of both tabs starts at the left edge of the tab headers.-->
 	<Grid>
-		<TabControl MaxWidth="1440" Margin="10" Background="{DynamicResource MaterialDesign.Brush.Card.Background}" BorderThickness="0" FocusVisualStyle="{x:Null}">
+		<TabControl Margin="10" Background="{DynamicResource MaterialDesign.Brush.Card.Background}" BorderThickness="0" FocusVisualStyle="{x:Null}">
 			<TabItem Header="{loc:Tr OverlayView_OverlayItems}">
-				<Grid Margin="{StaticResource CxTabContentMargin}" HorizontalAlignment="Center">
+				<Grid Margin="{StaticResource CxTabContentMargin}" HorizontalAlignment="Left">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="*"/>
 					</Grid.RowDefinitions>
@@ -1005,7 +1005,7 @@
 					<!-- Independent sections keep future options local to their topic. Three columns from about
 					     1400 px (a maximized 1080p window), two in narrower windows, one below that; each card
 					     names its column for both layouts so the columns stay balanced. -->
-					<ctrls:OsdColumnsPanel Margin="14 0 14 20" HorizontalAlignment="Center" ColumnWidth="444" Spacing="12">
+					<ctrls:OsdColumnsPanel Margin="0 0 14 20" HorizontalAlignment="Left" ColumnWidth="444" Spacing="12">
 							<Border ctrls:OsdColumnsPanel.ThreeColumnIndex="0" ctrls:OsdColumnsPanel.TwoColumnIndex="0" Style="{StaticResource OsdOptionsCard}">
 								<StackPanel>
 									<TextBlock Style="{StaticResource OsdOptionsSectionHeader}" Text="{loc:Tr OverlayView_General}"/>

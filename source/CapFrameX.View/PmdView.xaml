@@ -33,6 +33,7 @@
 			<Style x:Key="PmdMetricGroupBox" TargetType="{x:Type GroupBox}" BasedOn="{StaticResource MaterialDesignGroupBox}">
 				<Setter Property="Padding" Value="9 3"/>
 			</Style>
+			<Style TargetType="{x:Type TabControl}" BasedOn="{StaticResource CxTabControl}" />
 			<Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource CxTabHeaderItem}" />
 		</ResourceDictionary>
 	</UserControl.Resources>

@@ -24,19 +24,15 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.DataGrid.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Slider.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
+                <ResourceDictionary Source="Styles/CxTabHeaders.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"></mvvm:ZoomingModeConverter>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" TrueValue="Collapsed" FalseValue="Visible"/>
             <Style x:Key="CleanSeparator" TargetType="lvc:Separator">
                 <Setter Property="IsEnabled" Value="False"></Setter>
             </Style>
-            <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource MaterialDesignNavigationRailTabItem}">
-                <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
-                <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-                <Setter Property="Padding" Value="0"/>
-                <Setter Property="Height" Value="25" />
-            </Style>
+            <Style TargetType="{x:Type TabControl}" BasedOn="{StaticResource CxTabControl}" />
+            <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource CxTabHeaderItem}" />
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid Margin="5 0 5 0">
@@ -47,11 +43,8 @@
         </Grid.RowDefinitions>
         <TextBlock Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="18" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{Binding CurrentGameName}"/>
         <TabControl Grid.Row="1" Grid.Column="0" Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
-            <TabItem Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
-                <TabItem.Header>
-                    <Label FontSize="12" Content="{loc:Tr SynchronizationView_InputLagApproximation}"/>
-                </TabItem.Header>
-                <Grid>
+            <TabItem Header="{loc:Tr SynchronizationView_InputLagApproximation}">
+                <Grid Margin="{StaticResource CxTabContentMargin}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="5*"></RowDefinition>
                         <RowDefinition Height="50"></RowDefinition>
@@ -144,11 +137,8 @@
                     </Grid>
                 </Grid>
             </TabItem>
-            <TabItem Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" >
-                <TabItem.Header>
-                    <Label FontSize="12" Content="{loc:Tr SynchronizationView_UntilDisplayedTimes}"/>
-                </TabItem.Header>
-                <Grid>
+            <TabItem Header="{loc:Tr SynchronizationView_UntilDisplayedTimes}">
+                <Grid Margin="{StaticResource CxTabContentMargin}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="5*"></RowDefinition>
                         <RowDefinition Height="50"></RowDefinition>

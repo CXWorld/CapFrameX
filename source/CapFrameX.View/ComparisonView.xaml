@@ -41,6 +41,7 @@
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" FalseValue="Visible" TrueValue="Collapsed"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToCollapsedConverter" FalseValue="Collapsed" TrueValue="Visible"/>
 			<mvvm:AddValueConverter x:Key="AddValueConverter" Offset="-111"/>
+			<Style TargetType="{x:Type TabControl}" BasedOn="{StaticResource CxTabControl}" />
 			<Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource CxTabHeaderItem}" />
 			<Style x:Key="ColorPickerToggleButtonStyle" TargetType="ToggleButton">
 				<Setter Property="Template">

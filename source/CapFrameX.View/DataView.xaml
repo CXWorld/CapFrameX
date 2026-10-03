@@ -33,6 +33,7 @@
             <Style x:Key="CleanSeparator" TargetType="{x:Type lvc:Separator}">
                 <Setter Property="IsEnabled" Value="False"/>
             </Style>
+            <Style TargetType="{x:Type TabControl}" BasedOn="{StaticResource CxTabControl}" />
             <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource CxTabHeaderItem}" />
         </ResourceDictionary>
     </UserControl.Resources>

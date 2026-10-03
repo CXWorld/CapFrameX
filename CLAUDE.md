@@ -270,6 +270,19 @@ ComboBox by different amounts. **Use the `Cx*` keys, not the `MaterialDesign*` o
 view sets a text field style explicitly or bases a local style on one; anything that just relies on
 the implicit style is already covered.
 
+## Tab headers
+
+Every view with tabs (Analysis, Comparison, Capture, Overlay, PMD, Synchronization) merges
+`CapFrameX.View/Styles/CxTabHeaders.xaml` and sets two implicit styles from it: `CxTabControl` for
+the `TabControl` and `CxTabHeaderItem` for its `TabItem`s. `CxTabControl` only switches MDIX's
+`HorizontalContentAlignment` from `Stretch` to `Left`. With `Stretch`, MDIX hosts the headers in a
+uniform grid that spreads them over the whole control, which turned every header into a wide bar
+once the localization removed the fixed `TabItem` widths. A header is as wide as its text, has no
+`MinWidth` and stops at `MaxWidth` 200: a longer translation ends in an ellipsis, and
+`TrimmedTextToolTip` (`CapFrameX.View/Controls`) shows the full text as the tool tip, but only while
+it is cut off. **Do not give a `TabItem` a `Width` or `MinWidth` to make a translation fit.** Tab
+content starts at the left edge of the headers.
+
 ## Configuration Files
 - User settings: `%appdata%/CapFrameX/Configuration/AppSettings.json`
 - Overlay config: `%appdata%/CapFrameX/Configuration/OverlayEntryConfiguration_(0/1/2).json`

@@ -50,6 +50,7 @@
 				</Setter>
 			</Style>
 
+			<Style TargetType="{x:Type TabControl}" BasedOn="{StaticResource CxTabControl}" />
 			<Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource CxTabHeaderItem}" />
 
 			<!-- Log text the user can select and copy. WPF has no selectable TextBlock, so a
@@ -335,7 +336,7 @@
 			</Border>
 			</DockPanel>
 			<TabControl Grid.Column="1" Margin="20 14 20 20" Background="Transparent" BorderThickness="0">
-				<TabItem Margin="8 0 6 0" Header="{loc:Tr CaptureView_RunHistoryAndAggregation}">
+				<TabItem Header="{loc:Tr CaptureView_RunHistoryAndAggregation}">
 					<StackPanel Width="400" Margin="{StaticResource CxTabContentMargin}">
 						<!--Run history card-->
 						<Border Style="{StaticResource SectionCard}" Margin="0 0 0 4" Padding="16 12 16 16">
