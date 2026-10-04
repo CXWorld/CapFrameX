@@ -9,6 +9,7 @@ using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.Test.Localization;
 using CapFrameX.ViewModel;
 using GongSolutions.Wpf.DragDrop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -28,6 +29,7 @@ namespace CapFrameX.Test.ViewModel
         public void ResolveRecords_DefaultDragHandlerPayload_PreservesAllSelectedRecords(
             Type viewModelType, int recordCount)
         {
+            using var subscriptions = new CxLangSubscriptions();
             var records = CreateRecords(recordCount);
             object payload = CreateDragPayload(records);
             var configuration = CreateConfiguration();

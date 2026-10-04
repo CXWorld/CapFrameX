@@ -33,6 +33,7 @@ namespace CapFrameX.Test.Localization
         [DataRow("es")]
         public void DataTabs_RefreshTheSelectedChartInEitherLanguage(string language)
         {
+            using var subscriptions = new CxLangSubscriptions();
             string previous = CxLang.Instance.UiLanguage;
             try
             {
@@ -73,6 +74,7 @@ namespace CapFrameX.Test.Localization
         [DataRow("es")]
         public void ComparisonTabs_KeepChartModeAndColorPickerIndependentOfHeaders(string language)
         {
+            using var subscriptions = new CxLangSubscriptions();
             string previous = CxLang.Instance.UiLanguage;
             try
             {
@@ -116,6 +118,7 @@ namespace CapFrameX.Test.Localization
         [DataRow(false)]
         public void ComparisonAxisTitles_ComeWholeFromTheCatalog(bool displayTimes)
         {
+            using var subscriptions = new CxLangSubscriptions();
             string previous = CxLang.Instance.UiLanguage;
             try
             {

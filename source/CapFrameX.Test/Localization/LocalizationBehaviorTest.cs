@@ -236,6 +236,7 @@ namespace CapFrameX.Test.Localization
         [TestMethod]
         public void PmdPerformanceAxis_PreservesMetricWhenLanguagesChange()
         {
+            using var subscriptions = new CxLangSubscriptions();
             var manager = new PmdAnalysisChartManager();
             var session = new Session
             {
