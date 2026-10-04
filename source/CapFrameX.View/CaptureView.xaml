@@ -140,7 +140,7 @@
 				<Grid DockPanel.Dock="Top" HorizontalAlignment="Center">
 					<Grid HorizontalAlignment="Center">
 						<DockPanel>
-							<Grid DockPanel.Dock="Top">
+							<Grid x:Name="ProcessCards" DockPanel.Dock="Top">
 								<Grid.ColumnDefinitions>
 									<ColumnDefinition Width="Auto"/>
 									<ColumnDefinition Width="Auto"/>
@@ -205,8 +205,11 @@
 									</StackPanel>
 								</Border>
 							</Grid>
+							<!--The layout around sizes to its content, so a longer status line would widen the column past
+							    the cards and get cut off. It wraps within the width of the process cards instead.-->
 							<TextBlock DockPanel.Dock="Bottom" Grid.Column="0" Grid.ColumnSpan="2" TextAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-                                   Margin="0 20 0 0" Text="{Binding CaptureStateInfo}" HorizontalAlignment="Center" FontSize="16" Style="{StaticResource MaterialDesignCaptionTextBlock}" />
+                                   Margin="0 20 0 0" Text="{Binding CaptureStateInfo}" HorizontalAlignment="Center" FontSize="16" TextWrapping="Wrap"
+                                   MaxWidth="{Binding ActualWidth, ElementName=ProcessCards}" Style="{StaticResource MaterialDesignCaptionTextBlock}" />
 						</DockPanel>
 					</Grid>
 				</Grid>
