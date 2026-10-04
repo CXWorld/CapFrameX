@@ -33,6 +33,14 @@
             <mvvm:InvertBoolConverter x:Key="InvertBoolConverter"/>
             <mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
             <mvvm:UiLabelConverter x:Key="UiLabelConverter"/>
+            <!--Cells of both lists. Auto columns only measure the rows on screen and widened while
+                scrolling, so the columns have fixed or star widths: a longer text ends in an ellipsis
+                and shows in full as the tool tip.-->
+            <Style x:Key="TrimmedCellText" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MaterialDesignDataGridTextColumnStyle}">
+                <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                <Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+                <Setter Property="ctrls:TrimmedTextToolTip.IsEnabled" Value="True"/>
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
     <Grid HorizontalAlignment="Center">
@@ -60,7 +68,7 @@
 					         SelectedIndex="{Binding SelectedSensorEntryIndex}" SelectedItem="{Binding SelectedSensorEntry}" ItemsSource="{Binding SensorEntries}"
 					         CanUserSortColumns="True" CanUserAddRows="False" CanUserDeleteRows="False" AutoGenerateColumns="False" IsEnabled="{Binding Path=UseSensorLogging}"
 					         materialDesign:DataGridAssist.CellPadding="15 5 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="15 5 0 10" IsSynchronizedWithCurrentItem="False"
-					         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+					         ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"
                              Style="{StaticResource MaterialDesignDataGrid}"
                              Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
                         <DataGrid.Resources>
@@ -134,9 +142,11 @@
                         </DataGrid.Resources>
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{loc:LanguageBinding {Binding Name, Mode=OneWay, Converter={StaticResource UiLabelConverter}}}"
-                                                Header="{loc:Tr SensorView_Sensor}" IsReadOnly="True" MinWidth="185"/>
+                                                Header="{loc:Tr SensorView_Sensor}" IsReadOnly="True" Width="*" MinWidth="150"
+                                                ElementStyle="{StaticResource TrimmedCellText}"/>
                             <DataGridTextColumn Binding="{loc:LanguageBinding {Binding SensorType, Mode=OneWay, Converter={StaticResource UiLabelConverter}}}"
-                                                Header="{loc:Tr SensorView_Type}" IsReadOnly="True" MinWidth="100"/>
+                                                Header="{loc:Tr SensorView_Type}" IsReadOnly="True" Width="110"
+                                                ElementStyle="{StaticResource TrimmedCellText}"/>
                             <DataGridCheckBoxColumn Binding="{Binding UseForLogging, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Header="{loc:Tr SensorView_UseForLogging}" Width="100">
                                 <DataGridCheckBoxColumn.CellStyle>
                                     <Style TargetType="DataGridCell">
@@ -323,7 +333,7 @@
                                 ItemsSource="{Binding SensorReportItems}"
 					            CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
 					            materialDesign:DataGridAssist.CellPadding="13 3 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="8" IsSynchronizedWithCurrentItem="False"
-					            ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+					            ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"
                                 Tag="{Binding ElementName=SensorViewUserControl, Path=DataContext}"
                                 Style="{StaticResource MaterialDesignDataGrid}"
                                 Background="{DynamicResource MaterialDesign.Brush.Card.Background}">
@@ -364,24 +374,25 @@
                             </Style>
                         </DataGrid.Resources>
                         <DataGrid.Columns>
-                            <DataGridTextColumn Binding="{Binding Name, Mode=OneWay}"                                                           
-                                            Header="{loc:Tr SensorView_Sensor2}"                 
-                                            MinWidth="180"
+                            <DataGridTextColumn Binding="{loc:LanguageBinding {Binding Name, Mode=OneWay, Converter={StaticResource UiLabelConverter}}}"
+                                            Header="{loc:Tr SensorView_Sensor2}"
+                                            Width="*" MinWidth="150"
+                                            ElementStyle="{StaticResource TrimmedCellText}"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
                             <DataGridTextColumn Binding="{Binding MinValue, Mode=OneWay}"
                                             Header="{loc:Tr SensorView_Min}"
-                                            MinWidth="75"
+                                            Width="72"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
                             <DataGridTextColumn Binding="{Binding AverageValue, Mode=OneWay}"
                                             Header="{loc:Tr SensorView_Avg}"
-                                            MinWidth="75"
+                                            Width="72"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
                             <DataGridTextColumn Binding="{Binding MaxValue, Mode=OneWay}"
                                             Header="{loc:Tr SensorView_Max}"
-                                            MinWidth="75"
+                                            Width="72"
                                             IsReadOnly="True"
                                             CellStyle="{StaticResource CellStyle}"/>
                         </DataGrid.Columns>

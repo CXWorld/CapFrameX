@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace CapFrameX.View.Controls
@@ -9,7 +10,8 @@ namespace CapFrameX.View.Controls
     /// Opens an element's tool tip only while a text block inside it cuts its text off with
     /// <see cref="TextBlock.TextTrimming"/>. Tab headers use it with their header as the tool tip:
     /// a translation longer than the header ends in an ellipsis and the tool tip shows all of it,
-    /// while a header that fits does not repeat itself on hover.
+    /// while a header that fits does not repeat itself on hover. List cells use it the same way,
+    /// and over a cell whose text fits, the list's own tool tip shows.
     /// </summary>
     public static class TrimmedTextToolTip
     {
@@ -63,8 +65,21 @@ namespace CapFrameX.View.Controls
                 return;
 
             element.ToolTipOpening -= OnToolTipOpening;
+            element.MouseEnter -= OnMouseEnter;
             if ((bool)e.NewValue)
+            {
                 element.ToolTipOpening += OnToolTipOpening;
+                element.MouseEnter += OnMouseEnter;
+            }
+        }
+
+        // WPF looks for a tool tip right after MouseEnter and passes over elements whose tool tip is
+        // disabled, so over a text that fits the tool tip of an ancestor shows instead, such as the
+        // drag and drop hint of a list.
+        private static void OnMouseEnter(object sender, MouseEventArgs e)
+        {
+            var element = (FrameworkElement)sender;
+            element.SetCurrentValue(ToolTipService.IsEnabledProperty, HasTrimmedText(element));
         }
 
         // Handling the event cancels the tool tip. Deciding on every opening sees the current text,

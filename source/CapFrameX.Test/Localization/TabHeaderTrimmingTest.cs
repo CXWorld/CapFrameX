@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using CapFrameX.View.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -64,6 +65,24 @@ namespace CapFrameX.Test.Localization
             Assert.IsTrue(OpenToolTip(header), "A header that fits must not repeat itself as a tool tip.");
         }
 
+        // List cells use it too: over a text that fits, the list's own tool tip (the drag and drop
+        // hint of the overlay entries) must show instead of nothing.
+        [TestMethod]
+        public void ToolTip_GivesWayToTheAncestorsWhileTheTextFits()
+        {
+            var cell = TrimmingText(LongHeader);
+            cell.ToolTip = LongHeader;
+            TrimmedTextToolTip.SetIsEnabled(cell, true);
+
+            Layout(cell, 60);
+            EnterWithMouse(cell);
+            Assert.IsTrue(ToolTipService.GetIsEnabled(cell), "A trimmed text must show its full text.");
+
+            Layout(cell, 1000);
+            EnterWithMouse(cell);
+            Assert.IsFalse(ToolTipService.GetIsEnabled(cell), "A text that fits must leave the tool tip to its ancestors.");
+        }
+
         private static TextBlock TrimmingText(string text)
             => new TextBlock { Text = text, FontSize = 12, TextTrimming = TextTrimming.CharacterEllipsis };
 
@@ -84,6 +103,9 @@ namespace CapFrameX.Test.Localization
             element.Measure(new Size(width, 25));
             element.Arrange(new Rect(0, 0, Math.Min(width, element.DesiredSize.Width), 25));
         }
+
+        private static void EnterWithMouse(UIElement element)
+            => element.RaiseEvent(new MouseEventArgs(Mouse.PrimaryDevice, 0) { RoutedEvent = UIElement.MouseEnterEvent });
 
         /// <returns>Whether the tool tip was cancelled.</returns>
         private static bool OpenToolTip(FrameworkElement element)

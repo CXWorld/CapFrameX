@@ -53,6 +53,14 @@
 				<Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
 				<Setter Property="ctrls:TrimmedTextToolTip.IsEnabled" Value="True"/>
 			</Style>
+			<!--Cells of the entry list. Auto columns only measure the rows on screen and widened while
+			    scrolling, so the columns have fixed or star widths: a longer text ends in an ellipsis
+			    and shows in full as the tool tip.-->
+			<Style x:Key="TrimmedCellText" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource MaterialDesignDataGridTextColumnStyle}">
+				<Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+				<Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
+				<Setter Property="ctrls:TrimmedTextToolTip.IsEnabled" Value="True"/>
+			</Style>
 			<Style x:Key="OsdOptionsSectionHeader" TargetType="{x:Type TextBlock}">
 				<Setter Property="Margin" Value="0 0 0 4"/>
 				<Setter Property="FontSize" Value="16"/>
@@ -230,7 +238,7 @@
 					          SelectedIndex="{Binding SelectedOverlayEntryIndex}" SelectedItem="{Binding SelectedOverlayEntry}" ItemsSource="{Binding OverlayEntriesView}"
 					          SelectionMode="Extended" CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" ColumnHeaderHeight="17"
 					          materialDesign:DataGridAssist.CellPadding="13 5 0 0" materialDesign:DataGridAssist.ColumnHeaderPadding="14 0 0 2" IsSynchronizedWithCurrentItem="False"
-					          ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.CanContentScroll="True"
+					          ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto" ScrollViewer.CanContentScroll="True"
 					          dragdrop:DragDrop.IsDragSource="{Binding HasActiveFilter, Converter={StaticResource InvertBoolConverter}}"
 					          dragdrop:DragDrop.IsDropTarget="{Binding HasActiveFilter, Converter={StaticResource InvertBoolConverter}}"
 						      dragdrop:DragDrop.DropHandler="{Binding}"
@@ -335,11 +343,13 @@
 								</DataGridCheckBoxColumn>
 								<DataGridTextColumn Binding="{Binding LocalizedDescription, Mode=TwoWay}"
                                     Header="{loc:Tr OverlayView_Description}"
+                                    Width="3*" MinWidth="100" ElementStyle="{StaticResource TrimmedCellText}"
                                     IsReadOnly="True"/>
-								<DataGridTemplateColumn Header="{loc:Tr OverlayView_GroupName}" SortMemberPath="GroupName" MinWidth="120">
+								<DataGridTemplateColumn Header="{loc:Tr OverlayView_GroupName}" SortMemberPath="GroupName" Width="2*" MinWidth="80">
 									<DataGridTemplateColumn.CellTemplate>
 										<DataTemplate>
-											<TextBlock Margin="4 0" VerticalAlignment="Center" Text="{loc:LanguageBinding {Binding GroupName, Converter={StaticResource OverlayLabelConverter}}, Overlay=True}"/>
+											<TextBlock Margin="4 0" VerticalAlignment="Center" Style="{StaticResource TrimmedCellText}"
+												Text="{loc:LanguageBinding {Binding GroupName, Converter={StaticResource OverlayLabelConverter}}, Overlay=True}"/>
 										</DataTemplate>
 									</DataGridTemplateColumn.CellTemplate>
 									<DataGridTemplateColumn.CellEditingTemplate>
@@ -351,6 +361,7 @@
 
 								<DataGridTextColumn Binding="{loc:LanguageBinding {Binding OverlayEntryType, Mode=OneWay, Converter={StaticResource EnumShortDescriptionConverter}}}"
 									Header="{loc:Tr OverlayView_EntryType2}"
+									Width="95" ElementStyle="{StaticResource TrimmedCellText}"
 									IsReadOnly="True"/>
 
 								<DataGridCheckBoxColumn Binding="{Binding ShowGraph, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
