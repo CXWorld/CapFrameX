@@ -2,6 +2,8 @@
 
 This beta prioritizes critical PresentMon capture and tracking fixes after several users reported increasing CPU usage, frametime spikes, and stalled capture output. It also includes localization, overlay, and installer improvements since 1.9.1.
 
+> **Correction to our earlier X post:** Disabling **PC Latency** in the CapFrameX settings **does not resolve this PresentMon problem**. Our [earlier post on X](https://x.com/CapFrameX/status/2105998858019078230) incorrectly suggested it as a workaround. Application-timing tracking remains active independently of the PC Latency setting, so stale tracking data can still accumulate. The fix is included in CX-PresentMon 2.6.1, bundled with this beta.
+
 > **Important information for reviewers:** Do not use the **CapFrameX hook-free overlay** for benchmark measurements. Hiding this overlay can cause frametime spikes, and some AMD and Intel driver versions can have problems with Windows Desktop Window Manager (DWM). Use a suitable in-game or RTSS overlay and check which renderer is actually active before measuring, including any automatic fallback to hook-free. These overlay limitations are separate from the PresentMon fixes below.
 
 ## Downloads and requirements

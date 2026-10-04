@@ -63,6 +63,8 @@ The installer registers the Vulkan layers for x64 and x86 in their respective HK
 
 The beta bundles **CX-PresentMon 2.6.1**, the CapFrameX-maintained build based on Intel PresentMon 2.6.0, with fixes for accumulating stale timing data and stalled output after frame-generation changes. All shipped Windows binaries must pass the [release signature checks](scripts/RELEASE_SIGNING.md).
 
+**PC Latency correction:** Disabling PC Latency in the settings does not fix the PresentMon tracking problem, contrary to our [earlier post on X](https://x.com/CapFrameX/status/2105998858019078230). Application-timing tracking remains active independently of this setting; the fix is included in the bundled CX-PresentMon 2.6.1.
+
 **Reviewers:** Do not use the hook-free overlay for benchmark measurements. Hiding it can cause frametime spikes, and some AMD and Intel drivers can have DWM problems. Check the renderer actually in use, including automatic fallback to hook-free.
 
 ## Updating to the revised v1.9.0 package

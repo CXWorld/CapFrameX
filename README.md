@@ -22,6 +22,8 @@ CapFrameX is sponsored by [Hone](https://hone.gg). We thank Hone for supporting 
 
 Download **[CapFrameX v1.9.2 Beta](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.2_beta)**, application version **1.9.2.0-beta**. The latest stable release is **[v1.9.1](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.1)**.
 
+> **PC Latency correction:** Disabling **PC Latency** in the settings does **not** fix the PresentMon tracking problem, contrary to our [earlier post on X](https://x.com/CapFrameX/status/2105998858019078230). Application-timing tracking remains active independently of this setting. This beta includes the fix in CX-PresentMon 2.6.1.
+
 > **Important for reviewers:** Do not use the **CapFrameX hook-free overlay** for benchmark measurements. Hiding it can cause frametime spikes, and some AMD and Intel driver versions can have problems with Windows Desktop Window Manager (DWM). Check the active renderer before measuring, including automatic fallback to hook-free. These limitations are separate from the PresentMon fixes in this beta.
 
 | Package | Use |
