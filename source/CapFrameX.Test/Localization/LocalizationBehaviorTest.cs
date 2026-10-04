@@ -197,6 +197,7 @@ namespace CapFrameX.Test.Localization
         [DataTestMethod]
         [DataRow("es", "listo para capturar...")]
         [DataRow("ru", "готов к захвату...")]
+        [DataRow("de", "bereit zur Aufnahme...")]
         public void CaptureStatus_KeepsTheQuotedGameNameUntranslated(string language, string readyToCapture)
         {
             CxLang.Instance.SetOverlayLanguage(language);
@@ -236,6 +237,34 @@ namespace CapFrameX.Test.Localization
                 Assert.AreEqual(pair.Value, CxLang.Instance.TranslateOverlay(pair.Key), pair.Key);
         }
 
+        // German joins the device and the noun into one compound. A rule's output must not be
+        // translated again by a later, shorter rule ("max." by \bMax\b, "Powerlimit" by \bPower\b).
+        [TestMethod]
+        public void GermanPhrases_JoinTheDeviceWithAHyphen()
+        {
+            CxLang.Instance.SetOverlayLanguage("de");
+            var expected = new Dictionary<string, string>
+            {
+                ["GPU Core (°C)"] = "GPU-Kern (°C)",
+                ["GPU Memory Clock"] = "GPU-Speichertakt",
+                ["GPU Memory Used (GB)"] = "GPU-Speicher belegt (GB)",
+                ["GPU Mem Used"] = "VRAM belegt",
+                ["CPU Package Power"] = "CPU-Package-Leistung",
+                ["GPU Hot Spot (°C)"] = "GPU-Hotspot (°C)",
+                ["GPU Power Limit"] = "GPU-Powerlimit",
+                ["CPU Max (MHz)"] = "CPU max. (MHz)",
+                ["CPU Max Clock"] = "Max. CPU-Takt",
+                ["GPU Fan 1 (RPM)"] = "GPU-Lüfter 1 (U/min)",
+                ["P-Core #1 Thread #2 (Effective) (MHz)"] = "P-Kern #1 Thread #2 (effektiv) (MHz)",
+                ["Drive Temperature (°C)"] = "Laufwerk Temperatur (°C)",
+                ["iGPU Load"] = "iGPU-Auslastung",
+                ["Run 3:"] = "Lauf 3:",
+                ["<APP>"] = "<APP>"
+            };
+            foreach (var pair in expected)
+                Assert.AreEqual(pair.Value, CxLang.Instance.TranslateOverlay(pair.Key), pair.Key);
+        }
+
         // Patterns of the same length run in catalog order, so "CPU Package" runs before the
         // generic "\bPackage\b" listed below it.
         [TestMethod]
@@ -257,6 +286,7 @@ namespace CapFrameX.Test.Localization
         [DataTestMethod]
         [DataRow("es", "ms")]
         [DataRow("ru", "мс")]
+        [DataRow("de", "ms")]
         public void OverlayUnits_KeepTheirLowerCaseStart(string language, string milliseconds)
         {
             CxLang.Instance.SetOverlayLanguage(language);
@@ -274,6 +304,7 @@ namespace CapFrameX.Test.Localization
         [DataTestMethod]
         [DataRow("es")]
         [DataRow("ru")]
+        [DataRow("de")]
         public void HookStatus_ReadsTheSameOnTheOverlayAsInTheStatusBar(string language)
         {
             CxLang.Instance.SetUiLanguage(language);

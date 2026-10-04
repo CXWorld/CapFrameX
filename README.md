@@ -397,7 +397,7 @@ NuGet package versions are managed centrally in `source/Directory.Packages.props
 
 CapFrameX supports multiple languages through embedded JSON catalog files located in `source/CapFrameX.Contracts/Localization/`.
 
-Available languages: English (`en`), Russian (`ru`) and Spanish (`es`).
+Available languages: English (`en`), German (`de`), Russian (`ru`) and Spanish (`es`).
 
 Each language catalog contains three main sections:
 * `"strings"`: Key-value pairs for desktop UI elements (buttons, menus, labels, dialogs). Placeholders like `{0}` and `{1}` must be preserved.
