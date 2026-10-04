@@ -1395,7 +1395,7 @@ namespace CapFrameX.ViewModel
             {
                 var searchText = _filterText.Trim();
                 bool matchesDescription = entry.Description?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0
-                    || CxLang.Instance.TranslateOverlay(entry.Description)?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                    || CxLang.Instance.TranslateOverlayDescription(entry)?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
                 bool matchesGroupName = entry.GroupName?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0
                     || CxLang.Instance.TranslateOverlay(entry.GroupName)?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
                 bool matchesStableId = entry.StableIdentifier?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;

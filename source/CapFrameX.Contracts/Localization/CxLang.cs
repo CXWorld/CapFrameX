@@ -1,4 +1,3 @@
-using CapFrameX.Extensions.NetStandard;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,6 +7,8 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using CapFrameX.Contracts.Overlay;
+using CapFrameX.Extensions.NetStandard;
 
 namespace CapFrameX.Contracts.Localization
 {
@@ -196,6 +197,27 @@ namespace CapFrameX.Contracts.Localization
         }
 
         public string TranslateOverlay(string label) => TranslateWith(_overlay, label);
+
+        /// <summary>Translates a sensor description while keeping a storage device's name intact.</summary>
+        public string TranslateOverlayDescription(IOverlayEntry entry)
+        {
+            if (entry.OverlayEntryType == EOverlayEntryType.HDD
+                && !string.IsNullOrEmpty(entry.StableIdentifier)
+                && !string.IsNullOrEmpty(entry.Description))
+            {
+                int separatorIndex = entry.StableIdentifier.IndexOf('/');
+                if (separatorIndex > 0)
+                {
+                    var hardwarePrefix = entry.StableIdentifier.Substring(0, separatorIndex).Trim() + " ";
+                    if (entry.Description.StartsWith(hardwarePrefix, StringComparison.Ordinal))
+                    {
+                        return hardwarePrefix + TranslateOverlay(entry.Description.Substring(hardwarePrefix.Length));
+                    }
+                }
+            }
+
+            return TranslateOverlay(entry.Description);
+        }
 
         /// <summary>
         /// Like <see cref="TranslateOverlay"/>, but in the interface language. For desktop views,

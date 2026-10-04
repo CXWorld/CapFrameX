@@ -15,6 +15,7 @@ using CapFrameX.MVVM.Converter;
 using CapFrameX.OSD.Integration;
 using CapFrameX.Overlay;
 using CapFrameX.PMD;
+using CapFrameX.Sensor;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 
@@ -212,6 +213,35 @@ namespace CapFrameX.Test.Localization
                 Assert.AreEqual(expected, OverlayEntryAdapter.ToOsdEntries(new[] { entry }).Single().ValueText, game);
                 Assert.AreEqual(expected, RtssTextFormatter.FormatValue(entry, 65001), game);
             }
+        }
+
+        [DataTestMethod]
+        [DataRow("de", "Temperatur (°C)")]
+        [DataRow("es", "Temperatura (°C)")]
+        public void StorageDescription_TranslatesTheMetricAndPreservesTheDeviceName(
+            string language, string translatedMetric)
+        {
+            CxLang.Instance.SetOverlayLanguage(language);
+            using var entry = (OverlayEntryWrapper)SensorOverlayEntryFactory.Create(new SensorEntry
+            {
+                Identifier = "/nvme/0/temperature/0",
+                Name = "Drive Temperature",
+                SensorType = "Temperature",
+                HardwareType = "Storage",
+                HardwareName = "Core Memory Drive 123",
+                IsPresentationDefault = true
+            });
+
+            var expectedDescription = "Core Memory Drive 123 " + translatedMetric;
+            Assert.AreEqual(expectedDescription, entry.LocalizedDescription);
+            Assert.AreEqual(expectedDescription, OverlayEntryAdapter.ToOsdEntries(new[] { entry }).Single().Label);
+            entry.LocalizedDescription = expectedDescription;
+            Assert.AreEqual("Core Memory Drive 123 Temperature (°C)", entry.Description);
+
+            using var clone = (OverlayEntryWrapper)entry.Clone();
+            Assert.AreEqual(expectedDescription, clone.LocalizedDescription);
+            using var restored = JsonConvert.DeserializeObject<OverlayEntryWrapper>(JsonConvert.SerializeObject(entry));
+            Assert.AreEqual(expectedDescription, restored.LocalizedDescription);
         }
 
         [TestMethod]

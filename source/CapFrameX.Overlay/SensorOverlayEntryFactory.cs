@@ -1,7 +1,7 @@
+using System;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
 using LibreHardwareMonitor.Hardware;
-using System;
 
 namespace CapFrameX.Overlay
 {
@@ -314,6 +314,15 @@ namespace CapFrameX.Overlay
                 case SensorType.Latency:
                     description = $"{sensor.Name} (ms)";
                     break;
+            }
+
+            if (sensor.HardwareType == nameof(HardwareType.Storage)
+                && !string.IsNullOrWhiteSpace(sensor.HardwareName))
+            {
+                var hardwareName = sensor.HardwareName.Trim();
+                description = description.StartsWith("Drive ", StringComparison.Ordinal)
+                    ? hardwareName + description.Substring("Drive".Length)
+                    : hardwareName + " " + description;
             }
 
             return description;

@@ -53,12 +53,12 @@ namespace CapFrameX.Overlay
         [JsonIgnore]
         public string LocalizedDescription
         {
-            get => CxLang.Instance.TranslateOverlay(Description);
+            get => CxLang.Instance.TranslateOverlayDescription(this);
             set
             {
                 if (value == null)
                     return;
-                var shown = CxLang.Instance.TranslateOverlay(Description);
+                var shown = CxLang.Instance.TranslateOverlayDescription(this);
                 if (value == shown || value == Description)
                     return;
                 Description = value;
