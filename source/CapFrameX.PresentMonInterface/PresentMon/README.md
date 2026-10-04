@@ -18,19 +18,29 @@ the version taken from that name.
 ## Changes, part 1 (test build cfx.1)
 
 The CSV output is the same as upstream 2.6.0. The build fixes internal tracking that
-grew without bound during long sessions, reported as PresentMon reaching hundreds of
-MB and a full CPU core on a Radeon RX 9060 XT with hardware-accelerated GPU
-scheduling (HAGS):
+grew without bound during long sessions. A user reported PresentMon reaching about
+260 MB and a full CPU core while playing Bodycam on a Radeon RX 9060 XT, also with PC
+latency tracking off.
 
+The cause is the app timing data behind `--track_app_timing`, which CapFrameX always
+passes. Bodycam sends about 250 Intel-PresentMon app timing events per second but
+never `AppPresentStart`. Upstream 2.6.0 matches app timing entries to presents by
+their present start time, so these entries are never assigned, and neither pruning
+rule removes them before the process exits. Because every present scans the whole
+map, CPU time per present grows along with memory until the event thread saturates
+a core. Reported upstream as
+[GameTechDev/PresentMon#695](https://github.com/GameTechDev/PresentMon/issues/695).
+
+- App timing and PC latency entries of any process are now dropped once their newest
+  timestamp is more than four deferral periods (8 s) old (`IsStaleAppTimingData`).
+  This is the fix for the report above.
 - GPU work tracking (HAGS hardware queues): packets were only removed on a matching
-  `QueuePacket_Stop`, so missed matches grew the queue for the whole session and
-  every unmatched completion scanned it. Queues are now limited to 1024 packets per
-  node, completions are matched anywhere in the queue, and `HwQueue_Stop` releases
-  destroyed queues, so their work no longer counts as running (GPU busy equal to the
-  frame time).
+  `QueuePacket_Stop`, so missed matches would grow the queue for the whole session
+  and every unmatched completion would scan it. Queues are now limited to 1024
+  packets per node, completions are matched anywhere in the queue, and `HwQueue_Stop`
+  releases destroyed queues, so their work no longer counts as running. This is
+  hardening only; it never triggered on the reporting system.
 - Presents waiting for DWM are no longer queued twice.
-- App timing and PC latency data that can no longer be matched is pruned for every
-  process, not only for the process that just presented.
 - Swap chains are pruned relative to the newest present of a batch, and process
   start/stop events no longer stall behind a reused process id.
 - Optional diagnostic log: set the environment variable `PRESENTMON_DIAG_LOG` to `1`
@@ -101,8 +111,15 @@ These checks cover recorded traces and application tests, not a live game sessio
 - Synthetic GpuTrace tests: with completions that never match, the Intel 2.6.0 code
   grows by 16 bytes per packet and slows down with every completion. The fixed code
   stays at 1024 queued packets and processes 2 million packets in 2.3 s.
-- The HAGS growth itself was not reproduced on available hardware (the Arc B580
-  delivers matching completions), so it is confirmed only by the user report.
+- The reporting user ran the test build with its diagnostic log for 86 minutes
+  (RX 9060 XT with HAGS, Bodycam, six captures of up to 10 minutes, PC latency on).
+  The app timing map held 650 to 1,160 entries from the game, none of them ever
+  matched to a present. PresentMon stayed at 7.7 to 7.9 MB and 0.1% CPU after 40 and
+  60 minutes, and the frame time spikes from the report were gone. The HAGS queues
+  held at most 68 packets, so the 1024 limit never applied.
+- Intel 2.6.0 from the GitHub release on a Radeon RX 9070 XT with HAGS, Stalker 2
+  plus an OBS recording with the AMD hardware encoder: no growth, since that game
+  sends no such app timing events.
 
 ## Build cfx.2 verification
 
