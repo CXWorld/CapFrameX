@@ -55,11 +55,15 @@ When running in portable mode, the following dependencies must be installed on t
 The native .NET application host checks the Desktop Runtime before managed startup. Once CapFrameX
 starts, its dependency checker validates the expected .NET 10 Desktop Runtime and Visual C++ runtime.
 
-## 1.9.2 development builds
+## 1.9.2 Beta
 
 Installer and portable builds of **1.9.2.0-beta** include the in-game overlay again: keep the `hook` and `vulkan` folders, including their x86 subfolders, alongside the application. The `benchlab-service` folder contains the bundled service, which CapFrameX starts when needed; compatible separately installed services are also supported.
 
 The installer registers the Vulkan layers for x64 and x86 in their respective HKLM registry views. Portable extraction does not register them; Vulkan integration requires the matching layers to be registered separately.
+
+The beta bundles **CX-PresentMon 2.6.1**, the CapFrameX-maintained build based on Intel PresentMon 2.6.0, with fixes for accumulating stale timing data and stalled output after frame-generation changes. All shipped Windows binaries must pass the [release signature checks](scripts/RELEASE_SIGNING.md).
+
+**Reviewers:** Do not use the hook-free overlay for benchmark measurements. Hiding it can cause frametime spikes, and some AMD and Intel drivers can have DWM problems. Check the renderer actually in use, including automatic fallback to hook-free.
 
 ## Updating to the revised v1.9.0 package
 

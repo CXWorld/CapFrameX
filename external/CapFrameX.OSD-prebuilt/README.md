@@ -9,12 +9,35 @@ the OSD is built from source instead and these files are ignored.
 
 ## Build provenance
 
+### Signed 1.9.2 Beta payload (2026-10-04)
+
+All five native DLLs and the managed interop bridge were rebuilt from OSD revision
+`9f82ac1fd6651a0c8dd0671045c54fa87cb91ca5` for CapFrameX **1.9.2.0-beta**.
+Native builds use VS 2026/v145, Windows SDK 10.0.26100.0 and Vulkan SDK 1.4.335.0,
+`RelWithDebInfo`; interop uses `Release|x64`, .NET 10. All **79 native tests passed**.
+The six final binaries carry valid, timestamped Certum Authenticode signatures from
+SimplySign certificate `C0D5481E2ACBB9DD104A825A81EECF55557BA783`.
+The signed copies match the packaged MSI and portable payloads. PE architectures
+and byte-identical Vulkan manifests were checked. Earlier hashes below describe
+historical builds, not these signed beta files.
+
+| Component | SHA-256 |
+| --- | --- |
+| Core x64 | `f2e2f6e9be14e7ef72a1f95845ec68befda89074d7a38b147fa6bb720f7146ef` |
+| Hook x64 | `d65fc21685971486689514afed4a648ec07f7edfea50d359d899a4c188659aa8` |
+| Hook x86 | `f28eed3fd512795ca4ee90f5ff3e03834a34df3c8f2a1fed49c65362d31dbe13` |
+| Vulkan x64 | `4688d93bfd19e957f94530cdbb6110e6a8728405fec87d66ee67087ce98f57d2` |
+| Vulkan x86 | `59a52fa26b6e270555413c522ed3b6dc1b9827ec38d5df47616abf6fc342aa21` |
+| Managed interop | `e0f29cb46497c20db6bf2555ed99420573dbf7229880b797dba4b6d00364f9f9` |
+
+### Previous build (2026-09-26)
+
 All five native DLLs (core, hook x64/x86, Vulkan layer x64/x86) were rebuilt on **2026-09-26**
 with VS 2026/v145 (MSVC 19.51.36260.0), Windows SDK 10.0.26100.0 and Vulkan SDK 1.4.335.0 in
 `RelWithDebInfo`, from private OSD revision `9f82ac1fd6651a0c8dd0671045c54fa87cb91ca5`, which
 contains the frame-cadence, early-attach install-race and chart-motion changes below.
 
-### In-game chart motion (2026-09-26, current)
+### In-game chart motion (2026-09-26)
 
 The in-game frametime chart now moves like RTSS draws it: the chart geometry is rebuilt at most
 every 10 ms, always on a game present, and between two rebuilds the cached chart scrolls by whole
