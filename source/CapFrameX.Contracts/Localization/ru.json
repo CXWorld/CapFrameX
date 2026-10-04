@@ -1371,7 +1371,7 @@
     "StateView_On": "Вкл.",
     "StateView_Overlay": "Оверлей:",
     "StateView_Ready": "Готово",
-    "StateView_ResizableBar": "Поддержка Resizable BAR:",
+    "StateView_ResizableBar": "Resizable BAR:",
     "StateView_ResizableBarD3D": "Resizable BAR, D3D:",
     "StateView_ResizableBarHW": "Resizable BAR, оборудование:",
     "StateView_ResizableBarVulkan": "Resizable BAR, Vulkan:",

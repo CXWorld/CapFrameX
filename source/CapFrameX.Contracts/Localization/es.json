@@ -854,7 +854,7 @@
     "EOverlayEntryType_GPU_Short": "GPU",
     "EOverlayEntryType_HDD": "Sensor de almacenamiento",
     // Compact / abbreviated label for EOverlayEntryType_HDD (used in tight table headers or OSD)
-    "EOverlayEntryType_HDD_Short": "Almacenamiento",
+    "EOverlayEntryType_HDD_Short": "Disco",
     "EOverlayEntryType_Mainboard": "Sensor de la placa base",
     // Compact / abbreviated label for EOverlayEntryType_Mainboard (used in tight table headers or OSD)
     "EOverlayEntryType_Mainboard_Short": "Placa base",
@@ -1528,10 +1528,10 @@
     "StateView_Capturing": "Capturando",
     "StateView_Hook": "Hook:",
     // User account status: logged in to capframex.com
-    "StateView_LoggedIn": "Sesión iniciada",
-    "StateView_LoginStatus": "Estado de la sesión:",
+    "StateView_LoggedIn": "Iniciada",
+    "StateView_LoginStatus": "Sesión:",
     // User account status: not logged in
-    "StateView_NotLoggedIn": "Sin sesión iniciada",
+    "StateView_NotLoggedIn": "No iniciada",
     // Boolean toggle: status is disabled (e.g. HAGS)
     "StateView_Off": "Apagado",
     // Boolean toggle: status is enabled (e.g. HAGS)
@@ -1543,10 +1543,10 @@
     "StateView_ResizableBarD3D": "Resizable Bar D3D:",
     "StateView_ResizableBarHW": "Resizable Bar HW:",
     "StateView_ResizableBarVulkan": "Resizable Bar Vulkan:",
-    "StateView_SensorLogging": "Registro de sensores:",
+    "StateView_SensorLogging": "Reg. sensores:",
     "StateView_UpdateSystemInfoStatus": "Actualizar el estado de la información del sistema",
     "StateView_Version": "Versión:",
-    "StateView_WinGameMode": "Modo de juego de Win:",
+    "StateView_WinGameMode": "Modo de juego:",
 
     // =========================================================================
     // SYNCHRONIZATION & DISPLAY TIMING - Display change metrics and latency
