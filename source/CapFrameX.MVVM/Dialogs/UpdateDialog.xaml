@@ -78,9 +78,10 @@
             <TextBlock Width="280" Margin="0 0 10 0" VerticalAlignment="Center" TextWrapping="Wrap"
                        FontSize="11" Opacity="0.7"
                        Text="{Binding InstallConfirmationText, Mode=OneWay}"/>
-            <Button Width="100" Height="30" Content="{Binding ConfirmActionText, Mode=OneWay}"
+            <!--MinWidth and a smaller padding, so translations such as "Aktualisieren" are not cut off.-->
+            <Button MinWidth="100" Padding="8 4" Height="30" Content="{Binding ConfirmActionText, Mode=OneWay}"
                     Command="{Binding ConfirmUpdateCommand}"/>
-            <Button Width="90" Height="30" Margin="10 0 0 0" Content="{loc:Tr UpdateDialog_Cancel}"
+            <Button MinWidth="90" Padding="8 4" Height="30" Margin="10 0 0 0" Content="{loc:Tr UpdateDialog_Cancel}"
                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"/>
         </StackPanel>
 
@@ -88,7 +89,7 @@
                     Visibility="{Binding CanConfirmUpdate, Converter={StaticResource TrueToCollapsedConverter}}">
             <TextBlock Width="330" Margin="0 0 10 0" VerticalAlignment="Center" TextWrapping="Wrap"
                        FontSize="11" Opacity="0.7" Text="{Binding StatusText, Mode=OneWay}"/>
-            <Button Width="90" Height="30" Content="{loc:Tr UpdateDialog_Close}"
+            <Button MinWidth="90" Padding="8 4" Height="30" Content="{loc:Tr UpdateDialog_Close}"
                     Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"/>
         </StackPanel>
     </Grid>

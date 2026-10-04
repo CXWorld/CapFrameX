@@ -18,10 +18,11 @@
         </Grid.ColumnDefinitions>
         <TextBlock Margin="10" TextWrapping="Wrap" VerticalAlignment="Center" Grid.Row="0" Grid.ColumnSpan="2" Text="{loc:Tr ResetOverlayConfigDialog_DoYouReallyWantTo}" FontSize="16">
         </TextBlock>
-        <Button Margin="0 0 0 15" Grid.Row="1" Grid.Column="0" Width="80" Height="30" Content="{loc:Tr ResetOverlayConfigDialog_OK}"
+        <!--MinWidth and a smaller padding, so translations longer than "Cancel" are not cut off.-->
+        <Button Margin="0 0 0 15" Grid.Row="1" Grid.Column="0" MinWidth="80" Padding="8 4" HorizontalAlignment="Center" Height="30" Content="{loc:Tr ResetOverlayConfigDialog_OK}"
                 Command="{Binding ResetConfigCommand}">
         </Button>
-        <Button  Margin="0 0 0 15" Grid.Row="1" Grid.Column="1" Width="80" Height="30" Content="{loc:Tr ResetOverlayConfigDialog_Cancel}"
+        <Button  Margin="0 0 0 15" Grid.Row="1" Grid.Column="1" MinWidth="80" Padding="8 4" HorizontalAlignment="Center" Height="30" Content="{loc:Tr ResetOverlayConfigDialog_Cancel}"
                 Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}">
         </Button>
     </Grid>
