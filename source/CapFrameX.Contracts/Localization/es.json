@@ -1743,12 +1743,28 @@
     "Stuttering": "Stuttering",
     "Stuttering Time (%)": "Tiempo de stuttering (%)",
     "System time": "Hora del sistema",
-    "Time": "Hora"
+    "Time": "Hora",
+    // Values of the "Overlay hook status" entry (HookOverlayStatusLabel).
+    "Active": "Activo",
+    "Blocked": "Bloqueado",
+    "Error": "Error",
+    "Fallback": "Alternativo",
+    "Hidden": "Oculto",
+    "Idle": "Inactivo",
+    "Initializing": "Iniciando",
+    "Injected": "Inyectado",
+    "Injecting": "Inyectando",
+    "Off": "Apagado",
+    "Probing": "Sondeando",
+    "Restart game": "Reinicia el juego",
+    "Waiting": "Esperando"
   },
   // Phrases: regex rules for OSD labels that have no exact "overlay" entry (sensor and group names).
-  // Matched case-insensitively and applied longest pattern first; the order of patterns with the
-  // same length is not guaranteed, so a specific rule must be longer than the generic one it overrides.
-  // Replacements are lowercase: the first letter of the result is capitalized afterwards.
+  // Matched case-insensitively ("(?-i)" at the start makes a pattern case-sensitive) and applied
+  // longest pattern first; patterns of the same length run in the order listed, so list a specific
+  // rule above a generic one of the same length. Text in double quotes (game names) is not translated.
+  // Replacements are lowercase: the first letter of the result is capitalized afterwards, unless the
+  // label starts in lower case, like the units "ms" and "min".
   // Spanish puts the device after the noun: "GPU Core" -> "Núcleo GPU".
   "phrases": [
     {
@@ -2608,7 +2624,7 @@
       "replacement": "máx."
     },
     {
-      "pattern": "\\bMin\\b",
+      "pattern": "(?-i)\\bMin\\b",
       "replacement": "mín."
     },
     {

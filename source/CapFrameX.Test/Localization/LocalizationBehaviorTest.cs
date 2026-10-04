@@ -194,6 +194,25 @@ namespace CapFrameX.Test.Localization
             Assert.AreEqual("<S2><C3>Listo para capturar...<C><S>", RtssTextFormatter.FormatValue(entry, codePage));
         }
 
+        [DataTestMethod]
+        [DataRow("es", "listo para capturar...")]
+        [DataRow("ru", "готов к захвату...")]
+        public void CaptureStatus_KeepsTheQuotedGameNameUntranslated(string language, string readyToCapture)
+        {
+            CxLang.Instance.SetOverlayLanguage(language);
+            // Each name contains words that the sensor phrases translate ("Total", "Core").
+            foreach (var game in new[] { "Total War: WARHAMMER III", "Core Keeper" })
+            {
+                using var entry = new OverlayEntryWrapper("CaptureServiceStatus")
+                {
+                    ShowOnOverlay = true, Value = $"\"{game}\" ready to capture..."
+                };
+                var expected = $"\"{game}\" {readyToCapture}";
+                Assert.AreEqual(expected, OverlayEntryAdapter.ToOsdEntries(new[] { entry }).Single().ValueText, game);
+                Assert.AreEqual(expected, RtssTextFormatter.FormatValue(entry, 65001), game);
+            }
+        }
+
         [TestMethod]
         public void SpanishPhrases_PutTheDeviceAfterTheNoun()
         {
@@ -215,6 +234,59 @@ namespace CapFrameX.Test.Localization
             };
             foreach (var pair in expected)
                 Assert.AreEqual(pair.Value, CxLang.Instance.TranslateOverlay(pair.Key), pair.Key);
+        }
+
+        // Patterns of the same length run in catalog order, so "CPU Package" runs before the
+        // generic "\bPackage\b" listed below it.
+        [TestMethod]
+        public void RussianPhrases_RunSpecificRulesBeforeGenericOnesOfTheSameLength()
+        {
+            CxLang.Instance.SetOverlayLanguage("ru");
+            var expected = new Dictionary<string, string>
+            {
+                ["CPU Package (W)"] = "Кристалл ЦП (Вт)",
+                ["GPU Power (W)"] = "Мощность ГП (Вт)",
+                ["CPU Total (%)"] = "ЦП, всего (%)",
+                ["Core #1 Thread #2"] = "Ядро №1 поток №2",
+                ["GPU PCIe Tx (GB/s)"] = "ГП PCIe Tx (ГБ/с)"
+            };
+            foreach (var pair in expected)
+                Assert.AreEqual(pair.Value, CxLang.Instance.TranslateOverlay(pair.Key), pair.Key);
+        }
+
+        [DataTestMethod]
+        [DataRow("es", "ms")]
+        [DataRow("ru", "мс")]
+        public void OverlayUnits_KeepTheirLowerCaseStart(string language, string milliseconds)
+        {
+            CxLang.Instance.SetOverlayLanguage(language);
+            using var entry = new OverlayEntryWrapper("Frametime")
+            {
+                ShowOnOverlay = true, Value = 16.7, ValueUnitFormat = "ms "
+            };
+            Assert.AreEqual(milliseconds, OverlayEntryAdapter.ToOsdEntries(new[] { entry }).Single().Unit);
+            Assert.AreEqual("min ", CxLang.Instance.TranslateOverlay("min "));
+            Assert.AreEqual("ns ", CxLang.Instance.TranslateOverlay("ns "));
+        }
+
+        // The status bar shows the hook status through the EHookOverlayStatus keys, the OSD through
+        // the "overlay" entries of its English labels. Both must read the same.
+        [DataTestMethod]
+        [DataRow("es")]
+        [DataRow("ru")]
+        public void HookStatus_ReadsTheSameOnTheOverlayAsInTheStatusBar(string language)
+        {
+            CxLang.Instance.SetUiLanguage(language);
+            CxLang.Instance.SetOverlayLanguage(language);
+            foreach (EHookOverlayStatus state in Enum.GetValues(typeof(EHookOverlayStatus)))
+            {
+                using var entry = new OverlayEntryWrapper("HookOverlayStatus")
+                {
+                    ShowOnOverlay = true, Value = HookOverlayStatusLabel.ForState(state)
+                };
+                Assert.AreEqual(CxLang.TranslateEnum(state), OverlayEntryAdapter.ToOsdEntries(new[] { entry }).Single().ValueText,
+                    state.ToString());
+            }
         }
 
         [TestMethod]

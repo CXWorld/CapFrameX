@@ -1553,7 +1553,21 @@
     "Stuttering": "Заикания",
     "Stuttering Time (%)": "Время заиканий (%)",
     "System time": "Системное время",
-    "Time": "Время"
+    "Time": "Время",
+    // Values of the "Overlay hook status" entry (HookOverlayStatusLabel).
+    "Active": "Активен",
+    "Blocked": "Заблокирован",
+    "Error": "Ошибка",
+    "Fallback": "Резервный режим",
+    "Hidden": "Скрыт",
+    "Idle": "В простое",
+    "Initializing": "Инициализация",
+    "Injected": "Внедрено",
+    "Injecting": "Внедрение",
+    "Off": "Выкл.",
+    "Probing": "Проверка",
+    "Restart game": "Перезапустите игру",
+    "Waiting": "Ожидание"
   },
   "phrases": [
     {
@@ -1761,7 +1775,7 @@
       "replacement": "Температура диска"
     },
     {
-      "pattern": "GB/s",
+      "pattern": "\\bGB/s\\b",
       "replacement": "ГБ/с"
     },
     {
@@ -1857,7 +1871,7 @@
       "replacement": "$1 потока"
     },
     {
-      "pattern": "(\\b[0-9]*1)\\s*Threads?\\b",
+      "pattern": "(?<!#)(\\b[0-9]*1)\\s*Threads?\\b",
       "replacement": "$1 поток"
     },
     {

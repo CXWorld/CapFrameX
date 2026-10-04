@@ -1,4 +1,5 @@
 using CapFrameX.Contracts.Localization;
+using CapFrameX.Contracts.Overlay;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,6 +20,7 @@ namespace CapFrameX.Test.Localization
 		private static readonly Regex StringLiteral = new Regex(@"""([A-Za-z_][A-Za-z0-9_]*)""", RegexOptions.Compiled);
 		private static readonly Regex ModeConverterParam = new Regex(@"Converter=\{StaticResource\s+ModeDescriptionConverter\},\s*ConverterParameter=([^\}]+)\}", RegexOptions.Compiled);
 		private static readonly Regex CatalogPrefixParam = new Regex(@"Converter=\{StaticResource\s+CatalogPrefixConverter\},\s*ConverterParameter=([A-Za-z0-9_]+)", RegexOptions.Compiled);
+		private static readonly Regex CaptureStatusLiteral = new Regex(@"SetCaptureServiceStatus\(""([^""\\]*)""\)", RegexOptions.Compiled);
 
 		[TestMethod]
 		public void CatalogsUseTheSameKeysAndEveryCallSiteExists()
@@ -89,6 +91,36 @@ namespace CapFrameX.Test.Localization
 				}
 			}
 		}
+
+		// The OSD status values are sentences, not sensor names. Without an exact "overlay" entry they
+		// would go through the sensor phrases word by word ("Restart game" became "Restart juego").
+		[TestMethod]
+		public void EveryOsdStatusHasAnExactOverlayEntry()
+		{
+			var root = FindRepositoryRoot();
+			var english = JObject.Parse(File.ReadAllText(Path.Combine(root, "source", "CapFrameX.Contracts", "Localization", "en.json")));
+			var overlay = PropertyNames(english, "overlay");
+
+			var statuses = Enum.GetValues(typeof(EHookOverlayStatus)).Cast<EHookOverlayStatus>()
+				.Select(HookOverlayStatusLabel.ForState)
+				.ToList();
+			foreach (var path in Directory.GetFiles(Path.Combine(root, "source"), "*.cs", SearchOption.AllDirectories))
+			{
+				if (IsBuildOutput(path)
+					|| path.IndexOf(Path.DirectorySeparatorChar + "CapFrameX.Test" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) >= 0)
+					continue;
+				foreach (Match match in CaptureStatusLiteral.Matches(File.ReadAllText(path)))
+					statuses.Add(match.Groups[1].Value);
+			}
+
+			Assert.IsTrue(statuses.Contains("Ready to capture..."), "The capture status calls were not found.");
+			var missing = statuses.Where(status => !overlay.Contains(status)).Distinct().OrderBy(status => status).ToList();
+			Assert.AreEqual(0, missing.Count, "OSD status values without an \"overlay\" entry in en.json: " + string.Join(", ", missing));
+		}
+
+		private static bool IsBuildOutput(string path)
+			=> path.IndexOf(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) >= 0
+				|| path.IndexOf(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) >= 0;
 
 		private static HashSet<string> KeysUsedInSource(string source)
 		{

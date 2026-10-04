@@ -24,6 +24,7 @@ namespace CapFrameX.Contracts.Localization
 
         private volatile string _uiLanguage = "en";
         private static readonly string[] AppPlaceholder = { "<APP>" };
+        private static readonly Regex QuotedName = new Regex("(\"[^\"]*\")", RegexOptions.CultureInvariant);
         private IReadOnlyList<LanguageOption> _languages = Array.Empty<LanguageOption>();
 
         // Everything the overlay translation needs, swapped as one reference. OSD threads read
@@ -212,15 +213,31 @@ namespace CapFrameX.Contracts.Localization
                 {
                     var parts = label.Split(AppPlaceholder, StringSplitOptions.None);
                     for (int i = 0; i < parts.Length; i++)
-                        parts[i] = TranslateOverlayCore(state, parts[i]);
+                        parts[i] = TranslateOutsideQuotes(state, parts[i]);
                     return string.Join("<APP>", parts);
                 }
-                return TranslateOverlayCore(state, label);
+                return TranslateOutsideQuotes(state, label);
             }
             catch
             {
                 return label;
             }
+        }
+
+        /// <summary>
+        /// Text in double quotes is a name, such as the game in the capture status
+        /// <c>"Total War: WARHAMMER III" ready to capture...</c>, and is shown as it is.
+        /// Only the text around it is translated.
+        /// </summary>
+        private static string TranslateOutsideQuotes(OverlayState state, string text)
+        {
+            if (text.IndexOf('"') < 0)
+                return TranslateOverlayCore(state, text);
+            // The capturing group keeps the quoted names in the result, at the odd indices.
+            var parts = QuotedName.Split(text);
+            for (int i = 0; i < parts.Length; i += 2)
+                parts[i] = TranslateOverlayCore(state, parts[i]);
+            return string.Concat(parts);
         }
 
         private static string TranslateOverlayCore(OverlayState state, string label)
@@ -241,7 +258,10 @@ namespace CapFrameX.Contracts.Localization
             {
                 foreach (var phrase in state.Phrases)
                     result = phrase.Pattern.Replace(result, phrase.Replacement);
-                result = CapitalizeStart(result, state.Culture);
+                // Replacements are lower case so they can be combined. A text that starts in
+                // lower case, such as the unit "ms" or "iGPU Load", keeps its first letter.
+                if (!char.IsLower(label[0]))
+                    result = CapitalizeStart(result, state.Culture);
             }
 
             state.Cache[label] = result;
@@ -391,8 +411,10 @@ namespace CapFrameX.Contracts.Localization
                     if (Phrase.TryCreate(pattern, replacement, out var phrase))
                         list.Add(phrase);
                 }
-                list.Sort((a, b) => b.Pattern.ToString().Length.CompareTo(a.Pattern.ToString().Length));
-                _builtPhrases = list.ToArray();
+                // Longest pattern first. OrderBy is stable, so patterns of equal length keep their
+                // catalog order: a specific rule listed above a generic one of the same length
+                // ("CPU Package" above "\bPackage\b") runs first. List.Sort is not stable.
+                _builtPhrases = list.OrderByDescending(phrase => phrase.Pattern.ToString().Length).ToArray();
                 return _builtPhrases;
             }
 

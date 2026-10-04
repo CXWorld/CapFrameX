@@ -1746,11 +1746,27 @@
     "Stuttering": "Stuttering",
     "Stuttering Time (%)": "Stuttering Time (%)",
     "System time": "System time",
-    "Time": "Time"
+    "Time": "Time",
+    // Values of the "Overlay hook status" entry (HookOverlayStatusLabel).
+    "Active": "Active",
+    "Blocked": "Blocked",
+    "Error": "Error",
+    "Fallback": "Fallback",
+    "Hidden": "Hidden",
+    "Idle": "Idle",
+    "Initializing": "Initializing",
+    "Injected": "Injected",
+    "Injecting": "Injecting",
+    "Off": "Off",
+    "Probing": "Probing",
+    "Restart game": "Restart game",
+    "Waiting": "Waiting"
   },
   // Phrases: regex rules for OSD labels that have no exact "overlay" entry (sensor and group names).
-  // Matched case-insensitively and applied longest pattern first; the order of patterns with the
-  // same length is not guaranteed, so a specific rule must be longer than the generic one it overrides.
-  // Replacements are lowercase: the first letter of the result is capitalized afterwards.
+  // Matched case-insensitively ("(?-i)" at the start makes a pattern case-sensitive) and applied
+  // longest pattern first; patterns of the same length run in the order listed, so list a specific
+  // rule above a generic one of the same length. Text in double quotes (game names) is not translated.
+  // Replacements are lowercase: the first letter of the result is capitalized afterwards, unless the
+  // label starts in lower case, like the units "ms" and "min".
   "phrases": []
 }
