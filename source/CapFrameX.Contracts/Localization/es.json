@@ -1622,6 +1622,7 @@
     "UpdateService_PackageCouldNotBeDownloaded": "No se pudo descargar el paquete seleccionado.",
     "UpdateService_RollbackDownloaded": "La reversión a la versión {0} se descargó y se iniciará la próxima vez que abras CapFrameX.",
     "UpdateService_RollbackReady": "La reversión a la versión {0} está lista.",
+    "UpdateService_SignatureInvalid": "El paquete descargado no está firmado por el editor de CapFrameX y se descartó.",
     "UpdateService_StartingDownload": "Iniciando la descarga...",
     "UpdateService_VersionAlreadyInstalled": "La versión {0} ya está instalada.",
     "UpdateService_VersionDownloaded": "La versión {0} se descargó y se instalará la próxima vez que abras CapFrameX.",

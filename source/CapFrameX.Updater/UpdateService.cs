@@ -250,6 +250,19 @@ namespace CapFrameX.Updater
 							localizedMessage: new LocalizedText("UpdateService_ChecksumFailed")));
 					}
 
+					// The checksum comes from the same server as the package, so it cannot tell a
+					// genuine release from one a compromised server announces. The signature can.
+					var signature = PackageSignature.Verify(partialPath);
+					if (!signature.IsTrusted)
+					{
+						_logger.LogError("Rejected the downloaded package for {targetVersion}: {reason}", package.Version, signature.Reason);
+						DeleteIfExists(partialPath);
+						return Publish(new UpdateStatus(EUpdateState.Failed, package,
+							message: "The downloaded package is not signed by the CapFrameX publisher and was discarded.",
+							localizedMessage: new LocalizedText("UpdateService_SignatureInvalid")));
+					}
+
+					_logger.LogInformation("Verified the package signature for {targetVersion}: {reason}", package.Version, signature.Reason);
 					File.Move(partialPath, targetPath);
 					var currentVersion = _appVersionProvider.GetAppVersion();
 					var isRollback = UpdatePolicy.IsDowngrade(package.Version, currentVersion);
@@ -480,6 +493,9 @@ namespace CapFrameX.Updater
 
 			if (manifest.Package.Arguments?.Length > 2048)
 				return RejectPackage($"Version {UpdatePolicy.Format(version)} carries oversized installer arguments.", out rejectReason);
+
+			if (!PackageIntegrity.AreAllowedInstallerArguments(manifest.Package.Arguments, out var rejectedArgument))
+				return RejectPackage($"Version {UpdatePolicy.Format(version)} carries the installer argument '{rejectedArgument}', which is not on the allowlist.", out rejectReason);
 
 			if (manifest.Summary?.Length > 4000
 				|| (manifest.Highlights?.Length ?? 0) > 100

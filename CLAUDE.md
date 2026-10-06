@@ -250,6 +250,24 @@ or cancelled install cannot loop forever; with no marker present, leftover packa
 A package is only ever executed when it is an `.exe`/`.msi` and its name resolves inside the updates
 folder — the manifest is remote input.
 
+The catalog's SHA-256 comes from the same server as the package, so it cannot tell a genuine release
+from one a compromised server announces. `PackageSignature` (Authenticode via `WinVerifyTrust`, no
+revocation check) closes that gap twice: on the `.part` download before it is staged, and again in
+`TryStartPendingUpdate`, where checksum, signature and `Process.Start` share one read handle that
+denies writers — the updates folder is user-writable while the installer runs elevated. Accepted are
+the maintainer's Certum code signing certificate through a trusted chain, pinned by subject CN and
+the Certum issuer organization rather than by thumbprint so a renewal keeps working, and the pinned
+self-signed release certificate (`DAA75711…`, the 1.9.1.0 beta). **A signing certificate with a
+different subject name must first be added to `PackageSignature.PublisherNames` in a release signed
+with the old certificate**; otherwise installed clients reject every later update.
+
+The signature covers the package, not the command line it is started with. Installer arguments come
+from the catalog and wait in the user-writable marker, so the catalog parser and
+`TryStartPendingUpdate` both accept only `PackageIntegrity.AllowedInstallerArguments` (`/passive`,
+`/quiet`, `/qn`, `/qb`, `/norestart`, `LAUNCHAPP=0|1`); with `TRANSFORMS=` or `/l*v` a signed MSI
+would still run foreign code or write files elevated. One package outside the list rejects the whole
+catalog, so **a new argument has to ship in the allowlist before any release uses it**.
+
 Version comparison is normalized to `Major.Minor.Build`: assembly versions carry a fourth component
 that manifests do not, and `Version` sorts an unset component below zero, so `1.9.1` would otherwise
 look older than `1.9.1.0`.

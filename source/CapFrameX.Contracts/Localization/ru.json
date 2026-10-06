@@ -1442,6 +1442,7 @@
     "UpdateService_PackageCouldNotBeDownloaded": "Не удалось загрузить выбранный пакет.",
     "UpdateService_RollbackDownloaded": "Откат на версию {0} загружен и будет выполнен при следующем запуске CapFrameX.",
     "UpdateService_RollbackReady": "Откат на версию {0} готов.",
+    "UpdateService_SignatureInvalid": "Загруженный пакет не подписан издателем CapFrameX и был удалён.",
     "UpdateService_StartingDownload": "Начинается загрузка...",
     "UpdateService_VersionAlreadyInstalled": "Версия {0} уже установлена.",
     "UpdateService_VersionDownloaded": "Версия {0} загружена и будет установлена при следующем запуске CapFrameX.",
