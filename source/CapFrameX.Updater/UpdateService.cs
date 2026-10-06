@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -319,6 +320,36 @@ namespace CapFrameX.Updater
 			catch (ObjectDisposedException)
 			{
 				// The download finished between the null check and cancellation.
+			}
+		}
+
+		public bool StartInstallAfterExit()
+		{
+			if (CurrentStatus.State != EUpdateState.ReadyToInstall)
+				return false;
+
+			var executable = Environment.ProcessPath;
+
+			// Only the CapFrameX executable knows the argument; under a host such as dotnet.exe the
+			// new process would not be CapFrameX at all.
+			if (string.IsNullOrWhiteSpace(executable)
+				|| string.Equals(Path.GetFileNameWithoutExtension(executable), "dotnet", StringComparison.OrdinalIgnoreCase))
+			{
+				_logger.LogWarning("'{executable}' cannot be restarted; the staged update installs on the next start.", executable);
+				return false;
+			}
+
+			try
+			{
+				Process.Start(UpdateRestart.CreateStartInfo(executable, Environment.ProcessId));
+				_logger.LogInformation("Started a new instance that installs {targetVersion} once this one has exited.",
+					CurrentStatus.Package?.Version);
+				return true;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Unable to start the instance that installs the staged update; it installs on the next start.");
+				return false;
 			}
 		}
 

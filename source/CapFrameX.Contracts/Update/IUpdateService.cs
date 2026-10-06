@@ -47,5 +47,12 @@ namespace CapFrameX.Contracts.Update
 
 		/// <summary>Aborts a running download. The partially downloaded file is discarded.</summary>
 		void CancelDownload();
+
+		/// <summary>
+		/// Starts a new CapFrameX instance that waits for this one to exit and then installs the staged
+		/// package. Only valid in <see cref="EUpdateState.ReadyToInstall"/>. The caller shuts the app
+		/// down right after a true result; after a false one the package stays staged for the next start.
+		/// </summary>
+		bool StartInstallAfterExit();
 	}
 }

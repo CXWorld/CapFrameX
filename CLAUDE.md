@@ -240,13 +240,22 @@ downloads the installer package into the updates folder. The manifest URI comes 
 `UpdateManifestUri` key in `App.config`; **while it is empty the whole feature stays inert** and no
 update UI appears. The wire format is documented by `CapFrameX.Updater/update-manifest.sample.json`.
 
-Installing happens on the *next* app start, not at download time, because the installer replaces the
-files of the running app. `UpdateInstaller.TryStartPendingUpdate` therefore runs in `App.OnStartup`
+The installer replaces the files of the running app, so the instance that downloaded the package
+never starts it. `UpdateInstaller.TryStartPendingUpdate` runs in `App.OnStartup`
 **before the bootstrapper builds the container** — it reads the `pending-update.json` marker,
 re-verifies the package against its SHA-256, starts it and returns true, at which point `App` sets
 `_skipShutdownSequence` (nothing has been started yet, so the shutdown sequence in `ApplicationExit`
 would only throw) and exits. The marker is deleted *before* the installer is launched so a failing
 or cancelled install cannot loop forever; with no marker present, leftover packages are deleted.
+
+That start happens right after the download: a finished download, which the user always asked for,
+makes `UpdateViewModel` call `IUpdateService.StartInstallAfterExit` and shut the app down. It starts
+a new instance with `--install-update-after <pid>` (`UpdateRestart`), which waits for the old
+process at the very top of `OnStartup` — before the single-instance mutex, which `ApplicationExit`
+disposes first — ends it after 30 s because the ADLX teardown can deadlock, and then takes the path
+above. Only a process running the same executable is awaited or ended. A capture that is running or
+still being written (`CaptureManager.IsCapturing`, `LockCaptureService`, `DelayCountdownRunning`)
+defers the restart; if the new instance cannot be started, the package stays staged for the next start.
 A package is only ever executed when it is an `.exe`/`.msi` and its name resolves inside the updates
 folder — the manifest is remote input.
 

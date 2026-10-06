@@ -61,6 +61,16 @@ namespace CapFrameX
         {
             StartupPerformanceLogger.Mark("App.OnStartup entered (application resources loaded)");
 
+            // After downloading an update the previous instance starts this one and exits. Waiting
+            // for it comes before the single-instance mutex, which the previous instance releases
+            // early in its shutdown; the staged package is then installed further down.
+            string previousInstanceResult;
+            using (StartupPerformanceLogger.Measure("Previous instance exit"))
+            {
+                previousInstanceResult = UpdateRestart.WaitForPreviousInstance(e.Args,
+                    Environment.ProcessPath, UpdateRestart.ShutdownGracePeriod);
+            }
+
             const string appName = "CapFrameX";
             bool createdNew;
             using (StartupPerformanceLogger.Measure("Single-instance mutex initialization"))
@@ -145,6 +155,9 @@ namespace CapFrameX
                     InitializeLogger();
                 }
                 StartupPerformanceLogger.LoggerReady();
+
+                if (previousInstanceResult != null)
+                    Log.Logger.Information(previousInstanceResult);
 
                 // An update staged by a previous session is installed here, before anything else
                 // is built: the installer replaces the files of the running app, so CapFrameX has

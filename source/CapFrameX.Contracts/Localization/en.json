@@ -1637,18 +1637,22 @@
     "UpdateViewModel_CapFrameXUpToDateOnChannel": "CapFrameX is up to date on the {0} channel. {1} versions are available.",
     "UpdateViewModel_CapFrameXUpdate": "CapFrameX update",
     "UpdateViewModel_DownloadSize0MB": "Download size: {0} MB",
+    // Status while a capture holds back the installation of a downloaded update; {0}: version string
+    "UpdateViewModel_InstallAfterCapture": "Version {0} is downloaded and will be installed as soon as the running capture is finished.",
     // Dialog message when installing a beta release
-    "UpdateViewModel_InstallConfirmationBeta": "This beta build is downloaded now and installed the next time CapFrameX starts. Beta builds may be less stable than regular releases.",
+    "UpdateViewModel_InstallConfirmationBeta": "This beta build is downloaded now. CapFrameX then closes, installs it and starts again. Beta builds may be less stable than regular releases.",
     // Dialog message when installing a stable release
-    "UpdateViewModel_InstallConfirmationRegular": "The update is downloaded now and installed the next time CapFrameX starts.",
+    "UpdateViewModel_InstallConfirmationRegular": "The update is downloaded now. CapFrameX then closes, installs it and starts again.",
     // Dialog message when installing an older version (rollback)
-    "UpdateViewModel_InstallConfirmationRollback": "The selected version replaces the current installation on the next launch. Captures and settings remain, but settings created by newer versions may not be understood by the older release.",
+    "UpdateViewModel_InstallConfirmationRollback": "The selected version replaces the current installation as soon as it is downloaded; CapFrameX closes for that. Captures and settings remain, but settings created by newer versions may not be understood by the older release.",
     "UpdateViewModel_InstallVersion": "INSTALL VERSION",
     "UpdateViewModel_LookingForUpdates": "Looking for updates...",
     // {0}: channel name (e.g. Beta), {1}: count of other versions available
     "UpdateViewModel_NoChannelBuildPublished": "No {0} build is currently published. {1} other versions are available.",
     "UpdateViewModel_NoDescriptionWasProvidedFor": "No description was provided for this update.",
     "UpdateViewModel_NoUpdateServerIsConfigured": "No update server is configured.",
+    // Status shown right before CapFrameX closes to install a downloaded update; {0}: version string
+    "UpdateViewModel_RestartingToInstall": "CapFrameX closes to install version {0}...",
     "UpdateViewModel_RollBack": "ROLL BACK",
     "UpdateViewModel_RollBackCapFrameX": "Roll back CapFrameX",
     "UpdateViewModel_TheUpdateCheckFailed": "The update check failed.",
