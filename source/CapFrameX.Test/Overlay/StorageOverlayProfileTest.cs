@@ -107,6 +107,67 @@ namespace CapFrameX.Test.Overlay
             };
         }
 
+        [TestMethod]
+        public async Task PercentageDisplayMode_SurvivesSensorReconciliationAndProfileReload()
+        {
+            var sensor = CreateSensor("/nvme/0/load/0", "0_2_0", "Samsung SSD 990 PRO");
+            sensor.Name = "Drive Activity";
+            sensor.SensorType = "Load";
+            var saved = (OverlayEntryWrapper)SensorOverlayEntryFactory.Create(sensor);
+            saved.ValueDisplayMode = EOverlayValueDisplayMode.TextAndBar;
+            WriteProfile(saved);
+
+            var provider = CreateProvider(sensor);
+            var loaded = (await provider.GetOverlayEntries(false)).Single(entry => entry.Identifier == sensor.Identifier);
+            Assert.AreEqual(EOverlayValueDisplayMode.TextAndBar, loaded.ValueDisplayMode);
+            Assert.IsTrue(loaded.SupportsPercentageBar);
+            Assert.IsFalse(provider.HasPendingChanges);
+
+            loaded.ValueDisplayMode = EOverlayValueDisplayMode.Bar;
+            await provider.SaveOverlayEntriesToJson(0);
+            await provider.SwitchConfigurationTo(0);
+            var reloaded = (await provider.GetOverlayEntries(false)).Single(entry => entry.Identifier == sensor.Identifier);
+            Assert.AreEqual(EOverlayValueDisplayMode.Bar, reloaded.ValueDisplayMode);
+            Assert.IsFalse(provider.HasPendingChanges);
+        }
+
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task BulkFormatting_CopiesPercentageModeOnlyToEligibleEntries(bool sameGroupOnly)
+        {
+            var provider = CreateProvider();
+            var entries = await provider.GetOverlayEntries(false);
+            var selected = entries.First(entry => entry.SupportsPercentageBar);
+            var percentageTarget = entries.Last(entry => entry.SupportsPercentageBar && entry != selected);
+            var textTarget = entries.First(entry => !entry.SupportsPercentageBar);
+            percentageTarget.GroupName = selected.GroupName;
+            textTarget.GroupName = selected.GroupName;
+            selected.ValueDisplayMode = EOverlayValueDisplayMode.TextAndBar;
+            var checkboxes = new OverlayEntryFormatChange { Colors = false, Limits = false, Format = true };
+
+            if (sameGroupOnly)
+                provider.SetFormatForGroupName(selected.GroupName, selected, checkboxes);
+            else
+                provider.SetFormatForAllValues(selected, checkboxes);
+
+            foreach (var entry in entries.Where(entry => !sameGroupOnly || entry.GroupName == selected.GroupName))
+            {
+                Assert.AreEqual(entry.SupportsPercentageBar ? EOverlayValueDisplayMode.TextAndBar
+                    : EOverlayValueDisplayMode.Text, entry.ValueDisplayMode, entry.Identifier);
+            }
+
+            checkboxes.Format = false;
+            selected.ValueDisplayMode = EOverlayValueDisplayMode.Bar;
+            provider.SetFormatForAllValues(selected, checkboxes);
+            foreach (var entry in entries.Where(entry => entry != selected && entry.SupportsPercentageBar
+                && (!sameGroupOnly || entry.GroupName == selected.GroupName)))
+            {
+                Assert.AreEqual(EOverlayValueDisplayMode.TextAndBar, entry.ValueDisplayMode,
+                    "The Format checkbox must control copying of the display mode.");
+            }
+        }
+
         private static OverlayEntryWrapper CreateLegacyEntry(SensorEntry sensor)
         {
             var entry = (OverlayEntryWrapper)SensorOverlayEntryFactory.Create(sensor);

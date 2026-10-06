@@ -58,7 +58,8 @@ protected:
 	DWORD						GetSharedMemoryVersion(DWORD* lpOSDEntrySize = NULL);
 	void						IncProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, LONG dwIncrement);
 	void						SetProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, DWORD dwProperty);
-	void						AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported);
+	void						AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported, BOOL bObjTagsSupported, DWORD& dwObjectOffset);
+	CString						GetEntryValue(OverlayEntry* entry, BOOL bObjTagsSupported, DWORD& dwObjectOffset);
 	void						CreateHandles();
 
 	BOOL						m_bMultiLineOutput;

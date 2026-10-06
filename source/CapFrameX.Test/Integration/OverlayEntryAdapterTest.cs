@@ -4,6 +4,7 @@ using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.OSD.Integration;
+using CapFrameX.OSD.Interop;
 using CapFrameX.Overlay;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -13,6 +14,71 @@ namespace CapFrameX.Test.Integration
     [TestClass]
     public class OverlayEntryAdapterTest
     {
+        [DataTestMethod]
+        [DataRow(EOverlayValueDisplayMode.Text, OsdValueDisplayMode.Text)]
+        [DataRow(EOverlayValueDisplayMode.Bar, OsdValueDisplayMode.Bar)]
+        [DataRow(EOverlayValueDisplayMode.TextAndBar, OsdValueDisplayMode.TextAndBar)]
+        public void ToOsdEntries_PercentageDisplay_KeepsRawValueAndLimits(
+            EOverlayValueDisplayMode mode, OsdValueDisplayMode expected)
+        {
+            var entry = CreatePercentageEntry();
+            entry.Value = 125d;
+            entry.ValueDisplayMode = mode;
+            entry.UpperLimitValue = "90";
+            entry.UpperLimitColor = "FF0000";
+
+            var result = OverlayEntryAdapter.ToOsdEntries(new[] { entry }).Single();
+
+            Assert.AreEqual(expected, result.ValueDisplayMode);
+            Assert.AreEqual(125d, result.Value, "Only the drawn fill may be clamped.");
+            Assert.IsTrue(result.HasUpper);
+            Assert.AreEqual(90d, result.UpperLimit);
+            Assert.AreEqual(0xFF0000FFu, result.UpperColor);
+        }
+
+        [DataTestMethod]
+        [DataRow(null)]
+        [DataRow(double.NaN)]
+        [DataRow(double.PositiveInfinity)]
+        public void ToOsdEntries_MissingPercentageSample_PreservesBarLayoutWithoutZeroReading(object value)
+        {
+            var entry = CreatePercentageEntry();
+            entry.Value = value;
+            entry.ValueDisplayMode = EOverlayValueDisplayMode.TextAndBar;
+
+            var result = OverlayEntryAdapter.ToOsdEntries(new[] { entry }).Single();
+
+            Assert.AreEqual(OsdValueDisplayMode.TextAndBar, result.ValueDisplayMode);
+            Assert.IsFalse(result.IsNumeric);
+            Assert.AreEqual("-", result.ValueText);
+        }
+
+        [TestMethod]
+        public void ToOsdEntries_PercentInFpsDescription_DoesNotEnableBar()
+        {
+            var entry = CreatePercentageEntry();
+            entry.Description = "1% Low";
+            entry.ValueUnitFormat = "FPS";
+            entry.ValueDisplayMode = EOverlayValueDisplayMode.TextAndBar;
+
+            var result = OverlayEntryAdapter.ToOsdEntries(new[] { entry }).Single();
+
+            Assert.AreEqual(OsdValueDisplayMode.Text, result.ValueDisplayMode);
+        }
+
+        private static OverlayEntryWrapper CreatePercentageEntry()
+        {
+            return new OverlayEntryWrapper("GpuLoad")
+            {
+                IsEntryEnabled = true,
+                ShowOnOverlay = true,
+                IsNumeric = true,
+                Value = 76d,
+                ValueUnitFormat = "%  ",
+                ValueAlignmentAndDigits = "{0,5:F0}"
+            };
+        }
+
         [TestMethod]
         public void ToOsdEntries_NumericNullValue_DoesNotLeakRtssHypertext()
         {

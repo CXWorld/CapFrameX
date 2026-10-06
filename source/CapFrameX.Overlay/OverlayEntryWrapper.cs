@@ -18,6 +18,7 @@ namespace CapFrameX.Overlay
         private volatile string _groupName;
         private volatile bool _showGraph;
         private volatile bool _showGraphIsEnabled;
+        private volatile EOverlayValueDisplayMode _valueDisplayMode;
         private volatile string _color;
         private volatile int _valueFontSize;
         private volatile string _upperLimitValue = string.Empty;
@@ -108,7 +109,29 @@ namespace CapFrameX.Overlay
         public string ValueUnitFormat
         {
             get => _valueUnitFormat;
-            set => _valueUnitFormat = value;
+            set
+            {
+                if (_valueUnitFormat == value)
+                    return;
+                _valueUnitFormat = value;
+                RaisePropertyChanged(nameof(SupportsPercentageBar));
+            }
+        }
+
+        [JsonIgnore]
+        public bool SupportsPercentageBar => ValueUnitFormat?.Trim() == "%";
+
+        public EOverlayValueDisplayMode ValueDisplayMode
+        {
+            get => _valueDisplayMode;
+            set
+            {
+                if (_valueDisplayMode == value)
+                    return;
+                _valueDisplayMode = value;
+                FormatChanged = true;
+                RaisePropertyChanged();
+            }
         }
 
         [JsonIgnore]
@@ -317,6 +340,7 @@ namespace CapFrameX.Overlay
                 // not make an otherwise unchanged overlay profile appear dirty.
                 if (e.PropertyName != nameof(ShowOnOverlayIsEnabled)
                     && e.PropertyName != nameof(ShowGraphIsEnabled)
+                    && e.PropertyName != nameof(SupportsPercentageBar)
                     && e.PropertyName != nameof(GroupNameFormat)
                     && e.PropertyName != nameof(LocalizedDescription)
                     && e.PropertyName != nameof(FormattedGroupName))
@@ -352,6 +376,7 @@ namespace CapFrameX.Overlay
                 GroupName = GroupName,
                 ShowGraph = ShowGraph,
                 ShowGraphIsEnabled = ShowGraphIsEnabled,
+                ValueDisplayMode = ValueDisplayMode,
                 Color = Color,
                 ValueFontSize = ValueFontSize,
                 GroupNameFormat = GroupNameFormat,

@@ -5,6 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:ctrls="clr-namespace:CapFrameX.View.Controls"
+             xmlns:overlay="clr-namespace:CapFrameX.Contracts.Overlay;assembly=CapFrameX.Contracts"
 			 xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 			 xmlns:dragdrop="urn:gong-wpf-dragdrop"
 			 xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
@@ -60,6 +61,28 @@
 				<Setter Property="TextTrimming" Value="CharacterEllipsis"/>
 				<Setter Property="ToolTip" Value="{Binding Text, RelativeSource={RelativeSource Self}}"/>
 				<Setter Property="ctrls:TrimmedTextToolTip.IsEnabled" Value="True"/>
+			</Style>
+			<!-- The compact group-name cell has no room for a form field's hint padding or
+			     underline. Account for TextBox's 2px caret inset to match the display text's
+			     4px left margin and keep the editor at its natural height. -->
+			<Style x:Key="OverlayGroupNameEditor" TargetType="{x:Type TextBox}">
+				<Setter Property="Margin" Value="2 0 4 0"/>
+				<Setter Property="Padding" Value="0"/>
+				<Setter Property="BorderThickness" Value="0"/>
+				<Setter Property="Background" Value="Transparent"/>
+				<Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+				<Setter Property="CaretBrush" Value="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+				<Setter Property="VerticalAlignment" Value="Center"/>
+				<Setter Property="VerticalContentAlignment" Value="Center"/>
+				<Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+				<Setter Property="Template">
+					<Setter.Value>
+						<ControlTemplate TargetType="{x:Type TextBox}">
+							<ScrollViewer x:Name="PART_ContentHost" Focusable="False"
+								HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Disabled"/>
+						</ControlTemplate>
+					</Setter.Value>
+				</Setter>
 			</Style>
 			<Style x:Key="OsdOptionsSectionHeader" TargetType="{x:Type TextBlock}">
 				<Setter Property="Margin" Value="0 0 0 4"/>
@@ -354,7 +377,8 @@
 									</DataGridTemplateColumn.CellTemplate>
 									<DataGridTemplateColumn.CellEditingTemplate>
 										<DataTemplate>
-											<TextBox Text="{Binding GroupName, UpdateSourceTrigger=LostFocus}"/>
+											<TextBox Style="{StaticResource OverlayGroupNameEditor}"
+												Text="{Binding GroupName, UpdateSourceTrigger=LostFocus}"/>
 										</DataTemplate>
 									</DataGridTemplateColumn.CellEditingTemplate>
 								</DataGridTemplateColumn>
@@ -842,6 +866,17 @@
                                          Text="{Binding SelectedOverlayEntry.ValueFontSize, UpdateSourceTrigger=LostFocus}">
 							</TextBox>
 							<Label Grid.Row="2" Grid.Column="2" VerticalAlignment="Center" Content="%"/>
+							<StackPanel Grid.Row="3" Grid.RowSpan="3" Grid.ColumnSpan="3" Margin="0 8 0 0"
+                                        IsEnabled="{Binding SelectedOverlayEntry.SupportsPercentageBar, FallbackValue=False}"
+                                        ToolTip="{loc:Tr OverlayView_PercentageDisplayHint}" ToolTipService.ShowOnDisabled="True">
+								<TextBlock Text="{loc:Tr OverlayView_PercentageDisplay}" TextWrapping="Wrap"/>
+								<ComboBox Margin="0 4 0 0" SelectedValuePath="Tag"
+                                          SelectedValue="{Binding SelectedOverlayEntry.ValueDisplayMode, Mode=TwoWay}">
+									<ComboBoxItem Tag="{x:Static overlay:EOverlayValueDisplayMode.Text}" Content="{loc:Tr OverlayView_ValueDisplayText}"/>
+									<ComboBoxItem Tag="{x:Static overlay:EOverlayValueDisplayMode.Bar}" Content="{loc:Tr OverlayView_ValueDisplayBar}"/>
+									<ComboBoxItem Tag="{x:Static overlay:EOverlayValueDisplayMode.TextAndBar}" Content="{loc:Tr OverlayView_ValueDisplayTextAndBar}"/>
+								</ComboBox>
+							</StackPanel>
 						</Grid>
 					</StackPanel>
 				</Border>

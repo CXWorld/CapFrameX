@@ -4,6 +4,13 @@
 
 #include "stdafx.h"
 
+enum class OverlayValueDisplayMode
+{
+  Text = 0,
+  Bar = 1,
+  TextAndBar = 2
+};
+
 class OverlayEntry
 {
   // Construction
@@ -19,5 +26,9 @@ public:
   CString Value;
   BOOL ShowGraph;
   CString Color;
+  OverlayValueDisplayMode ValueDisplayMode = OverlayValueDisplayMode::Text;
+  double PercentageValue = 0.0;
+  BOOL HasPercentageValue = FALSE;
+  CString PercentageBarColor;
 };
 

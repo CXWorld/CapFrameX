@@ -56,6 +56,14 @@ namespace CapFrameX.Contracts.Overlay
         /// </summary>
         bool ShowGraphIsEnabled { get; set; }
         /// <summary>
+        /// Presentation of a percentage value. TextAndBar places the number before the bar.
+        /// </summary>
+        EOverlayValueDisplayMode ValueDisplayMode { get; set; }
+        /// <summary>
+        /// Whether this numeric entry has the actual unit percent.
+        /// </summary>
+        bool SupportsPercentageBar { get; }
+        /// <summary>
         /// Value standard color
         /// </summary>
         string Color { get; set; }

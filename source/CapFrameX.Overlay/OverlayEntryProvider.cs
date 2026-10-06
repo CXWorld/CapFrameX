@@ -345,6 +345,7 @@ namespace CapFrameX.Overlay
                 {
                     entry.GroupFontSize = selectedEntry.GroupFontSize;
                     entry.ValueFontSize = selectedEntry.ValueFontSize;
+                    CopyValueDisplayMode(selectedEntry, entry);
                 }
                 entry.FormatChanged = true;
             }
@@ -371,6 +372,7 @@ namespace CapFrameX.Overlay
                 {
                     entry.GroupFontSize = selectedEntry.GroupFontSize;
                     entry.ValueFontSize = selectedEntry.ValueFontSize;
+                    CopyValueDisplayMode(selectedEntry, entry);
                 }
                 entry.FormatChanged = true;
             }
@@ -410,6 +412,7 @@ namespace CapFrameX.Overlay
                 if (checkboxes.Format)
                 {
                     entry.ValueFontSize = selectedEntry.ValueFontSize;
+                    CopyValueDisplayMode(selectedEntry, entry);
                 }
                 entry.FormatChanged = true;
             }
@@ -424,6 +427,12 @@ namespace CapFrameX.Overlay
             selectedEntry.UpperLimitColor = string.Empty;
             selectedEntry.LowerLimitColor = string.Empty;
             selectedEntry.FormatChanged = true;
+        }
+
+        private static void CopyValueDisplayMode(IOverlayEntry source, IOverlayEntry target)
+        {
+            if (source.SupportsPercentageBar && target.SupportsPercentageBar)
+                target.ValueDisplayMode = OverlayPercentageBar.GetDisplayMode(source);
         }
 
         public void SortOverlayEntriesByType()
@@ -865,6 +874,7 @@ namespace CapFrameX.Overlay
         private static void CopyFormatting(IOverlayEntry source, IOverlayEntry target)
         {
             target.ShowGraph = source.ShowGraph;
+            target.ValueDisplayMode = source.ValueDisplayMode;
             target.Color = source.Color;
             target.ValueFontSize = source.ValueFontSize;
             target.UpperLimitValue = source.UpperLimitValue;

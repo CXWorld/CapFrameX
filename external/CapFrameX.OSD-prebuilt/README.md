@@ -9,6 +9,36 @@ the OSD is built from source instead and these files are ignored.
 
 ## Build provenance
 
+### Percentage bar development payload (2026-10-06)
+
+The five native DLLs and managed bridge were rebuilt from the source tree recorded by
+OSD revision `153cc1a8eea614151a001d0875381d084732a2bb`, which adds percentage bars.
+These are unsigned development binaries; the signed beta payload described below is
+historical. Native builds use VS 2026/v145 and `RelWithDebInfo`; interop uses
+`Release|x64`, .NET 10. The submodule is pinned to the same OSD revision.
+
+Percentage entries support text, bar, or text followed by bar. Native entry API V2 is
+additive and preserves the legacy struct/API; the in-game metrics channel accepts V5
+(380-byte records, display mode at byte 376) plus V1-V4 as text. Bars clamp their fill
+to 0..100, preserve the raw value, use the value's threshold color and smoothing, and
+keep column widths across missing samples. DXGI and Vulkan x64/x86 share this renderer.
+
+Validation: four focused core suites (including 1,193 row/raster checks and versioned
+entry/missing-sample scene checks), all 30 DXGI tests per architecture, and both Vulkan
+tests per architecture passed. All five native trees were rebuilt after the final layout
+fix and the four core suites passed again. The percentage-bar CPU raster was inspected.
+Staged files match build outputs by SHA-256 and PE architecture; Vulkan manifests remain
+byte-identical. Real-game visual checks and release signing have not been performed.
+
+| Component | SHA-256 |
+| --- | --- |
+| Core x64 | `bd8058bcd82657323b7f9b82b33fddf9107a60f4857415539c66e93e0c2ded86` |
+| Hook x64 | `cc0c663e2ee16b1e28c76054ff2cba9cc0c9193c4061ae6440428f26bb3e1e82` |
+| Hook x86 | `a9c139cd20da752d410ceb1932b063ffeaee5b610f3744d546b046055a36ebaa` |
+| Vulkan x64 | `a20d07a404071337448efb0b079d1b43182e1ca6b65a11e18c6bc494c784d269` |
+| Vulkan x86 | `e1d569b375f504aed7127abe827b0fdba933d5a42c2fa29d853650010f94aa93` |
+| Managed interop | `b55ac7bfdc8022f75b5a5bd03d49fabbc66e3ca2b6303cdb832fe46159ce67e1` |
+
 ### Signed 1.9.2 Beta payload (2026-10-04)
 
 All five native DLLs and the managed interop bridge were rebuilt from OSD revision

@@ -51,6 +51,7 @@ namespace CapFrameX.OSD.Integration
                     Color = OsdColor.FromCapFrameXHex(e.Color),
                     GroupColor = OsdColor.FromCapFrameXHex(e.GroupColor),
                     ShowGraph = e.ShowGraph,
+                    ValueDisplayMode = (OsdValueDisplayMode)OverlayPercentageBar.GetDisplayMode(e),
                     Digits = ExtractDigits(e.ValueAlignmentAndDigits),
                     Separators = e.GroupSeparators,
                     GroupScalePercent = ToScalePercent(e.GroupFontSize),
@@ -100,6 +101,22 @@ namespace CapFrameX.OSD.Integration
                     if (e.Identifier == "CaptureServiceStatus" || e.Identifier == "HookOverlayStatus")
                         text = CxLang.Instance.TranslateOverlay(text);
                     o.ValueText = text;
+                }
+
+                // A missing percentage sample must not look like a measured zero. Keep the
+                // selected bar mode so its cell retains a stable width while data is unavailable.
+                if (o.ValueDisplayMode != OsdValueDisplayMode.Text)
+                {
+                    if (OverlayPercentageBar.TryGetValue(e, out var percentage))
+                    {
+                        o.IsNumeric = true;
+                        o.Value = percentage;
+                    }
+                    else
+                    {
+                        o.IsNumeric = false;
+                        o.ValueText = "-";
+                    }
                 }
 
                 if (TryParseLimit(e.UpperLimitValue, out var up))

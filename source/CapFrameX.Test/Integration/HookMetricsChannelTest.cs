@@ -16,15 +16,48 @@ namespace CapFrameX.Test.Integration
     /// first — including the frametime graph, whose entry carries the ShowGraph flag.
     /// </summary>
     [TestClass]
-    [DoNotParallelize] // one process-global named section backs every instance
+    [DoNotParallelize] // one isolated named section backs this test class
     public class HookMetricsChannelTest
     {
         // Mirrors of the private layout constants (kept local so a change to either side has to
         // be a deliberate edit here as well).
         private const int OffMagic = 0, OffEntryCount = 12;
         private const int HeaderSize = 32;
-        private const int RecordSize = 376; // v4: v2's 368 bytes + the two text-scale fields
+        private const int RecordSize = 380; // v5: v4's 376 bytes + the value display mode
         private const int RId = 0;
+        private static readonly string TestMapName = @"Local\CfxOsdMetricsTest_" + Guid.NewGuid().ToString("N");
+
+        [TestMethod]
+        public void Publish_DisplayModes_UsesVersionFiveAndPreservesFollowingRecords()
+        {
+            var entries = new List<OsdEntry>
+            {
+                new OsdEntry { Identifier = "GpuLoad", IsNumeric = true, Value = 76,
+                    Unit = "%", ValueDisplayMode = OsdValueDisplayMode.TextAndBar },
+                new OsdEntry { Identifier = "CpuLoad", IsNumeric = true, Value = 35,
+                    Unit = "%", ValueDisplayMode = OsdValueDisplayMode.Bar },
+                new OsdEntry { Identifier = "Frametime", ShowGraph = true }
+            };
+
+            using (var channel = HookMetricsChannel.Create(targetPid: 4244, mapName: TestMapName))
+            {
+                channel.Publish(entries, flags: 0u, targetPid: 4244);
+                IntPtr view = OpenReadOnlyView();
+                Assert.AreNotEqual(IntPtr.Zero, view, "The isolated metrics section must be readable.");
+                try
+                {
+                    Assert.AreEqual(5, Marshal.ReadInt32(view, 4));
+                    Assert.AreEqual(2, Marshal.ReadInt32(view, HeaderSize + 376));
+                    Assert.AreEqual(1, Marshal.ReadInt32(view, HeaderSize + RecordSize + 376));
+                    Assert.AreEqual(0, Marshal.ReadInt32(view, HeaderSize + 2 * RecordSize + 376));
+                    Assert.AreEqual("Frametime", ReadIdentifier(view, 2));
+                }
+                finally
+                {
+                    UnmapViewOfFile(view);
+                }
+            }
+        }
 
         [TestMethod]
         public void MaxEntries_HoldsAnEnthusiastProfileOnAHighCoreCountCpu()
@@ -51,15 +84,12 @@ namespace CapFrameX.Test.Integration
             entries.Add(new OsdEntry { Identifier = "Framerate", IsNumeric = true });
             entries.Add(new OsdEntry { Identifier = "Frametime", IsNumeric = true, ShowGraph = true });
 
-            using (var channel = HookMetricsChannel.Create(targetPid: 4242))
+            using (var channel = HookMetricsChannel.Create(targetPid: 4242, mapName: TestMapName))
             {
                 channel.Publish(entries, flags: 0u, targetPid: 4242);
 
                 IntPtr view = OpenReadOnlyView();
-                if (view == IntPtr.Zero)
-                    Assert.Inconclusive("Global\\CfxOsdMetricsV1 could not be created or opened — " +
-                        "creating a section in the Global namespace needs SeCreateGlobalPrivilege. " +
-                        "Re-run this test from an ELEVATED shell; a skip here verifies nothing.");
+                Assert.AreNotEqual(IntPtr.Zero, view, "The isolated metrics section must be readable.");
                 try
                 {
                     Assert.AreEqual(unchecked((int)0x31584643u), Marshal.ReadInt32(view, OffMagic),
@@ -86,16 +116,13 @@ namespace CapFrameX.Test.Integration
             for (int i = 0; i < HookMetricsChannel.MaxEntries; i++)
                 entries.Add(new OsdEntry { Identifier = $"e{i}", IsNumeric = true });
 
-            using (var channel = HookMetricsChannel.Create(targetPid: 4243))
+            using (var channel = HookMetricsChannel.Create(targetPid: 4243, mapName: TestMapName))
             {
                 // A MapSize too small for MaxEntries would corrupt memory past the view here.
                 channel.Publish(entries, flags: 0u, targetPid: 4243);
 
                 IntPtr view = OpenReadOnlyView();
-                if (view == IntPtr.Zero)
-                    Assert.Inconclusive("Global\\CfxOsdMetricsV1 could not be created or opened — " +
-                        "creating a section in the Global namespace needs SeCreateGlobalPrivilege. " +
-                        "Re-run this test from an ELEVATED shell; a skip here verifies nothing.");
+                Assert.AreNotEqual(IntPtr.Zero, view, "The isolated metrics section must be readable.");
                 try
                 {
                     Assert.AreEqual(HookMetricsChannel.MaxEntries,
@@ -118,7 +145,7 @@ namespace CapFrameX.Test.Integration
 
         private static IntPtr OpenReadOnlyView()
         {
-            IntPtr map = OpenFileMappingW(FileMapRead, false, @"Global\CfxOsdMetricsV1");
+            IntPtr map = OpenFileMappingW(FileMapRead, false, TestMapName);
             if (map == IntPtr.Zero) return IntPtr.Zero;
             try
             {

@@ -363,6 +363,44 @@ namespace CapFrameX.Test.Mcp
             provider.Verify(service => service.SaveOverlayEntriesToJson(It.IsAny<int>()), Times.Never);
         }
 
+        [TestMethod]
+        public async Task SetOverlayEntry_PercentageDisplay_PersistsAndReportsCapability()
+        {
+            var entry = CreateEntry("GpuLoad", "0", "GPU");
+            entry.ValueUnitFormat = "%";
+            var overlayService = new Mock<IOverlayService>();
+            overlayService.SetupGet(service => service.CurrentOverlayEntries).Returns(new IOverlayEntry[] { entry });
+            var provider = new Mock<IOverlayEntryProvider>();
+            provider.Setup(service => service.SaveOverlayEntriesToJson(0)).Returns(Task.CompletedTask);
+            var tool = new OverlayConfigTools(overlayService.Object, provider.Object, CreateConfiguration().Object);
+
+            var result = await tool.SetOverlayEntry("GpuLoad", valueDisplayMode: EOverlayValueDisplayMode.TextAndBar);
+
+            Assert.AreEqual(EOverlayValueDisplayMode.TextAndBar, entry.ValueDisplayMode);
+            Assert.AreEqual("TextAndBar", result.Entry.ValueDisplayMode);
+            Assert.IsTrue(result.Entry.SupportsPercentageBar);
+            Assert.IsTrue(result.Persisted);
+            provider.Verify(service => service.MarkPendingChanges(), Times.Once);
+            provider.Verify(service => service.SaveOverlayEntriesToJson(0), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task SetOverlayEntry_PercentageBarOnFps_RejectsBeforeApplyingOtherChanges()
+        {
+            var entry = CreateEntry("Online1PercentLow", "0", "Original");
+            entry.ValueUnitFormat = "FPS";
+            var overlayService = new Mock<IOverlayService>();
+            overlayService.SetupGet(service => service.CurrentOverlayEntries).Returns(new IOverlayEntry[] { entry });
+            var provider = new Mock<IOverlayEntryProvider>();
+            var tool = new OverlayConfigTools(overlayService.Object, provider.Object, CreateConfiguration().Object);
+
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => tool.SetOverlayEntry(
+                entry.Identifier, groupName: "Changed", valueDisplayMode: EOverlayValueDisplayMode.TextAndBar));
+
+            Assert.AreEqual("Original", entry.GroupName);
+            provider.Verify(service => service.MarkPendingChanges(), Times.Never);
+        }
+
         private static Mock<IAppConfiguration> CreateConfiguration()
         {
             var config = new Mock<IAppConfiguration>();

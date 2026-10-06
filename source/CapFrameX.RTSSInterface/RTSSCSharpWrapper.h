@@ -226,6 +226,7 @@ public:
 					entry.GroupName = RtssTextFormatter::FormatGroupName(managedEntry, GetACP());
 					entry.Value = RtssTextFormatter::FormatValue(managedEntry, GetACP());
 					entry.ShowGraph = managedEntry->ShowGraph;
+					SetPercentageBarProperties(managedEntry, entry);
 
 					_coreControl->OverlayEntries.push_back(entry);
 				}
@@ -257,6 +258,7 @@ public:
 						_coreControl->OverlayEntries[i].Value = RtssTextFormatter::FormatValue(managedEntry, GetACP());
 						_coreControl->OverlayEntries[i].ShowGraph = managedEntry->ShowGraph;
 						_coreControl->OverlayEntries[i].Color = managedEntry->Color;
+						SetPercentageBarProperties(managedEntry, _coreControl->OverlayEntries[i]);
 						break;
 					}
 				}
@@ -320,6 +322,16 @@ public:
 	}
 
 private:
+	static void SetPercentageBarProperties(IOverlayEntry^ managedEntry, OverlayEntry& entry)
+	{
+		entry.ValueDisplayMode = static_cast<OverlayValueDisplayMode>(
+			static_cast<int>(OverlayPercentageBar::GetDisplayMode(managedEntry)));
+		double value = 0.0;
+		entry.HasPercentageValue = OverlayPercentageBar::TryGetValue(managedEntry, value);
+		entry.PercentageValue = value;
+		entry.PercentageBarColor = OverlayPercentageBar::GetColor(managedEntry);
+	}
+
 	RTSSCoreControl* _coreControl;
 	Action<Exception^>^ _exceptionAction;
 	Object^ m_lock = gcnew Object();

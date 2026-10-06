@@ -267,6 +267,8 @@ namespace CapFrameX.Mcp.Tools
         [JsonProperty("showOnOverlayIsEnabled")] public bool ShowOnOverlayIsEnabled { get; set; }
         [JsonProperty("showGraph")] public bool ShowGraph { get; set; }
         [JsonProperty("showGraphIsEnabled")] public bool ShowGraphIsEnabled { get; set; }
+        [JsonProperty("valueDisplayMode")] public string ValueDisplayMode { get; set; }
+        [JsonProperty("supportsPercentageBar")] public bool SupportsPercentageBar { get; set; }
         [JsonProperty("value", NullValueHandling = NullValueHandling.Ignore)] public string Value { get; set; }
         [JsonProperty("formattedValue", NullValueHandling = NullValueHandling.Ignore)] public string FormattedValue { get; set; }
         [JsonProperty("valueFormat", NullValueHandling = NullValueHandling.Ignore)] public string ValueFormat { get; set; }

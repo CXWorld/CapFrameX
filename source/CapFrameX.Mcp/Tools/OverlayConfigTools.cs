@@ -70,14 +70,15 @@ namespace CapFrameX.Mcp.Tools
             [Description("Group font size/offset percentage used by the OSD formatter.")] int? groupFontSize = null,
             [Description("Number of blank separator rows above this group; must be zero or greater.")] int? groupSeparators = null,
             [Description("Zero-based position in the active overlay entry order.")] int? orderIndex = null,
-            [Description("Save the changed live collection to the active overlay configuration slot.")] bool persist = true)
+            [Description("Save the changed live collection to the active overlay configuration slot.")] bool persist = true,
+            [Description("Percentage display: Text, Bar, or TextAndBar (number before bar). Bar modes require SupportsPercentageBar.")] EOverlayValueDisplayMode? valueDisplayMode = null)
         {
             if (string.IsNullOrWhiteSpace(identifier))
                 throw new ArgumentException("identifier is required", nameof(identifier));
 
             if (!HasAnyEntryUpdate(isEntryEnabled, showOnOverlay, groupName, showGraph, color,
                 groupColor, upperLimitValue, lowerLimitValue, upperLimitColor, lowerLimitColor,
-                valueFontSize, groupFontSize, groupSeparators, orderIndex))
+                valueFontSize, groupFontSize, groupSeparators, orderIndex, valueDisplayMode))
             {
                 throw new ArgumentException("Provide at least one overlay entry option to update.");
             }
@@ -93,6 +94,13 @@ namespace CapFrameX.Mcp.Tools
                 throw new InvalidOperationException($"Overlay entry '{identifier}' cannot be shown in the current configuration.");
             if (showGraph == true && !entry.ShowGraphIsEnabled)
                 throw new InvalidOperationException($"Overlay entry '{identifier}' does not support a graph.");
+            if (valueDisplayMode.HasValue)
+            {
+                if (!Enum.IsDefined(typeof(EOverlayValueDisplayMode), valueDisplayMode.Value))
+                    throw new ArgumentOutOfRangeException(nameof(valueDisplayMode));
+                if (valueDisplayMode.Value != EOverlayValueDisplayMode.Text && !entry.SupportsPercentageBar)
+                    throw new InvalidOperationException($"Overlay entry '{identifier}' does not support a percentage bar.");
+            }
             if (groupSeparators < 0)
                 throw new ArgumentOutOfRangeException(nameof(groupSeparators), groupSeparators,
                     "Group separators must be zero or greater.");
@@ -130,6 +138,8 @@ namespace CapFrameX.Mcp.Tools
                 () => entry.ShowGraph, value => entry.ShowGraph = value, changed);
 
             bool formatChanged = false;
+            formatChanged |= ApplyEntryValue(nameof(IOverlayEntry.ValueDisplayMode), valueDisplayMode,
+                () => entry.ValueDisplayMode, value => entry.ValueDisplayMode = value, changed);
             formatChanged |= ApplyEntryValue(nameof(IOverlayEntry.Color), color,
                 () => entry.Color, value => entry.Color = value, changed);
             formatChanged |= ApplyEntryValue(nameof(IOverlayEntry.GroupColor), groupColor,
@@ -195,6 +205,8 @@ namespace CapFrameX.Mcp.Tools
                 ShowOnOverlayIsEnabled = entry.ShowOnOverlayIsEnabled,
                 ShowGraph = entry.ShowGraph,
                 ShowGraphIsEnabled = entry.ShowGraphIsEnabled,
+                ValueDisplayMode = entry.ValueDisplayMode.ToString(),
+                SupportsPercentageBar = entry.SupportsPercentageBar,
                 Value = entry.Value?.ToString(),
                 FormattedValue = SafeGet(() => entry.FormattedValue),
                 ValueFormat = entry.ValueFormat,

@@ -710,12 +710,14 @@ void RTSSCoreControl::Refresh()
 		nGroupedStringMaxLen = 1;
 
 	CGroupedString groupedString(nGroupedStringMaxLen);
+	// Inline percentage bars and the history graphs below share the same object buffer.
+	DWORD dwObjectOffset = 0;
 
 	if (OverlayEntries.size() > 0)
 	{
 		for (size_t i = 0; i < OverlayEntries.size(); i++)
 		{
-			AddOverlayEntry(&groupedString, &OverlayEntries[i], bFormatTagsSupported);
+			AddOverlayEntry(&groupedString, &OverlayEntries[i], bFormatTagsSupported, bObjTagsSupported, dwObjectOffset);
 		}
 	}
 
@@ -738,7 +740,6 @@ void RTSSCoreControl::Refresh()
 		if (hasAnyGraphToShow)
 			strOSD += "\n\n";
 
-		DWORD dwObjectOffset = 0;
 		DWORD dwObjectSize = 0;
 		DWORD dwFlags = 0;
 		CString strObj;
@@ -852,7 +853,41 @@ void RTSSCoreControl::OnOSDToggle()
 	m_rtssInterface.SetFlags(0xFFFFFFFF, RTSSHOOKSFLAG_OSD_VISIBLE);
 }
 
-void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported)
+CString RTSSCoreControl::GetEntryValue(OverlayEntry* entry, BOOL bObjTagsSupported, DWORD& dwObjectOffset)
+{
+	if (entry->ValueDisplayMode == OverlayValueDisplayMode::Text)
+		return entry->Value;
+
+	CString color = "<C>";
+	if (!entry->PercentageBarColor.IsEmpty())
+		color.Format("<C=%s>", (LPCSTR)entry->PercentageBarColor);
+
+	// An absent sample must not look like a valid zero-percent reading.
+	if (!entry->HasPercentageValue)
+		return bObjTagsSupported && m_bFormatTags ? color + "-<C>  " : CString("-  ");
+
+	// Legacy RTSS versions and a full object buffer retain the numeric value even in Bar mode.
+	if (!bObjTagsSupported || !m_bFormatTags)
+		return entry->Value;
+
+	// Clamp only the fill: the adjacent number still shows the original measurement.
+	FLOAT percentage = static_cast<FLOAT>(entry->PercentageValue < 0.0 ? 0.0
+		: entry->PercentageValue > 100.0 ? 100.0 : entry->PercentageValue);
+	DWORD objectSize = EmbedGraph(dwObjectOffset, &percentage, 0, 1, -10, 6, 1,
+		0.0f, 100.0f, RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_BAR | RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_BGND);
+	if (!objectSize)
+		return entry->Value;
+
+	CString bar;
+	bar.Format("%s<OBJ=%08X><C>  ", (LPCSTR)color, dwObjectOffset);
+	dwObjectOffset += objectSize;
+
+	// The value precedes the bar; trailing space separates adjacent entries in the same group.
+	return entry->ValueDisplayMode == OverlayValueDisplayMode::TextAndBar
+		? entry->Value + " " + bar : bar;
+}
+
+void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported, BOOL bObjTagsSupported, DWORD& dwObjectOffset)
 {
 	// handle special cases first
 	// ToDo: When more special cases, better use switch-case with string/index mapping table
@@ -957,14 +992,15 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 		if (entry->ShowOnOverlay)
 		{
 			CString groupName = entry->GroupName;
+			CString value = GetEntryValue(entry, bObjTagsSupported, dwObjectOffset);
 
 			if (groupName != "")
 			{
-				groupedString->Add(entry->Value, groupName, "\n", " ");
+				groupedString->Add(value, groupName, "\n", " ");
 			}
 			else
 			{
-				groupedString->Add(entry->Value, "", "\n", " ");
+				groupedString->Add(value, "", "\n", " ");
 			}
 		}
 	}
