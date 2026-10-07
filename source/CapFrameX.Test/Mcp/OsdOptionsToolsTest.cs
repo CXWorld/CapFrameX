@@ -210,15 +210,15 @@ namespace CapFrameX.Test.Mcp
             overlayService.SetupGet(service => service.IsOverlayActiveStream).Returns(activeStream);
             var tool = CreateOsdOptionsTool(config, overlayService);
 
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
                 tool.SetOsdOptions(autoDisableOverlay: false, zoom: 201));
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
                 tool.SetOsdOptions(autoDisableOverlay: false, replayBufferSizeMs: 499));
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
                 tool.SetOsdOptions(autoDisableOverlay: false, hookFreeRefreshRate: 3));
-            Assert.ThrowsException<ArgumentException>(() =>
+            Assert.ThrowsExactly<ArgumentException>(() =>
                 tool.SetOsdOptions(autoDisableOverlay: false, overlayPositionHotkey: "Alt+NotAKey"));
-            Assert.ThrowsException<ArgumentException>(() =>
+            Assert.ThrowsExactly<ArgumentException>(() =>
                 tool.SetOsdOptions(overlayHotkey: string.Empty, overlayPositionHotkey: "Alt+NotAKey"));
 
             Assert.IsTrue(config.Object.AutoDisableOverlay);
@@ -241,7 +241,7 @@ namespace CapFrameX.Test.Mcp
             rtss.Setup(service => service.IsRTSSInstalled()).Returns(false);
             var tool = CreateOsdOptionsTool(config, rtss: rtss);
 
-            Assert.ThrowsException<InvalidOperationException>(() =>
+            Assert.ThrowsExactly<InvalidOperationException>(() =>
                 tool.SetOsdOptions(renderer: OsdRendererMode.Rtss, isOverlayActive: true));
 
             Assert.IsFalse(config.Object.IsOverlayActive);
@@ -356,7 +356,7 @@ namespace CapFrameX.Test.Mcp
             var provider = new Mock<IOverlayEntryProvider>();
             var tool = new OverlayConfigTools(overlayService.Object, provider.Object, CreateConfiguration().Object);
 
-            await Assert.ThrowsExceptionAsync<ArgumentException>(() =>
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() =>
                 tool.SetOverlayEntry("Frametime", groupName: "Changed", color: "not-a-color"));
 
             Assert.AreEqual("Original", entry.GroupName);
@@ -394,7 +394,7 @@ namespace CapFrameX.Test.Mcp
             var provider = new Mock<IOverlayEntryProvider>();
             var tool = new OverlayConfigTools(overlayService.Object, provider.Object, CreateConfiguration().Object);
 
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() => tool.SetOverlayEntry(
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => tool.SetOverlayEntry(
                 entry.Identifier, groupName: "Changed", valueDisplayMode: EOverlayValueDisplayMode.TextAndBar));
 
             Assert.AreEqual("Original", entry.GroupName);

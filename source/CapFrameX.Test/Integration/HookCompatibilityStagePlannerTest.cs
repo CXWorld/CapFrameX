@@ -117,7 +117,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(plan.ProbingEnabled);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("D3D11", true)]
         [DataRow("DXGI", false)]
         public void Plan_D3D11RejectsLearnedPendingStaleAndExhaustedGenericRoutes(

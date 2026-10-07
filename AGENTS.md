@@ -5,7 +5,7 @@
 - `source/` holds the main C# and C++ projects; the WPF app lives in `source/CapFrameX` and native components live in folders like `source/CapFrameX.Hwinfo`, `source/CapFrameX.RTSSInterface`, `source/CapFrameX.IGCL`, and `source/CapFrameX.ADLX`.
 - Tests are in `source/CapFrameX.Test` (MSTest), with fixture files under `source/CapFrameX.Test/TestRecordFiles`.
 - Assets and documentation resources live in `images/` and project docs like `PORTABLE_MODE.md` and `README.md` live at the repo root.
-- Build and version metadata are in `CapFrameX.sln`, `packages/`, and the files under `version/`.
+- Build and version metadata are in `CapFrameX.sln`, `source/Directory.Packages.props` (central NuGet versions), and the files under `version/`.
 
 ## Build, Test, and Development Commands
 
@@ -21,7 +21,7 @@ See `.github/workflows/main.yml` for the CI build ordering and Visual Studio ver
 
 - C# uses spaces for indentation and favors Allman-style braces; `System.*` usings should appear before other namespaces.
 - Follow existing naming: PascalCase for types and public members, camelCase for locals and parameters, and `I*` for interfaces.
-- Keep `packages.config` and `app.config` consistent when adding dependencies or configuration.
+- Add NuGet versions to `source/Directory.Packages.props` and reference packages without `Version=` in the project (central package management covers every project under `source/`, including the `net472` installer custom actions).
 
 ## Testing Guidelines
 

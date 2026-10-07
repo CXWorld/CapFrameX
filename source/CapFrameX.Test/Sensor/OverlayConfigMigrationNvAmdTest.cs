@@ -365,7 +365,7 @@ namespace CapFrameX.Test.Sensor
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public async Task IdenticalHardware_RetiredEntriesAreRemovedFromSavedProfiles(bool useStableIdentifier)

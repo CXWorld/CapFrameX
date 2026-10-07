@@ -14,7 +14,7 @@ namespace CapFrameX.Test.Overlay
     [TestClass]
     public class OverlayActivationPolicyTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true, false, false, false, false)]
         [DataRow(true, true, false, false, true)]
         [DataRow(true, false, true, false, true)]
@@ -30,7 +30,7 @@ namespace CapFrameX.Test.Overlay
             Assert.AreEqual(expected, actual);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, false, false, true)]
         [DataRow(true, false, false, false)]
         [DataRow(false, true, false, false)]
@@ -45,7 +45,7 @@ namespace CapFrameX.Test.Overlay
             Assert.AreEqual(expected, actual);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, false, false, false, true)]
         [DataRow(true, false, false, false, false)]
         [DataRow(true, true, false, false, true)]

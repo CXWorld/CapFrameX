@@ -300,7 +300,7 @@ namespace CapFrameX.Test.Integration
                 session.RemainingBudgetMs(2000 + HookCompatibilityVerdictClassifier.ProbeStageBudgetMs));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public void HiddenSamples_PauseBothTheBudgetAndQueueTimeout(bool generic)

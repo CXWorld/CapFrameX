@@ -1996,7 +1996,7 @@ namespace CapFrameX.Data
             var buffer = new byte[256];
             var delimiter = new byte[] { (byte)',' };
 
-            using (var sha1 = new SHA1Managed())
+            using (var sha1 = SHA1.Create())
             {
                 for (int i = 0; i < lines.Count; i++)
                 {

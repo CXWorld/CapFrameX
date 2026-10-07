@@ -6,7 +6,7 @@ namespace CapFrameX.Test.Configuration
     [TestClass]
     public class OsdAnchorPositionCycleTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(0, 1)]
         [DataRow(1, 2)]
         [DataRow(2, 3)]
