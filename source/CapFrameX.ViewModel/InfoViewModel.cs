@@ -314,9 +314,7 @@ namespace CapFrameX.ViewModel
 
                 _rawRamName = _systemInfo.GetSystemRAMInfoName();
                 UpdateRamName();
-                var ramManufacturer = _systemInfo.GetSystemRAMManufacturer();
-                RamVendorBadge = VendorBadge.FromVendorName(ramManufacturer);
-                RamDetails = ramManufacturer;
+                UpdateRamManufacturer();
 
                 OsVersion = _systemInfo.GetOSVersion();
             }
@@ -340,6 +338,7 @@ namespace CapFrameX.ViewModel
                 CpuVendorBadge = VendorBadge.FromCpuVendor(_sensorService.GetCpuVendor());
 
                 UpdateGpuInfo();
+                UpdateRamManufacturer();
 
                 // PawnIO is installed and started while the sensor service opens the hardware,
                 // so its state is only meaningful from here on.
@@ -401,6 +400,16 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        private void UpdateRamManufacturer()
+        {
+            var manufacturer = _systemInfo.GetSystemRAMManufacturer() ?? string.Empty;
+            if (string.Equals(RamDetails, manufacturer, StringComparison.Ordinal))
+                return;
+
+            RamDetails = manufacturer;
+            RamVendorBadge = VendorBadge.FromVendorName(manufacturer);
+        }
+
         private static bool IsUsable(string value)
             => !string.IsNullOrWhiteSpace(value) && value != "Unknown";
 
@@ -409,6 +418,12 @@ namespace CapFrameX.ViewModel
             _lastSnapshot = snapshot;
             try
             {
+                // SPD discovery can finish on a retry after sensor initialization. Refresh the
+                // cached identity while this tab is visible, using the existing telemetry tick.
+                // The base WMI snapshot must already be ready so this UI update never waits for it.
+                if (_rawRamName != null)
+                    UpdateRamManufacturer();
+
                 float? cpuLoad = null, cpuPower = null, cpuTemp = null, cpuMaxClock = null, cpuCoreClockMax = null;
                 float? gpuLoad = null, gpuPower = null, gpuTemp = null, gpuClock = null;
                 float? vramUsedGb = null, vramUsedMb = null, vramTotalGb = null, vramTotalMb = null;

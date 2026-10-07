@@ -4,6 +4,7 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using System.Collections.Generic;
 using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Hardware.Memory.Sensors;
 using RAMSPDToolkit.SPD;
@@ -15,10 +16,15 @@ namespace LibreHardwareMonitor.Hardware.Memory;
 internal sealed class DimmMemory : Hardware
 {
     private readonly SpdThermalSensor _thermalSensor;
+    private readonly string _manufacturer;
+    private readonly string _partNumber;
 
-    public DimmMemory(SPDAccessor accessor, string name, Identifier identifier, ISettings settings, ISensorConfig sensorConfig = null)
+    public DimmMemory(SPDAccessor accessor, string name, string manufacturer, string partNumber, Identifier identifier, ISettings settings, ISensorConfig sensorConfig = null)
         : base(name, identifier, settings)
     {
+        _manufacturer = manufacturer;
+        _partNumber = partNumber;
+
         //Only add thermal sensor if present
         if (accessor is IThermalSensor ts && ts.HasThermalSensor)
         {
@@ -54,6 +60,23 @@ internal sealed class DimmMemory : Hardware
     }
 
     public override HardwareType HardwareType => HardwareType.Memory;
+
+    public override IDictionary<string, string> Properties
+    {
+        get
+        {
+            // Identity is cached during discovery; reading properties never accesses the SMBus.
+            SortedDictionary<string, string> properties = new();
+
+            if (!string.IsNullOrWhiteSpace(_manufacturer))
+                properties.Add("Manufacturer", _manufacturer);
+
+            if (!string.IsNullOrWhiteSpace(_partNumber))
+                properties.Add("PartNumber", _partNumber);
+
+            return properties;
+        }
+    }
 
     public override void Update()
     {
