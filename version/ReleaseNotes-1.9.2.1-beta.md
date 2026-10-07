@@ -1,6 +1,6 @@
 # CapFrameX 1.9.2.1 Beta
 
-This build updates the 1.9.2 beta through the CapFrameX update server. The GitHub release and its download packages remain at 1.9.2.0.
+This build updates the 1.9.2 beta through the CapFrameX update server and the existing [GitHub beta release](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.2_beta). Both installer and portable downloads contain **1.9.2.1-beta**. The original `v1.9.2_beta` source tag remains unchanged; no new source tag was created.
 
 - Prefer SPD module-vendor data for RAM manufacturer identification, with fallbacks for incomplete detection.
 - Load editable hook compatibility profiles at startup, with application defaults and optional user overrides. Restart CapFrameX and the affected game after editing profiles.
