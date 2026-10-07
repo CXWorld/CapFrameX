@@ -87,6 +87,31 @@ Choose a renderer under **Overlay → OSD options**. The following describes 1.9
 
 Configure individual entries, colors, groups, and three profiles in **Overlay items**. OSD options include opacity, zoom, placement, a position hotkey, and PresentMon replay buffering. Existing renderer selections are preserved. If v1.9.0 migrated your in-game selection to hook-free, you can select in-game again since 1.9.1.
 
+### Custom in-game compatibility profiles
+
+At startup, CapFrameX merges hook compatibility profiles in this order:
+
+1. Embedded defaults.
+2. `HookCompatibilityProfiles.xml` next to `CapFrameX.exe` (also included in the installer and portable distribution).
+3. `%APPDATA%\CapFrameX\Configuration\HookCompatibilityProfiles.xml`. Portable mode uses the configuration folder set by `paths.config` instead. At startup, CapFrameX creates a valid empty user file if it is missing, including its parent directory. Existing files are preserved.
+
+A later source replaces the **entire profile** for the same executable name, compared without case sensitivity. Profiles for other executables remain available. Omitted attributes take their default values; they are not inherited from the replaced profile. Custom profiles also take precedence over conflicting entries in the learned-profile cache when choosing the starting route.
+
+To add or override a profile without rebuilding CapFrameX, edit the XML next to the executable, or add only your custom profiles to the generated user file:
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<HookCompatibilityProfiles version="1">
+  <Profile executable="MyGame.exe"
+           enableGenericD3D12PresentRoute="true"
+           disableFidelityFxSwapchainLifecycleHooks="true" />
+</HookCompatibilityProfiles>
+```
+
+Other supported settings are `enableXeFgNativePresentQueueRoute="true"`, `earlyInjectionModule="d3d12.dll"`, and `injectionDelayMilliseconds="15000"`. The optional `source` attribute can describe why a profile is needed. Keep the user file limited to your changes so that updated default profiles can take effect for other games. The user file can be edited without administrator rights even when CapFrameX is installed under `Program Files`.
+
+Restart CapFrameX and the affected game after editing. A malformed or unreadable external file is logged and ignored as a whole; valid profiles from the other sources remain active. `HookCompatibilityProfiles.learned.json` remains the separate, automatically maintained compatibility cache.
+
 ![CapFrameX 1.9.0 overlay entries](images/1.9.0/overlay.png)
 ![CapFrameX 1.9.0 renderer and OSD options](images/1.9.0/overlay-options.png)
 

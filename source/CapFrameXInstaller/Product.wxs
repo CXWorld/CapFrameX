@@ -141,6 +141,11 @@
       <Component>
         <File Source="$(var.CapFrameXInstaller.BinaryDir)\CapFrameX.dll.config" />
       </Component>
+      <!-- Editable hook profiles are runtime data; the XML documentation exclusion above
+           must not remove this catalog from installed builds. -->
+      <Component>
+        <File Source="$(var.CapFrameXInstaller.BinaryDir)\HookCompatibilityProfiles.xml" />
+      </Component>
     </ComponentGroup>
   </Fragment>
 

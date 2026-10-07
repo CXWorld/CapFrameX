@@ -105,9 +105,10 @@ namespace CapFrameX
                     ConfigurationProvider.AppConfiguration = config;
                 }
 
+                IPathService pathService;
                 using (StartupPerformanceLogger.Measure("Path service resolution"))
                 {
-                    var pathService = Container.Resolve<IPathService>();
+                    pathService = Container.Resolve<IPathService>();
                     PathServiceProvider.PathService = pathService;
                 }
 
@@ -154,7 +155,8 @@ namespace CapFrameX
                         PresentMonCaptureService.PresentRuntime_INDEX,
                         statusService: _hookOverlayStatusService,
                         learnedStore: _hookLearnedProfileStore,
-                        profileReports: _hookProfileReports);
+                        profileReports: _hookProfileReports,
+                        configurationFolder: pathService.ConfigFolder);
                 }
 
                 // CapFrameX.OSD: hook-free DWM/DirectComposition overlay. Scalars come from the
