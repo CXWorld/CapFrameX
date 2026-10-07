@@ -183,12 +183,30 @@ internal class MemoryGroup : IGroup, IHardwareChanged
         {
             //Default value
             string name = $"DIMM #{ram.Index}";
+            string manufacturer = null;
+            string partNumber = null;
 
-            //Check if we can switch to the correct page
-            if (ram.ChangePage(PageData.ModulePartNumber))
-                name = $"{ram.GetModuleManufacturerString()} - {ram.ModulePartNumber()} (#{ram.Index})";
+            try
+            {
+                // Cache identity while the SPD page is already accessed for the display name.
+                if (ram.ChangePage(PageData.ModulePartNumber))
+                {
+                    manufacturer = ram.GetModuleManufacturerString()?.Trim('\0', ' ', '\t', '\r', '\n');
+                    partNumber = ram.ModulePartNumber()?.Trim('\0', ' ', '\t', '\r', '\n');
+                }
+            }
+            catch (Exception ex)
+            {
+                // A failed identity read must not prevent this or other DIMMs from being added.
+                _lastException = ex;
+            }
 
-            DimmMemory memory = new(ram, name, new Identifier("memory", "dimm", $"{ram.Index}"), settings, _sensorConfig);
+            if (!string.IsNullOrWhiteSpace(manufacturer) && !string.IsNullOrWhiteSpace(partNumber))
+                name = $"{manufacturer} - {partNumber} (#{ram.Index})";
+            else if (!string.IsNullOrWhiteSpace(manufacturer) || !string.IsNullOrWhiteSpace(partNumber))
+                name = $"{(!string.IsNullOrWhiteSpace(manufacturer) ? manufacturer : partNumber)} (#{ram.Index})";
+
+            DimmMemory memory = new(ram, name, manufacturer, partNumber, new Identifier("memory", "dimm", $"{ram.Index}"), settings, _sensorConfig);
             additions.Add(memory);
         }
 

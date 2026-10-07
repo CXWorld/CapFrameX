@@ -27,6 +27,10 @@
     <None Remove="HookCompatibilityProfiles.xml" />
     <EmbeddedResource Include="HookCompatibilityProfiles.xml"
                       LogicalName="CapFrameX.OSD.Integration.HookCompatibilityProfiles.xml" />
+    <Content Include="HookCompatibilityProfiles.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup Condition="'$(CfxOsdFromSource)' == 'true'">

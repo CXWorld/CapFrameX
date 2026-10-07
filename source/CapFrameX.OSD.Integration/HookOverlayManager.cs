@@ -144,6 +144,7 @@ namespace CapFrameX.OSD.Integration
         private ulong _nextEvidenceRescanTickMs;
         private int _probeRearmCount;
         private readonly IHookLearnedProfileStore _learnedStore;
+        private readonly IReadOnlyDictionary<string, HookCompatibilityProfile> _compatibilityProfiles;
         private readonly HookProfileReportService _profileReports;
         private readonly IDisposable _learnedStoreSub;
         private readonly Lazy<string> _hookBuildHash;
@@ -170,10 +171,12 @@ namespace CapFrameX.OSD.Integration
         /// <param name="processIdStream">The detected-game PID stream (IProcessService.ProcessIdStream).</param>
         /// <param name="dllPathOverride">Optional explicit path to cfx_osd_hook.dll.</param>
         /// <param name="learnedStore">Learned compatibility profiles; null keeps them in memory.</param>
+        /// <param name="configurationFolder">Optional per-user or portable configuration folder for profile overrides.</param>
         public HookOverlayManager(IAppConfiguration appConfiguration, IObservable<int> processIdStream,
             IObservable<string[]> frameDataStream, int processIdColumnIndex, int runtimeColumnIndex,
             string dllPathOverride = null, HookOverlayStatusService statusService = null,
-            HookLearnedProfileStore learnedStore = null, HookProfileReportService profileReports = null)
+            HookLearnedProfileStore learnedStore = null, HookProfileReportService profileReports = null,
+            string configurationFolder = null)
         {
             _appConfiguration = appConfiguration ?? throw new ArgumentNullException(nameof(appConfiguration));
             if (processIdStream == null) throw new ArgumentNullException(nameof(processIdStream));
@@ -183,6 +186,12 @@ namespace CapFrameX.OSD.Integration
 
             _processIdColumnIndex = processIdColumnIndex;
             _runtimeColumnIndex = runtimeColumnIndex;
+
+            // Load once before any subscription can synchronously plan or inject a target.
+            _compatibilityProfiles = HookCompatibilityProfileCatalog.LoadProfiles(
+                Path.Combine(AppContext.BaseDirectory, HookCompatibilityProfileCatalog.FileName),
+                string.IsNullOrWhiteSpace(configurationFolder) ? null :
+                    Path.Combine(configurationFolder, HookCompatibilityProfileCatalog.FileName));
 
             _dllPath = dllPathOverride ?? ResolveHookAsset(HookDllName, "CFX_HOOK_DLL");
             _dllPathX86 = ResolveHookAsset(Path.Combine("x86", HookDllName), "CFX_HOOK_DLL_X86");
@@ -780,7 +789,7 @@ namespace CapFrameX.OSD.Integration
             string runtime = attachMode == HookAttachMode.Late ? _currentRuntime : null;
             HookTargetEvidence evidence = HookTargetEvidenceProbe.Probe(pid, runtime, attachMode);
             HookCompatibilityProfileCatalog.TryGetForProcess(pid,
-                out HookCompatibilityProfile catalog);
+                out HookCompatibilityProfile catalog, _compatibilityProfiles);
             HookLearnedProfileEntry learned = null;
             string processName = null;
             if (TryReadProcessIdentity(pid, out processName, out string gamePath) &&
@@ -1022,7 +1031,7 @@ namespace CapFrameX.OSD.Integration
             lock (_gate)
             {
                 foreach (HookCompatibilityProfile profile in
-                    HookCompatibilityProfileCatalog.GetEarlyInjectionProfiles())
+                    HookCompatibilityProfileCatalog.GetEarlyInjectionProfiles(_compatibilityProfiles))
                 {
                     string processName = Path.GetFileNameWithoutExtension(
                         profile.ExecutableName);
@@ -1841,7 +1850,7 @@ namespace CapFrameX.OSD.Integration
             if (!TryReadProcessIdentity(pid, out string processName, out _)) return;
 
             HookCompatibilityProfileCatalog.TryGetForProcess(pid,
-                out HookCompatibilityProfile catalog);
+                out HookCompatibilityProfile catalog, _compatibilityProfiles);
             _learnedStore.TryGet(processName, current.Signature,
                 out HookLearnedProfileEntry learned);
             HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Replan(current,

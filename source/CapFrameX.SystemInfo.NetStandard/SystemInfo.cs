@@ -311,45 +311,11 @@ namespace CapFrameX.SystemInfo.NetStandard
 
         public string GetBiosVersion() => _staticHardwareInfo.Value.BiosVersion;
 
-        /// <summary>
-        /// Many boards report the module vendor as its raw JEDEC manufacturer ID
-        /// instead of a name. Best-effort map of the codes common on consumer DDR4/DDR5.
-        /// </summary>
-        private static readonly Dictionary<string, string> JedecManufacturerIds =
-            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                { "802C", "Micron" },
-                { "2C00", "Micron" },
-                { "80AD", "SK Hynix" },
-                { "AD00", "SK Hynix" },
-                { "80CE", "Samsung" },
-                { "CE00", "Samsung" },
-                { "859B", "Crucial" },
-                { "029E", "Corsair" },
-                { "04CB", "ADATA" },
-                { "04CD", "G.SKILL" },
-                { "04EF", "Team Group" },
-                { "0198", "Kingston" },
-                { "7F98", "Kingston" },
-            };
-
-        public string GetSystemRAMManufacturer() => _staticHardwareInfo.Value.RamManufacturer;
-
-        private static bool LooksLikeJedecId(string value)
+        public string GetSystemRAMManufacturer()
         {
-            if (value.Length != 4)
-                return false;
-
-            bool hasDigit = false;
-            foreach (var c in value)
-            {
-                if (!Uri.IsHexDigit(c))
-                    return false;
-                hasDigit |= char.IsDigit(c);
-            }
-
-            // All-letter strings ("ADATA") are names, not IDs.
-            return hasDigit;
+            var info = _staticHardwareInfo.Value;
+            return MemoryManufacturerResolver.Resolve(_sensorService.GetMemoryManufacturers(),
+                info.RamManufacturer, info.RamModuleCount);
         }
 
         public string GetProcessorCoreCountInfo() => _staticHardwareInfo.Value.ProcessorCoreCountInfo;
@@ -395,6 +361,8 @@ namespace CapFrameX.SystemInfo.NetStandard
             public string RamName { get; private set; } = string.Empty;
 
             public string RamManufacturer { get; private set; } = string.Empty;
+
+            public int RamModuleCount { get; private set; }
 
             public string ProcessorCoreCountInfo { get; private set; } = string.Empty;
 
@@ -520,6 +488,7 @@ namespace CapFrameX.SystemInfo.NetStandard
                     {
                         foreach (ManagementBaseObject managementBaseObject in searcher.Get())
                         {
+                            RamModuleCount++;
                             var configuredClockSpeed = managementBaseObject["ConfiguredClockSpeed"];
                             if (configuredClockSpeed != null)
                                 speed = configuredClockSpeed.ToString();
@@ -542,6 +511,7 @@ namespace CapFrameX.SystemInfo.NetStandard
                 {
                     logger.LogError(ex, "Error while getting memory information.");
                     speed = "unknown";
+                    RamModuleCount = 0;
                     moduleSetting.Clear();
                     moduleSetting.Add(0, 1);
                 }
@@ -567,17 +537,7 @@ namespace CapFrameX.SystemInfo.NetStandard
 
             private static void AddMemoryManufacturer(string rawManufacturer, List<string> manufacturers)
             {
-                var raw = rawManufacturer?.Trim() ?? string.Empty;
-
-                string brand;
-                if (JedecManufacturerIds.TryGetValue(raw, out var mapped))
-                    brand = mapped;
-                else if (LooksLikeJedecId(raw))
-                    brand = string.Empty; // unmapped raw ID carries no display value
-                else
-                    // ToBrand also drops the placeholder strings modules ship with
-                    // ("Unknown", "To be filled by O.E.M.", ...).
-                    brand = MainboardNameShortener.ToBrand(raw);
+                var brand = MemoryManufacturerResolver.Normalize(rawManufacturer);
 
                 if (brand.Length > 0 && !manufacturers.Contains(brand))
                     manufacturers.Add(brand);
