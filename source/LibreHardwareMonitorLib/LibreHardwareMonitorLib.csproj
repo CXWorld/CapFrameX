@@ -101,7 +101,6 @@
   <ItemGroup>
     <PackageReference Include="System.Diagnostics.PerformanceCounter" />
     <PackageReference Include="System.IO.Ports" />
-    <PackageReference Include="System.IO.FileSystem.AccessControl" />
     <PackageReference Include="Mono.Posix.NETStandard" />
     <PackageReference Include="HidSharp" />
     <PackageReference Include="Microsoft.Windows.CsWin32">

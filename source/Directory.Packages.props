@@ -21,18 +21,13 @@
     <PackageVersion Include="MahApps.Metro" Version="2.4.11" />
     <PackageVersion Include="MaterialDesignColors" Version="5.2.1" />
     <PackageVersion Include="MaterialDesignThemes" Version="5.2.1" />
-    <PackageVersion Include="MaterialDesignThemes.MahApps" Version="5.2.1" />
-    <PackageVersion Include="MathNet.Filtering" Version="0.7.0" />
     <PackageVersion Include="MathNet.Numerics" Version="5.0.0" />
     <PackageVersion Include="MediatR" Version="8.0.1" />
     <PackageVersion Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="8.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.12" />
     <PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.3.13" />
     <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.13" />
-    <PackageVersion Include="Microsoft.AspNetCore.Http.Features" Version="3.1.2" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.12" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.12" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.12" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.12" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
@@ -51,7 +46,6 @@
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageVersion Include="OxyPlot.Core" Version="2.1.0" />
     <PackageVersion Include="OxyPlot.Wpf" Version="2.1.0" />
-    <PackageVersion Include="OxyPlot.Wpf.Shared" Version="2.1.0" />
     <PackageVersion Include="ParallelExtensionsExtras" Version="1.2.0" />
     <PackageVersion Include="Prism.Core" Version="9.0.537" />
     <PackageVersion Include="Prism.DryIoc" Version="9.0.537" />
@@ -67,13 +61,11 @@
     <PackageVersion Include="Squidex.ClientLibrary" Version="4.2.0" />
     <PackageVersion Include="System.Diagnostics.PerformanceCounter" Version="10.0.12" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.23.0" />
-    <PackageVersion Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
     <PackageVersion Include="System.IO.Ports" Version="10.0.12" />
     <PackageVersion Include="System.Management" Version="10.0.12" />
     <PackageVersion Include="System.Reactive" Version="6.1.0" />
     <PackageVersion Include="System.ServiceProcess.ServiceController" Version="10.0.12" />
     <PackageVersion Include="TaskScheduler" Version="2.12.2" />
-    <PackageVersion Include="Unosquare.Swan.Lite" Version="3.1.0" />
     <!-- WiX v6 extensions and DTF; keep them on the version of the WixToolset.Sdk in the .wixproj files. -->
     <PackageVersion Include="WixToolset.Bal.wixext" Version="6.0.2" />
     <PackageVersion Include="WixToolset.Dtf.CustomAction" Version="6.0.2" />

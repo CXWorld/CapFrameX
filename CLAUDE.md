@@ -63,8 +63,8 @@ occluded stalls its presents.
 ## Architecture
 
 ### Solution Structure
-The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET 10, .NET Standard 2.0,
-.NET Core 3.1, and one .NET Framework 4.7.2 installer-action project) and C++ native code.
+The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (`net10.0` / `net10.0-windows`,
+plus one .NET Framework 4.7.2 installer-action project) and C++ native code.
 
 ### Layer Organization
 
@@ -94,15 +94,14 @@ The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET 10, .NET St
 - `CapFrameX.IGCL` - Intel Graphics Control Library
 - `CapFrameX.ADLX` - AMD Display Library
 
-**Webservice (ASP.NET Core 3.1)**
+**Webservice (ASP.NET Core, `net10.0`)**
 - `CapFrameX.Webservice.Host` - API host
 - `CapFrameX.Webservice.Implementation` - Business logic
-- `CapFrameX.Webservice.Data` - DTOs, commands and queries; `netstandard2.0`, and the only
+- `CapFrameX.Webservice.Data` - DTOs, commands and queries; `net10.0`, and the only
   webservice project the desktop app references (through `CapFrameX.ViewModel`)
 
 Data is served from Squidex (`SquidexService`), not from a database — the Entity Framework
-persistence layer was dropped. netcoreapp3.1 is out of support; the packages warn about it, which
-`SuppressTfmSupportBuildWarnings` silences in Host and Implementation.
+persistence layer was dropped.
 
 **Charting**
 - `CapFrameX.Charts/Core40` - Vendored LiveCharts core
@@ -236,8 +235,8 @@ learning). All of it is pure and unit-tested; the manager only executes the sess
 
 `IUpdateService` (`CapFrameX.Updater/UpdateService.cs`) fetches a JSON manifest from the CapFrameX
 update server, compares it against the running assembly version and, once the user confirms,
-downloads the installer package into the updates folder. The manifest URI comes from the
-`UpdateManifestUri` key in `App.config`; **while it is empty the whole feature stays inert** and no
+downloads the installer package into the updates folder. The catalog URI comes from the
+`UpdateCatalogUri` key in `App.config`; **while it is empty the whole feature stays inert** and no
 update UI appears. The wire format is documented by `CapFrameX.Updater/update-manifest.sample.json`.
 
 The installer replaces the files of the running app, so the instance that downloaded the package

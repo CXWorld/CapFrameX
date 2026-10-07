@@ -8,12 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- ObjectCopier relies on BinaryFormatter, which no longer exists on modern .NET. It was only
-         ever compiled into the net472 target; with that target gone the file is never built. -->
-    <Compile Remove="ObjectCopier.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="DryIoc.dll" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Serilog" />

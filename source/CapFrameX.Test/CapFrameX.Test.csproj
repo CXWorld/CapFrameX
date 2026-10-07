@@ -22,11 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Not part of the build before the SDK-style migration; kept in the tree for reference. -->
-    <Compile Remove="PresentMonInterface\SystemInfoTest.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="CapFrameX.OSD.Interop">
       <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net10.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
       <Private>True</Private>

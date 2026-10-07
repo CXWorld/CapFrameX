@@ -139,11 +139,6 @@ namespace CapFrameX.Data
             }
         }
 
-        public IList<double> GetGpuActiveFpsTimeWindow()
-        {
-            return GetGpuActiveTimeTimeWindow()?.Select(ft => 1000 / ft).ToList();
-        }
-
         public IList<Point> GetFpsPointTimeWindow()
         {
             return GetFrametimePointTimeWindow()?.Select(pnt => new Point(pnt.X, 1000 / pnt.Y)).ToList();
