@@ -194,20 +194,23 @@ namespace CapFrameX.OSD.Integration
             string reason;
 
             HookCompatibilityStage pending = learnedCurrent ? learned.PendingStage() : null;
-            if (IsSupported(pending, evidence))
+            if (IsSupported(pending, evidence) &&
+                CanReuseLearnedStage(pending, catalogStage, ladder))
             {
                 startIndex = IndexOfOrInsert(ladder, pending);
                 reason = $"learned profile scheduled stage {startIndex + 1}/{ladder.Count} " +
                     $"({pending.DisplayName}) for this launch";
             }
-            else if (learnedCurrent && learned.Verified && learnedStage != null)
+            else if (learnedCurrent && learned.Verified && learnedStage != null &&
+                     CanReuseLearnedStage(learnedStage, catalogStage, ladder))
             {
                 // A verification is the preferred entry point, not proof that every other
                 // route failed. Keep the remaining ladder for subsequent routing changes.
                 startIndex = IndexOfOrInsert(ladder, learnedStage);
                 reason = $"learned profile ({learned.EvidenceSignature})";
             }
-            else if (learnedStage != null && !learnedCurrent)
+            else if (learnedStage != null && !learnedCurrent &&
+                     CanReuseLearnedStage(learnedStage, catalogStage, ladder))
             {
                 // The hook changed underneath a learned entry: re-verify from the stage that
                 // used to work rather than from the very beginning.
@@ -253,6 +256,21 @@ namespace CapFrameX.OSD.Integration
 
             return new HookCompatibilityStagePlan(ladder, startIndex, reason,
                 probingEnabled: true, evidence);
+        }
+
+        private static bool CanReuseLearnedStage(HookCompatibilityStage stage,
+            HookCompatibilityStage catalogStage, IReadOnlyList<HookCompatibilityStage> ladder)
+        {
+            if (catalogStage == null) return true;
+            // The catalog removed earlier routes and owns its exact flags and timing. A learned
+            // entry may reuse that stage or a remaining escalation, but must not insert an old
+            // route or timing override before the catalog. Without a catalog, learned modifiers
+            // retain their existing behaviour.
+            foreach (HookCompatibilityStage candidate in ladder)
+            {
+                if (candidate.SameRouting(stage)) return true;
+            }
+            return false;
         }
 
         /// <summary>

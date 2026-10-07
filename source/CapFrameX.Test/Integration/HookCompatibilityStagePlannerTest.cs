@@ -118,6 +118,118 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        [DataRow(true, Hash, false)]
+        [DataRow(true, "old", false)]
+        [DataRow(false, Hash, true)]
+        public void Plan_CatalogDoesNotRestoreALearnedRouteBeforeItsStartingStage(
+            bool verified, string learnedHash, bool pending)
+        {
+            var catalog = new HookCompatibilityProfile("ForzaHorizon6.exe",
+                enableXeFgNativePresentQueueRoute: false, enableGenericD3D12PresentRoute: true,
+                disableFidelityFxSwapchainLifecycleHooks: true, TimeSpan.Zero,
+                earlyInjectionModule: null, source: "test");
+            HookLearnedProfileEntry learned = Entry(HookCompatibilityStageId.Generic,
+                verified, learnedHash);
+            if (pending)
+                learned.SetPending(HookCompatibilityStage.Create(HookCompatibilityStageId.Generic),
+                    "restart");
+
+            HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(
+                Evidence(streamline: true, d3d12: true), catalog, learned, Hash, true);
+
+            Assert.AreEqual("catalog", plan.StartStage.Source);
+            Assert.AreEqual(catalog.NativeFlags, plan.StartStage.Flags);
+            Assert.IsFalse(plan.Ladder.Any(stage =>
+                stage.Id == HookCompatibilityStageId.Generic && !stage.RequiresEarlyInjection));
+        }
+
+        [TestMethod]
+        [DataRow(true, Hash, false)]
+        [DataRow(true, "old", false)]
+        [DataRow(false, Hash, true)]
+        public void Plan_CatalogDelayIsNotReplacedByAnOlderLearnedDelay(
+            bool verified, string learnedHash, bool pending)
+        {
+            var catalog = new HookCompatibilityProfile("game.exe",
+                enableXeFgNativePresentQueueRoute: false, enableGenericD3D12PresentRoute: true,
+                disableFidelityFxSwapchainLifecycleHooks: false, TimeSpan.FromSeconds(15),
+                earlyInjectionModule: null, source: "test");
+            HookLearnedProfileEntry learned = Entry(HookCompatibilityStageId.Generic,
+                verified, learnedHash);
+            if (pending)
+                learned.SetPending(HookCompatibilityStage.Create(HookCompatibilityStageId.Generic),
+                    "restart");
+
+            HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(
+                Evidence(streamline: true, d3d12: true), catalog, learned, Hash, true);
+
+            Assert.AreEqual("catalog", plan.StartStage.Source);
+            Assert.AreEqual(TimeSpan.FromSeconds(15), plan.StartStage.InjectionDelay);
+        }
+
+        [TestMethod]
+        public void Plan_CatalogCombinedFlagsAreNotReplacedByALearnedStageWithTheSameId()
+        {
+            var catalog = new HookCompatibilityProfile("game.exe",
+                enableXeFgNativePresentQueueRoute: true, enableGenericD3D12PresentRoute: true,
+                disableFidelityFxSwapchainLifecycleHooks: false, TimeSpan.Zero,
+                earlyInjectionModule: null, source: "test");
+            HookLearnedProfileEntry learned = Entry(HookCompatibilityStageId.Generic, true, Hash);
+
+            HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(
+                Evidence(streamline: true, xefg: true, d3d12: true), catalog, learned, Hash, true);
+
+            Assert.AreEqual("catalog", plan.StartStage.Source);
+            Assert.AreEqual(catalog.NativeFlags, plan.StartStage.Flags);
+        }
+
+        [TestMethod]
+        [DataRow(true, Hash, false)]
+        [DataRow(true, "old", false)]
+        [DataRow(false, Hash, true)]
+        public void Plan_CatalogKeepsALearnedEscalationFromItsRemainingLadder(
+            bool verified, string learnedHash, bool pending)
+        {
+            var catalog = new HookCompatibilityProfile("game.exe",
+                enableXeFgNativePresentQueueRoute: false, enableGenericD3D12PresentRoute: true,
+                disableFidelityFxSwapchainLifecycleHooks: true, TimeSpan.Zero,
+                earlyInjectionModule: null, source: "test");
+            HookCompatibilityStage escalation = HookCompatibilityStage.Create(
+                HookCompatibilityStageId.GenericNoFfxLifecycle, "d3d12.dll");
+            HookLearnedProfileEntry learned = Entry(pending ? HookCompatibilityStageId.Generic :
+                HookCompatibilityStageId.GenericNoFfxLifecycle,
+                verified, learnedHash);
+            if (pending)
+                learned.SetPending(escalation, "restart");
+            else
+                learned.SetStage(escalation);
+
+            HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(
+                Evidence(streamline: true, ffxFg: true, d3d12: true), catalog, learned, Hash, true);
+
+            Assert.IsTrue(escalation.SameRouting(plan.StartStage));
+            Assert.IsTrue(plan.StartIndex > 0);
+        }
+
+        [TestMethod]
+        public void Plan_MatchingLearnedCatalogStageRemainsReusable()
+        {
+            var catalog = new HookCompatibilityProfile("game.exe",
+                enableXeFgNativePresentQueueRoute: false, enableGenericD3D12PresentRoute: true,
+                disableFidelityFxSwapchainLifecycleHooks: true, TimeSpan.Zero,
+                earlyInjectionModule: null, source: "test");
+            HookLearnedProfileEntry learned = Entry(HookCompatibilityStageId.GenericNoFfxLifecycle,
+                true, Hash);
+
+            HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(
+                Evidence(streamline: true, ffxFg: true, d3d12: true), catalog, learned, Hash, true);
+
+            Assert.AreEqual("learned", plan.StartStage.Source);
+            Assert.AreEqual(0, plan.StartIndex);
+            Assert.AreEqual(catalog.NativeFlags, plan.StartStage.Flags);
+        }
+
+        [TestMethod]
         [DataRow("D3D11", true)]
         [DataRow("DXGI", false)]
         public void Plan_D3D11RejectsLearnedPendingStaleAndExhaustedGenericRoutes(

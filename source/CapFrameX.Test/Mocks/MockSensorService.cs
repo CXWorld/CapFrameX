@@ -216,6 +216,7 @@ namespace CapFrameX.Test.Mocks
 
         public string GetGpuDriverVersion() => _gpuDriverVersion;
         public string GetCpuName() => _cpuName;
+        public IReadOnlyList<string> GetMemoryManufacturers() => Array.Empty<string>();
         public string GetGpuName() => _gpuName;
         public ECpuVendor GetCpuVendor() => DetectCpuVendorFromName(_cpuName);
         public EGpuVendor GetGpuVendor() => DetectGpuVendorFromName(_gpuName);
