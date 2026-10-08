@@ -8,6 +8,13 @@
 		<!-- Downgrades are intentionally supported. This makes the WIX_UPGRADE_DETECTED
 		     range include newer products as well, so ICE61 is suppressed in the project. -->
 		<MajorUpgrade AllowDowngrades="yes" />
+    <!-- CostFinalize runs before RemoveExistingProducts. With Burn's default REINSTALLMODE=muso,
+         a downgrade can skip a component whose installed key file is newer, then remove that
+         file with the old product, leaving the new installation incomplete. These are private
+         application files: on a major upgrade install the selected package's payload, including
+         older versions. Set this before costing in both UI and silent installs. -->
+    <SetProperty Id="REINSTALLMODE" Value="amus" After="FindRelatedProducts" Sequence="both"
+                 Condition="WIX_UPGRADE_DETECTED AND NOT Installed" />
 		<Media Id="1" Cabinet="CapFrameX.cab" EmbedCab="yes" CompressionLevel="high" />
 		<Icon Id="CapFrameXProductIcon" SourceFile="..\CapFrameX\Icons\cx_icon_BUC.ico" />
 		<Property Id="ARPPRODUCTICON" Value="CapFrameXProductIcon" />
@@ -19,6 +26,7 @@
 			<ComponentRef Id="ApplicationShortcutDesktop" />
 			<ComponentRef Id="VulkanLayerRegistration" />
 			<ComponentRef Id="VulkanLayerRegistrationX86" />
+      <ComponentRef Id="LegacyVulkanCleanup" />
 		</Feature>
 
     <Property Id="INSTALLSHORTCUT" Value="1" Secure="yes"/>
@@ -171,9 +179,10 @@
            registered in a view whose processes cannot load its DLL does not merely fail —
            it shadows the correct registration and disables the layer for that bitness.
            Bitness="always64" writes the 64-bit view, Bitness="always32" writes WOW6432Node.
-           A future manifest filename/version must get a new component GUID as well. The major
+           These GUIDs changed for the move out of Program Files (x86), since the registry value
+           names contain that path. A future manifest filename/version must get new GUIDs too. The major
            upgrade then removes this component and its old path-valued registry entry. -->
-      <Component Id="VulkanLayerRegistration" Guid="4B3D5A2F-E00E-4930-A9E1-9F4BE8E91D58" Bitness="always64">
+      <Component Id="VulkanLayerRegistration" Guid="2C95CC5D-0A0E-4BA1-81F5-A4EC52D01279" Bitness="always64">
         <RegistryValue Root="HKLM"
                        Key="SOFTWARE\Khronos\Vulkan\ImplicitLayers"
                        Name="[INSTALLFOLDER]vulkan\cfx_osd_vklayer_v1.json"
@@ -187,7 +196,7 @@
          carries nothing but a registry value, so the bitness-neutral TARGETDIR is the correct
          anchor — [INSTALLFOLDER] in the value name is a property reference and resolves to the
          real install path regardless of where the component lives. -->
-    <Component Id="VulkanLayerRegistrationX86" Guid="D4B42033-310B-40B4-9CE3-D56FBE4A3F42" Directory="TARGETDIR" Bitness="always32">
+    <Component Id="VulkanLayerRegistrationX86" Guid="CF3827DA-D1E9-4B87-9F1E-2A7267538A07" Directory="TARGETDIR" Bitness="always32">
       <RegistryValue Root="HKLM"
                      Key="SOFTWARE\Khronos\Vulkan\ImplicitLayers"
                      Name="[INSTALLFOLDER]vulkan\x86\cfx_osd_vklayer_v1.json"
@@ -211,7 +220,10 @@
 
 	<Fragment>
 		<StandardDirectory Id="ProgramFiles64Folder">
-			<Directory Id="INSTALLFOLDER" Name="CapFrameX" />
+      <!-- The old x86 Burn bundle overrode this directory with Program Files (x86). Moving
+           those resources changes their component identity even though this authored directory
+           tree is unchanged. Keep this seed stable for subsequent releases in Program Files. -->
+			<Directory Id="INSTALLFOLDER" Name="CapFrameX" ComponentGuidGenerationSeed="8B0C1DA7-F6AD-4397-8D45-7E82FCFDE653" />
 			<Directory Id="BINFOLDER" Name="Bin"/>
 		</StandardDirectory>
 		<StandardDirectory Id="ProgramMenuFolder">
