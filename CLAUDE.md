@@ -192,8 +192,9 @@ hook's status against per-stage time budgets (`HookCompatibilityProbeSession` +
 `HookCompatibilityVerdictClassifier`) and persists the outcome in
 `%appdata%\CapFrameX\Configuration\HookCompatibilityProfiles.learned.json` (`HookLearnedProfileStore`;
 keyed by executable name + evidence signature, bound to the hook build hash so a hook update re-verifies).
-Switch: `IAppConfiguration.HookOverlayAutoCompatibility` (default on; off = catalog only, one stage, no
-learning). All of it is pure and unit-tested; the manager only executes the session's actions.
+Learning is mandatory: `_autoCompatibility` is a constant `true`, legacy `HookOverlayAutoCompatibility=false`
+settings are ignored (user docs: README "Learned compatibility profiles"). All of it is pure and unit-tested;
+the manager only executes the session's actions.
 
 - **Stages**: vendor-aware (flags None) → vendor-aware + XeSS-FG native queue → generic D3D12 (RTSS model)
   → generic without FidelityFX lifecycle hooks, each optionally with early injection (gate `d3d12.dll`, or
@@ -202,8 +203,10 @@ learning). All of it is pure and unit-tested; the manager only executes the sess
 - **Evidence** (`HookTargetEvidenceProbe`, ToolHelp scan *with paths*): Streamline / DLSS-G / XeSS-FG /
   FSR-FG modules, a `dxgi.dll` outside System32/SysWOW64 (OptiScaler), duplicate FidelityFX loader copies.
   Late attach with FG evidence starts on generic; loader duplicates or a dxgi proxy start on generic-without-FFX;
-  a catalog entry is always stage 1 and the ladder continues after it. Verified learned entries are a
-  single-stage ladder; exhausted ones skip injection until "Reset learned profiles" (Overlay tab).
+  a catalog entry is always stage 1 and the ladder continues after it. A verified learned entry is the start
+  stage; the rest of the ladder stays. Exhaustion belongs to the observed run: the hook-free fallback serves
+  it and the entry is marked exhausted, but the next launch probes again. There is no reset in the UI:
+  delete `HookCompatibilityProfiles.learned.json` while CapFrameX is closed (the store loads once and rewrites it).
 - **Verdicts** read status block V2 (`HookStatusProbe`: install phase + FidelityFX module/export detail,
   present coverage, queue state, decline reason, FG telemetry): success confirmed after 2 s, install hung
   after 6 s, no queue after 5 s, stage budget 20 s; idle/dormant samples pause the clocks.

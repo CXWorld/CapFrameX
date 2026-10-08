@@ -85,6 +85,16 @@ Choose a renderer under **Overlay → OSD options**.
 
 Configure individual entries, colors, groups, and three profiles in **Overlay items**. OSD options include opacity, zoom, placement, a position hotkey, and PresentMon replay buffering. Existing renderer selections are preserved. If v1.9.0 migrated your in-game selection to hook-free, you can select in-game again in 1.9.1.
 
+### Learned compatibility profiles
+
+The in-game overlay always learns which hook route works for each game; this cannot be switched off, and an older `HookOverlayAutoCompatibility` setting is ignored. When CapFrameX injects into a game, it starts with the built-in compatibility profile for that game, or with a route chosen from the modules the game has loaded, and moves on to the next route if the overlay does not work. The result is stored per game executable and set of loaded upscaling or frame-generation modules in `%APPDATA%\CapFrameX\Configuration\HookCompatibilityProfiles.learned.json` (portable mode: the configuration folder set by `paths.config` in `portable.json`). **Overlay → OSD options** shows the stored state for the selected game below **CapFrameX in-game (Experimental)**.
+
+- Some routes only take effect when the game starts. CapFrameX then uses the hook-free overlay for the rest of the session and starts the next launch on the new route.
+- If no route works, the hook-free overlay serves the session. The game is not excluded from the in-game overlay: the next game launch probes again.
+- After an update that changes the in-game hook, CapFrameX verifies the stored route again.
+
+To discard everything CapFrameX has learned, close CapFrameX and delete `HookCompatibilityProfiles.learned.json`; the next start begins with an empty cache. Deleting the file while CapFrameX is running does not reset anything, because CapFrameX keeps the learned profiles in memory and writes them back with the next result.
+
 ![CapFrameX 1.9.1 overlay entries](images/1.9.1/overlay.png)
 ![CapFrameX 1.9.1 renderer and OSD options](images/1.9.1/overlay-options.png)
 
