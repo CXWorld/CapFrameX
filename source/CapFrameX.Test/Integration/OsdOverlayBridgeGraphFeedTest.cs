@@ -27,6 +27,7 @@ namespace CapFrameX.Test.Integration
         {
             using var harness = new BridgeHarness();
             harness.Publish(fpsGraph, ftGraph, displayGraph);
+            Assert.AreEqual(expectedCount > 0, harness.Frames.HasObservers);
 
             harness.Frames.OnNext(new[] { "8", "16", "1000" });
 
@@ -39,12 +40,11 @@ namespace CapFrameX.Test.Integration
                 Assert.AreEqual(expectedDisplayTime, ReadField<double>(sample, "DisplayTimeMs"));
             }
             harness.Publish(fpsGraph, ftGraph, displayGraph); // the next OSD refresh
-            Assert.AreEqual(125d, ReadField<double>(harness.Bridge, "_curFps"),
-                "The numeric FPS value must still update when its graph is disabled.");
+            AssertSharedValues(harness, 100d, 10d, 20d, "DXGI");
         }
 
         [TestMethod]
-        public void TurningOffTheFpsGraph_StopsQueueingSamplesButKeepsUpdatingTheValue()
+        public void TurningOffTheFpsGraph_UnsubscribesButKeepsForwardingSharedValues()
         {
             using var harness = new BridgeHarness();
             harness.Publish(true, false, false);
@@ -53,38 +53,28 @@ namespace CapFrameX.Test.Integration
             harness.PendingSamples.Clear();
 
             harness.Publish(false, false, false);
+            Assert.IsFalse(harness.Frames.HasObservers);
             harness.Frames.OnNext(new[] { "12", "16", "1012" });
 
             Assert.AreEqual(0, harness.PendingSamples.Count);
-            harness.Publish(false, false, false);
-            Assert.AreEqual(1000d / 12d, ReadField<double>(harness.Bridge, "_curFps"), 1e-9);
+            harness.Publish(false, false, false, 80d, 12.5d, 25d, "Vulkan");
+            AssertSharedValues(harness, 80d, 12.5d, 25d, "Vulkan");
         }
 
         [TestMethod]
-        public void NumericValues_AreTheMeanOverEachRefreshInterval()
+        public void NumericOnlyEntries_UseSharedValuesWithoutSubscribingToFrames()
         {
             using var harness = new BridgeHarness();
             harness.Publish(false, false, false);
+            Assert.IsFalse(harness.Frames.HasObservers);
+            AssertSharedValues(harness, 100d, 10d, 20d, "DXGI");
 
             harness.Frames.OnNext(new[] { "8", "10", "1000" });
             harness.Frames.OnNext(new[] { "12", "20", "1012" });
-            Assert.AreEqual(0d, ReadField<double>(harness.Bridge, "_curFps"),
-                "Values change with the OSD refresh, not with every frame.");
+            Assert.AreEqual(0, harness.PendingSamples.Count);
 
-            harness.Publish(false, false, false);
-            Assert.AreEqual(10d, ReadField<double>(harness.Bridge, "_curFrametimeMs"), 1e-9);
-            Assert.AreEqual(100d, ReadField<double>(harness.Bridge, "_curFps"), 1e-9);
-            Assert.AreEqual(15d, ReadField<double>(harness.Bridge, "_curDisplayTimeMs"), 1e-9);
-
-            harness.Publish(false, false, false);
-            Assert.AreEqual(100d, ReadField<double>(harness.Bridge, "_curFps"), 1e-9,
-                "A refresh without frames (between two PresentMon waves) keeps the values.");
-
-            harness.Frames.OnNext(new[] { "20", "40", "1032" });
-            harness.Publish(false, false, false);
-            Assert.AreEqual(50d, ReadField<double>(harness.Bridge, "_curFps"), 1e-9,
-                "Each refresh covers only its own interval.");
-            Assert.AreEqual(40d, ReadField<double>(harness.Bridge, "_curDisplayTimeMs"), 1e-9);
+            harness.Publish(false, false, false, 50d, 20d, 40d, "Vulkan");
+            AssertSharedValues(harness, 50d, 20d, 40d, "Vulkan");
         }
 
         [DataTestMethod]
@@ -150,18 +140,36 @@ namespace CapFrameX.Test.Integration
         {
             using var harness = new BridgeHarness();
             harness.SetActive(true);
-            harness.Publish(false, false, false);
+            harness.Publish(true, false, false);
             Assert.IsNotNull(harness.PendingEntries);
+            Assert.IsTrue(harness.Frames.HasObservers);
             harness.ClearPendingEntries();
 
             // A remote API client keeps the entries flowing while the overlay is switched off.
             harness.SetActive(false);
-            harness.Publish(false, false, false);
+            harness.Publish(true, false, false);
             Assert.IsNull(harness.PendingEntries, "The switched-off renderer must not receive entries.");
+            Assert.IsFalse(harness.Frames.HasObservers);
 
             harness.SetActive(true);
-            harness.Publish(false, false, false);
+            harness.Publish(true, false, false);
             Assert.IsNotNull(harness.PendingEntries);
+            Assert.IsTrue(harness.Frames.HasObservers);
+        }
+
+        private static void AssertSharedValues(BridgeHarness harness, double fps, double ft,
+            double displayTime, string group)
+        {
+            var entries = (IList)harness.PendingEntries;
+            Assert.AreEqual(3, entries.Count);
+            double[] values = { fps, ft, displayTime };
+            for (int i = 0; i < values.Length; i++)
+            {
+                var entry = ReadField<object>(entries[i], "Entry");
+                Assert.AreEqual(values[i], ReadField<double>(entry, "ValueNum"), 1e-9,
+                    "Shared scalar values must reach the renderer without another aggregation.");
+                Assert.AreEqual(group, ReadField<string>(entry, "Group"));
+            }
         }
 
         // Keep the real bridge, adapter and OsdHost queue in this regression. Simulate only the
@@ -204,10 +212,12 @@ namespace CapFrameX.Test.Integration
 
             public void SetActive(bool active) => _active.OnNext(active);
 
-            public void Publish(bool fps, bool ft, bool display)
+            public void Publish(bool fps, bool ft, bool display, double fpsValue = 100d,
+                double ftValue = 10d, double displayValue = 20d, string group = "DXGI")
             {
-                PublishEntries(new[] { Entry("Framerate", fps), Entry("Frametime", ft),
-                    Entry("DisplayTime", display) });
+                PublishEntries(new[] { Entry("Framerate", fps, fpsValue, group),
+                    Entry("Frametime", ft, ftValue, group),
+                    Entry("DisplayTime", display, displayValue, group) });
             }
 
             public void PublishEntries(IOverlayEntry[] entries)
@@ -225,9 +235,11 @@ namespace CapFrameX.Test.Integration
                 _configChanges.Dispose();
             }
 
-            private static IOverlayEntry Entry(string id, bool graph) => new OverlayEntryWrapper(id)
+            private static IOverlayEntry Entry(string id, bool graph, double value, string group)
+                => new OverlayEntryWrapper(id)
             {
-                IsEntryEnabled = true, ShowOnOverlay = true, ShowGraph = graph, IsNumeric = true
+                IsEntryEnabled = true, ShowOnOverlay = true, ShowGraph = graph, IsNumeric = true,
+                Value = value, GroupName = group
             };
         }
 

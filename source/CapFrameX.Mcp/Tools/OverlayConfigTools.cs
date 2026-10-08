@@ -84,9 +84,9 @@ namespace CapFrameX.Mcp.Tools
             }
 
             var entries = _overlayService.CurrentOverlayEntries ?? Array.Empty<IOverlayEntry>();
-            var entry = entries.FirstOrDefault(candidate =>
-                string.Equals(candidate?.Identifier, identifier, StringComparison.OrdinalIgnoreCase))
-                ?? _overlayEntryProvider.GetOverlayEntry(identifier);
+            var outputEntry = entries.FirstOrDefault(candidate =>
+                string.Equals(candidate?.Identifier, identifier, StringComparison.OrdinalIgnoreCase));
+            var entry = _overlayEntryProvider.GetOverlayEntry(outputEntry?.Identifier ?? identifier);
             if (entry == null)
                 throw new InvalidOperationException($"Overlay entry '{identifier}' not found.");
 
@@ -105,7 +105,8 @@ namespace CapFrameX.Mcp.Tools
                 throw new ArgumentOutOfRangeException(nameof(groupSeparators), groupSeparators,
                     "Group separators must be zero or greater.");
 
-            int currentOrderIndex = Array.FindIndex(entries, candidate => ReferenceEquals(candidate, entry));
+            int currentOrderIndex = Array.FindIndex(entries, candidate =>
+                string.Equals(candidate?.Identifier, entry.Identifier, StringComparison.OrdinalIgnoreCase));
             if (orderIndex.HasValue)
             {
                 if (currentOrderIndex < 0)
@@ -170,7 +171,10 @@ namespace CapFrameX.Mcp.Tools
             }
 
             if (changed.Count > 0)
+            {
                 _overlayEntryProvider.MarkPendingChanges();
+                _overlayService.RequestRefresh();
+            }
 
             bool persisted = persist && changed.Count > 0;
             if (persisted)

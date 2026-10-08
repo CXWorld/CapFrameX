@@ -49,6 +49,10 @@ namespace CapFrameX.Contracts.Overlay
 		void ShutdownOverlayService();
 
 		IOverlayEntry GetSensorOverlayEntry(string identifier);
+		/// <summary>
+		/// Processed output for renderers and remote clients. Entries may be detached snapshots;
+		/// edit the profile through IOverlayEntryProvider rather than modifying this array.
+		/// </summary>
 		IOverlayEntry[] CurrentOverlayEntries { get; }
 		Action<IOverlayEntry[]> OSDUpdateNotifier { get; set; }
 	}

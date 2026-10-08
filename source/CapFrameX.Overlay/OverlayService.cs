@@ -36,6 +36,7 @@ namespace CapFrameX.Overlay
         private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly ILogEntryManager _logEntryManager;
         private readonly IRemoteOverlayDemand _remoteOverlayDemand;
+        private readonly IOverlayFrameMetrics _frameMetrics;
         private readonly EventLoopScheduler _overlayRefreshScheduler;
 
         private IDisposable _disposableCaptureTimer;
@@ -93,7 +94,8 @@ namespace CapFrameX.Overlay
             IRTSSService rTSSService,
             IOverlayEntryCore overlayEntryCore,
             ILogEntryManager logEntryManager,
-            IRemoteOverlayDemand remoteOverlayDemand)
+            IRemoteOverlayDemand remoteOverlayDemand,
+            IOverlayFrameMetrics frameMetrics)
         {
             _statisticProvider = statisticProvider;
             _overlayEntryProvider = overlayEntryProvider;
@@ -103,6 +105,7 @@ namespace CapFrameX.Overlay
             _sensorService = sensorService;
             _logEntryManager = logEntryManager;
             _remoteOverlayDemand = remoteOverlayDemand;
+            _frameMetrics = frameMetrics;
             _rTSSService = rTSSService;
             _overlayEntryCore = overlayEntryCore;
             _overlayRefreshScheduler = new EventLoopScheduler(start =>
@@ -177,6 +180,8 @@ namespace CapFrameX.Overlay
                 .DistinctUntilChanged()
                 .Subscribe(useHook =>
                 {
+                    UpdateFrameMetricsDemand();
+                    RequestRefresh();
                     _logger.LogInformation("Overlay renderer switch: hookFree={hf}, hook={h}, overlayActive={a} -> {mode}",
                         _appConfiguration.EnableHookFreeOverlay, _appConfiguration.EnableHookOverlay,
                         _appConfiguration.IsOverlayActive, useHook ? "hook (clear RTSS)" : "RTSS");
@@ -207,6 +212,8 @@ namespace CapFrameX.Overlay
                        .Where(_ => _isServiceAlive)
                        .Select(mode =>
                        {
+                           _frameMetrics?.SetEnabled(mode != EntryFeedMode.Off &&
+                               (_appConfiguration.EnableHookFreeOverlay || _appConfiguration.EnableHookOverlay));
                            if (mode != loggedFeedMode)
                            {
                                loggedFeedMode = mode;
@@ -263,7 +270,9 @@ namespace CapFrameX.Overlay
                        .Switch()
                        .Subscribe(async update =>
                        {
-                           var entries = update.Entries;
+                           // Publish one completed scalar snapshot to HTTP, WebSocket and both
+                           // renderers. Profile entries remain editable and keep their RTSS macros.
+                           var entries = _frameMetrics?.ApplySnapshot(update.Entries) ?? update.Entries;
                            CurrentOverlayEntries = entries;
                            OSDUpdateNotifier(entries);
                            // Both CapFrameX renderers read CurrentOverlayEntries from this event.
@@ -701,6 +710,13 @@ namespace CapFrameX.Overlay
             _sensorRefreshDisposable?.Dispose();
             _overlayActiveStreamDisposable?.Dispose();
             _overlayRefreshScheduler?.Dispose();
+            _frameMetrics?.Dispose();
+        }
+
+        private void UpdateFrameMetricsDemand()
+        {
+            _frameMetrics?.SetEnabled(_isServiceAlive && (IsOverlayActive || _remoteOverlayDemand.IsActive) &&
+                (_appConfiguration.EnableHookFreeOverlay || _appConfiguration.EnableHookOverlay));
         }
 
         public void RequestRefresh()

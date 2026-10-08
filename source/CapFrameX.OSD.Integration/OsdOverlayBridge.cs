@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Reactive.Linq;
 using System.Threading;
 using CapFrameX.Contracts.Configuration;
-using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.OSD.Interop;
 using Serilog;
@@ -67,35 +66,13 @@ namespace CapFrameX.OSD.Integration
 
         // The PresentMon row stream can run hundreds or thousands of times per second. Keep the
         // bridge completely out of that path unless the currently visible layout actually needs
-        // one of its values. In particular, a profile without charts must not keep filling the
-        // native replay queue merely because Frametime is available in the capture schema.
-        private const int NeedFramerateValue = 1 << 0;
-        private const int NeedFrametimeValue = 1 << 1;
-        private const int NeedDisplayTimeValue = 1 << 2;
-        private const int NeedFrametimeGraph = 1 << 3;
-        private const int NeedDisplayTimeGraph = 1 << 4;
-        private const int NeedRuntimeLabel = 1 << 5;
-        private const int NeedFrametimeScalar = NeedFramerateValue | NeedFrametimeValue;
+        // one of its graphs. Scalar values and runtime labels already arrive in the shared
+        // entries, so a numeric-only profile does not need another frame subscription here.
+        private const int NeedFrametimeGraph = 1 << 0;
+        private const int NeedDisplayTimeGraph = 1 << 1;
         private int _frameFeedRequirements;
-
-        // Current <APP> framerate/frametime derived from the PresentMon frame-data stream
-        // (RTSS resolves these in the classic path; hook-free we compute them ourselves).
-        // Like every other metric they change once per OSD refresh: each refresh shows the mean
-        // over the frames that arrived since the previous one, as the in-game hook does. A
-        // refresh without frames (PresentMon delivers in waves) keeps the previous values.
-        private readonly object _fpsLock = new object();
-        private double _ftIntervalSumMs;
-        private int _ftIntervalCount;
-        private double _curFps;
-        private double _curFrametimeMs;
-        // Current display time (MsBetweenDisplayChange mean over the same interval) for
-        // the hook-free-only "Displaytime" entry; only displayed frames contribute.
-        private double _dtIntervalSumMs;
-        private int _dtIntervalCount;
-        private double _curDisplayTimeMs;
-        // Presenting app's graphics runtime/API (PresentMon "PresentRuntime", e.g. "DXGI") —
-        // used to label the <APP> line; RTSS reads this from the 3D API, we from PresentMon.
-        private volatile string _curRuntime;
+        // Retained only to report runtime changes in the graph-feed diagnostics.
+        private volatile string _lastDiagnosticRuntime;
 
         // Last background opacity forwarded to the OSD (percent); -1 forces the first push.
         private readonly IAppConfiguration _appConfiguration;
@@ -157,8 +134,8 @@ namespace CapFrameX.OSD.Integration
             _osd.SetHookFreeRefreshRate(appConfiguration.HookFreeRefreshRate);
 
             // FrameDataStream contains rows for every ETW process. Capture the selected game's PID
-            // before activating the feed so foreign desktop/process rows cannot alter the runtime
-            // label, graph timeline or scalar windows.
+            // before activating the feed so foreign desktop/process rows cannot alter its graph
+            // timeline or diagnostics.
             if (_filterFrameRowsByTarget)
                 _targetPidSub = processIdStream
                     .DistinctUntilChanged()
@@ -224,46 +201,7 @@ namespace CapFrameX.OSD.Integration
             }
 
             _feedDiagnostics.OnTargetPidChanged(previousPid, targetPid, HookFreeFeedDiagnostics.Now());
-            _curRuntime = null;
-            lock (_fpsLock)
-            {
-                ResetFrametimeScalarLocked();
-                ResetDisplayTimeScalarLocked();
-            }
-        }
-
-        private void ResetFrametimeScalarLocked()
-        {
-            _ftIntervalSumMs = 0;
-            _ftIntervalCount = 0;
-            _curFps = 0;
-            _curFrametimeMs = 0;
-        }
-
-        private void ResetDisplayTimeScalarLocked()
-        {
-            _dtIntervalSumMs = 0;
-            _dtIntervalCount = 0;
-            _curDisplayTimeMs = 0;
-        }
-
-        // One OSD refresh: the frames collected since the previous one become the shown means.
-        private void CloseScalarIntervalLocked()
-        {
-            if (_ftIntervalCount > 0)
-            {
-                _curFrametimeMs = _ftIntervalSumMs / _ftIntervalCount;
-                _curFps = 1000.0 / _curFrametimeMs;
-                _ftIntervalSumMs = 0;
-                _ftIntervalCount = 0;
-            }
-
-            if (_dtIntervalCount > 0)
-            {
-                _curDisplayTimeMs = _dtIntervalSumMs / _dtIntervalCount;
-                _dtIntervalSumMs = 0;
-                _dtIntervalCount = 0;
-            }
+            _lastDiagnosticRuntime = null;
         }
 
         private void UpdateRunState()
@@ -312,14 +250,9 @@ namespace CapFrameX.OSD.Integration
             _lastBgOpacity = -1; // Stop destroys the native handle; re-feed on next start
             _lastZoom = -1;
             _lastAnchor = -1; _lastMonitor = -1; _lastMarginX = -1; _lastMarginY = -1;
-            _curRuntime = null;
+            _lastDiagnosticRuntime = null;
             Interlocked.Exchange(ref _frameFeedRequirements, 0);
             UpdateFrameSubscription(false);
-            lock (_fpsLock)
-            {
-                ResetFrametimeScalarLocked();
-                ResetDisplayTimeScalarLocked();
-            }
         }
 
         private void OnEntries()
@@ -337,35 +270,6 @@ namespace CapFrameX.OSD.Integration
                 _overlayService.RunHistory,
                 _overlayService.RunHistoryOutlierFlags,
                 _overlayService.RunHistoryAggregation);
-
-            // The <APP> Framerate/Frametime entries are filled by RTSS in the classic path;
-            // hook-free they arrive as 0, so overwrite them with the stream-derived values.
-            // The "<APP>" group placeholder (RTSS substitutes the app via the 3D API) is
-            // resolved to the PresentMon graphics runtime, falling back to "Performance".
-            double fps, ft, dt;
-            lock (_fpsLock)
-            {
-                CloseScalarIntervalLocked();
-                fps = _curFps; ft = _curFrametimeMs; dt = _curDisplayTimeMs;
-            }
-            var appLabel = _curRuntime;
-            if (string.IsNullOrWhiteSpace(appLabel))
-                appLabel = CxLang.Instance.TranslateOverlay("Performance");
-            for (int i = 0; i < list.Count; i++)
-            {
-                var e = list[i];
-                bool changed = false;
-                if (e.Identifier == "Framerate") { e.IsNumeric = true; e.ValueText = null; e.Value = fps; changed = true; }
-                else if (e.Identifier == "Frametime") { e.IsNumeric = true; e.ValueText = null; e.Value = ft; changed = true; }
-                // hook-free-only entry; nothing else feeds it (RTSS can't resolve display times)
-                else if (e.Identifier == "DisplayTime") { e.IsNumeric = true; e.ValueText = null; e.Value = dt; changed = true; }
-                if (e.Group != null && e.Group.IndexOf("<APP>", StringComparison.Ordinal) >= 0)
-                {
-                    e.Group = e.Group.Replace("<APP>", appLabel);
-                    changed = true;
-                }
-                if (changed) list[i] = e;
-            }
 
             ApplyBackgroundOpacity();
             ApplyZoom();
@@ -400,7 +304,7 @@ namespace CapFrameX.OSD.Integration
             {
                 foreach (var entry in entries)
                 {
-                    if (entry == null || !entry.IsEntryEnabled || !entry.ShowOnOverlay)
+                    if (entry == null || !entry.IsEntryEnabled || !entry.ShowOnOverlay || !entry.ShowGraph)
                     {
                         continue;
                     }
@@ -408,55 +312,19 @@ namespace CapFrameX.OSD.Integration
                     switch (entry.Identifier)
                     {
                         case "Framerate":
-                            requirements |= NeedFramerateValue;
-                            if (entry.ShowGraph)
-                            {
-                                // The FPS graph derives its values from the same timestamped
-                                // frametimes, even when the Frametime graph is switched off.
-                                requirements |= NeedFrametimeGraph;
-                            }
-                            break;
                         case "Frametime":
-                            requirements |= NeedFrametimeValue;
-                            if (entry.ShowGraph)
-                            {
-                                requirements |= NeedFrametimeGraph;
-                            }
+                            // FPS and frametime graphs share the timestamped frametime feed.
+                            requirements |= NeedFrametimeGraph;
                             break;
                         case "DisplayTime":
-                            requirements |= NeedDisplayTimeValue;
-                            if (entry.ShowGraph)
-                            {
-                                requirements |= NeedDisplayTimeGraph;
-                            }
+                            requirements |= NeedDisplayTimeGraph;
                             break;
-                    }
-
-                    if (entry.GroupName?.IndexOf("<APP>", StringComparison.Ordinal) >= 0)
-                    {
-                        requirements |= NeedRuntimeLabel;
                     }
                 }
             }
 
-            int previous = Interlocked.Exchange(ref _frameFeedRequirements, requirements);
+            Interlocked.Exchange(ref _frameFeedRequirements, requirements);
             UpdateFrameSubscription(IsVisible);
-            bool enableFrametimeScalar = (previous & NeedFrametimeScalar) == 0 &&
-                (requirements & NeedFrametimeScalar) != 0;
-            bool enableDisplayTimeScalar = (previous & NeedDisplayTimeValue) == 0 &&
-                (requirements & NeedDisplayTimeValue) != 0;
-            if (!enableFrametimeScalar && !enableDisplayTimeScalar)
-            {
-                return;
-            }
-
-            // Do not expose an old mean when a profile re-enables a scalar after it has spent
-            // time disabled. The next refresh with frames repopulates it.
-            lock (_fpsLock)
-            {
-                if (enableFrametimeScalar) ResetFrametimeScalarLocked();
-                if (enableDisplayTimeScalar) ResetDisplayTimeScalarLocked();
-            }
         }
 
         private void UpdateFrameSubscription(bool visible)
@@ -559,28 +427,25 @@ namespace CapFrameX.OSD.Integration
             int requirements = Volatile.Read(ref _frameFeedRequirements);
             if (requirements == 0) return;
 
-            // graphics runtime/API of the presenting app -> label for the <APP> line
+            // Runtime is read only for graph-feed diagnostics; display labels come from entries.
             string runtime = null;
             if (_runtimeIndex >= 0 && row.Length > _runtimeIndex)
             {
                 runtime = row[_runtimeIndex]?.Trim();
-                if ((requirements & NeedRuntimeLabel) != 0 &&
-                    !string.IsNullOrEmpty(runtime) && runtime != "<error>")
+                if (!string.IsNullOrEmpty(runtime) && runtime != "<error>")
                 {
-                    string previousRuntime = _curRuntime;
+                    string previousRuntime = _lastDiagnosticRuntime;
                     if (!string.Equals(previousRuntime, runtime, StringComparison.Ordinal))
                     {
-                        _curRuntime = runtime;
+                        _lastDiagnosticRuntime = runtime;
                         _feedDiagnostics.OnRuntimeLabelChanged(previousRuntime, runtime,
                             HookFreeFeedDiagnostics.Now());
                     }
                 }
             }
 
-            bool needFrametimeSample = (requirements &
-                (NeedFrametimeScalar | NeedFrametimeGraph)) != 0;
-            bool needDisplayTimeSample = (requirements &
-                (NeedDisplayTimeValue | NeedDisplayTimeGraph)) != 0;
+            bool needFrametimeSample = (requirements & NeedFrametimeGraph) != 0;
+            bool needDisplayTimeSample = (requirements & NeedDisplayTimeGraph) != 0;
             if (!needFrametimeSample && !needDisplayTimeSample) return;
 
             double ms = 0;
@@ -640,30 +505,6 @@ namespace CapFrameX.OSD.Integration
                 // No source timestamp is available: retain the legacy synthetic timelines.
                 if (pushFrametimeGraph) _osd.PushFrametime(ms);
                 if (pushDisplayTimeGraph) _osd.PushDisplayTime(dc);
-            }
-
-            // Current framerate/frametime for the <APP> entries: collect this refresh interval's
-            // frametimes; OnEntries turns them into the mean (FPS = 1000 / mean frametime).
-            // The Displaytime entry collects its own samples the same way.
-            bool updateFrametimeScalar = (requirements & NeedFrametimeScalar) != 0 &&
-                hasFrametimeSample;
-            bool updateDisplayTimeScalar = (requirements & NeedDisplayTimeValue) != 0 &&
-                hasDisplaySample;
-            if (!updateFrametimeScalar && !updateDisplayTimeScalar) return;
-
-            lock (_fpsLock)
-            {
-                if (updateFrametimeScalar)
-                {
-                    _ftIntervalSumMs += ms;
-                    _ftIntervalCount++;
-                }
-
-                if (updateDisplayTimeScalar)
-                {
-                    _dtIntervalSumMs += dc;
-                    _dtIntervalCount++;
-                }
             }
         }
 
