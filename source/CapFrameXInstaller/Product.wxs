@@ -32,6 +32,11 @@
                  Before="LaunchCapFrameX" Sequence="execute"
                  Condition="NOT Installed AND LAUNCHAPP=&quot;1&quot;" />
 
+    <!-- A deferred action only sees CustomActionData, which is the value of the property named
+         after the action. -->
+    <SetProperty Id="UpdateAutoStartTask" Value="INSTALLFOLDER=[INSTALLFOLDER]"
+                 Before="UpdateAutoStartTask" Sequence="execute" Condition="NOT REMOVE" />
+
     <Launch Condition="Installed OR DOTNETDESKTOPRUNTIMEX64FOUND"
             Message="CapFrameX requires the .NET 10 Desktop Runtime (x64). Install it from https://dotnet.microsoft.com/download/dotnet/10.0 and run setup again." />
 
@@ -50,6 +55,9 @@
 		  <!-- Only on a real uninstall: a repair or modify must keep the autostart task, and the
 		       removal half of a major upgrade must not delete it either. -->
 		  <Custom Action="CleanRegistry" Before="InstallFinalize" Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
+      <!-- Upgrades can move the install folder, so repair an existing autostart task to point at it.
+           Not on uninstall: CleanRegistry deletes the task there. -->
+      <Custom Action="UpdateAutoStartTask" After="InstallFiles" Condition="NOT REMOVE" />
       <!-- Unconditional on purpose: install, repair, uninstall and both halves of a major upgrade
            must all end with at most one layer registration. The anchor is load-bearing — running
            after WriteRegistryValues would delete the registration this package just wrote. -->
@@ -80,6 +88,13 @@
          folder need the elevated service context. -->
     <CustomAction Id="CleanRegistry" BinaryRef="CustomActionsBin" DllEntry="RemoveAutoStartKey" Execute="deferred" Impersonate="no" Return="check"/>
 	</Fragment>
+
+  <Fragment>
+    <!-- Deferred and non-impersonated like CleanRegistry: the Task Scheduler root folder needs the
+         elevated service context. Return="ignore": the action already logs and swallows its own
+         errors, and a stale autostart path must never abort an upgrade. -->
+    <CustomAction Id="UpdateAutoStartTask" BinaryRef="CustomActionsBin" DllEntry="UpdateAutoStartTaskPath" Execute="deferred" Impersonate="no" Return="ignore"/>
+  </Fragment>
 
   <Fragment>
     <!-- Deferred and non-impersonated: writing HKLM needs the elevated service context, and an
