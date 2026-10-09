@@ -117,8 +117,8 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <!-- Directory.Build.props selects the sibling OSD checkout, an explicit source path,
-         or the legacy optional submodule. Builds without source use the matching binaries
+    <!-- Directory.Build.props selects the sibling OSD checkout or an explicit source path.
+         Builds without source use the matching binaries
          in external\CapFrameX.OSD-prebuilt. -->
     <!-- Preserve the explicit x64 mapping on the optional project reference. Visual Studio
          otherwise removes the platform for projects that are not listed in the solution. -->

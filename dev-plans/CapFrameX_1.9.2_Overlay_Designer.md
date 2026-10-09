@@ -336,8 +336,8 @@ Visual Studio builds the optional managed OSD dependencies through
 `source/Directory.Build.targets` before resolving their references. They remain outside the
 public solution so a checkout without private OSD sources still builds with the prebuilts.
 `source/Directory.Build.props` selects source/prebuilt mode before project references are
-evaluated. It prefers the sibling checkout, with the optional `external/CapFrameX.OSD`
-submodule as a fallback for other developer layouts. Override `CfxOsdSourceDir` for another
+evaluated. It uses the sibling checkout, with prebuilt binaries as the fallback when source
+is unavailable. Override `CfxOsdSourceDir` for another
 location; the legacy `CfxOsdSubmoduleDir` override remains supported. Paths work with or
 without a trailing directory separator. `CfxOsdFromSource=false` selects only prebuilt
 managed and native payloads even when a source checkout is present.
@@ -350,8 +350,9 @@ All five native DLLs rebuild from the standalone checkout. A source Debug app bu
 prebuilt-only Release app/test build pass in isolated output directories; the normal Debug
 output was locked by a running app. Sixteen editor layout/renderer compatibility tests pass.
 Native DLLs and Vulkan manifests match the selected source outputs; all seven prebuilt DLLs
-and both manifests match the prebuilt-only output. The duplicate local submodule checkout is
-deinitialized, while its optional repository definition and commit pin remain available.
+and both manifests match the prebuilt-only output. The duplicate local submodule checkout,
+its repository definition and gitlink have been removed. The standalone OSD repository
+retains the full history; the payload's source revision remains recorded in the prebuilt README.
 
 Changes to shared native layout/rendering require rebuilding the core and both architectures
 of the DXGI hook and Vulkan layer. Development binaries must be signed again for a release.

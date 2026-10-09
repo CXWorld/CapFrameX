@@ -4,9 +4,8 @@ Fallback binaries for the CapFrameX in-game OSD, built from the private
 [CXWorld/CapFrameX.OSD](https://github.com/CXWorld/CapFrameX.OSD) repository.
 
 Development builds prefer a sibling `CapFrameX.OSD` checkout, for example
-`E:\Code\CapFrameX.OSD` beside `E:\Code\CapFrameX`. The optional
-`external/CapFrameX.OSD` submodule remains a fallback for other checkout layouts.
-Without either source checkout, builds use these prebuilt managed and native binaries.
+`E:\Code\CapFrameX.OSD` beside `E:\Code\CapFrameX`.
+Without that source checkout, builds use these prebuilt managed and native binaries.
 Set `CfxOsdSourceDir` to use a different source location; the existing
 `CfxOsdSubmoduleDir` override remains supported. Set `CfxOsdFromSource=false` to use
 only prebuilts even when OSD sources are available.
@@ -970,8 +969,8 @@ Pop-Location
 ```
 
 Then copy the managed bridge, core, x64/x86 hooks, and both Vulkan layers/manifests from their
-`RelWithDebInfo` outputs into the matching folders above, and bump the submodule to the matching
-commit. The Vulkan manifest is renamed on the way in: the build emits `cfx_osd_vklayer.json`,
+`RelWithDebInfo` outputs into the matching folders above, and record the matching OSD commit
+and payload hashes in this document. The Vulkan manifest is renamed on the way in: the build emits `cfx_osd_vklayer.json`,
 this tree keeps the versioned `cfx_osd_vklayer_v1.json`.
 
 Copy those files one by one, never a whole `RelWithDebInfo` folder: the build outputs also

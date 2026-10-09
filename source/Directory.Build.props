@@ -7,12 +7,11 @@
   </PropertyGroup>
 
   <!-- Select the optional OSD dependency before conditional project references are evaluated.
-       Explicit new/legacy paths win; otherwise prefer the sibling checkout and retain the
-       optional submodule as a fallback. Public clones use the matching prebuilt assemblies. -->
+       Explicit new/legacy paths win; otherwise use the sibling checkout.
+       Public clones without that checkout use the matching prebuilt assemblies. -->
   <PropertyGroup>
     <CfxOsdSourceDir Condition="'$(CfxOsdSourceDir)' == '' And '$(CfxOsdSubmoduleDir)' != ''">$(CfxOsdSubmoduleDir)</CfxOsdSourceDir>
-    <CfxOsdSourceDir Condition="'$(CfxOsdSourceDir)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\CapFrameX.OSD\CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj') And Exists('$(MSBuildThisFileDirectory)..\..\CapFrameX.OSD\CapFrameX.OSD.Controls\CapFrameX.OSD.Controls.csproj')">$(MSBuildThisFileDirectory)..\..\CapFrameX.OSD\</CfxOsdSourceDir>
-    <CfxOsdSourceDir Condition="'$(CfxOsdSourceDir)' == ''">$(MSBuildThisFileDirectory)..\external\CapFrameX.OSD\</CfxOsdSourceDir>
+    <CfxOsdSourceDir Condition="'$(CfxOsdSourceDir)' == ''">$(MSBuildThisFileDirectory)..\..\CapFrameX.OSD\</CfxOsdSourceDir>
     <!-- Command-line properties cannot be reassigned. Always consume the normalized effective
          path so either /p override also accepts a directory without a trailing separator.
          Relative overrides retain MSBuild's project-relative interpretation. -->
