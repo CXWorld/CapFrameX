@@ -34,6 +34,12 @@ namespace CapFrameX.Contracts.Overlay
 
 		Task<IOverlayEntry[]> GetOverlayEntries(bool updateFormats = true);
 
+        /// <summary>Detached complete source catalog, including currently disabled classic items.</summary>
+        Task<IOverlayEntry[]> GetTelemetrySourcesAsync();
+
+        /// <summary>Read-only scalar/text values, independent of classic row selection and formatting.</summary>
+        IReadOnlyDictionary<string, object> GetTelemetryValues();
+
 		Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries();
 
 		void RefreshDisplayEntries(IReadOnlyList<DetectedDisplay> displays = null);

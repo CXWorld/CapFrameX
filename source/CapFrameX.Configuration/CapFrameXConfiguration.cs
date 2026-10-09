@@ -843,6 +843,12 @@ namespace CapFrameX.Configuration
             set => Set(Math.Max(50, Math.Min(200, value)));
         }
 
+        public string ActiveOverlayDesignProfileId
+        {
+            get => Get<string>(null);
+            set => Set(string.IsNullOrWhiteSpace(value) ? null : value);
+        }
+
         // 0..4 = cfx_osd_anchor. The native reader rejects anything outside that range and keeps
         // the previous placement, so clamping here is what makes a bad value visible as "no move".
         public int OsdAnchor

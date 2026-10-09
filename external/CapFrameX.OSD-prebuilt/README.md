@@ -3,11 +3,168 @@
 Fallback binaries for the CapFrameX in-game OSD, built from the private
 [CXWorld/CapFrameX.OSD](https://github.com/CXWorld/CapFrameX.OSD) repository.
 
-The build uses these automatically when the `external/CapFrameX.OSD` submodule is not
-checked out (developers without access to the private repo). With the submodule present,
-the OSD is built from source instead and these files are ignored.
+Development builds prefer a sibling `CapFrameX.OSD` checkout, for example
+`E:\Code\CapFrameX.OSD` beside `E:\Code\CapFrameX`.
+Without that source checkout, builds use these prebuilt managed and native binaries.
+Set `CfxOsdSourceDir` to use a different source location; the existing
+`CfxOsdSubmoduleDir` override remains supported. Set `CfxOsdFromSource=false` to use
+only prebuilts even when OSD sources are available.
 
 ## Build provenance
+
+### Classic rows inside grid designs development payload (2026-10-09)
+
+The current binaries are built from the source state now committed as
+`c96c00296225a76b92ad6ab0c0fa3765558bc13d`, published on `main`.
+Builds use VS 2026/v145,
+native `RelWithDebInfo` and managed `Release|x64`, .NET 10.
+
+The `classicRows` widget reuses the classic row builder in a fixed, movable tile. It preserves
+the active profile's grouping, formatting, threshold colors, bars and graphs, with independent
+classic value storage and a preview entry API. DXGI/Vulkan continue delivering classic entries
+while a custom design is active. Empty/stale entry batches clear linked rows; classic mode
+restores the latest batch immediately. Three hybrid presets bring the gallery to 59 templates.
+CapFrameX deactivates design mode when RTSS is selected and prevents activation under RTSS.
+
+Verification: 500 selected CapFrameX tests and 54 subsequent focused checks pass; 1,448 editor
+checks, 1,129 native-preview checks, seven core suites (245 design assertions), 32 DXGI suites
+per architecture and two Vulkan suites per architecture pass. The actual production designer
+with isolated demo telemetry was checked by mouse for template selection, row-block resizing,
+moving, Undo, saving and RTSS-disabled activation. Real game/RTSS validation remains a release
+check. These are unsigned development binaries; release signing is still outstanding.
+
+The subsequent saved-profile context-menu update passes all 552 selected CapFrameX
+regressions and production WPF menu/dialog checks in light/dark themes at two window sizes.
+Debug and Release source builds pass; that host update does not change these OSD payloads.
+
+| Component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `25682FA382E7B32B23EB90485B48A6BDE96E6915CE1D462C885B4E0C41EB8858` |
+| native\cfx_osd_hook.dll | `E61F689AF9996618D577623C112DFC75C17F8481694DA3206F4F98EECDDC4D98` |
+| native\vk\cfx_osd_vklayer.dll | `9C28EB395AEE3764B7945063B7A97BCBC30A2E0FD5557C386B0429642227D63E` |
+| native\vk\x86\cfx_osd_vklayer.dll | `C14ECEF88FF256602381156B382187605D6827E9C3E2C8FB4B8700C993255485` |
+| native\x86\cfx_osd_hook.dll | `239423E479AFEF5A61FA18259A1E1C63EDA6B4E9CC84736DA1642D87BACB627C` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `9DAD68813C22E749D8CCE7846F723BB1D3BF305DF72CB48AA29E1C3DD6AB1925` |
+| net10.0-windows\CapFrameX.OSD.Interop.dll | `1CAC1CFC6ED8DE561A6A274E0785D74D961C19935B70465AF7AB3A92BFA0043C` |
+
+Earlier payload descriptions below are historical.
+
+### Vertical sensor groups development payload (2026-10-09)
+
+The current submodule and managed binaries use OSD revision
+`e490bdf250bb1eceb43f6d2d192df77a411b5acb`, published on
+`codex/overlay-designer-1.9.2`. The five native DLLs were built at
+`55ee5fa3206abe512c2aff68b5117bf1814fb5c0`; native sources are unchanged between these
+revisions. Native builds use VS 2026/v145, `RelWithDebInfo`; Interop and Controls use
+`Release|x64`, .NET 10.
+
+Sensor groups support vertical bars, optional numeric values, 24–240 px track heights,
+up to 32 responsive columns and collision-safe frame fitting with Undo. Four new vertical
+hardware presets bring the gallery to 56 templates. Existing horizontal profiles retain
+their serialized scene and appearance. Vertical captions scale with the document and runtime
+zoom; hidden-value bars distinguish unavailable readings from measured zero.
+
+Verification: 133 focused CapFrameX tests, 1,342 editor checks, 852 native-preview checks,
+seven core suites (202 design assertions), 32 DXGI tests per architecture and two Vulkan
+tests per architecture pass. Actual DX11/DX12/Vulkan test hosts render the vertical design
+on x64/x86, including invalid updates, visibility, PID mismatch and expiry. Vulkan pixel
+readback verifies missing/zero distinction. Mouse checks in the production designer with
+isolated demo telemetry cover template selection, values, collision rejection, Undo and save.
+
+This remains an **unsigned development payload**. The previously recorded Certum private-key
+access issue is unresolved; release signing is still required. No installer or update-server
+release was made. Payloads documented below are historical.
+
+| Component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `CD329E532A6664D7797D28F55D84B01573B56882C80251BC6023194745683DB6` |
+| native\cfx_osd_hook.dll | `6A6E376967FC03E28DA754DE34F81EE9F5A57A4910331C4C6888689508C47B43` |
+| native\x86\cfx_osd_hook.dll | `1C8B5F6F42E39EB0849B97BC52AB5E0115000020F2E6B52DB8C0BBDE4C423F4D` |
+| native\vk\cfx_osd_vklayer.dll | `1C0DDE67D59F49D7D235E3C0BB2903790BCDD49C64822C9EC991A108C36F3A11` |
+| native\vk\x86\cfx_osd_vklayer.dll | `2C1AA3D0EE5909516291B9FB25CCFC7DE0F09904E359EE08A69C967615C01B23` |
+| net10.0-windows\CapFrameX.OSD.Interop.dll | `0BD90A444A7B047219FA00FDFECD53C721170C137A0FAA65825F12A26255D9AA` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `EC8D1C0F0F867FA465E618F86078879F5DF6983F25E3CC36F4F8D95AC1F06AEE` |
+
+### Fine-grid designer and runtime designs development payload (2026-10-09)
+
+All seven binaries below are built from OSD revision
+`468d396ee724a94ea7119ac871e57e39379256b0`, published on the private repository's
+`codex/overlay-designer-1.9.2` branch. Native builds use VS 2026/v145, `RelWithDebInfo`;
+Interop and Controls use `Release|x64`, .NET 10.
+
+The editor provides independent canvas tile placement/resizing, configurable 1–128 px grid
+cells, snapping, resizable sidebars, a wider grouped source picker and 52 templates. Four
+hardware-group presets bind complete CPU sensor families, including 32/64/128-member layouts.
+CapFrameX exposes saved designs under Overlay → Designs and supplies the full telemetry catalog
+to hook-free, DX11, DX12 and Vulkan output. Design and metrics are applied atomically through a
+bounded, PID-specific, heartbeat-checked channel. Runtime placement and zoom remain effective;
+classic entry rendering and the legacy template/entry API remain compatible.
+
+Verification: 129 focused CapFrameX tests, 1,121 editor checks, 629 native-preview checks for
+52 templates, seven focused core suites (134 design checks), 32 DXGI tests per architecture
+and two Vulkan tests per architecture pass. Live DX11/DX12/Vulkan test hosts verify rendering,
+invalid-update retention, visibility, PID mismatch and expiry. Vulkan GPU readback confirms
+zero overlay pixels while hidden/retargeted/expired and correct 200% zoom. Actual mouse checks
+cover grid conversion, cell size, independent tile/group drag/drop, edge resizing, sidebar
+resizing, undo, saving and activation in the production designer with isolated demo telemetry.
+
+This is an **unsigned development payload**. Certum signing was attempted, but SignTool could
+not access the existing certificate's private key (`After Private Key filter, 0 certs were
+left`). No replacement/self-signed certificate was used. Release signing remains required;
+the previous signed payloads below are historical. No installer/update-server release was made.
+
+| Component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `92D2ECDBADA5A7657AEB10051EE60759C2037C2D6F40D4D662C0BC578AB6CF20` |
+| native\cfx_osd_hook.dll | `F4CD128DA7D3D1A2597904DD58919BE83A6A64D4928C8663D3AFAA26CE0BF868` |
+| native\x86\cfx_osd_hook.dll | `50FD0D7A7D8F87AADF28BE34E68D24E058AAAB6E161F48A7A080470127891450` |
+| native\vk\cfx_osd_vklayer.dll | `A881493061ED3CA60C3938F5A30B0F2F3A94E675AB03EC1EFF769BC105BD0E46` |
+| native\vk\x86\cfx_osd_vklayer.dll | `E260C7778665205E3B1DE4B5CFE25A9A744639D82C9A21462C585FFDC3771898` |
+| net10.0-windows\CapFrameX.OSD.Interop.dll | `2D2838791825DBD9974A9190F7BD831F35B588E01CAA4F73F8F6D4CF02F991CC` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `C15849BFB51E26D096CECD90CD87D8CC9D6B11E4E1CA4AE6C8B9E26D6311D2B9` |
+
+### Overlay designer templates and grouped sources development payload (2026-10-08)
+
+The five native DLLs are built from OSD revision `08d648d12d6870de6ea0c174027c55848787790a`.
+Interop and the newly included WPF Controls assembly are built from
+OSD revision `532ce0a2cc3c032a3c22dde37d6602bc58405b06`, which adds grouped telemetry tiles,
+profile-host integration and fixes expanded source headers under the CapFrameX MaterialDesign
+theme. Native sources are unchanged. The local branch is
+`codex/overlay-designer-1.9.2`; publishing that OSD revision is required before sharing a
+source-based submodule checkout. The prebuilt path is independently usable.
+
+This unsigned development payload supersedes the signed binaries listed below. It adds grid
+and horizontal panel composition, styled tiles, hero metrics, bars, configurable gauges,
+live native preview, validated custom templates and the reusable visual editor. The editor now
+supports direct preview drag/drop, measured hit areas, resize handles, source binding and a
+gallery of 48 original templates, including 24 Troy-inspired layouts. Source categories,
+search, text telemetry and fixed multiline metrics complement stable resize previews which
+commit once on release. CPU load/clock groups support up to 128 readings in one configurable
+tile, with shared styling and individual member selection. The host now supplies saved-design
+management; activation and template transport to games are deferred to the later Overlay-tab integration.
+
+Builds: VS 2026/v145, `RelWithDebInfo` (embedded `/Z7` debug information for the local build
+environment), and `Release|x64` .NET 10. The profile/group update passes 962
+editor/template/gesture/gallery/source checks and 536 native-preview checks covering all 48
+templates and 32/64/128-member groups. Native code is unchanged since its prior verification:
+127 native design checks, four focused core suites, all 30 DXGI tests per architecture and both
+Vulkan tests per architecture. The grouped native previews and actual WPF source hierarchy were
+rendered offscreen and visually checked under light/dark application themes; stable
+pointer/row-edge behavior is covered by gesture regression tests. All 84 focused CapFrameX
+profile/telemetry/WPF tests pass. Details are recorded in
+[`dev-plans/CapFrameX_1.9.2_Overlay_Designer.md`](../../dev-plans/CapFrameX_1.9.2_Overlay_Designer.md).
+Staged hashes match the build outputs. Release signing and real-game design
+activation have not been performed.
+
+| Component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `7058A745D9C300807B156C6A2CE1CE6925A5FA9A22EECED7CF781ABF4F6B6A89` |
+| native\cfx_osd_hook.dll | `E4ED81F971B558416A3D6EFD3C50A7341A6E5AB8CF37CFD248542A1FF3A21BC3` |
+| native\x86\cfx_osd_hook.dll | `FDC814542639B5D10E6F4B9A046170770F8B11C93F990DD580609EC5E7331E49` |
+| native\vk\cfx_osd_vklayer.dll | `073A3D8A3A18C73E928114C0D4EE53CD0BC9813E42A73BB53B44E0DB7468974B` |
+| native\vk\x86\cfx_osd_vklayer.dll | `0E9662EA7831E32532F55021894F4881B6E95768055D352E41113538F72CEB17` |
+| net10.0-windows\CapFrameX.OSD.Interop.dll | `C20E6B2412E2D6BAB782554C81D91547B60A46A375E48C900085A3D4B36AC59D` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `01BD4CF934CFE95BB8315D5857C42D8CE65EB77A5A452C98F243D606461CAC10` |
 
 ### Signed 1.9.2.1 Beta payload (2026-10-07)
 
@@ -710,7 +867,8 @@ separate probing review.
 
 ## Contents
 
-- `net10.0-windows/` — `CapFrameX.OSD.Interop.dll` (managed P/Invoke bridge, x64)
+- `net10.0-windows/` — `CapFrameX.OSD.Interop.dll` (managed P/Invoke bridge, x64) and
+  `CapFrameX.OSD.Controls.dll` (reusable WPF design editor and native preview)
 - `native/cfx_osd_core.dll` — native renderer (x64, RelWithDebInfo)
 - `native/cfx_osd_hook.dll` — x64 DXGI hook, including exact swapchain capture through
   Streamline's factory methods, FidelityFX frame-generation creation APIs, and XeSS-FG's public
@@ -811,8 +969,8 @@ Pop-Location
 ```
 
 Then copy the managed bridge, core, x64/x86 hooks, and both Vulkan layers/manifests from their
-`RelWithDebInfo` outputs into the matching folders above, and bump the submodule to the matching
-commit. The Vulkan manifest is renamed on the way in: the build emits `cfx_osd_vklayer.json`,
+`RelWithDebInfo` outputs into the matching folders above, and record the matching OSD commit
+and payload hashes in this document. The Vulkan manifest is renamed on the way in: the build emits `cfx_osd_vklayer.json`,
 this tree keeps the versioned `cfx_osd_vklayer_v1.json`.
 
 Copy those files one by one, never a whole `RelWithDebInfo` folder: the build outputs also
@@ -824,8 +982,11 @@ For Vulkan runtime tests, also check the manifest paths registered in both HKLM 
 The loader uses the DLL beside each registered manifest, which can still be the installed copy
 under `Program Files (x86)` even when CapFrameX runs from its build output. Updating this prebuilt
 folder and rebuilding the app does not update that installed copy. Use an updated installation
-or register the rebuilt staging folder with the private repo's `register_layer.cmd <folder>`
-for development, keeping one registration per bitness. Restart the Vulkan target to load the
+or run [`scripts/Register-DevelopmentVulkanLayer.ps1`](../../scripts/Register-DevelopmentVulkanLayer.ps1)
+from an elevated PowerShell for this checkout. It validates both architectures, backs up the
+CapFrameX registrations, disables older HKLM entries, and selects the matching development
+payload in each registry view. `-ValidateOnly` previews the plan without changes; `-Restore`
+reverts the recorded HKLM changes. Restart the Vulkan target to load the
 updated layer; a process already running retains its loaded DLL.
 
 Configure every native tree with the **same** toolset the core preset pins (`-G "Visual Studio 18

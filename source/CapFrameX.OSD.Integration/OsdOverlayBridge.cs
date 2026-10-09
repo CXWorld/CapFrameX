@@ -42,6 +42,11 @@ namespace CapFrameX.OSD.Integration
         private readonly IDisposable _displaySub;
         private readonly IDisposable _backgroundOpacitySub;
         private readonly IDisposable _zoomSub;
+        private readonly OverlayDesignRuntimePublisher _designRuntime;
+        private readonly IDisposable _designSub;
+        private readonly object _designGate = new object();
+        private ulong _lastDesignRevision, _lastDesignMetricsRevision;
+        private bool _customDesignLoaded;
         private readonly int _ftIndex;
         private readonly int _runtimeIndex;
         private readonly int _displayChangedIndex;
@@ -95,7 +100,8 @@ namespace CapFrameX.OSD.Integration
                                 int processIdColumnIndex = -1,
                                 int swapChainColumnIndex = -1,
                                 int frameTypeColumnIndex = -1,
-                                IObservable<int> processCountStream = null)
+                                IObservable<int> processCountStream = null,
+                                OverlayDesignRuntimePublisher designRuntime = null)
         {
             if (overlayService == null) throw new ArgumentNullException(nameof(overlayService));
             if (appConfiguration == null) throw new ArgumentNullException(nameof(appConfiguration));
@@ -106,6 +112,7 @@ namespace CapFrameX.OSD.Integration
 
             _overlayService = overlayService;
             _appConfiguration = appConfiguration;
+            _designRuntime = designRuntime;
             // Seeded from the configuration so the very first frame is already placed correctly;
             // OnEntries keeps it in sync from there.
             _osd = new OsdHost((OsdAnchor)appConfiguration.OsdAnchor,
@@ -177,6 +184,12 @@ namespace CapFrameX.OSD.Integration
                 _fallbackSub = hookFreeFallbackStream
                     .DistinctUntilChanged()
                     .Subscribe(OnFallbackChanged);
+            if (_designRuntime != null)
+                _designSub = _designRuntime.Snapshots.Subscribe(snapshot =>
+                {
+                    UpdateFrameFeedRequirements(_overlayService.CurrentOverlayEntries);
+                    ApplyDesignSnapshot(snapshot);
+                });
         }
 
         /// <summary>Configure the fixed overlay position (call from CapFrameX settings UI).</summary>
@@ -245,8 +258,14 @@ namespace CapFrameX.OSD.Integration
 
         private void StopOsd()
         {
-            _osd.Stop();
-            _started = false;
+            lock (_designGate)
+            {
+                _osd.Stop();
+                _started = false;
+                _lastDesignRevision = 0;
+                _lastDesignMetricsRevision = 0;
+                _customDesignLoaded = false;
+            }
             _lastBgOpacity = -1; // Stop destroys the native handle; re-feed on next start
             _lastZoom = -1;
             _lastAnchor = -1; _lastMonitor = -1; _lastMarginX = -1; _lastMarginY = -1;
@@ -263,8 +282,8 @@ namespace CapFrameX.OSD.Integration
             // OnDictionaryUpdated is published after this processed display list is ready.
             var entries = _overlayService.CurrentOverlayEntries;
             UpdateFrameFeedRequirements(entries);
-            if (entries == null || entries.Length == 0) return;
-
+            ApplyDesignSnapshot(_designRuntime?.Current);
+            // An empty profile must clear a linked classic block as well as a standalone overlay.
             var list = OverlayEntryAdapter.ToOsdEntries(entries,
                 _appConfiguration.UseRunHistory,
                 _overlayService.RunHistory,
@@ -299,8 +318,20 @@ namespace CapFrameX.OSD.Integration
 
         private void UpdateFrameFeedRequirements(IEnumerable<IOverlayEntry> entries)
         {
+            Interlocked.Exchange(ref _frameFeedRequirements,
+                GetFrameFeedRequirements(_designRuntime?.Current.Design, entries));
+            UpdateFrameSubscription(IsVisible);
+        }
+
+        internal static int GetFrameFeedRequirements(OverlayRuntimeDesign design, IEnumerable<IOverlayEntry> entries)
+        {
             int requirements = 0;
-            if (entries != null)
+            if (design != null)
+            {
+                if (design.NeedsFrametimes) requirements |= NeedFrametimeGraph;
+                if (design.NeedsDisplayTimes) requirements |= NeedDisplayTimeGraph;
+            }
+            if ((design == null || design.HasClassicRows) && entries != null)
             {
                 foreach (var entry in entries)
                 {
@@ -323,8 +354,56 @@ namespace CapFrameX.OSD.Integration
                 }
             }
 
-            Interlocked.Exchange(ref _frameFeedRequirements, requirements);
-            UpdateFrameSubscription(IsVisible);
+            return requirements;
+        }
+
+        private void ApplyDesignSnapshot(OverlayDesignRuntimeSnapshot snapshot)
+        {
+            if (!_started || !_osd.IsRunning || snapshot == null) return;
+            bool rejected = false;
+            lock (_designGate)
+            {
+                if (!_started || !_osd.IsRunning) return;
+                if (snapshot.Design == null)
+                {
+                    if (_customDesignLoaded)
+                    {
+                        _osd.ClearTemplate();
+                        _customDesignLoaded = false;
+                        _lastDesignRevision = 0;
+                        _lastDesignMetricsRevision = 0;
+                        var entries = OverlayEntryAdapter.ToOsdEntries(_overlayService.CurrentOverlayEntries,
+                            _appConfiguration.UseRunHistory, _overlayService.RunHistory,
+                            _overlayService.RunHistoryOutlierFlags, _overlayService.RunHistoryAggregation);
+                        _osd.UpdateEntries(entries);
+                    }
+                    return;
+                }
+                bool newDesign = !_customDesignLoaded || snapshot.DesignRevision != _lastDesignRevision;
+                if (!newDesign && snapshot.MetricsRevision == _lastDesignMetricsRevision) return;
+                if (!_osd.ApplyDesignJson(newDesign ? snapshot.Design.TemplateJson : null, snapshot.MetricsJson))
+                {
+                    rejected = true;
+                }
+                else
+                {
+                    _customDesignLoaded = true;
+                    _lastDesignRevision = snapshot.DesignRevision;
+                    _lastDesignMetricsRevision = snapshot.MetricsRevision;
+                    if (newDesign)
+                    {
+                        _lastBgOpacity = -1;
+                        _lastZoom = -1;
+                        ApplyPosition(force: true);
+                        ApplyBackgroundOpacity();
+                        ApplyZoom();
+                    }
+                }
+            }
+            if (rejected)
+                _designRuntime.ReportRendererError("The hook-free renderer rejected the saved design. The previous overlay remains active.");
+            else
+                _designRuntime.ReportRendererReady();
         }
 
         private void UpdateFrameSubscription(bool visible)
@@ -510,6 +589,7 @@ namespace CapFrameX.OSD.Integration
 
         public void Dispose()
         {
+            _designSub?.Dispose();
             _activeSub?.Dispose();
             _entriesSub?.Dispose();
             UpdateFrameSubscription(false);
@@ -523,7 +603,7 @@ namespace CapFrameX.OSD.Integration
             _zoomSub?.Dispose();
             _targetPidSub?.Dispose();
             _processCountSub?.Dispose();
-            _osd?.Dispose();
+            lock (_designGate) _osd?.Dispose();
         }
     }
 }

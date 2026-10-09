@@ -24,6 +24,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Overlay
@@ -125,6 +126,10 @@ namespace CapFrameX.Overlay
 
         private BlockingCollection<IOverlayEntry> _overlayEntries;
         private double _ping = double.NaN;
+        private int _pingInFlight;
+        private long _lastPingTick;
+        private long _lastCpuUsageTick;
+        private double _cachedCpuUsage = double.NaN;
         private volatile int _currentProcessId;
         // Written by the status stream, read by the overlay refresh: the entry itself must not be
         // touched from the stream, it is replaced whenever a configuration is loaded or switched.
@@ -252,6 +257,51 @@ namespace CapFrameX.Overlay
             _identifierOverlayEntryDict.TryGetValue(identifier, out IOverlayEntry entry);
 
             return entry;
+        }
+
+        public async Task<IOverlayEntry[]> GetTelemetrySourcesAsync()
+        {
+            await _taskCompletionSource.Task.ConfigureAwait(false);
+            // Defaults are the authoritative catalog, including optional and renderer-gated rows.
+            // These detached objects never become the user's editable overlay profile.
+            var entries = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
+                .Cast<IOverlayEntry>().ToList();
+            entries.AddRange(GetDetectedDisplays().Select(CreateDisplayResolutionEntry));
+            return entries.ToArray();
+        }
+
+        public IReadOnlyDictionary<string, object> GetTelemetryValues()
+        {
+            var values = new Dictionary<string, object>(StringComparer.Ordinal);
+            lock (_overlayEntriesGate)
+            {
+                foreach (string identifier in new[] { "CaptureServiceStatus", "CaptureTimer",
+                    "CustomCPU", "CustomGPU", "Mainboard", "CustomRAM", "OS", "GPUDriver" })
+                    values[identifier] = GetOverlayEntry(identifier)?.Value;
+                values["SystemTime"] = DateTime.Now.ToString(ShowSystemTimeSeconds ? "HH:mm:ss" : "HH:mm");
+                values["CxAppCpuUsage"] = GetAppCpuUsage();
+                values["HookOverlayStatus"] = HookOverlayStatusLabel.ForState(_appConfiguration.EnableHookOverlay
+                    ? _hookOverlayStatus?.State ?? EHookOverlayStatus.Waiting : EHookOverlayStatus.Disabled);
+                var targetHook = _currentProcessId > 0 && _hookOverlayStatus?.ProcessId == _currentProcessId
+                    ? _hookOverlayStatus : null;
+                values["Resolution"] = _appConfiguration.EnableHookOverlay
+                    ? targetHook?.RenderResolution
+                    : !_appConfiguration.EnableHookFreeOverlay && _currentProcessId > 0
+                        ? _rTSSService.GetResolution(_currentProcessId) : null;
+                values["GraphicsAPI"] = _appConfiguration.EnableHookOverlay ? targetHook?.RenderApi
+                    : !_appConfiguration.EnableHookFreeOverlay && _currentProcessId > 0
+                        ? _rTSSService.GetApiInfo(_currentProcessId) : null;
+                foreach (var display in GetDetectedDisplays())
+                    values[GetDisplayResolutionIdentifier(display.DeviceName)] = FormatDisplayResolution(display);
+                if (GetSystemPowerStatus(out var power))
+                {
+                    values["BatteryLifePercent"] = power.BatteryLifePercent == 255 ? null : (object)(double)power.BatteryLifePercent;
+                    values["BatteryLifeRemaining"] = power.BatteryLifeTime < 0 ? null : (object)(power.BatteryLifeTime / 60d);
+                }
+                values["Ping"] = double.IsNaN(_ping) ? null : (object)_ping;
+                SetPing();
+            }
+            return values;
         }
 
         public void MoveEntry(int sourceIndex, int targetIndex)
@@ -1636,8 +1686,19 @@ namespace CapFrameX.Overlay
 
             if (cxCpuUsage != null)
             {
-                cxCpuUsage.Value = _systemInfo.GetCapFrameXAppCpuUsage();
+                cxCpuUsage.Value = GetAppCpuUsage();
             }
+        }
+
+        private double GetAppCpuUsage()
+        {
+            long now = Environment.TickCount64;
+            if (now - _lastCpuUsageTick >= 200)
+            {
+                _cachedCpuUsage = _systemInfo.GetCapFrameXAppCpuUsage();
+                _lastCpuUsageTick = now;
+            }
+            return _cachedCpuUsage;
         }
 
         private void UpdateResolution()
@@ -2209,27 +2270,24 @@ namespace CapFrameX.Overlay
 
         private async void SetPing()
         {
-            Ping pingSender = new Ping();
+            // Classic refresh and the designer share this single bounded request; neither can
+            // start a second ping while one is pending or sample faster than once per second.
+            long now = Environment.TickCount64;
+            if (string.IsNullOrWhiteSpace(_appConfiguration.PingURL)
+                || now - Interlocked.Read(ref _lastPingTick) < 1000
+                || Interlocked.CompareExchange(ref _pingInFlight, 1, 0) != 0) return;
+            Interlocked.Exchange(ref _lastPingTick, now);
+            using Ping pingSender = new Ping();
             try
             {
-                await Task.Run(() =>
-                {
-                    PingReply reply = pingSender.Send(_appConfiguration.PingURL);
-                    if (reply.Status == IPStatus.Success)
-                    {
-                        _ping = Convert.ToDouble(reply.RoundtripTime);
-                    }
-                    else
-                    {
-                        _ping = double.NaN;
-                    }
-                });
+                PingReply reply = await pingSender.SendPingAsync(_appConfiguration.PingURL, 1000).ConfigureAwait(false);
+                _ping = reply.Status == IPStatus.Success ? reply.RoundtripTime : double.NaN;
             }
             catch
             {
                 _ping = double.NaN;
             }
-            ;
+            finally { Interlocked.Exchange(ref _pingInFlight, 0); }
         }
 
         public void UpdateOverlayEntryFormats()
