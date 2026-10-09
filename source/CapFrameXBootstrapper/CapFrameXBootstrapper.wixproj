@@ -23,5 +23,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CapFrameXInstaller\CapFrameXInstaller.wixproj" />
+    <!-- BAFunctions DLL that lets this bundle replace a newer CapFrameX bundle (see Bundle.wxs).
+         The BA runs in the 32-bit bundle, so the DLL is always built for Win32. -->
+    <ProjectReference Include="..\CapFrameXBootstrapper.BAFunctions\CapFrameXBootstrapper.BAFunctions.vcxproj" Properties="Platform=Win32" ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>

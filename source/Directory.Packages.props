@@ -79,6 +79,8 @@
     <PackageVersion Include="WixToolset.Dtf.CustomAction" Version="6.0.2" />
     <PackageVersion Include="WixToolset.Dtf.WindowsInstaller" Version="6.0.2" />
     <PackageVersion Include="WixToolset.Util.wixext" Version="6.0.2" />
+    <!-- Native SDK for the bootstrapper's BAFunctions DLL; same WiX version as above. -->
+    <PackageVersion Include="WixToolset.WixStandardBootstrapperApplicationFunctionApi" Version="6.0.2" />
   </ItemGroup>
 
 </Project>
