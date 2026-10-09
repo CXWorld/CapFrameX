@@ -98,10 +98,12 @@
     <ProjectReference Include="..\CapFrameX.PMD\CapFrameX.PMD.csproj" />
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj" />
     <ProjectReference Include="..\CapFrameX.OSD.Integration\CapFrameX.OSD.Integration.csproj" />
-    <ProjectReference Include="..\..\external\CapFrameX.OSD\CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj" Condition="'$(CfxOsdFromSource)' == 'true'">
+    <ProjectReference Include="$(CfxOsdSubmoduleDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj" Condition="'$(CfxOsdFromSource)' == 'true'">
       <!-- The optional submodule project is not listed in CapFrameX.sln, so Visual Studio
            cannot apply a solution platform mapping to this x64-only reference. -->
       <SetPlatform>Platform=x64</SetPlatform>
+      <CfxOptionalOsd>true</CfxOptionalOsd>
+      <AdditionalProperties>ShouldUnsetParentConfigurationAndPlatform=false</AdditionalProperties>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.RTSSIntegration\CapFrameX.RTSSIntegration.csproj" />
     <ProjectReference Include="..\CapFrameX.RTSSInterface\CapFrameX.RTSSInterface.vcxproj" />
@@ -119,7 +121,6 @@
          external\CapFrameX.OSD. With the submodule checked out the OSD is built from
          source; otherwise the prebuilt binaries in external\CapFrameX.OSD-prebuilt
          are used so the app always builds with full OSD functionality. -->
-    <CfxOsdFromSource Condition="'$(CfxOsdFromSource)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD\CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj')">true</CfxOsdFromSource>
     <!-- Preserve the explicit x64 mapping on the optional project reference. Visual Studio
          otherwise removes the platform for projects that are not listed in the solution. -->
     <ShouldUnsetParentConfigurationAndPlatform Condition="'$(CfxOsdFromSource)' == 'true' And '$(ShouldUnsetParentConfigurationAndPlatform)' == ''">false</ShouldUnsetParentConfigurationAndPlatform>
@@ -133,10 +134,10 @@
 
   <!-- Native renderer: staged from the submodule's CMake output when built from source
        (via the Interop project's content items); otherwise use the prebuilt DLL. -->
-  <ItemGroup Condition="!Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD\CapFrameX.OSD\build\bin\RelWithDebInfo\cfx_osd_core.dll')">
+  <ItemGroup Condition="'$(CfxOsdFromSource)' != 'true' Or !Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD\CapFrameX.OSD\build\bin\RelWithDebInfo\cfx_osd_core.dll')">
     <Content Include="..\..\external\CapFrameX.OSD-prebuilt\native\cfx_osd_core.dll">
       <Link>cfx_osd_core.dll</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 

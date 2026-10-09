@@ -6,4 +6,11 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
+  <!-- Select the optional OSD dependency before any project's conditional references are
+       evaluated. Public clones keep using the matching prebuilt assemblies. -->
+  <PropertyGroup>
+    <CfxOsdSubmoduleDir Condition="'$(CfxOsdSubmoduleDir)' == ''">$(MSBuildThisFileDirectory)..\external\CapFrameX.OSD\</CfxOsdSubmoduleDir>
+    <CfxOsdFromSource Condition="'$(CfxOsdFromSource)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj') And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD.Controls\CapFrameX.OSD.Controls.csproj')">true</CfxOsdFromSource>
+  </PropertyGroup>
+
 </Project>

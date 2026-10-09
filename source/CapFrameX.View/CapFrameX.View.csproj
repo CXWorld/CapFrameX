@@ -38,6 +38,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Capture.Contracts\CapFrameX.Capture.Contracts.csproj" />
+    <ProjectReference Include="..\CapFrameX.OSD.Integration\CapFrameX.OSD.Integration.csproj" />
     <ProjectReference Include="..\CapFrameX.Charts\Core40\Core.csproj" />
     <ProjectReference Include="..\CapFrameX.Charts\WpfView\WpfView.csproj" />
     <ProjectReference Include="..\CapFrameX.Configuration\CapFrameX.Configuration.csproj" />
@@ -54,6 +55,27 @@
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj" />
     <ProjectReference Include="..\CapFrameX.Updater\CapFrameX.Updater.csproj" />
     <ProjectReference Include="..\CapFrameX.ViewModel\CapFrameX.ViewModel.csproj" />
+  </ItemGroup>
+
+  <!-- The reusable editor is owned by the optional OSD repository. Public builds use the
+       same prebuilt fallback as the native renderer and its interop assembly. -->
+  <PropertyGroup>
+    <ShouldUnsetParentConfigurationAndPlatform Condition="'$(CfxOsdFromSource)' == 'true' And '$(ShouldUnsetParentConfigurationAndPlatform)' == ''">false</ShouldUnsetParentConfigurationAndPlatform>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(CfxOsdFromSource)' == 'true'">
+    <ProjectReference Include="$(CfxOsdSubmoduleDir)CapFrameX.OSD.Controls\CapFrameX.OSD.Controls.csproj">
+      <SetPlatform>Platform=x64</SetPlatform>
+      <CfxOptionalOsd>true</CfxOptionalOsd>
+      <AdditionalProperties>ShouldUnsetParentConfigurationAndPlatform=false</AdditionalProperties>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup Condition="'$(CfxOsdFromSource)' != 'true'">
+    <Reference Include="CapFrameX.OSD.Controls">
+      <HintPath>$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\net10.0-windows\CapFrameX.OSD.Controls.dll</HintPath>
+    </Reference>
+    <Reference Include="CapFrameX.OSD.Interop">
+      <HintPath>$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\net10.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>
