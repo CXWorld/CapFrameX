@@ -14,7 +14,7 @@ namespace CapFrameX.Test.Integration
     [DoNotParallelize]
     public class OverlayDesignerLayoutTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(BaseTheme.Dark, 1080, 560)]
         [DataRow(BaseTheme.Dark, 1280, 820)]
         [DataRow(BaseTheme.Light, 1080, 560)]

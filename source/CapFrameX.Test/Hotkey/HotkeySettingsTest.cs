@@ -20,7 +20,7 @@ namespace CapFrameX.Test.Hotkey
             Assert.IsNull(CXHotkey.Create(string.Empty.Split('+'), Key.O, ModifierKeys.Alt));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null)]
         [DataRow(" ")]
         [DataRow("Alt+NotAKey")]
@@ -31,7 +31,7 @@ namespace CapFrameX.Test.Hotkey
             Assert.IsFalse(CXHotkey.IsValidSetting(value));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("F11")]
         [DataRow("Alt+O")]
         [DataRow("Control+Shift+F9")]

@@ -253,18 +253,16 @@ namespace CapFrameX.Test.Data
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
         public async Task StartCapture_WhenAlreadyCapturing_ThrowsException()
         {
             _mockCaptureService.StartCaptureService(null);
             var options = CreateValidCaptureOptions();
 
             await _captureManager.StartCapture(options);
-            await _captureManager.StartCapture(options); // Should throw
+            await Assert.ThrowsExactlyAsync<Exception>(() => _captureManager.StartCapture(options));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
         public async Task StartCapture_WithNonExistentProcess_ThrowsException()
         {
             _mockCaptureService.StartCaptureService(null);
@@ -275,7 +273,7 @@ namespace CapFrameX.Test.Data
                 CaptureDelay = 0
             };
 
-            await _captureManager.StartCapture(options);
+            await Assert.ThrowsExactlyAsync<Exception>(() => _captureManager.StartCapture(options));
         }
 
         [TestMethod]
@@ -397,10 +395,9 @@ namespace CapFrameX.Test.Data
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
         public async Task StopCapture_WhenNotCapturing_ThrowsException()
         {
-            await _captureManager.StopCapture();
+            await Assert.ThrowsExactlyAsync<Exception>(() => _captureManager.StopCapture());
         }
 
         [TestMethod]

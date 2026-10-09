@@ -20,17 +20,15 @@ namespace CapFrameX.Test.Statistics
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void Constructor_ZeroCapacity_ThrowsException()
         {
-            var buffer = new CircularBuffer<double>(0);
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CircularBuffer<double>(0));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void Constructor_NegativeCapacity_ThrowsException()
         {
-            var buffer = new CircularBuffer<double>(-1);
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => new CircularBuffer<double>(-1));
         }
 
         #endregion
@@ -124,19 +122,17 @@ namespace CapFrameX.Test.Statistics
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void PeekFirst_EmptyBuffer_ThrowsException()
         {
             var buffer = new CircularBuffer<double>(10);
-            buffer.PeekFirst();
+            Assert.ThrowsExactly<InvalidOperationException>(() => buffer.PeekFirst());
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void PeekLast_EmptyBuffer_ThrowsException()
         {
             var buffer = new CircularBuffer<double>(10);
-            buffer.PeekLast();
+            Assert.ThrowsExactly<InvalidOperationException>(() => buffer.PeekLast());
         }
 
         #endregion
@@ -175,11 +171,10 @@ namespace CapFrameX.Test.Statistics
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void RemoveFirst_EmptyBuffer_ThrowsException()
         {
             var buffer = new CircularBuffer<double>(10);
-            buffer.RemoveFirst();
+            Assert.ThrowsExactly<InvalidOperationException>(() => buffer.RemoveFirst());
         }
 
         #endregion
@@ -330,21 +325,19 @@ namespace CapFrameX.Test.Statistics
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void Indexer_NegativeIndex_ThrowsException()
         {
             var buffer = new CircularBuffer<double>(10);
             buffer.Add(1.0);
-            var value = buffer[-1];
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => buffer[-1]);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentOutOfRangeException))]
         public void Indexer_IndexOutOfRange_ThrowsException()
         {
             var buffer = new CircularBuffer<double>(10);
             buffer.Add(1.0);
-            var value = buffer[5];
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => buffer[5]);
         }
 
         #endregion

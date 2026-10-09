@@ -47,7 +47,7 @@ namespace CapFrameX.Test.Overlay
             Directory.Delete(_configFolder, recursive: true);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public async Task LegacyDescription_SameIdentifier_PreservesSelectionAndFormatting(bool hasStableIdentifier)
@@ -131,7 +131,7 @@ namespace CapFrameX.Test.Overlay
             Assert.IsFalse(provider.HasPendingChanges);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public async Task BulkFormatting_CopiesPercentageModeOnlyToEligibleEntries(bool sameGroupOnly)

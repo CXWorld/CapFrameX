@@ -78,7 +78,7 @@ namespace CapFrameX.Test.Overlay
             fixture.Rtss.Verify(service => service.CheckRTSSRunning(), Times.Never);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public async Task PresentMonScalars_ReachHttpAndWebsocketBeforeRendererNotification(bool overlayActive)

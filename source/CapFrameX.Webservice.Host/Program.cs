@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -15,12 +14,14 @@ namespace CapFrameX.Webservice.Host
 	{
 		public static void Main(string[] args)
 		{
-			CreateWebHostBuilder(args).Build().Run();
+			CreateHostBuilder(args).Build().Run();
 		}
 
-		public static IWebHostBuilder CreateWebHostBuilder(string[] args)
+		// Generic host: WebHost/IWebHostBuilder are obsolete in ASP.NET Core 10, and
+		// Serilog.AspNetCore only hooks into IHostBuilder.
+		public static IHostBuilder CreateHostBuilder(string[] args)
 		{
-			return WebHost.CreateDefaultBuilder(args)
+			return Microsoft.Extensions.Hosting.Host.CreateDefaultBuilder(args)
 			.ConfigureAppConfiguration((context, config) =>
 			{
 				config
@@ -29,7 +30,7 @@ namespace CapFrameX.Webservice.Host
 					.AddEnvironmentVariables();
 				context.Configuration = config.Build();
 			})
-			.UseStartup<Startup>()
+			.ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>())
 			.UseSerilog((hostingContext, loggerConfiguration) =>
 			{
 				loggerConfiguration

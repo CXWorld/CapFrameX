@@ -6,8 +6,6 @@
     <RootNamespace>LiveCharts</RootNamespace>
     <AssemblyName>LiveCharts</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Deterministic>true</Deterministic>
-    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <!-- Vendored LiveCharts: the library calls its own [Obsolete] members internally (ChartFunctions
          .GetUnitWidth, AxisSection.UpdateSection, Axis.AxisChanged, Chart.PrepareScrolBar, ...).
          Resolving these means changing upstream code, so the obsolete diagnostics are silenced

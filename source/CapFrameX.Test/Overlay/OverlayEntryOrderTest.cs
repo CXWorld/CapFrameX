@@ -59,7 +59,7 @@ namespace CapFrameX.Test.Overlay
                 "Frametime and DisplayTime must tie on SortKey");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public void Defaults_PcLatencyFollowsFeatureToggle(bool enabled)
@@ -78,7 +78,7 @@ namespace CapFrameX.Test.Overlay
 
         // ---------------------------------------------------------------- the three templates
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(EOverlayTemplate.Basic)]
         [DataRow(EOverlayTemplate.Detailed)]
         [DataRow(EOverlayTemplate.Enthusiast)]
@@ -94,7 +94,7 @@ namespace CapFrameX.Test.Overlay
             AssertFramerateBlockOrder(sorted, template.ToString());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(EOverlayTemplate.Basic)]
         [DataRow(EOverlayTemplate.Detailed)]
         [DataRow(EOverlayTemplate.Enthusiast)]
@@ -120,7 +120,7 @@ namespace CapFrameX.Test.Overlay
 
         // ---------------------------------------------------------------- DisplayTime activation
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(EOverlayTemplate.Basic)]
         [DataRow(EOverlayTemplate.Detailed)]
         [DataRow(EOverlayTemplate.Enthusiast)]
@@ -138,7 +138,7 @@ namespace CapFrameX.Test.Overlay
             Assert.IsTrue(displayTime.ShowGraph, $"{template}: DisplayTime graph must be switched on");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(EOverlayTemplate.Basic)]
         [DataRow(EOverlayTemplate.Detailed)]
         [DataRow(EOverlayTemplate.Enthusiast)]
@@ -156,7 +156,7 @@ namespace CapFrameX.Test.Overlay
                 $"{template}: DisplayTime has no data source and must stay off");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(EOverlayTemplate.Basic)]
         [DataRow(EOverlayTemplate.Detailed)]
         [DataRow(EOverlayTemplate.Enthusiast)]

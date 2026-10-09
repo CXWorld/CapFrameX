@@ -117,7 +117,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(plan.ProbingEnabled);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true, Hash, false)]
         [DataRow(true, "old", false)]
         [DataRow(false, Hash, true)]
@@ -143,7 +143,7 @@ namespace CapFrameX.Test.Integration
                 stage.Id == HookCompatibilityStageId.Generic && !stage.RequiresEarlyInjection));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true, Hash, false)]
         [DataRow(true, "old", false)]
         [DataRow(false, Hash, true)]
@@ -183,7 +183,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(catalog.NativeFlags, plan.StartStage.Flags);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true, Hash, false)]
         [DataRow(true, "old", false)]
         [DataRow(false, Hash, true)]
@@ -229,7 +229,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(catalog.NativeFlags, plan.StartStage.Flags);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("D3D11", true)]
         [DataRow("DXGI", false)]
         public void Plan_D3D11RejectsLearnedPendingStaleAndExhaustedGenericRoutes(

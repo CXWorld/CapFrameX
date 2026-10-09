@@ -17,10 +17,18 @@
 			<!-- Since WiX v5 the BA runs in its own process and no longer inherits the bundle's
 			     icon, so the theme's Window/@IconFile points at this payload. -->
 			<Payload Name="cx_icon.ico" SourceFile="../CapFrameX/Icons/cx_icon_BUC.ico" />
+			<!-- Burn blocks a bundle while a newer CapFrameX bundle is installed (0x80070666), although the
+			     MSI allows downgrades and the in-app updater rolls back by running an older setup.
+			     The BAFunctions DLL plans the newer bundle as an upgrade, so this one replaces it. -->
+			<Payload SourceFile="$(var.CapFrameXBootstrapper.BAFunctions.TargetPath)" bal:BAFunctions="yes" />
 		</BootstrapperApplication>
 
-		<!-- "formatted" is what "string" meant in WiX v3; a v4+ "string" is a literal. -->
-		<Variable Name="InstallFolder" Type="formatted" Value="[ProgramFilesFolder]CapFrameX" />
+		<!-- "formatted" is what "string" meant in WiX v3; a v4+ "string" is a literal.
+		     The bundle is 32-bit, so its ProgramFilesFolder is "Program Files (x86)" - and this value
+		     overrides the MSI's ProgramFiles64Folder default, which put the x64 app there.
+		     ProgramFiles6432Folder is the native Program Files folder. An upgrade from an x86-folder
+		     install moves the app; it re-registers the autostart task with its new path at startup. -->
+		<Variable Name="InstallFolder" Type="formatted" Value="[ProgramFiles6432Folder]CapFrameX" />
 		<Variable Name="OriginalSourceFolder" Type="formatted" Value="[WixBundleOriginalSourceFolder]" />
 		<!-- Overridable from the command line (LAUNCHAPP=1) and forwarded to the MSI, which
 		     starts CapFrameX after the install; see Product.wxs. -->

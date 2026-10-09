@@ -48,7 +48,7 @@ namespace CapFrameX.Test.Integration
             configuration.VerifyNoOtherCalls();
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public async Task AbsentOrStaleReadingsAreUnavailableAndProfileChangesReplaceTheBlock(bool stale)

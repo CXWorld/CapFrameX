@@ -17,7 +17,7 @@ namespace CapFrameX.Test.Localization
         private static readonly XNamespace Wpf = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
         private static readonly XNamespace Xaml = "http://schemas.microsoft.com/winfx/2006/xaml";
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("OverlayView.xaml", "OverlayItemDataGrid")]
         [DataRow("SensorView.xaml", "SensorItemDataGrid")]
         [DataRow("SensorView.xaml", "SensorStatisticsDataGrid")]

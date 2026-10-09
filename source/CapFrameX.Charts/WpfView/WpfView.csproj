@@ -6,8 +6,6 @@
     <RootNamespace>LiveCharts.Wpf</RootNamespace>
     <AssemblyName>LiveCharts.Wpf</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Deterministic>true</Deterministic>
-    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <UseWPF>true</UseWPF>
     <!-- Vendored LiveCharts: the library calls its own [Obsolete] members internally (ChartFunctions
          .GetUnitWidth, AxisSection.UpdateSection, Axis.AxisChanged, Chart.PrepareScrolBar, ...).

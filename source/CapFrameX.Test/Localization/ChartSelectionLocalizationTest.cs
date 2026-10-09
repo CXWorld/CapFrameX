@@ -27,7 +27,7 @@ namespace CapFrameX.Test.Localization
     [DoNotParallelize]
     public class ChartSelectionLocalizationTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("en")]
         [DataRow("ru")]
         [DataRow("es")]
@@ -68,7 +68,7 @@ namespace CapFrameX.Test.Localization
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("en")]
         [DataRow("ru")]
         [DataRow("es")]
@@ -113,7 +113,7 @@ namespace CapFrameX.Test.Localization
 
         // Axis titles used to be a translated source name plus a hard-coded unit or "Distribution" suffix,
         // which left "[ms]" and English word order in other languages.
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void ComparisonAxisTitles_ComeWholeFromTheCatalog(bool displayTimes)
@@ -152,7 +152,7 @@ namespace CapFrameX.Test.Localization
 
         // The Values selectors show translated item texts, but the view models, the chart manager and the
         // Comparison view's triggers compare SelectedChartView with the English keys.
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("ComparisonView.xaml", "en")]
         [DataRow("ComparisonView.xaml", "ru")]
         [DataRow("PmdView.xaml", "en")]
