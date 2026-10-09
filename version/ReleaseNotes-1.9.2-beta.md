@@ -6,15 +6,32 @@ This beta prioritizes critical PresentMon capture and tracking fixes after sever
 
 > **Important information for reviewers:** Do not use the **CapFrameX hook-free overlay** for benchmark measurements. Hiding this overlay can cause frametime spikes, and some AMD and Intel driver versions can have problems with Windows Desktop Window Manager (DWM). Use a suitable in-game or RTSS overlay and check which renderer is actually active before measuring, including any automatic fallback to hook-free. These overlay limitations are separate from the PresentMon fixes below.
 
+## Latest changes - build 1.9.2.1 (October 7, 2026)
+
+The installer and portable downloads below now contain **1.9.2.1-beta**, also available through the CapFrameX update server.
+
+- **Percentage bars:** Show percentage-based overlay values as text, a bar, or both in RTSS and CapFrameX overlays.
+- **Editable game compatibility profiles:** Load hook profiles from the application folder and user configuration at startup, with user overrides taking precedence. A missing user profile file is created automatically. Restart CapFrameX and the affected game after editing.
+- **RAM manufacturer identification:** Prefer SPD module-vendor data while retaining fallback information when detection is incomplete.
+- **Storage descriptions:** Show storage device names in overlay descriptions while preserving saved selections and formatting.
+- **Update installation:** After a requested update download, restart into setup once captures and file saving have finished, then launch CapFrameX again when installation finishes.
+- **Update verification:** Starting with this build, verify the CapFrameX publisher's signature and restrict installer arguments before installation.
+
+CX-PresentMon 2.6.1 and BENCHLAB Service 2.4.0 are unchanged from build 1.9.2.0. The existing PresentMon fixes and overlay warnings continue to apply.
+
+Close CapFrameX and games before updating. Portable users should extract into a new folder, then copy their existing `Portable` data folder and customized `portable.json`.
+
+Source changes for this build are included in [0b08ad2e](https://github.com/CXWorld/CapFrameX/commit/0b08ad2e5bb38bf45ae2b9852c6f62f5cf180828). The original `v1.9.2_beta` source tag remains unchanged.
+
 ## Downloads and requirements
 
 | Package | Use |
 | --- | --- |
-| [Installer](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.2_beta/CapFrameX_1.9.2.0_Beta_Installer.zip) | Extract the ZIP and run `CapFrameXBootstrapper.exe`. |
-| [Portable](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.2_beta/CapFrameX_1.9.2.0_Beta_Portable.zip) | Extract into a new folder and run `CapFrameX.exe`. Keep `portable.json` beside the executable. |
+| [Installer](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.2_beta/CapFrameX_1.9.2.1_Beta_Installer.zip) | Extract the ZIP and run `CapFrameXBootstrapper.exe`. |
+| [Portable](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.2_beta/CapFrameX_1.9.2.1_Beta_Portable.zip) | Extract into a new folder and run `CapFrameX.exe`. Keep `portable.json` beside the executable. |
 | [SHA-256 checksums](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.2_beta/SHA256SUMS.txt) | Verify both ZIP downloads. |
 
-- **Application version:** 1.9.2.0-beta. This is a prerelease; [v1.9.1](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.1) remains the stable release.
+- **Application version:** 1.9.2.1-beta. This is a prerelease; [v1.9.1](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.1) remains the stable release.
 - **Runtime:** [.NET 10 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/10.0) is required for both packages. The plain .NET Runtime is not sufficient.
 - Portable installations also require the Microsoft Visual C++ 2015–2022 Redistributables for the native components. Setup handles the redistributables for installer users.
 - The packages include signed application and dependency binaries, the x64/x86 in-game overlay components, and BENCHLAB Service 2.4.0.
@@ -54,4 +71,4 @@ See [Intel PresentMon issue #695](https://github.com/GameTechDev/PresentMon/issu
 
 Please report remaining capture interruptions, growing background CPU usage, or frame-generation transition problems with the game, GPU, driver version, active overlay renderer, and relevant logs. Hardware- and driver-specific behavior still needs feedback from a wider range of systems.
 
-**Full changelog:** [v1.9.1.5...v1.9.2_beta](https://github.com/CXWorld/CapFrameX/compare/v1.9.1.5...v1.9.2_beta)
+**Full changelog:** [v1.9.1.5...0b08ad2e](https://github.com/CXWorld/CapFrameX/compare/v1.9.1.5...0b08ad2e5bb38bf45ae2b9852c6f62f5cf180828)

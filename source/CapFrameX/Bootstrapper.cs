@@ -311,6 +311,7 @@ namespace CapFrameX
                     Container.Register<IRTSSService, RTSSService>(Reuse.Singleton);
                     Container.Register<IOverlayEntryCore, OverlayEntryCore>(Reuse.Singleton);
                     Container.Register<IRemoteOverlayDemand, RemoteOverlayDemand>(Reuse.Singleton);
+                    Container.Register<IOverlayFrameMetrics, PresentMonOverlayMetrics>(Reuse.Singleton);
                     Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
                     Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
                     Container.Register<ISensorService, SensorService>(Reuse.Singleton);

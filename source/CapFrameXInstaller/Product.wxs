@@ -8,6 +8,13 @@
 		<!-- Downgrades are intentionally supported. This makes the WIX_UPGRADE_DETECTED
 		     range include newer products as well, so ICE61 is suppressed in the project. -->
 		<MajorUpgrade AllowDowngrades="yes" />
+    <!-- CostFinalize runs before RemoveExistingProducts. With Burn's default REINSTALLMODE=muso,
+         a downgrade can skip a component whose installed key file is newer, then remove that
+         file with the old product, leaving the new installation incomplete. These are private
+         application files: on a major upgrade install the selected package's payload, including
+         older versions. Set this before costing in both UI and silent installs. -->
+    <SetProperty Id="REINSTALLMODE" Value="amus" After="FindRelatedProducts" Sequence="both"
+                 Condition="WIX_UPGRADE_DETECTED AND NOT Installed" />
 		<Media Id="1" Cabinet="CapFrameX.cab" EmbedCab="yes" CompressionLevel="high" />
 		<Icon Id="CapFrameXProductIcon" SourceFile="..\CapFrameX\Icons\cx_icon_BUC.ico" />
 		<Property Id="ARPPRODUCTICON" Value="CapFrameXProductIcon" />
@@ -19,6 +26,7 @@
 			<ComponentRef Id="ApplicationShortcutDesktop" />
 			<ComponentRef Id="VulkanLayerRegistration" />
 			<ComponentRef Id="VulkanLayerRegistrationX86" />
+      <ComponentRef Id="LegacyVulkanCleanup" />
 		</Feature>
 
     <Property Id="INSTALLSHORTCUT" Value="1" Secure="yes"/>
@@ -31,6 +39,11 @@
     <SetProperty Id="WixShellExecTarget" Value="[INSTALLFOLDER]CapFrameX.exe"
                  Before="LaunchCapFrameX" Sequence="execute"
                  Condition="NOT Installed AND LAUNCHAPP=&quot;1&quot;" />
+
+    <!-- A deferred action only sees CustomActionData, which is the value of the property named
+         after the action. -->
+    <SetProperty Id="UpdateAutoStartTask" Value="INSTALLFOLDER=[INSTALLFOLDER]"
+                 Before="UpdateAutoStartTask" Sequence="execute" Condition="NOT REMOVE" />
 
     <Launch Condition="Installed OR DOTNETDESKTOPRUNTIMEX64FOUND"
             Message="CapFrameX requires the .NET 10 Desktop Runtime (x64). Install it from https://dotnet.microsoft.com/download/dotnet/10.0 and run setup again." />
@@ -50,6 +63,9 @@
 		  <!-- Only on a real uninstall: a repair or modify must keep the autostart task, and the
 		       removal half of a major upgrade must not delete it either. -->
 		  <Custom Action="CleanRegistry" Before="InstallFinalize" Condition="REMOVE=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
+      <!-- Upgrades can move the install folder, so repair an existing autostart task to point at it.
+           Not on uninstall: CleanRegistry deletes the task there. -->
+      <Custom Action="UpdateAutoStartTask" After="InstallFiles" Condition="NOT REMOVE" />
       <!-- Unconditional on purpose: install, repair, uninstall and both halves of a major upgrade
            must all end with at most one layer registration. The anchor is load-bearing — running
            after WriteRegistryValues would delete the registration this package just wrote. -->
@@ -80,6 +96,13 @@
          folder need the elevated service context. -->
     <CustomAction Id="CleanRegistry" BinaryRef="CustomActionsBin" DllEntry="RemoveAutoStartKey" Execute="deferred" Impersonate="no" Return="check"/>
 	</Fragment>
+
+  <Fragment>
+    <!-- Deferred and non-impersonated like CleanRegistry: the Task Scheduler root folder needs the
+         elevated service context. Return="ignore": the action already logs and swallows its own
+         errors, and a stale autostart path must never abort an upgrade. -->
+    <CustomAction Id="UpdateAutoStartTask" BinaryRef="CustomActionsBin" DllEntry="UpdateAutoStartTaskPath" Execute="deferred" Impersonate="no" Return="ignore"/>
+  </Fragment>
 
   <Fragment>
     <!-- Deferred and non-impersonated: writing HKLM needs the elevated service context, and an
@@ -156,9 +179,10 @@
            registered in a view whose processes cannot load its DLL does not merely fail —
            it shadows the correct registration and disables the layer for that bitness.
            Bitness="always64" writes the 64-bit view, Bitness="always32" writes WOW6432Node.
-           A future manifest filename/version must get a new component GUID as well. The major
+           These GUIDs changed for the move out of Program Files (x86), since the registry value
+           names contain that path. A future manifest filename/version must get new GUIDs too. The major
            upgrade then removes this component and its old path-valued registry entry. -->
-      <Component Id="VulkanLayerRegistration" Guid="4B3D5A2F-E00E-4930-A9E1-9F4BE8E91D58" Bitness="always64">
+      <Component Id="VulkanLayerRegistration" Guid="2C95CC5D-0A0E-4BA1-81F5-A4EC52D01279" Bitness="always64">
         <RegistryValue Root="HKLM"
                        Key="SOFTWARE\Khronos\Vulkan\ImplicitLayers"
                        Name="[INSTALLFOLDER]vulkan\cfx_osd_vklayer_v1.json"
@@ -172,7 +196,7 @@
          carries nothing but a registry value, so the bitness-neutral TARGETDIR is the correct
          anchor — [INSTALLFOLDER] in the value name is a property reference and resolves to the
          real install path regardless of where the component lives. -->
-    <Component Id="VulkanLayerRegistrationX86" Guid="D4B42033-310B-40B4-9CE3-D56FBE4A3F42" Directory="TARGETDIR" Bitness="always32">
+    <Component Id="VulkanLayerRegistrationX86" Guid="CF3827DA-D1E9-4B87-9F1E-2A7267538A07" Directory="TARGETDIR" Bitness="always32">
       <RegistryValue Root="HKLM"
                      Key="SOFTWARE\Khronos\Vulkan\ImplicitLayers"
                      Name="[INSTALLFOLDER]vulkan\x86\cfx_osd_vklayer_v1.json"
@@ -196,7 +220,10 @@
 
 	<Fragment>
 		<StandardDirectory Id="ProgramFiles64Folder">
-			<Directory Id="INSTALLFOLDER" Name="CapFrameX" />
+      <!-- The old x86 Burn bundle overrode this directory with Program Files (x86). Moving
+           those resources changes their component identity even though this authored directory
+           tree is unchanged. Keep this seed stable for subsequent releases in Program Files. -->
+			<Directory Id="INSTALLFOLDER" Name="CapFrameX" ComponentGuidGenerationSeed="8B0C1DA7-F6AD-4397-8D45-7E82FCFDE653" />
 			<Directory Id="BINFOLDER" Name="Bin"/>
 		</StandardDirectory>
 		<StandardDirectory Id="ProgramMenuFolder">

@@ -9,11 +9,31 @@ the OSD is built from source instead and these files are ignored.
 
 ## Build provenance
 
+### Signed 1.9.2.1 Beta payload (2026-10-07)
+
+All five native DLLs and the managed bridge were rebuilt from OSD revision
+`153cc1a8eea614151a001d0875381d084732a2bb` for the update-server build **1.9.2.1-beta**.
+Fresh VS 2026/v145 `RelWithDebInfo` builds and a `Release|x64` .NET 10 bridge passed
+all 79 native tests (15 core, 30 per DXGI architecture, 2 per Vulkan architecture).
+PE architectures and identical Vulkan manifests with relative library paths were verified.
+All six binaries carry valid Certum signatures from
+`C0D5481E2ACBB9DD104A825A81EECF55557BA783` with RFC 3161 timestamps.
+The signed app-output files were copied back here without rebuilding them.
+
+| Component | Signed SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `81f6aad2c34305f18f865279568a468fb41080248094da2a3c485b6167a87936` |
+| native\cfx_osd_hook.dll | `3214ebd7cda740550405a41c98bcd2d0dffa9259526a33cd77865ba09466ba33` |
+| native\x86\cfx_osd_hook.dll | `5818a666a3adfe627418040929572af97457329e66a5a6daf28e6923ff91868d` |
+| native\vk\cfx_osd_vklayer.dll | `379c49defdf00215299747011bc8f22b200e8bdb0c152e8d5641883696e2715c` |
+| native\vk\x86\cfx_osd_vklayer.dll | `64cf83dc4ced545f3d0b0572b5a04fdade95cf299a24e6bba73ecddd1d41273f` |
+| net10.0-windows\CapFrameX.OSD.Interop.dll | `532861ff2d38e32018187c6cc7ab52166bd9c99b1a0b43582e5b3d59def630f0` |
+
 ### Percentage bar development payload (2026-10-06)
 
 The five native DLLs and managed bridge were rebuilt from the source tree recorded by
 OSD revision `153cc1a8eea614151a001d0875381d084732a2bb`, which adds percentage bars.
-These are unsigned development binaries; the signed beta payload described below is
+These were unsigned development binaries, superseded by the signed 1.9.2.1 payload above; the older signed beta payload below is
 historical. Native builds use VS 2026/v145 and `RelWithDebInfo`; interop uses
 `Release|x64`, .NET 10. The submodule is pinned to the same OSD revision.
 

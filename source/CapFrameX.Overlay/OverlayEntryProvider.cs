@@ -1435,7 +1435,12 @@ namespace CapFrameX.Overlay
             // Take(1) here coupled every overlay refresh to another observable and could leave a
             // refresh pending when no PID value was available. Sensor values are likewise copied
             // from OverlayEntryCore's latest completed snapshot below; no hardware I/O occurs.
-            var currentFramerate = _rTSSService.GetCurrentFramerate(_currentProcessId);
+            // CapFrameX renderers and the remote API receive their PresentMon scalars together
+            // when OverlayService publishes the output snapshot. Only the RTSS renderer reads
+            // its shared memory; an unrelated RTSS instance must not supply CX's values.
+            var currentFramerate = _appConfiguration.EnableHookFreeOverlay || _appConfiguration.EnableHookOverlay
+                ? Tuple.Create(0.0, 0.0)
+                : _rTSSService.GetCurrentFramerate(_currentProcessId);
 
             foreach (var entry in _overlayEntries)
             {

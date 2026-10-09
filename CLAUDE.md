@@ -36,6 +36,11 @@ from `source\CapFrameX\bin\x64\<Configuration>\net10.0-windows` by the `<Files>`
 `Product.wxs`, whose `<Exclude>` entries replace the former `heat.exe` step and `filter.xslt`.
 The bundle stays a 32-bit Burn bundle (`InstallerPlatform=x86`), as WiX v3 bundles were; the chained
 MSI is x64. Its VC++ redistributables are remote payloads verified by their Authenticode signer.
+The bundle also builds `CapFrameXBootstrapper.BAFunctions` (native, always Win32, packages restored by
+`/restore` or `nuget restore`): a BAFunctions DLL for WixStdBA that plans a newer installed CapFrameX
+bundle as an upgrade instead of a downgrade. Without it Burn refuses to run an older setup
+(`0x80070666`) although the MSI allows downgrades, which also blocks the in-app rollback. Only setups
+that contain the DLL can downgrade; releases built before it still refuse.
 
 ### Run Tests
 Tests use MSTest framework:
@@ -190,14 +195,18 @@ Registration is bitness-scoped and this is load-bearing: the loader identifies a
 
 ## In-game hook compatibility probing
 
-`HookCompatibilityProfiles.xml` (curated, embedded) is only a starting point. For every injection
-`HookOverlayManager` plans a **stage ladder** (`HookCompatibilityStagePlanner`), judges the injected
-hook's status against per-stage time budgets (`HookCompatibilityProbeSession` +
-`HookCompatibilityVerdictClassifier`) and persists the outcome in
+The profile catalog (`HookCompatibilityProfileCatalog.LoadProfiles`, read once at startup) merges the
+embedded `HookCompatibilityProfiles.xml`, the editable copy next to the executable and the user file
+`HookCompatibilityProfiles.xml` in the configuration folder (created empty if missing). A later source
+replaces the whole profile per executable name; an invalid or unreadable file is logged and ignored as a
+whole. User-facing documentation: README "Custom in-game compatibility profiles" and "Learned compatibility
+profiles". The catalog is only a starting point. For every injection `HookOverlayManager` plans a
+**stage ladder** (`HookCompatibilityStagePlanner`), judges the injected hook's status against per-stage time
+budgets (`HookCompatibilityProbeSession` + `HookCompatibilityVerdictClassifier`) and persists the outcome in
 `%appdata%\CapFrameX\Configuration\HookCompatibilityProfiles.learned.json` (`HookLearnedProfileStore`;
 keyed by executable name + evidence signature, bound to the hook build hash so a hook update re-verifies).
-Switch: `IAppConfiguration.HookOverlayAutoCompatibility` (default on; off = catalog only, one stage, no
-learning). All of it is pure and unit-tested; the manager only executes the session's actions.
+Learning is mandatory: `_autoCompatibility` is a constant `true`, legacy `HookOverlayAutoCompatibility=false`
+settings are ignored. All of it is pure and unit-tested; the manager only executes the session's actions.
 
 - **Stages**: vendor-aware (flags None) → vendor-aware + XeSS-FG native queue → generic D3D12 (RTSS model)
   → generic without FidelityFX lifecycle hooks, each optionally with early injection (gate `d3d12.dll`, or
@@ -206,8 +215,12 @@ learning). All of it is pure and unit-tested; the manager only executes the sess
 - **Evidence** (`HookTargetEvidenceProbe`, ToolHelp scan *with paths*): Streamline / DLSS-G / XeSS-FG /
   FSR-FG modules, a `dxgi.dll` outside System32/SysWOW64 (OptiScaler), duplicate FidelityFX loader copies.
   Late attach with FG evidence starts on generic; loader duplicates or a dxgi proxy start on generic-without-FFX;
-  a catalog entry is always stage 1 and the ladder continues after it. Verified learned entries are a
-  single-stage ladder; exhausted ones skip injection until "Reset learned profiles" (Overlay tab).
+  a catalog entry is always stage 1 and the ladder continues after it. A learned stage (pending, verified,
+  or from an older hook build) only starts at a route that ladder still contains (`CanReuseLearnedStage`),
+  never before a catalog/user profile. A verified entry is the start stage; the rest of the ladder stays.
+  Exhaustion belongs to the observed run: the hook-free fallback serves it and the entry is marked
+  exhausted, but the next launch probes again. There is no reset in the UI: delete
+  `HookCompatibilityProfiles.learned.json` while CapFrameX is closed (the store loads once and rewrites it).
 - **Verdicts** read status block V2 (`HookStatusProbe`: install phase + FidelityFX module/export detail,
   present coverage, queue state, decline reason, FG telemetry): success confirmed after 2 s, install hung
   after 6 s, no queue after 5 s, stage budget 20 s; idle/dormant samples pause the clocks.

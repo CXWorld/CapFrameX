@@ -110,7 +110,17 @@ To add or override a profile without rebuilding CapFrameX, edit the XML next to 
 
 Other supported settings are `enableXeFgNativePresentQueueRoute="true"`, `earlyInjectionModule="d3d12.dll"`, and `injectionDelayMilliseconds="15000"`. The optional `source` attribute can describe why a profile is needed. Keep the user file limited to your changes so that updated default profiles can take effect for other games. The user file can be edited without administrator rights even when CapFrameX is installed under `Program Files`.
 
-Restart CapFrameX and the affected game after editing. A malformed or unreadable external file is logged and ignored as a whole; valid profiles from the other sources remain active. `HookCompatibilityProfiles.learned.json` remains the separate, automatically maintained compatibility cache.
+Restart CapFrameX and the affected game after editing. A malformed or unreadable external file is logged and ignored as a whole; valid profiles from the other sources remain active. `HookCompatibilityProfiles.learned.json` remains the separate, automatically maintained compatibility cache described below.
+
+### Learned compatibility profiles
+
+The in-game overlay always learns which hook route works for each game; this cannot be switched off, and an older `HookOverlayAutoCompatibility` setting is ignored. When CapFrameX injects into a game, it starts with the matching compatibility profile, or with a route chosen from the modules the game has loaded, and moves on to the next route if the overlay does not work. The result is stored per game executable and set of loaded upscaling or frame-generation modules in `HookCompatibilityProfiles.learned.json`, in the same configuration folder as the user profiles. **Overlay → OSD options** shows the stored state for the selected game below **CapFrameX in-game**.
+
+- Some routes only take effect when the game starts. CapFrameX then uses the hook-free overlay for the rest of the session and starts the next launch on the new route.
+- If no route works, the hook-free overlay serves the session. The game is not excluded from the in-game overlay: the next game launch probes again.
+- After an update that changes the in-game hook, CapFrameX verifies the stored route again.
+
+To discard everything CapFrameX has learned, close CapFrameX and delete `HookCompatibilityProfiles.learned.json`; the next start begins with an empty cache. Deleting the file while CapFrameX is running does not reset anything, because CapFrameX keeps the learned profiles in memory and writes them back with the next result.
 
 ![CapFrameX 1.9.0 overlay entries](images/1.9.0/overlay.png)
 ![CapFrameX 1.9.0 renderer and OSD options](images/1.9.0/overlay-options.png)
