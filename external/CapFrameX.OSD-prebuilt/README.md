@@ -12,8 +12,8 @@ the OSD is built from source instead and these files are ignored.
 ### Classic rows inside grid designs development payload (2026-10-09)
 
 The current binaries are built from the source state now committed as
-`c96c00296225a76b92ad6ab0c0fa3765558bc13d` on `codex/overlay-designer-1.9.2`.
-The hybrid commits are local and have not been pushed. Builds use VS 2026/v145,
+`c96c00296225a76b92ad6ab0c0fa3765558bc13d`, published on `main`.
+Builds use VS 2026/v145,
 native `RelWithDebInfo` and managed `Release|x64`, .NET 10.
 
 The `classicRows` widget reuses the classic row builder in a fixed, movable tile. It preserves

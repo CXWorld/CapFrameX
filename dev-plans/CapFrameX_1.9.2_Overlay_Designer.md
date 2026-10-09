@@ -443,7 +443,7 @@ Direct desktop interaction could not be completed unattended: the full app requi
 isolated UI host required Computer Use app approval. Automated WPF and native-renderer checks
 do not substitute for a final interactive check with real hardware telemetry.
 
-The hybrid OSD implementation is committed locally through
-`c96c00296225a76b92ad6ab0c0fa3765558bc13d` on `codex/overlay-designer-1.9.2`.
-Those commits have not been pushed. Matching prebuilt files, hashes and signing status are documented in
+The hybrid OSD implementation is published through
+`c96c00296225a76b92ad6ab0c0fa3765558bc13d` on `main`.
+Matching prebuilt files, hashes and signing status are documented in
 [`external/CapFrameX.OSD-prebuilt/README.md`](../external/CapFrameX.OSD-prebuilt/README.md).
