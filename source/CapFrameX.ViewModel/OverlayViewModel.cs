@@ -33,7 +33,7 @@ using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
-    public class OverlayViewModel : BindableBase, INavigationAware, IDropTarget
+    public partial class OverlayViewModel : BindableBase, INavigationAware, IDropTarget
     {
         private readonly IOverlayService _overlayService;
         private readonly IOverlayEntryProvider _overlayEntryProvider;
@@ -650,6 +650,7 @@ namespace CapFrameX.ViewModel
 
         private void RaiseOverlayRendererProperties()
         {
+            UpdateTileOverlayAvailability();
             RaisePropertyChanged(nameof(OverlayModeRtss));
             RaisePropertyChanged(nameof(OverlayModeHook));
             RaisePropertyChanged(nameof(OverlayModeHookFree));
@@ -658,6 +659,8 @@ namespace CapFrameX.ViewModel
             RaisePropertyChanged(nameof(EnableHookFreeOverlay));
             RaisePropertyChanged(nameof(HookOverlayUsePresentMonFrametimes));
             RaisePropertyChanged(nameof(ShowRtssHiddenHint));
+            RaisePropertyChanged(nameof(CanUseDesign));
+            UseDesignCommand?.RaiseCanExecuteChanged();
         }
 
         public bool UseThreadAffinity
@@ -805,7 +808,8 @@ namespace CapFrameX.ViewModel
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider, IAppConfiguration appConfiguration,
             IPathService pathService, ISensorService sensorService, IRTSSService rTSSService, IThreadAffinityController threadAffinityController,
             IOnlineMetricService onlineMetricService, IOverlayTemplateService overlayTemplateService,
-            IHookLearnedProfileService hookLearnedProfileService, IHookOverlayStatusService hookOverlayStatusService)
+            IHookLearnedProfileService hookLearnedProfileService, IHookOverlayStatusService hookOverlayStatusService,
+            IOverlayDesignService overlayDesignService = null, Prism.Events.IEventAggregator eventAggregator = null)
         {
             _overlayService = overlayService;
             _overlayEntryProvider = overlayEntryProvider;
@@ -818,6 +822,7 @@ namespace CapFrameX.ViewModel
             _onlineMetricService = onlineMetricService;
             _hookLearnedProfiles = hookLearnedProfileService ?? NullHookLearnedProfileService.Instance;
             _hookOverlayStatus = hookOverlayStatusService;
+            InitializeDesigns(overlayDesignService, eventAggregator);
             ExtendedOsdLogging = new ExtendedOsdLoggingViewModel(new ExtendedOsdLoggingController());
             RefreshHookFreeDisplayItems();
 
@@ -912,6 +917,7 @@ namespace CapFrameX.ViewModel
                 if (e.PropertyName == nameof(CxLang.UiLanguage))
                 {
                     RaisePropertyChanged(nameof(InGameOverlayDescription));
+                    RaisePropertyChanged(nameof(DeleteDesignMessage));
                     RefreshHookLearnedProfileText();
                 }
             };
@@ -1449,6 +1455,7 @@ namespace CapFrameX.ViewModel
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
+            RefreshDesigns();
             RefreshHookFreeDisplayItems();
             if (!_displaySettingsChangedSubscribed)
             {

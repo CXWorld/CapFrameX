@@ -103,8 +103,8 @@
 	</UserControl.Resources>
 	<!--The content of both tabs starts at the left edge of the tab headers.-->
 	<Grid>
-		<TabControl Margin="10" Background="{DynamicResource MaterialDesign.Brush.Card.Background}" BorderThickness="0" FocusVisualStyle="{x:Null}">
-			<TabItem Header="{loc:Tr OverlayView_OverlayItems}">
+		<TabControl x:Name="OverlayTabs" SelectedIndex="{Binding SelectedOverlayTabIndex, Mode=TwoWay}" Margin="10" Background="{DynamicResource MaterialDesign.Brush.Card.Background}" BorderThickness="0" FocusVisualStyle="{x:Null}">
+			<TabItem x:Name="RowOverlayTab" Header="{loc:Tr OverlayView_OverlayItems}">
 				<!--Narrower than the column MinWidths together (a wide record list on the smallest window), the
 				    page scrolls sideways instead of cutting the settings off. MinWidth below is their sum.-->
 				<ScrollViewer x:Name="OverlayItemsScrollViewer" Margin="{StaticResource CxTabContentMargin}"
@@ -1075,6 +1075,103 @@
 				</Grid>
 				</ScrollViewer>
 			</TabItem>
+            <TabItem x:Name="TileOverlayTab" Header="{loc:Tr OverlayDesigns_Tab}"
+                     Visibility="{Binding IsTileOverlayAvailable, Converter={StaticResource TrueToVisibleConverter}}">
+                <materialDesign:DialogHost x:Name="TileProfileDialogHost" IsOpen="{Binding IsDeleteDesignDialogOpen, Mode=TwoWay}"
+                                           CloseOnClickAway="False" PreviewKeyDown="OnTileProfileDialogPreviewKeyDown">
+                    <materialDesign:DialogHost.DialogContent>
+                        <StackPanel Width="440" Margin="24">
+                            <TextBlock Text="{loc:Tr OverlayDesigns_DeleteTitle}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding DeleteDesignMessage}" Margin="0,12,0,0" TextWrapping="Wrap" />
+                            <TextBlock Text="{loc:Tr OverlayDesigns_DeleteActiveNote}" Margin="0,8,0,0" TextWrapping="Wrap"
+                                       Visibility="{Binding IsDeletingActiveDesign, Converter={StaticResource TrueToVisibleConverter}}" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+                                <Button Content="{loc:Tr OverlayDesigns_Cancel}" Command="{Binding CancelDeleteDesignCommand}"
+                                        IsDefault="True" Padding="12,4" Margin="0,0,8,0" />
+                                <Button Content="{loc:Tr OverlayDesigns_Delete}" Command="{Binding ConfirmDeleteDesignCommand}" Padding="16,4" />
+                            </StackPanel>
+                        </StackPanel>
+                    </materialDesign:DialogHost.DialogContent>
+                <ScrollViewer Margin="{StaticResource CxTabContentMargin}" VerticalScrollBarVisibility="Auto">
+                    <StackPanel MaxWidth="960" HorizontalAlignment="Left" Margin="0,0,12,16">
+                        <Border Style="{StaticResource OsdOptionsCard}">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Tr OverlayDesigns_Title}" Style="{StaticResource OsdOptionsSectionHeader}" />
+                                <TextBlock Text="{loc:Tr OverlayDesigns_Description}" TextWrapping="Wrap" Margin="0,4,0,16" />
+                                <WrapPanel>
+                                    <Button Content="{loc:Tr OverlayDesigns_Open}" Command="{Binding OpenDesignerCommand}" Padding="18,8" Margin="0,0,12,8" />
+                                    <Button Content="{loc:Tr OverlayDesigns_Refresh}" Command="{Binding RefreshDesignsCommand}"
+                                            Style="{StaticResource OverlayTemplateOutlinedButton}" Padding="16,8" Margin="0,0,0,8" />
+                                </WrapPanel>
+                                <TextBlock Text="{loc:Tr OverlayDesigns_Empty}" Margin="0,4,0,12" TextWrapping="Wrap"
+                                           Visibility="{Binding HasSavedDesigns, Converter={StaticResource FalseToVisibleConverter}}" />
+                                <TextBlock Text="{loc:Tr OverlayDesigns_Saved}" Margin="0,12,0,8" FontWeight="SemiBold" />
+                                <ListBox x:Name="SavedTileProfiles" ItemsSource="{Binding SavedDesigns}" SelectedItem="{Binding SelectedDesign}"
+                                         DisplayMemberPath="Name" MinHeight="140" MaxHeight="300" MinWidth="420"
+                                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+                                    <ListBox.ItemContainerStyle>
+                                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource MaterialDesignListBoxItem}">
+                                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                            <Setter Property="Tag" Value="{Binding DataContext, RelativeSource={RelativeSource AncestorType=ListBox}}" />
+                                            <EventSetter Event="PreviewMouseRightButtonDown" Handler="OnSavedTileProfileRightButtonDown" />
+                                            <Setter Property="ContextMenu">
+                                                <Setter.Value>
+                                                    <ContextMenu DataContext="{Binding PlacementTarget.Tag, RelativeSource={RelativeSource Self}}">
+                                                        <MenuItem Header="{loc:Tr OverlayDesigns_Edit}" Command="{Binding EditSavedDesignCommand}"
+                                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                                        <MenuItem Header="{loc:Tr OverlayDesigns_Show}" Command="{Binding ShowSavedDesignCommand}"
+                                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}" />
+                                                        <Separator />
+                                                        <MenuItem Header="{loc:Tr OverlayDesigns_Delete}" Command="{Binding DeleteSavedDesignCommand}"
+                                                                  CommandParameter="{Binding PlacementTarget.DataContext, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                                  ToolTipService.ShowOnDisabled="True">
+                                                            <MenuItem.Style>
+                                                                <Style TargetType="MenuItem" BasedOn="{StaticResource MaterialDesignMenuItem}">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding SavedDesigns.Count}" Value="1">
+                                                                            <Setter Property="ToolTip" Value="{loc:Tr OverlayDesigns_KeepOneProfile}" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </MenuItem.Style>
+                                                        </MenuItem>
+                                                    </ContextMenu>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsSelected" Value="True">
+                                                    <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+                                                    <Setter Property="Foreground" Value="White" />
+                                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </ListBox.ItemContainerStyle>
+                                </ListBox>
+                                <WrapPanel Margin="0,16,0,0">
+                                    <Button Content="{loc:Tr OverlayDesigns_Use}" Command="{Binding UseDesignCommand}" Padding="16,8" Margin="0,0,12,8"
+                                            ToolTip="{loc:Tr OverlayDesigns_RendererHint}" ToolTipService.ShowOnDisabled="True" />
+                                    <Button Content="{loc:Tr OverlayDesigns_Classic}" Command="{Binding UseClassicOverlayCommand}"
+                                            Style="{StaticResource OverlayTemplateOutlinedButton}" Padding="16,8" Margin="0,0,0,8" />
+                                </WrapPanel>
+                                <TextBlock Text="{Binding DesignStatus}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource OsdOptionsCard}" Margin="0,12,0,0">
+                            <StackPanel>
+                                <TextBlock Text="{loc:Tr OverlayDesigns_Output}" Style="{StaticResource OsdOptionsSectionHeader}" />
+                                <TextBlock Text="{loc:Tr OverlayDesigns_OutputHelp}" TextWrapping="Wrap" Margin="0,4,0,12" />
+                                <WrapPanel>
+                                    <RadioButton Content="{loc:Tr OverlayDesigns_InGame}" IsChecked="{Binding OverlayModeHook}" GroupName="DesignRenderer" Margin="0,0,24,12" />
+                                    <RadioButton Content="{loc:Tr OverlayDesigns_HookFree}" IsChecked="{Binding OverlayModeHookFree}" GroupName="DesignRenderer" Margin="0,0,0,12" />
+                                </WrapPanel>
+                                <CheckBox Content="{loc:Tr OverlayDesigns_Visible}" IsChecked="{Binding IsOverlayActive}" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+                </materialDesign:DialogHost>
+            </TabItem>
 			<TabItem Header="{loc:Tr OverlayView_OSDOptions}">
 				<ScrollViewer Margin="{StaticResource CxTabContentMargin}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 					<!-- Independent sections keep future options local to their topic. Three columns from about

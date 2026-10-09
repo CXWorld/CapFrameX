@@ -21,6 +21,26 @@ namespace CapFrameX.View
 	/// </summary>
 	public partial class OverlayView : UserControl
 	{
+        public void ShowClassicProfile() => OverlayTabs.SelectedItem = RowOverlayTab;
+
+        private void OnSavedTileProfileRightButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is ListBoxItem item)
+            {
+                item.IsSelected = true;
+                item.Focus();
+            }
+        }
+
+        private void OnTileProfileDialogPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Escape && DataContext is OverlayViewModel model && model.IsDeleteDesignDialogOpen)
+            {
+                model.CancelDeleteDesignCommand.Execute();
+                e.Handled = true;
+            }
+        }
+
 		public static readonly DependencyProperty OverlayHotkeyProperty =
 			DependencyProperty.Register(nameof(OverlayHotkey), typeof(CXHotkey), typeof(OverlayView),
 			new FrameworkPropertyMetadata(default(CXHotkey), FrameworkPropertyMetadataOptions.BindsTwoWayByDefault));

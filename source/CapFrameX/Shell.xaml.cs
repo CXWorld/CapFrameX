@@ -13,6 +13,7 @@ using Prism.Events;
 using Serilog;
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -53,6 +54,7 @@ namespace CapFrameX
         private bool _isShuttingDown = false;
         private bool _isReadyToClose = false;
         private bool _isTaskbarIconRefreshed = false;
+        private View.OverlayDesignerWindow[] _closingDesigners;
 
         private readonly ISettingsStorage _settingsStorage;
         private readonly IAppConfiguration _appConfiguration;
@@ -240,6 +242,32 @@ namespace CapFrameX
 
             bool saveOverlayProfile = false;
             bool closeWasDeferred = false;
+            // Owned windows do not receive a cancellable Closing event when their owner
+            // closes. Resolve designer edits before the shell starts its shutdown sequence.
+            var designers = Application.Current.Windows.OfType<View.OverlayDesignerWindow>()
+                .Where(window => window.RequiresCloseConfirmation).ToArray();
+            if (designers.Length > 0)
+            {
+                BeginDeferredClose(e);
+                closeWasDeferred = true;
+                foreach (var designer in designers)
+                {
+                    try
+                    {
+                        if (!await designer.PrepareCloseAsync())
+                        {
+                            AbortDeferredClose();
+                            return;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(ex, "Error while resolving overlay designer changes during shutdown.");
+                        AbortDeferredClose();
+                        return;
+                    }
+                }
+            }
             if (_overlayProfileChangeTracker.HasPendingChanges)
             {
                 BeginDeferredClose(e);
@@ -356,12 +384,26 @@ namespace CapFrameX
         {
             e.Cancel = true;
             _isShuttingDown = true;
+            if (_closingDesigners == null)
+            {
+                // DialogHost is local to one window. Freeze every designer, including clean
+                // ones, while prompts and settings saves in the shell await user input or I/O.
+                _closingDesigners = Application.Current.Windows.OfType<View.OverlayDesignerWindow>().ToArray();
+                foreach (var designer in _closingDesigners)
+                    designer.SetOwnerClosing(true);
+            }
             SetCloseButtonEnabled(false);
         }
 
         private void AbortDeferredClose()
         {
             _isShuttingDown = false;
+            if (_closingDesigners != null)
+            {
+                foreach (var designer in _closingDesigners)
+                    designer.SetOwnerClosing(false);
+                _closingDesigners = null;
+            }
             SetCloseButtonEnabled(true);
         }
 
