@@ -460,5 +460,51 @@ namespace CapFrameX.Test.Overlay
 
             Assert.AreEqual("Waiting", hookStatus.Value);
         }
+
+        [TestMethod]
+        public async Task TelemetryCatalogIncludesAllDefaultsWithoutEnablingHiddenClassicRows()
+        {
+            var provider = CreateProvider(hookOverlayEnabled: false);
+            var catalog = await provider.GetTelemetrySourcesAsync();
+            var defaults = OverlayUtils.GetOverlayEntryDefaults(_appConfigMock.Object);
+            CollectionAssert.AreEquivalent(defaults.Select(e => e.Identifier).ToArray(),
+                catalog.Select(e => e.Identifier).ToArray());
+            Assert.IsTrue(catalog.Any(e => e.Identifier == "OnlinePcLatency"));
+            Assert.IsTrue(catalog.Any(e => e.Identifier == "FrameGenerationStatus"));
+            Assert.IsFalse(provider.GetOverlayEntry("CustomCPU").ShowOnOverlay);
+            catalog.Single(e => e.Identifier == "CustomCPU").ShowOnOverlay = true;
+            Assert.IsFalse(provider.GetOverlayEntry("CustomCPU").ShowOnOverlay, "Catalog entries must be detached.");
+            Assert.IsFalse(provider.HasPendingChanges);
+            _onlineMetricServiceMock.Verify(m => m.GetPmdMetricsPowerCurrent(), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task TelemetryReadsHiddenInformationAndCurrentCaptureWithoutConsumingClassicBuffers()
+        {
+            _systemInfoMock.Setup(s => s.GetProcessorName()).Returns("Test CPU");
+            _systemInfoMock.Setup(s => s.GetCapFrameXAppCpuUsage()).Returns(2.5);
+            var provider = CreateProvider(hookOverlayEnabled: true);
+            await provider.GetTelemetrySourcesAsync();
+            provider.GetOverlayEntry("CaptureTimer").Value = 23;
+            provider.GetOverlayEntry("CaptureServiceStatus").Value = "Recording";
+            _rtssServiceMock.Object.ProcessIdStream.OnNext(42);
+            _statusStream.OnNext(new HookOverlayStatus(EHookOverlayStatus.Active, 42, renderResolution: "3840x2160"));
+            var values = provider.GetTelemetryValues();
+            Assert.AreEqual("Test CPU", values["CustomCPU"]);
+            Assert.AreEqual(23, values["CaptureTimer"]);
+            Assert.AreEqual("Recording", values["CaptureServiceStatus"]);
+            Assert.AreEqual("3840x2160", values["Resolution"]);
+            Assert.AreEqual("Active", values["HookOverlayStatus"]);
+            Assert.AreEqual(2.5d, values["CxAppCpuUsage"]);
+            Assert.IsNull(values["Ping"], "A ping that has not completed cannot be represented as zero.");
+            provider.GetOverlayEntry("CaptureTimer").Value = 24;
+            Assert.AreEqual(23, values["CaptureTimer"], "Published dictionaries must remain detached.");
+            Assert.AreEqual(24, provider.GetTelemetryValues()["CaptureTimer"]);
+            _rtssServiceMock.Object.ProcessIdStream.OnNext(43);
+            Assert.IsNull(provider.GetTelemetryValues()["Resolution"], "A previous target's hook resolution must not leak into the new target.");
+            Assert.IsFalse(provider.HasPendingChanges);
+            _onlineMetricServiceMock.Verify(m => m.GetPmdMetricsPowerCurrent(), Times.Never);
+            _rtssServiceMock.Verify(r => r.SetOverlayEntries(It.IsAny<IOverlayEntry[]>()), Times.Never);
+        }
     }
 }

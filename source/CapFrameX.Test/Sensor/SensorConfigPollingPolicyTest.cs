@@ -33,6 +33,30 @@ namespace CapFrameX.Test.Sensor
         }
 
         [TestMethod]
+        public void AllSensorLeasesComposeWithInfoVisibilityAndIgnoreClassicProfileReset()
+        {
+            var config = new SensorConfig(_configurationDirectory);
+            const string sensor = "/amdcpu/0/power/0";
+            config.GetSensorEvaluate(sensor);
+            Assert.IsFalse(config.GetSensorEvaluate(sensor));
+            var first = config.AcquireAllSensors();
+            var second = config.AcquireAllSensors();
+            config.EvaluateAllSensors = true;
+            config.EvaluateAllSensors = false;
+            Assert.IsTrue(config.EvaluateAllSensors);
+            Assert.IsTrue(config.GetSensorEvaluate(sensor));
+            config.ResetEvaluate();
+            first.Dispose();
+            first.Dispose();
+            Assert.IsTrue(config.EvaluateAllSensors);
+            second.Dispose();
+            Assert.IsFalse(config.EvaluateAllSensors);
+            config.EvaluateAllSensors = true;
+            using (config.AcquireAllSensors()) { }
+            Assert.IsTrue(config.EvaluateAllSensors, "Releasing the editor must not stop a visible Info view.");
+        }
+
+        [TestMethod]
         public void LoggingSelectionIsEvaluatedOnlyForCaptureOrActiveSensorWebsocket()
         {
             var config = new SensorConfig(_configurationDirectory);

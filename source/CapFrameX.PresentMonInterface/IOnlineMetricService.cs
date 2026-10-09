@@ -5,6 +5,17 @@ namespace CapFrameX.PresentMonInterface
 {
     public interface IOnlineMetricService : IDisposable
     {
+        /// <summary>Enables metric evaluation for an independent telemetry consumer.</summary>
+        IDisposable AcquireTelemetry();
+
+        /// <summary>UTC arrival time of the latest accepted frame, or MinValue without data.</summary>
+        DateTime LastFrameTimestampUtc { get; }
+
+        /// <summary>Latest PMD sample window without consuming the classic overlay buffer.</summary>
+        OnlinePmdMetrics GetPmdTelemetrySnapshot();
+
+        OnlineFrameTelemetrySnapshot GetFrameTelemetrySnapshot();
+
         double GetOnlineFpsMetricValue(EMetric metric);
 
         double GetOnlineGpuActiveTimeMetricValue(EMetric metric);

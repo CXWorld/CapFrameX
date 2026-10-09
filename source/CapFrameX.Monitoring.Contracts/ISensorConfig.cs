@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
 
 namespace CapFrameX.Monitoring.Contracts
 {
@@ -39,6 +40,12 @@ namespace CapFrameX.Monitoring.Contracts
         /// is visible; the flag also keeps the sensor snapshot stream running.
         /// </summary>
         bool EvaluateAllSensors { get; set; }
+
+        /// <summary>
+        /// Keeps every sensor available for an independent live consumer until the returned
+        /// lease is disposed. Leases compose with each other and with EvaluateAllSensors.
+        /// </summary>
+        IDisposable AcquireAllSensors();
 
         int SensorLoggingRefreshPeriod { get; set; }
 
