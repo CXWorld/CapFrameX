@@ -67,6 +67,12 @@ namespace CapFrameX.Configuration
             // ConcurrentDictionary.TryGetValue is thread-safe
             if (_configDictionary.TryGetValue(key, out var value))
             {
+                // Explicit null is a valid setting for optional values, such as the
+                // active overlay design. It must remain distinct from a missing key.
+                if (value == null && default(T) is null)
+                {
+                    return default;
+                }
                 if (value is long) value = Convert.ToInt32(value);
                 if (!(value is T val))
                 {
@@ -88,7 +94,7 @@ namespace CapFrameX.Configuration
                     }
 
                     throw new InvalidOperationException($"Value of Key {key} has invalid Format: Expected value of type " +
-                        $"{typeof(T).Name} but found {value.GetType().Name}");
+                        $"{typeof(T).Name} but found {value?.GetType().Name ?? "null"}");
                 }
                 return val;
             }
@@ -105,7 +111,7 @@ namespace CapFrameX.Configuration
                 // Update factory: key exists, check if value changed
                 (k, oldValue) =>
                 {
-                    if (!oldValue.Equals(value))
+                    if (!Equals(oldValue, value))
                     {
                         valueChanged = true;
                         return value;
