@@ -138,12 +138,6 @@
 						</Grid.RowDefinitions>
 						<StackPanel Orientation="Horizontal" Margin="15 0 0 10" HorizontalAlignment="Left">
 							<TextBlock Margin="0 0 10 0" Text="{loc:Tr OverlayView_OverlayItems2}" FontSize="18" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-							<materialDesign:PackIcon Width="20" Height="20" Kind="Information" VerticalAlignment="Center" HorizontalAlignment="Center" ToolTipService.ShowDuration="25000" ToolTipService.Placement="Top">
-								<materialDesign:PackIcon.ToolTip>
-									<TextBlock Width="275" Text="{loc:Tr OverlayView_SpecialCXOverlayItemsCapture}"
-										   TextWrapping="Wrap"/>
-								</materialDesign:PackIcon.ToolTip>
-							</materialDesign:PackIcon>
 						</StackPanel>
 						<StackPanel Grid.Row="0" Margin="0 0 0 10" Orientation="Horizontal" HorizontalAlignment="Right">
 							<Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
