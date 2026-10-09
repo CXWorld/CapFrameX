@@ -22,7 +22,7 @@ namespace CapFrameX.Test.Integration
     [DoNotParallelize]
     public class OverlayDesignerProfileHostTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(BaseTheme.Dark, 1120, 780)]
         [DataRow(BaseTheme.Light, 1120, 780)]
         [DataRow(BaseTheme.Dark, 1500, 920)]
@@ -282,7 +282,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsFalse(host.HasUnsavedChanges);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(OverlayDesignPromptResult.Cancel)]
         [DataRow(OverlayDesignPromptResult.Confirm)]
         [DataRow(OverlayDesignPromptResult.Secondary)]

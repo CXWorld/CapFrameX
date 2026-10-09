@@ -18,7 +18,7 @@ namespace CapFrameX.Test.Integration
     [TestClass]
     public class OverlayRuntimeSourceBinderTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(.5)]
         [DataRow(1.0)]
         [DataRow(2.0)]
@@ -36,7 +36,7 @@ namespace CapFrameX.Test.Integration
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("bar", "horizontal", true)]
         [DataRow("bar", "vertical", true)]
         [DataRow("bar", "vertical", false)]

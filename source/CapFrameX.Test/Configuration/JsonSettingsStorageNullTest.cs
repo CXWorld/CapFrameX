@@ -60,13 +60,13 @@ namespace CapFrameX.Test.Configuration
             var storage = CreateStorage();
             await storage.Load();
 
-            var error = Assert.ThrowsException<InvalidOperationException>(() => storage.GetValue<int>("Count"));
+            var error = Assert.ThrowsExactly<InvalidOperationException>(() => storage.GetValue<int>("Count"));
             StringAssert.Contains(error.Message, "Count");
             StringAssert.Contains(error.Message, nameof(Int32));
             StringAssert.Contains(error.Message.ToLowerInvariant(), "null");
-            Assert.ThrowsException<InvalidOperationException>(() => storage.GetValue<bool>("Enabled"));
-            Assert.ThrowsException<InvalidOperationException>(() => storage.GetValue<DateTime>("Timestamp"));
-            Assert.ThrowsException<KeyNotFoundException>(() => storage.GetValue<string>("Missing"));
+            Assert.ThrowsExactly<InvalidOperationException>(() => storage.GetValue<bool>("Enabled"));
+            Assert.ThrowsExactly<InvalidOperationException>(() => storage.GetValue<DateTime>("Timestamp"));
+            Assert.ThrowsExactly<KeyNotFoundException>(() => storage.GetValue<string>("Missing"));
         }
 
         [TestMethod]

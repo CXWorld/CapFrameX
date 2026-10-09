@@ -163,7 +163,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(0, active);
             second.Dispose();
             Assert.AreEqual(0, active);
-            Assert.ThrowsException<ObjectDisposedException>(() => fixture.Service.AcquirePreview());
+            Assert.ThrowsExactly<ObjectDisposedException>(() => fixture.Service.AcquirePreview());
         }
 
         [TestMethod]

@@ -51,7 +51,7 @@ namespace CapFrameX.Test.Integration
             store = Open();
             Assert.AreEqual(second.Id, store.ActiveProfileId);
             Assert.AreEqual(1, store.Profiles.Count);
-            Assert.ThrowsException<InvalidOperationException>(() => store.Delete(second.Id));
+            Assert.ThrowsExactly<InvalidOperationException>(() => store.Delete(second.Id));
         }
 
         [TestMethod]
@@ -121,17 +121,17 @@ namespace CapFrameX.Test.Integration
             store.SetActive(session.ActiveProfile.Id);
             session.MarkInvalidEdit();
             Assert.IsTrue(session.IsDirty);
-            Assert.ThrowsException<InvalidOperationException>(() => session.Save());
-            Assert.ThrowsException<InvalidOperationException>(() => session.Duplicate("Invalid"));
-            Assert.ThrowsException<InvalidOperationException>(() => session.TryClose(OverlayDesignUnsavedChangesDecision.Save));
-            Assert.ThrowsException<InvalidOperationException>(() => session.TrySwitch(other.Id, OverlayDesignUnsavedChangesDecision.Save));
+            Assert.ThrowsExactly<InvalidOperationException>(() => session.Save());
+            Assert.ThrowsExactly<InvalidOperationException>(() => session.Duplicate("Invalid"));
+            Assert.ThrowsExactly<InvalidOperationException>(() => session.TryClose(OverlayDesignUnsavedChangesDecision.Save));
+            Assert.ThrowsExactly<InvalidOperationException>(() => session.TrySwitch(other.Id, OverlayDesignUnsavedChangesDecision.Save));
             Assert.IsTrue(session.HasValidationErrors);
             Assert.IsFalse(session.TryClose(OverlayDesignUnsavedChangesDecision.Cancel));
             Assert.IsTrue(session.TryClose(OverlayDesignUnsavedChangesDecision.Discard));
             Assert.IsFalse(session.HasValidationErrors);
             Assert.IsFalse(session.IsDirty);
 
-            Assert.ThrowsException<JsonReaderException>(() => session.SetWorkingTemplate("{"));
+            Assert.ThrowsExactly<JsonReaderException>(() => session.SetWorkingTemplate("{"));
             Assert.IsTrue(session.HasValidationErrors);
             Assert.IsTrue(session.TrySwitch(other.Id, OverlayDesignUnsavedChangesDecision.Discard));
             Assert.IsFalse(session.HasValidationErrors);
@@ -167,7 +167,7 @@ namespace CapFrameX.Test.Integration
             session.Rename("Still invalid");
             Assert.IsTrue(session.HasValidationErrors);
             Assert.IsTrue(session.IsDirty);
-            Assert.ThrowsException<InvalidOperationException>(() => session.Save());
+            Assert.ThrowsExactly<InvalidOperationException>(() => session.Save());
         }
 
         [TestMethod]
@@ -177,8 +177,8 @@ namespace CapFrameX.Test.Integration
             var session = Session(store);
             session.SetWorkingTemplate(Design(2));
             string working = session.WorkingTemplateJson;
-            Assert.ThrowsException<ArgumentException>(() => session.Create("Initial", Design(3), OverlayDesignUnsavedChangesDecision.Discard));
-            Assert.ThrowsException<ArgumentException>(() => session.Duplicate("../invalid"));
+            Assert.ThrowsExactly<ArgumentException>(() => session.Create("Initial", Design(3), OverlayDesignUnsavedChangesDecision.Discard));
+            Assert.ThrowsExactly<ArgumentException>(() => session.Duplicate("../invalid"));
             Assert.IsTrue(session.IsDirty);
             Assert.AreEqual(working, session.WorkingTemplateJson);
             Assert.AreEqual(1, store.Profiles.Count);
@@ -192,11 +192,11 @@ namespace CapFrameX.Test.Integration
             var profile = store.Create("Original", Design(1));
             byte[] before = File.ReadAllBytes(LibraryPath);
             foreach (string name in new[] { "", "  ", "../escape", "..\\escape", "new\nline", new string('a', 81) })
-                Assert.ThrowsException<ArgumentException>(() => store.Create(name, Design(2)));
-            Assert.ThrowsException<ArgumentException>(() => store.Create("ORIGINAL", Design(2)));
-            Assert.ThrowsException<ArgumentException>(() => store.Get("../profiles"));
-            Assert.ThrowsException<ArgumentException>(() => store.Save(profile.Id, new string('a', OverlayDesignProfileStore.MaximumDesignBytes + 1)));
-            Assert.ThrowsException<JsonReaderException>(() => store.Save(profile.Id, "{"));
+                Assert.ThrowsExactly<ArgumentException>(() => store.Create(name, Design(2)));
+            Assert.ThrowsExactly<ArgumentException>(() => store.Create("ORIGINAL", Design(2)));
+            Assert.ThrowsExactly<ArgumentException>(() => store.Get("../profiles"));
+            Assert.ThrowsExactly<ArgumentException>(() => store.Save(profile.Id, new string('a', OverlayDesignProfileStore.MaximumDesignBytes + 1)));
+            Assert.ThrowsExactly<JsonReaderException>(() => store.Save(profile.Id, "{"));
             CollectionAssert.AreEqual(before, File.ReadAllBytes(LibraryPath));
             Assert.AreEqual(1, store.Profiles.Count);
         }
@@ -207,7 +207,7 @@ namespace CapFrameX.Test.Integration
             var store = Open();
             for (int index = 0; index < OverlayDesignProfileStore.MaximumProfiles; index++)
                 store.Create("Profile " + index, Design(index));
-            Assert.ThrowsException<InvalidOperationException>(() => store.Create("Too many", Design(1)));
+            Assert.ThrowsExactly<InvalidOperationException>(() => store.Create("Too many", Design(1)));
             Assert.AreEqual(OverlayDesignProfileStore.MaximumProfiles, Open().Profiles.Count);
         }
 
@@ -243,7 +243,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(3, Value(Open().Get(profile.Id).DesignJson));
             File.Delete(LibraryPath + ".bak");
             File.WriteAllText(LibraryPath, "broken");
-            Assert.ThrowsException<InvalidDataException>(() => Open());
+            Assert.ThrowsExactly<InvalidDataException>(() => Open());
             Assert.AreEqual("broken", File.ReadAllText(LibraryPath));
         }
 
@@ -278,11 +278,11 @@ namespace CapFrameX.Test.Integration
             document["Profiles"] = "A new version may change this schema completely.";
             File.WriteAllText(LibraryPath, document.ToString());
             byte[] future = File.ReadAllBytes(LibraryPath);
-            Assert.ThrowsException<NotSupportedException>(() => Open());
+            Assert.ThrowsExactly<NotSupportedException>(() => Open());
             CollectionAssert.AreEqual(future, File.ReadAllBytes(LibraryPath));
             File.WriteAllText(LibraryPath, "broken primary");
             File.WriteAllText(LibraryPath + ".bak", "broken backup");
-            Assert.ThrowsException<InvalidDataException>(() => Open());
+            Assert.ThrowsExactly<InvalidDataException>(() => Open());
             Assert.AreEqual("broken primary", File.ReadAllText(LibraryPath));
             Assert.AreEqual("broken backup", File.ReadAllText(LibraryPath + ".bak"));
         }
@@ -294,7 +294,7 @@ namespace CapFrameX.Test.Integration
             var profile = firstStore.Create("Original", Design(1));
             var secondStore = Open();
             firstStore.Save(profile.Id, Design(2));
-            Assert.ThrowsException<IOException>(() => secondStore.Save(profile.Id, Design(3)));
+            Assert.ThrowsExactly<IOException>(() => secondStore.Save(profile.Id, Design(3)));
             Assert.AreEqual(1, Value(secondStore.Get(profile.Id).DesignJson));
             Assert.AreEqual(2, Value(Open().Get(profile.Id).DesignJson));
         }
@@ -312,8 +312,8 @@ namespace CapFrameX.Test.Integration
             // Read sharing allows the concurrency check, but denies File.Replace its delete access.
             using (var locked = new FileStream(LibraryPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
-                Assert.ThrowsException<IOException>(() => session.Save());
-                Assert.ThrowsException<IOException>(() => session.TrySwitch(other.Id, OverlayDesignUnsavedChangesDecision.Discard));
+                Assert.ThrowsExactly<IOException>(() => session.Save());
+                Assert.ThrowsExactly<IOException>(() => session.TrySwitch(other.Id, OverlayDesignUnsavedChangesDecision.Discard));
             }
             Assert.IsTrue(session.IsDirty);
             Assert.AreEqual(2, Value(session.WorkingTemplateJson));

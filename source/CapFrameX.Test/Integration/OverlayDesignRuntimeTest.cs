@@ -94,7 +94,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsFalse(Service().IsEnabled, "A fresh service has no previously validated scene to retain.");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null)]
         [DataRow("")]
         [DataRow("not-a-profile-id")]
@@ -153,7 +153,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsFalse(design.TemplateJson.Contains("disabled/thread/2"));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(32, true)]
         [DataRow(32, false)]
         [DataRow(128, true)]
@@ -242,17 +242,17 @@ namespace CapFrameX.Test.Integration
         [TestMethod]
         public void RuntimeParserRejectsMalformedUnboundedAndDuplicateScenes()
         {
-            Assert.ThrowsException<InvalidDataException>(() => OverlayRuntimeDesign.Parse("id", "Bad", "{\"version\":2,\"root\":{}}"));
-            Assert.ThrowsException<JsonReaderException>(() => OverlayRuntimeDesign.Parse("id", "Bad", "{\"version\":1,\"version\":1,\"root\":{}}"));
+            Assert.ThrowsExactly<InvalidDataException>(() => OverlayRuntimeDesign.Parse("id", "Bad", "{\"version\":2,\"root\":{}}"));
+            Assert.ThrowsExactly<JsonReaderException>(() => OverlayRuntimeDesign.Parse("id", "Bad", "{\"version\":1,\"version\":1,\"root\":{}}"));
             var document = JObject.Parse(Scene("fps"));
             ((JArray)document["root"]["children"]).Clear();
             for (int index = 0; index < 512; index++) ((JArray)document["root"]["children"]).Add(new JObject { ["type"] = "text" });
-            Assert.ThrowsException<InvalidDataException>(() => OverlayRuntimeDesign.Parse("id", "Bad", document.ToString()));
-            Assert.ThrowsException<ArgumentException>(() => HookDesignChannel.Encode(new string('ü', 524289)));
-            Assert.ThrowsException<ArgumentException>(() => HookDesignChannel.Encode("{}\0"));
-            Assert.ThrowsException<InvalidDataException>(() => OverlayRuntimeDesign.Parse("id", "Bad", "{\"version\":{},\"root\":{}}"));
-            Assert.ThrowsException<InvalidDataException>(() => OverlayRuntimeDesign.Parse("id", "Bad", "{\"version\":1,\"root\":{\"type\":[]}}"));
-            Assert.ThrowsException<InvalidDataException>(() => OverlayRuntimeDesign.Parse("id", "Bad", "{\"version\":1,\"root\":{\"type\":\"metric\",\"key\":[]}}"));
+            Assert.ThrowsExactly<InvalidDataException>(() => OverlayRuntimeDesign.Parse("id", "Bad", document.ToString()));
+            Assert.ThrowsExactly<ArgumentException>(() => HookDesignChannel.Encode(new string('ü', 524289)));
+            Assert.ThrowsExactly<ArgumentException>(() => HookDesignChannel.Encode("{}\0"));
+            Assert.ThrowsExactly<InvalidDataException>(() => OverlayRuntimeDesign.Parse("id", "Bad", "{\"version\":{},\"root\":{}}"));
+            Assert.ThrowsExactly<InvalidDataException>(() => OverlayRuntimeDesign.Parse("id", "Bad", "{\"version\":1,\"root\":{\"type\":[]}}"));
+            Assert.ThrowsExactly<InvalidDataException>(() => OverlayRuntimeDesign.Parse("id", "Bad", "{\"version\":1,\"root\":{\"type\":\"metric\",\"key\":[]}}"));
         }
 
         [TestMethod]

@@ -67,7 +67,7 @@ namespace CapFrameX.Test.Integration
             _configuration.EnableHookOverlay = false;
             using var service = Service();
             File.WriteAllText(LibraryPath, "unreadable design library");
-            var error = Assert.ThrowsException<InvalidOperationException>(() => service.Activate(_profileId));
+            var error = Assert.ThrowsExactly<InvalidOperationException>(() => service.Activate(_profileId));
             StringAssert.Contains(error.Message, "RTSS");
             AssertClassicRtss(service);
             Assert.AreEqual("unreadable design library", File.ReadAllText(LibraryPath));
@@ -97,7 +97,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(_profileId, service.ActiveProfileId);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void SwitchingBetweenNativeRenderersNeverTemporarilyDisablesTheDesign(bool startWithHook)
@@ -188,7 +188,7 @@ namespace CapFrameX.Test.Integration
             using var service = Service();
             service.Activate(_profileId);
             _configuration.IsOverlayActive = false;
-            Assert.ThrowsException<KeyNotFoundException>(() => service.Activate(Guid.NewGuid().ToString("N")));
+            Assert.ThrowsExactly<KeyNotFoundException>(() => service.Activate(Guid.NewGuid().ToString("N")));
             Assert.IsFalse(_configuration.IsOverlayActive);
             Assert.AreEqual(_profileId, service.ActiveProfileId);
         }
@@ -211,7 +211,7 @@ namespace CapFrameX.Test.Integration
                 Assert.AreEqual(1, activations);
                 service.Activate(_profileId);
                 Assert.AreEqual(2, activations);
-                Assert.ThrowsException<KeyNotFoundException>(() => service.Activate(Guid.NewGuid().ToString("N")));
+                Assert.ThrowsExactly<KeyNotFoundException>(() => service.Activate(Guid.NewGuid().ToString("N")));
                 service.Deactivate();
                 Assert.AreEqual(2, activations);
             }
