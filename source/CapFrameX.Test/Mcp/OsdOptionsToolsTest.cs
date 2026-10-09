@@ -294,15 +294,17 @@ namespace CapFrameX.Test.Mcp
         }
 
         [TestMethod]
-        public async Task SetOverlayEntry_UpdatesEveryEditableFieldAndPersistsActiveSlot()
+        public async Task SetOverlayEntry_DetachedOutputUpdatesProviderEntryAndPersistsActiveSlot()
         {
             var entry = CreateEntry("Frametime", "0", "Frame Time");
             entry.IsNumeric = true;
+            var outputEntry = CreateEntry("Frametime", "0", "Frame Time");
             var secondEntry = CreateEntry("Framerate", "1", "Frame Rate");
             var overlayService = new Mock<IOverlayService>();
             overlayService.SetupGet(service => service.CurrentOverlayEntries)
-                .Returns(new IOverlayEntry[] { entry, secondEntry });
+                .Returns(new IOverlayEntry[] { outputEntry, secondEntry });
             var provider = new Mock<IOverlayEntryProvider>();
+            provider.Setup(service => service.GetOverlayEntry("Frametime")).Returns(entry);
             provider.Setup(service => service.SaveOverlayEntriesToJson(2)).Returns(Task.CompletedTask);
             var config = CreateConfiguration();
             config.Object.OverlayEntryConfigurationFile = 2;
@@ -342,8 +344,12 @@ namespace CapFrameX.Test.Mcp
             Assert.IsTrue(result.Persisted);
             Assert.AreEqual(result.ChangedProperties.Count, result.ChangedCount);
             Assert.AreEqual(1, result.Entry.OrderIndex);
+            Assert.IsTrue(outputEntry.IsEntryEnabled);
+            Assert.IsFalse(outputEntry.ShowOnOverlay);
+            Assert.AreEqual("Frame Time", outputEntry.GroupName);
             provider.Verify(service => service.MoveEntry(0, 1), Times.Once);
             provider.Verify(service => service.SaveOverlayEntriesToJson(2), Times.Once);
+            overlayService.Verify(service => service.RequestRefresh(), Times.Once);
         }
 
         [TestMethod]
@@ -354,6 +360,7 @@ namespace CapFrameX.Test.Mcp
             overlayService.SetupGet(service => service.CurrentOverlayEntries)
                 .Returns(new IOverlayEntry[] { entry });
             var provider = new Mock<IOverlayEntryProvider>();
+            provider.Setup(service => service.GetOverlayEntry("Frametime")).Returns(entry);
             var tool = new OverlayConfigTools(overlayService.Object, provider.Object, CreateConfiguration().Object);
 
             await Assert.ThrowsExactlyAsync<ArgumentException>(() =>
@@ -371,6 +378,7 @@ namespace CapFrameX.Test.Mcp
             var overlayService = new Mock<IOverlayService>();
             overlayService.SetupGet(service => service.CurrentOverlayEntries).Returns(new IOverlayEntry[] { entry });
             var provider = new Mock<IOverlayEntryProvider>();
+            provider.Setup(service => service.GetOverlayEntry("GpuLoad")).Returns(entry);
             provider.Setup(service => service.SaveOverlayEntriesToJson(0)).Returns(Task.CompletedTask);
             var tool = new OverlayConfigTools(overlayService.Object, provider.Object, CreateConfiguration().Object);
 
@@ -392,6 +400,7 @@ namespace CapFrameX.Test.Mcp
             var overlayService = new Mock<IOverlayService>();
             overlayService.SetupGet(service => service.CurrentOverlayEntries).Returns(new IOverlayEntry[] { entry });
             var provider = new Mock<IOverlayEntryProvider>();
+            provider.Setup(service => service.GetOverlayEntry("Online1PercentLow")).Returns(entry);
             var tool = new OverlayConfigTools(overlayService.Object, provider.Object, CreateConfiguration().Object);
 
             await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => tool.SetOverlayEntry(
@@ -399,6 +408,77 @@ namespace CapFrameX.Test.Mcp
 
             Assert.AreEqual("Original", entry.GroupName);
             provider.Verify(service => service.MarkPendingChanges(), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task SetOverlayEntry_DetachedAppNamePreservesConfiguredPlaceholder()
+        {
+            var entry = CreateEntry("Framerate", "0", "<APP>");
+            var outputEntry = CreateEntry("Framerate", "0", "game.exe");
+            var overlayService = new Mock<IOverlayService>();
+            overlayService.SetupGet(service => service.CurrentOverlayEntries)
+                .Returns(new IOverlayEntry[] { outputEntry });
+            var provider = new Mock<IOverlayEntryProvider>();
+            provider.Setup(service => service.GetOverlayEntry("Framerate")).Returns(entry);
+            provider.Setup(service => service.SaveOverlayEntriesToJson(0)).Returns(Task.CompletedTask);
+            var tool = new OverlayConfigTools(overlayService.Object, provider.Object, CreateConfiguration().Object);
+
+            var result = await tool.SetOverlayEntry("framerate", showOnOverlay: true);
+
+            Assert.IsTrue(entry.ShowOnOverlay);
+            Assert.AreEqual("<APP>", entry.GroupName);
+            Assert.AreEqual("<APP>", result.Entry.GroupName);
+            Assert.AreEqual("game.exe", tool.GetOverlayEntries().Entries[0].GroupName);
+            provider.Verify(service => service.SaveOverlayEntriesToJson(0), Times.Once);
+        }
+
+        [TestMethod]
+        public void ToggleOverlayEntry_DetachedOutputUpdatesProviderEntryAndRefreshes()
+        {
+            var entry = CreateEntry("Framerate", "0", "<APP>");
+            var outputEntry = CreateEntry("Framerate", "0", "game.exe");
+            var overlayService = new Mock<IOverlayService>();
+            overlayService.SetupGet(service => service.CurrentOverlayEntries)
+                .Returns(new IOverlayEntry[] { outputEntry });
+            var provider = new Mock<IOverlayEntryProvider>();
+            provider.Setup(service => service.GetOverlayEntry("Framerate")).Returns(entry);
+            var tool = new ConfigWriteTools(CreateConfiguration().Object, overlayService.Object,
+                provider.Object, null, null, null);
+
+            var result = tool.ToggleOverlayEntry("framerate", showOnOverlay: true, isEntryEnabled: false);
+
+            Assert.IsTrue(entry.ShowOnOverlay);
+            Assert.IsFalse(entry.IsEntryEnabled);
+            Assert.IsFalse(outputEntry.ShowOnOverlay);
+            Assert.IsTrue(outputEntry.IsEntryEnabled);
+            Assert.IsFalse(result.OldShowOnOverlay);
+            Assert.IsTrue(result.OldIsEntryEnabled);
+            Assert.IsTrue(result.NewShowOnOverlay);
+            Assert.IsFalse(result.NewIsEntryEnabled);
+            overlayService.Verify(service => service.RequestRefresh(), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task OverlayEntryWrites_MissingProviderEntryNeverMutateOutputSnapshot()
+        {
+            var outputEntry = CreateEntry("Framerate", "0", "game.exe");
+            var overlayService = new Mock<IOverlayService>();
+            overlayService.SetupGet(service => service.CurrentOverlayEntries)
+                .Returns(new IOverlayEntry[] { outputEntry });
+            var provider = new Mock<IOverlayEntryProvider>();
+            var config = CreateConfiguration();
+            var configTool = new ConfigWriteTools(config.Object, overlayService.Object,
+                provider.Object, null, null, null);
+            var entryTool = new OverlayConfigTools(overlayService.Object, provider.Object, config.Object);
+
+            Assert.ThrowsException<InvalidOperationException>(() =>
+                configTool.ToggleOverlayEntry("framerate", showOnOverlay: true));
+            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() =>
+                entryTool.SetOverlayEntry("framerate", showOnOverlay: true));
+
+            Assert.IsFalse(outputEntry.ShowOnOverlay);
+            provider.Verify(service => service.SaveOverlayEntriesToJson(It.IsAny<int>()), Times.Never);
+            overlayService.Verify(service => service.RequestRefresh(), Times.Never);
         }
 
         private static Mock<IAppConfiguration> CreateConfiguration()

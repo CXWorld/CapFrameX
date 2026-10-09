@@ -32,6 +32,7 @@ namespace CapFrameX.Mcp.Tools
 
         private readonly IAppConfiguration _config;
         private readonly IOverlayService _overlayService;
+        private readonly IOverlayEntryProvider _overlayEntryProvider;
         private readonly ISensorConfig _sensorConfig;
         private readonly IRecordManager _recordManager;
         private readonly IPathService _paths;
@@ -39,12 +40,14 @@ namespace CapFrameX.Mcp.Tools
         public ConfigWriteTools(
             IAppConfiguration config,
             IOverlayService overlayService,
+            IOverlayEntryProvider overlayEntryProvider,
             ISensorConfig sensorConfig,
             IRecordManager recordManager,
             IPathService paths)
         {
             _config = config;
             _overlayService = overlayService;
+            _overlayEntryProvider = overlayEntryProvider;
             _sensorConfig = sensorConfig;
             _recordManager = recordManager;
             _paths = paths;
@@ -209,8 +212,9 @@ namespace CapFrameX.Mcp.Tools
                 throw new ArgumentException("Provide at least one of showOnOverlay or isEntryEnabled");
 
             var entries = _overlayService.CurrentOverlayEntries ?? Array.Empty<IOverlayEntry>();
-            var entry = entries.FirstOrDefault(e =>
+            var outputEntry = entries.FirstOrDefault(e =>
                 string.Equals(e?.Identifier, identifier, StringComparison.OrdinalIgnoreCase));
+            var entry = _overlayEntryProvider.GetOverlayEntry(outputEntry?.Identifier ?? identifier);
             if (entry == null)
                 throw new InvalidOperationException($"Overlay entry '{identifier}' not found.");
 
@@ -229,6 +233,11 @@ namespace CapFrameX.Mcp.Tools
 
             result.NewShowOnOverlay = entry.ShowOnOverlay;
             result.NewIsEntryEnabled = entry.IsEntryEnabled;
+            if (result.OldShowOnOverlay != result.NewShowOnOverlay ||
+                result.OldIsEntryEnabled != result.NewIsEntryEnabled)
+            {
+                _overlayService.RequestRefresh();
+            }
             result.Applied = true;
             Log.Logger.Information("MCP cfx_toggle_overlay_entry: {id} show {oldShow}->{newShow} enabled {oldEn}->{newEn}",
                 identifier, result.OldShowOnOverlay, result.NewShowOnOverlay, result.OldIsEntryEnabled, result.NewIsEntryEnabled);
