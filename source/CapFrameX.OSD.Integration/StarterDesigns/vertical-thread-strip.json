@@ -1,0 +1,420 @@
+{
+  "version": 1,
+  "name": "Vertical Thread Strip",
+  "anchor": "top_left",
+  "marginX": 24,
+  "marginY": 24,
+  "editor": {
+    "format": "cfx-grid",
+    "version": 1,
+    "scale": 1,
+    "width": 560,
+    "gap": 2,
+    "padding": 6,
+    "radius": 0,
+    "canvas": true,
+    "canvasHeight": 344,
+    "gridSize": 8,
+    "showGrid": true,
+    "snapToGrid": true
+  },
+  "theme": {
+    "panel": "#070B12ED",
+    "accent": "#FF4297FF",
+    "text": "#F2F4F8FF",
+    "subtext": "#F2F4F8FF",
+    "fontFamily": "Segoe UI",
+    "fontSize": 14,
+    "titleSize": 12,
+    "pad": 6,
+    "gap": 2,
+    "radius": 0
+  },
+  "root": {
+    "type": "panel",
+    "layout": "canvas",
+    "background": false,
+    "padding": 0,
+    "columns": 2,
+    "width": 560,
+    "gap": 2,
+    "children": [
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 2,
+        "padding": 6,
+        "radius": 0,
+        "color": "#070B12ED",
+        "children": [
+          {
+            "type": "text",
+            "text": "CPU / THREAD STRIP",
+            "size": 14,
+            "weight": "semibold",
+            "color": "#F3F6FAFF",
+            "editor": {
+              "x": 0,
+              "y": 0,
+              "frameWidth": 560,
+              "frameHeight": 30.621,
+              "kind": "text",
+              "label": "Heading",
+              "key": "fps",
+              "unit": "",
+              "text": "CPU / THREAD STRIP",
+              "labelPosition": "top",
+              "color": "#F3F6FAFF",
+              "columnSpan": 2,
+              "digits": 0,
+              "valueSize": 14,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 0,
+        "frameWidth": 560,
+        "frameHeight": 30.621,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 6,
+        "radius": 0,
+        "color": "#070B12ED",
+        "children": [
+          {
+            "type": "metric",
+            "key": "fps",
+            "label": "FPS",
+            "unit": "",
+            "format": "%.0f",
+            "valueSize": 34,
+            "size": 13,
+            "unitSize": 13,
+            "labelPosition": "top",
+            "width": 267,
+            "editor": {
+              "x": 0,
+              "y": 32.621,
+              "frameWidth": 279,
+              "frameHeight": 77.514,
+              "kind": "metric",
+              "label": "FPS",
+              "key": "fps",
+              "unit": "",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 34,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 32.621,
+        "frameWidth": 279,
+        "frameHeight": 77.514,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 6,
+        "radius": 0,
+        "color": "#070B12ED",
+        "children": [
+          {
+            "type": "metric",
+            "key": "fps1pctLow",
+            "label": "1% LOW",
+            "unit": "",
+            "format": "%.0f",
+            "valueSize": 34,
+            "size": 13,
+            "unitSize": 13,
+            "labelPosition": "top",
+            "width": 267,
+            "editor": {
+              "x": 281,
+              "y": 32.621,
+              "frameWidth": 279,
+              "frameHeight": 77.514,
+              "kind": "metric",
+              "label": "1% LOW",
+              "key": "fps1pctLow",
+              "unit": "",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 34,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 281,
+        "y": 32.621,
+        "frameWidth": 279,
+        "frameHeight": 77.514,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 2,
+        "padding": 6,
+        "radius": 0,
+        "color": "#070B12ED",
+        "children": [
+          {
+            "type": "chart",
+            "title": "FRAME TIME",
+            "series": "frametimes",
+            "width": 548,
+            "height": 52,
+            "unit": "ms",
+            "editor": {
+              "x": 0,
+              "y": 112.135,
+              "frameWidth": 560,
+              "frameHeight": 64,
+              "kind": "chart",
+              "label": "FRAME TIME",
+              "key": "frametimes",
+              "unit": "ms",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 2,
+              "digits": 0,
+              "valueSize": 28,
+              "height": 52,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 112.135,
+        "frameWidth": 560,
+        "frameHeight": 64,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 2,
+        "padding": 6,
+        "radius": 0,
+        "color": "#1C0D1BED",
+        "children": [
+          {
+            "type": "panel",
+            "background": false,
+            "padding": 0,
+            "gap": 4,
+            "children": [
+              {
+                "type": "text",
+                "text": "CPU THREAD LOADS / 0\u2013100 %",
+                "size": 13,
+                "weight": "semibold",
+                "color": "#FF4297FF"
+              },
+              {
+                "type": "panel",
+                "layout": "grid",
+                "columns": 2,
+                "background": false,
+                "padding": 0,
+                "width": 548,
+                "gap": 4,
+                "children": [
+                  {
+                    "type": "bar",
+                    "key": "role:cpu-loads/1",
+                    "label": "C1",
+                    "unit": "%",
+                    "width": 272,
+                    "min": 0,
+                    "max": 100,
+                    "height": 32,
+                    "digits": 0,
+                    "showValue": false,
+                    "orientation": "vertical",
+                    "color": "#FF4297FF"
+                  },
+                  {
+                    "type": "bar",
+                    "key": "role:cpu-loads/2",
+                    "label": "C2",
+                    "unit": "%",
+                    "width": 272,
+                    "min": 0,
+                    "max": 100,
+                    "height": 32,
+                    "digits": 0,
+                    "showValue": false,
+                    "orientation": "vertical",
+                    "color": "#FF4297FF"
+                  }
+                ]
+              }
+            ],
+            "color": "#FF4297FF",
+            "editor": {
+              "x": 0,
+              "y": 178.135,
+              "frameWidth": 560,
+              "frameHeight": 84.891,
+              "groupKey": "role:cpu-loads",
+              "groupDisplay": "bar",
+              "groupColumns": 32,
+              "groupBarOrientation": "vertical",
+              "groupShowValues": false,
+              "groupMembers": [
+                {
+                  "key": "role:cpu-loads/1",
+                  "label": "C1",
+                  "sourceName": "CPU core 1 \u00B7 waiting for an unambiguous hardware group",
+                  "isEnabled": true
+                },
+                {
+                  "key": "role:cpu-loads/2",
+                  "label": "C2",
+                  "sourceName": "CPU core 2 \u00B7 waiting for an unambiguous hardware group",
+                  "isEnabled": true
+                }
+              ],
+              "kind": "group",
+              "label": "CPU THREAD LOADS / 0\u2013100 %",
+              "key": "role:cpu-loads",
+              "unit": "%",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "color": "#FF4297FF",
+              "backgroundColor": "#1C0D1BED",
+              "columnSpan": 2,
+              "digits": 0,
+              "valueSize": 14,
+              "height": 32,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 178.135,
+        "frameWidth": 560,
+        "frameHeight": 84.891,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 6,
+        "radius": 0,
+        "color": "#070B12ED",
+        "children": [
+          {
+            "type": "metric",
+            "key": "cpuPower",
+            "label": "CPU power",
+            "unit": "W",
+            "format": "%.0f",
+            "valueSize": 21,
+            "size": 13,
+            "unitSize": 13,
+            "labelPosition": "left",
+            "width": 267,
+            "color": "#F3F6FAFF",
+            "editor": {
+              "x": 0,
+              "y": 265.026,
+              "frameWidth": 279,
+              "frameHeight": 39.932,
+              "kind": "metric",
+              "label": "CPU power",
+              "key": "cpuPower",
+              "unit": "W",
+              "text": "CapFrameX",
+              "labelPosition": "left",
+              "color": "#F3F6FAFF",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 21,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 265.026,
+        "frameWidth": 279,
+        "frameHeight": 39.932,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 6,
+        "radius": 0,
+        "color": "#070B12ED",
+        "children": [
+          {
+            "type": "metric",
+            "key": "pcLatency",
+            "label": "PC latency",
+            "unit": "ms",
+            "format": "%.1f",
+            "valueSize": 21,
+            "size": 13,
+            "unitSize": 13,
+            "labelPosition": "left",
+            "width": 267,
+            "color": "#F3F6FAFF",
+            "editor": {
+              "x": 281,
+              "y": 265.026,
+              "frameWidth": 279,
+              "frameHeight": 39.932,
+              "kind": "metric",
+              "label": "PC latency",
+              "key": "pcLatency",
+              "unit": "ms",
+              "text": "CapFrameX",
+              "labelPosition": "left",
+              "color": "#F3F6FAFF",
+              "columnSpan": 1,
+              "digits": 1,
+              "valueSize": 21,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 281,
+        "y": 265.026,
+        "frameWidth": 279,
+        "frameHeight": 39.932,
+        "clip": true
+      }
+    ],
+    "height": 344
+  }
+}
