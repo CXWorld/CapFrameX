@@ -471,9 +471,9 @@ namespace CapFrameX.Test.Mcp
                 provider.Object, null, null, null);
             var entryTool = new OverlayConfigTools(overlayService.Object, provider.Object, config.Object);
 
-            Assert.ThrowsException<InvalidOperationException>(() =>
+            Assert.ThrowsExactly<InvalidOperationException>(() =>
                 configTool.ToggleOverlayEntry("framerate", showOnOverlay: true));
-            await Assert.ThrowsExceptionAsync<InvalidOperationException>(() =>
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
                 entryTool.SetOverlayEntry("framerate", showOnOverlay: true));
 
             Assert.IsFalse(outputEntry.ShowOnOverlay);
