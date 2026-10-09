@@ -6,10 +6,8 @@
          (NU1702 + MSB3277 conflicts on Microsoft.Extensions.Logging.Abstractions and
          System.Net.Http). net472 itself became unused once the PmcReader plugin moved to modern .NET. -->
     <TargetFramework>net10.0</TargetFramework>
-    <AssemblyName>LibreHardwareMonitorLib</AssemblyName>
     <RootNamespace>LibreHardwareMonitor</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <PackageId>$(AssemblyName)</PackageId>
     <Description>Monitor the temperature sensors, fan speeds, voltages, load and clock speeds of your computer.</Description>
@@ -20,7 +18,6 @@
     <PackageVersion>$(Version)</PackageVersion>
     <Pack>true</Pack>
     <RepositoryUrl>https://github.com/LibreHardwareMonitor/LibreHardwareMonitor</RepositoryUrl>
-    <LangVersion>latest</LangVersion>
     <PackageIcon>packageicon.png</PackageIcon>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <Platforms>x64;x86;ARM64</Platforms>
@@ -102,10 +99,8 @@
     <EmbeddedResource Include="Resources\PawnIO\ZhaoxinMSR.bin" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Win32.Registry" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" />
     <PackageReference Include="System.IO.Ports" />
-    <PackageReference Include="System.IO.FileSystem.AccessControl" />
     <PackageReference Include="Mono.Posix.NETStandard" />
     <PackageReference Include="HidSharp" />
     <PackageReference Include="Microsoft.Windows.CsWin32">
@@ -116,9 +111,6 @@
     <PackageReference Include="Serilog" />
     <PackageReference Include="System.Management" />
     <PackageReference Include="System.Reactive" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
-    <PackageReference Include="System.Security.Principal.Windows" />
-    <PackageReference Include="System.Threading.AccessControl" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\packageicon.png" PackagePath="">

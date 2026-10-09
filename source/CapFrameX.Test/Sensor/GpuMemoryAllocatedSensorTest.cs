@@ -61,7 +61,7 @@ namespace CapFrameX.Test.Sensor
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("0_8_0", "0_8_0_1", "0_8_1")]
         [DataRow("0_6_0", "0_6_0_1", "0_6_1")]
         [DataRow("0_1", "0_1_1", "0_2_0")]

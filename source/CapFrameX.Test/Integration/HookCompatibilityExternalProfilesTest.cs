@@ -162,7 +162,7 @@ namespace CapFrameX.Test.Integration
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("<HookCompatibilityProfiles version=\"1\"><Profile executable=\"Discarded.exe\" injectionDelayMilliseconds=\"1\" /><Profile executable=\"Broken.exe\" enableGenericD3D12PresentRoute=\"invalid\" /></HookCompatibilityProfiles>")]
         [DataRow("<HookCompatibilityProfiles version=\"2\"><Profile executable=\"Discarded.exe\" injectionDelayMilliseconds=\"1\" /></HookCompatibilityProfiles>")]
         [DataRow("<HookCompatibilityProfiles version=\"1\"><Profile executable=\"Discarded.exe\" injectionDelayMilliseconds=\"1\" /><Profile executable=\"DISCARDED.EXE\" injectionDelayMilliseconds=\"2\" /></HookCompatibilityProfiles>")]
@@ -186,7 +186,7 @@ namespace CapFrameX.Test.Integration
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("<HookCompatibilityProfiles version=\"1\"><Profile executable=\"Discarded.exe\" injectionDelayMilliseconds=\"1\" /><Profile executable=\"Broken.exe\" /> </HookCompatibilityProfiles>")]
         [DataRow("<HookCompatibilityProfiles version=\"1\"><Profile executable=\"Discarded.exe\" injectionDelayMilliseconds=\"1\" />")]
         [DataRow("<HookCompatibilityProfiles version=\"2\"><Profile executable=\"Discarded.exe\" injectionDelayMilliseconds=\"1\" /></HookCompatibilityProfiles>")]

@@ -14,7 +14,7 @@ namespace CapFrameX.Test.Integration
     [TestClass]
     public class OverlayEntryAdapterTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(EOverlayValueDisplayMode.Text, OsdValueDisplayMode.Text)]
         [DataRow(EOverlayValueDisplayMode.Bar, OsdValueDisplayMode.Bar)]
         [DataRow(EOverlayValueDisplayMode.TextAndBar, OsdValueDisplayMode.TextAndBar)]
@@ -36,7 +36,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(0xFF0000FFu, result.UpperColor);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null)]
         [DataRow(double.NaN)]
         [DataRow(double.PositiveInfinity)]
@@ -110,7 +110,7 @@ namespace CapFrameX.Test.Integration
         /// subscript. The CX renderers scale the text by the magnitude only, an unset size (0) is
         /// the 100 % default, and the range is clamped so a row still fits the panel.
         /// </summary>
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(0, 100)]
         [DataRow(100, 100)]
         [DataRow(150, 150)]

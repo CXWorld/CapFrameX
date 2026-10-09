@@ -36,6 +36,11 @@ from `source\CapFrameX\bin\x64\<Configuration>\net10.0-windows` by the `<Files>`
 `Product.wxs`, whose `<Exclude>` entries replace the former `heat.exe` step and `filter.xslt`.
 The bundle stays a 32-bit Burn bundle (`InstallerPlatform=x86`), as WiX v3 bundles were; the chained
 MSI is x64. Its VC++ redistributables are remote payloads verified by their Authenticode signer.
+The bundle also builds `CapFrameXBootstrapper.BAFunctions` (native, always Win32, packages restored by
+`/restore` or `nuget restore`): a BAFunctions DLL for WixStdBA that plans a newer installed CapFrameX
+bundle as an upgrade instead of a downgrade. Without it Burn refuses to run an older setup
+(`0x80070666`) although the MSI allows downgrades, which also blocks the in-app rollback. Only setups
+that contain the DLL can downgrade; releases built before it still refuse.
 
 ### Run Tests
 Tests use MSTest framework:
@@ -63,8 +68,8 @@ occluded stalls its presents.
 ## Architecture
 
 ### Solution Structure
-The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET 10, .NET Standard 2.0,
-.NET Core 3.1, and one .NET Framework 4.7.2 installer-action project) and C++ native code.
+The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (`net10.0` / `net10.0-windows`,
+plus one .NET Framework 4.7.2 installer-action project) and C++ native code.
 
 ### Layer Organization
 
@@ -94,15 +99,14 @@ The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET 10, .NET St
 - `CapFrameX.IGCL` - Intel Graphics Control Library
 - `CapFrameX.ADLX` - AMD Display Library
 
-**Webservice (ASP.NET Core 3.1)**
+**Webservice (ASP.NET Core, `net10.0`)**
 - `CapFrameX.Webservice.Host` - API host
 - `CapFrameX.Webservice.Implementation` - Business logic
-- `CapFrameX.Webservice.Data` - DTOs, commands and queries; `netstandard2.0`, and the only
+- `CapFrameX.Webservice.Data` - DTOs, commands and queries; `net10.0`, and the only
   webservice project the desktop app references (through `CapFrameX.ViewModel`)
 
 Data is served from Squidex (`SquidexService`), not from a database — the Entity Framework
-persistence layer was dropped. netcoreapp3.1 is out of support; the packages warn about it, which
-`SuppressTfmSupportBuildWarnings` silences in Host and Implementation.
+persistence layer was dropped.
 
 **Charting**
 - `CapFrameX.Charts/Core40` - Vendored LiveCharts core
@@ -244,8 +248,8 @@ settings are ignored. All of it is pure and unit-tested; the manager only execut
 
 `IUpdateService` (`CapFrameX.Updater/UpdateService.cs`) fetches a JSON manifest from the CapFrameX
 update server, compares it against the running assembly version and, once the user confirms,
-downloads the installer package into the updates folder. The manifest URI comes from the
-`UpdateManifestUri` key in `App.config`; **while it is empty the whole feature stays inert** and no
+downloads the installer package into the updates folder. The catalog URI comes from the
+`UpdateCatalogUri` key in `App.config`; **while it is empty the whole feature stays inert** and no
 update UI appears. The wire format is documented by `CapFrameX.Updater/update-manifest.sample.json`.
 
 The installer replaces the files of the running app, so the instance that downloaded the package

@@ -3,33 +3,19 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
-    <RootNamespace>CapFrameX.ViewModel</RootNamespace>
-    <AssemblyName>CapFrameX.ViewModel</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Deterministic>true</Deterministic>
-    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <!-- MouseKeyHook ships .NET Framework assets only; the IL is compatible with modern .NET. -->
+    <!-- ParallelExtensionsExtras ships .NET Framework assets only; the IL is compatible with modern .NET.
+         NuGet carries this suppression to the projects that consume CapFrameX.ViewModel. -->
     <NoWarn>$(NoWarn);NU1701</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Not part of the build before the SDK-style migration; kept in the tree for reference. -->
-    <Compile Remove="ComparisonDataViewModel.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="DynamicData" />
     <PackageReference Include="gong-wpf-dragdrop" />
-    <PackageReference Include="MaterialDesignColors" />
-    <PackageReference Include="MaterialDesignThemes" />
-    <PackageReference Include="MathNet.Filtering" />
     <PackageReference Include="MathNet.Numerics" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
-    <PackageReference Include="MouseKeyHook" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="OxyPlot.Core" />
     <PackageReference Include="ParallelExtensionsExtras" />
@@ -37,18 +23,6 @@
     <PackageReference Include="Prism.Wpf" />
     <PackageReference Include="System.Reactive" />
     <PackageReference Include="TaskScheduler" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <COMReference Include="stdole">
-      <Guid>{00020430-0000-0000-C000-000000000046}</Guid>
-      <VersionMajor>2</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>primary</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
   </ItemGroup>
 
   <ItemGroup>

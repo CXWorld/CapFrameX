@@ -31,7 +31,7 @@ namespace CapFrameX.Test.Configuration
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("10.0.0")]
         [DataRow("10.0.11")]
         [DataRow("10.1.0")]
@@ -48,7 +48,7 @@ namespace CapFrameX.Test.Configuration
             Assert.IsNull(report.MissingVCRedistVersions);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("9.0.19")]
         [DataRow("11.0.0")]
         [DataRow("10.0.0-preview.7")]
@@ -110,7 +110,7 @@ namespace CapFrameX.Test.Configuration
             Assert.AreEqual("10.0 (x64)", report.MissingDotNetFrameworkVersion);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("shared", "Microsoft.NETCore.App")]
         [DataRow("sdk", "10.0.400")]
         public void CheckMissingDependencies_NonDesktopComponentOnly_ReportsDotNet10Missing(

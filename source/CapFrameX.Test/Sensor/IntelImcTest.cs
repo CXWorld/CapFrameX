@@ -6,7 +6,7 @@ namespace CapFrameX.Test.Sensor
     [TestClass]
     public class IntelImcTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(0x00000020U, IntelImc.ImcGear.Gear1)]
         [DataRow(0x00000120U, IntelImc.ImcGear.Gear1)]
         [DataRow(0x00001020U, IntelImc.ImcGear.Gear2)]
@@ -24,7 +24,7 @@ namespace CapFrameX.Test.Sensor
             Assert.AreEqual(expectedGear, gear);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(0x00003020U)]
         [DataRow(0x00003120U)]
         public void TryDecodeAdlRplGear_ReservedGearDoesNotProduceAReading(uint raw)

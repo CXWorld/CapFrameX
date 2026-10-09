@@ -11,7 +11,7 @@ using System.Windows.Media;
 namespace CapFrameX.View
 {
 	/// <summary>
-	/// Interaction logic for ComparisonDataView.xaml
+	/// Interaction logic for ComparisonView.xaml
 	/// </summary>
 	public partial class ComparisonView : UserControl
 	{

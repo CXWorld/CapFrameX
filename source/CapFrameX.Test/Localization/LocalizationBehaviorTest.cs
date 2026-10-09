@@ -157,7 +157,7 @@ namespace CapFrameX.Test.Localization
             Assert.AreEqual("<APP>", OverlayEntryAdapter.ToOsdEntries(new[] { entry }).Single().Group);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(1251, true)]
         [DataRow(65001, true)]
         [DataRow(1252, false)]
@@ -177,7 +177,7 @@ namespace CapFrameX.Test.Localization
                 "API and MCP formatted values must stay neutral.");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(1252, true)]
         [DataRow(65001, true)]
         [DataRow(1251, false)]
@@ -195,7 +195,7 @@ namespace CapFrameX.Test.Localization
             Assert.AreEqual("<S2><C3>Listo para capturar...<C><S>", RtssTextFormatter.FormatValue(entry, codePage));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("es", "listo para capturar...")]
         [DataRow("ru", "готов к захвату...")]
         [DataRow("de", "bereit zur Aufnahme...")]
@@ -215,7 +215,7 @@ namespace CapFrameX.Test.Localization
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("de", "Temperatur (°C)")]
         [DataRow("es", "Temperatura (°C)")]
         public void StorageDescription_TranslatesTheMetricAndPreservesTheDeviceName(
@@ -313,7 +313,7 @@ namespace CapFrameX.Test.Localization
                 Assert.AreEqual(pair.Value, CxLang.Instance.TranslateOverlay(pair.Key), pair.Key);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("es", "ms")]
         [DataRow("ru", "мс")]
         [DataRow("de", "ms")]
@@ -331,7 +331,7 @@ namespace CapFrameX.Test.Localization
 
         // The status bar shows the hook status through the EHookOverlayStatus keys, the OSD through
         // the "overlay" entries of its English labels. Both must read the same.
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("es")]
         [DataRow("ru")]
         [DataRow("de")]

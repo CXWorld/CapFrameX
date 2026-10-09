@@ -14,7 +14,7 @@ namespace CapFrameX.Test.Integration
     [TestClass]
     public class OsdOverlayBridgeGraphFeedTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true, false, false, 1, 8d, 0d)]
         [DataRow(true, true, false, 1, 8d, 0d)]
         [DataRow(true, false, true, 1, 8d, 16d)]
@@ -77,7 +77,7 @@ namespace CapFrameX.Test.Integration
             AssertSharedValues(harness, 50d, 20d, 40d, "Vulkan");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, true)]
         [DataRow(true, false)]
         public void HiddenOrUnavailableFpsEntry_DoesNotSubscribeToFrames(bool enabled, bool visible)

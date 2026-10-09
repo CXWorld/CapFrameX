@@ -34,7 +34,6 @@
 				<ResourceDictionary Source="Styles/CxCards.xaml" />
 				<ResourceDictionary Source="Styles/CxTabHeaders.xaml" />
 			</ResourceDictionary.MergedDictionaries>
-			<mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"/>
 			<mvvm:EnumDescriptionConverter x:Key="EnumDescriptionConverter"/>
 			<mvvm:BoolToVisibilityConverter x:Key="FalseToHiddenConverter" FalseValue="Hidden" TrueValue="Visible"/>
 			<mvvm:BoolToVisibilityConverter x:Key="TrueToVisibleConverter" FalseValue="Collapsed" TrueValue="Visible"/>

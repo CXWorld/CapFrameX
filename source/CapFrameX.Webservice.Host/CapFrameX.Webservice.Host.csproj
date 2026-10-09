@@ -17,7 +17,6 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
     <PackageReference Include="Serilog" />
     <PackageReference Include="Serilog.AspNetCore" />
-    <PackageReference Include="Serilog.Extensions.Logging" />
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="Squidex.ClientLibrary" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
@@ -27,8 +26,5 @@
     <ProjectReference Include="..\CapFrameX.Webservice.Data\CapFrameX.Webservice.Data.csproj" />
     <ProjectReference Include="..\CapFrameX.Webservice.Implementation\CapFrameX.Webservice.Implementation.csproj" />
   </ItemGroup>
-
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
-
 
 </Project>

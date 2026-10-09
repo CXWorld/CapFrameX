@@ -3,20 +3,10 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
-    <RootNamespace>CapFrameX.View</RootNamespace>
-    <AssemblyName>CapFrameX.View</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Deterministic>true</Deterministic>
-    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
-
-  <ItemGroup>
-    <!-- Not part of the build before the SDK-style migration; kept in the tree for reference. -->
-    <Compile Remove="ComparisonDataView.xaml.cs" />
-    <Page Remove="ComparisonDataView.xaml" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Extended.Wpf.Toolkit" />
@@ -25,11 +15,8 @@
     <PackageReference Include="MahApps.Metro" />
     <PackageReference Include="MaterialDesignColors" />
     <PackageReference Include="MaterialDesignThemes" />
-    <PackageReference Include="MaterialDesignThemes.MahApps" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
-    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="OxyPlot.Wpf" />
     <PackageReference Include="Prism.Core" />
     <PackageReference Include="Prism.Wpf" />

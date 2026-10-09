@@ -335,39 +335,6 @@
     // =========================================================================
     // COMPARISON VIEW - Multi-run comparison graphs, bar charts, custom labels
     // =========================================================================
-    "ComparisonDataViewModel_Average": "Durchschnitt",
-    "ComparisonDataViewModel_CaptureTime0": "Aufnahmedauer: {0} s",
-    "ComparisonDataViewModel_CreationDate0": "Erstellungsdatum: {0}",
-    "ComparisonDataViewModel_CreationTime0": "Erstellungszeit: {0}",
-    "ComparisonDataViewModel_FPS": "FPS",
-    "ComparisonDataViewModel_FPS2": "FPS",
-    "ComparisonDataViewModel_FrametimeMs": "Frametime [ms]",
-    "ComparisonDataViewModel_NumberOfSamples0": "Anzahl der Messwerte: {0}",
-    "ComparisonDataViewModel_P01": "P0.1",
-    "ComparisonDataViewModel_P1": "P1",
-    "ComparisonDataViewModel_RecordingTimeS": "Aufnahmezeit [s]",
-    "ComparisonDataViewModel_Text": "%",
-    "ComparisonDataView_AbsoluteMode": "Absoluter Modus",
-    "ComparisonDataView_CPU": "CPU",
-    "ComparisonDataView_Comparisons": "Vergleiche",
-    "ComparisonDataView_CustomComments": "Eigene Kommentare",
-    "ComparisonDataView_CutFirstSeconds": "Erste Sekunden abschneiden",
-    "ComparisonDataView_CutLastSeconds": "Letzte Sekunden abschneiden",
-    "ComparisonDataView_CuttingMode": "Schnittmodus:",
-    "ComparisonDataView_CuttingMode2": "Schnittmodus",
-    "ComparisonDataView_DataChartSettings": "Daten-/Diagrammeinstellungen",
-    "ComparisonDataView_DateAndTime": "Datum und Uhrzeit",
-    "ComparisonDataView_FrametimeMs": "Frametime (ms)",
-    "ComparisonDataView_Frametimes": "Frametimes",
-    "ComparisonDataView_GPU": "GPU",
-    "ComparisonDataView_LShape": "L-Kurve",
-    "ComparisonDataView_Quantiles": "Quantile (%)",
-    "ComparisonDataView_RelativeMode": "Relativer Modus",
-    "ComparisonDataView_RemoveAllComparisons": "Alle Vergleiche entfernen",
-    "ComparisonDataView_SetAbsolutRelativeMode": "Absoluten oder relativen Modus wählen",
-    "ComparisonDataView_SetComparisonContext": "Vergleichskontext festlegen",
-    "ComparisonDataView_ShowContextLegend": "Kontextlegende anzeigen:",
-    "ComparisonDataView_ShowContextLegend2": "Kontextlegende anzeigen",
     // Chart Y-axis label: frames per second calculated from display change
     "ComparisonViewModel_DisplayFPS": "Display-FPS",
     // Chart Y-axis label with unit: frames per second calculated from display change
@@ -905,9 +872,6 @@
     // =========================================================================
     // EDITING DIALOG - Custom hardware names and benchmark run comments
     // =========================================================================
-    "EditingDialog_CustomCPUDescription": "Eigene CPU-Beschreibung",
-    "EditingDialog_CustomComment": "Eigener Kommentar",
-    "EditingDialog_CustomGPUDescription": "Eigene GPU-Beschreibung",
 
     // =========================================================================
     // OVERLAY DIAGNOSTICS - Extended OSD logging errors

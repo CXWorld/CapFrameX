@@ -1492,9 +1492,6 @@ namespace CapFrameX.ViewModel
         private IList<double> GetAnimationErrorsSubset()
             => _localRecordDataServer?.GetAnimationErrorTimeWindow();
 
-        private IList<double> GetGpuActiveFPSSubset()
-            => _localRecordDataServer?.GetGpuActiveFpsTimeWindow();
-
         private void SetStaticChart(IList<double> frametimes, IList<double> displayChangeTimes, IList<double> gpuActiveTimes)
         {
             if (frametimes == null || !frametimes.Any())

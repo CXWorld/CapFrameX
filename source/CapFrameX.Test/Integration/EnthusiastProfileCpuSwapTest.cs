@@ -65,7 +65,7 @@ namespace CapFrameX.Test.Integration
             catch { }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(SimulatedCpuKind.IntelCpu, "8P 16E", SimulatedCpuKind.IntelLpeCpu, "6P 8E 2LPE",
             DisplayName = "Intel 8P+16E -> Intel 6P+8E+2LPE: same identifiers, core types change in place")]
         [DataRow(SimulatedCpuKind.Amd17Cpu, "16", SimulatedCpuKind.AmdHybridCpu, "4P 8D",
