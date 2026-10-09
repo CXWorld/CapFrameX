@@ -35,12 +35,12 @@
     <ShouldUnsetParentConfigurationAndPlatform Condition="'$(CfxOsdFromSource)' == 'true' And '$(ShouldUnsetParentConfigurationAndPlatform)' == ''">false</ShouldUnsetParentConfigurationAndPlatform>
   </PropertyGroup>
   <ItemGroup Condition="'$(CfxOsdFromSource)' == 'true'">
-    <ProjectReference Include="$(CfxOsdSubmoduleDir)CapFrameX.OSD.Controls\CapFrameX.OSD.Controls.csproj">
+    <ProjectReference Include="$(_CfxOsdSourceDir)CapFrameX.OSD.Controls\CapFrameX.OSD.Controls.csproj">
       <SetPlatform>Platform=x64</SetPlatform>
       <CfxOptionalOsd>true</CfxOptionalOsd>
       <AdditionalProperties>ShouldUnsetParentConfigurationAndPlatform=false</AdditionalProperties>
     </ProjectReference>
-    <ProjectReference Include="$(CfxOsdSubmoduleDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj">
+    <ProjectReference Include="$(_CfxOsdSourceDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj">
       <SetPlatform>Platform=x64</SetPlatform>
       <CfxOptionalOsd>true</CfxOptionalOsd>
       <AdditionalProperties>ShouldUnsetParentConfigurationAndPlatform=false</AdditionalProperties>

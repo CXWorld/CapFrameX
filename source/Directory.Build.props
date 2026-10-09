@@ -6,11 +6,21 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
-  <!-- Select the optional OSD dependency before any project's conditional references are
-       evaluated. Public clones keep using the matching prebuilt assemblies. -->
+  <!-- Select the optional OSD dependency before conditional project references are evaluated.
+       Explicit new/legacy paths win; otherwise prefer the sibling checkout and retain the
+       optional submodule as a fallback. Public clones use the matching prebuilt assemblies. -->
   <PropertyGroup>
-    <CfxOsdSubmoduleDir Condition="'$(CfxOsdSubmoduleDir)' == ''">$(MSBuildThisFileDirectory)..\external\CapFrameX.OSD\</CfxOsdSubmoduleDir>
-    <CfxOsdFromSource Condition="'$(CfxOsdFromSource)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj') And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD.Controls\CapFrameX.OSD.Controls.csproj')">true</CfxOsdFromSource>
+    <CfxOsdSourceDir Condition="'$(CfxOsdSourceDir)' == '' And '$(CfxOsdSubmoduleDir)' != ''">$(CfxOsdSubmoduleDir)</CfxOsdSourceDir>
+    <CfxOsdSourceDir Condition="'$(CfxOsdSourceDir)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\CapFrameX.OSD\CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj') And Exists('$(MSBuildThisFileDirectory)..\..\CapFrameX.OSD\CapFrameX.OSD.Controls\CapFrameX.OSD.Controls.csproj')">$(MSBuildThisFileDirectory)..\..\CapFrameX.OSD\</CfxOsdSourceDir>
+    <CfxOsdSourceDir Condition="'$(CfxOsdSourceDir)' == ''">$(MSBuildThisFileDirectory)..\external\CapFrameX.OSD\</CfxOsdSourceDir>
+    <!-- Command-line properties cannot be reassigned. Always consume the normalized effective
+         path so either /p override also accepts a directory without a trailing separator.
+         Relative overrides retain MSBuild's project-relative interpretation. -->
+    <_CfxOsdSourceDir>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(CfxOsdSourceDir)'))</_CfxOsdSourceDir>
+    <CfxOsdSourceDir>$(_CfxOsdSourceDir)</CfxOsdSourceDir>
+    <CfxOsdSubmoduleDir Condition="'$(CfxOsdSubmoduleDir)' == ''">$(_CfxOsdSourceDir)</CfxOsdSubmoduleDir>
+    <CfxOsdFromSource Condition="'$(CfxOsdFromSource)' == '' And Exists('$(_CfxOsdSourceDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj') And Exists('$(_CfxOsdSourceDir)CapFrameX.OSD.Controls\CapFrameX.OSD.Controls.csproj')">true</CfxOsdFromSource>
+    <CfxOsdFromSource Condition="'$(CfxOsdFromSource)' == ''">false</CfxOsdFromSource>
   </PropertyGroup>
 
 </Project>

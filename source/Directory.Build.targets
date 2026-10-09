@@ -23,8 +23,8 @@
   <!-- The IDE's fast up-to-date check must also notice changes in projects it does not load;
        otherwise an edit to the editor could skip the target above entirely. -->
   <ItemGroup Condition="'@(_CfxOptionalOsdProject)' != ''">
-    <UpToDateCheckInput Include="$(CfxOsdSubmoduleDir)CapFrameX.OSD.Interop\**\*.cs;$(CfxOsdSubmoduleDir)CapFrameX.OSD.Interop\*.csproj;$(CfxOsdSubmoduleDir)CapFrameX.OSD.Controls\**\*.cs;$(CfxOsdSubmoduleDir)CapFrameX.OSD.Controls\**\*.xaml;$(CfxOsdSubmoduleDir)CapFrameX.OSD.Controls\*.csproj"
-                       Exclude="$(CfxOsdSubmoduleDir)**\bin\**;$(CfxOsdSubmoduleDir)**\obj\**" />
+    <UpToDateCheckInput Include="$(_CfxOsdSourceDir)CapFrameX.OSD.Interop\**\*.cs;$(_CfxOsdSourceDir)CapFrameX.OSD.Interop\*.csproj;$(_CfxOsdSourceDir)CapFrameX.OSD.Controls\**\*.cs;$(_CfxOsdSourceDir)CapFrameX.OSD.Controls\**\*.xaml;$(_CfxOsdSourceDir)CapFrameX.OSD.Controls\*.csproj"
+                       Exclude="$(_CfxOsdSourceDir)**\bin\**;$(_CfxOsdSourceDir)**\obj\**" />
   </ItemGroup>
 
 </Project>

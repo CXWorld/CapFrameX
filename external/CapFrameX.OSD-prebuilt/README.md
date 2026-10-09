@@ -3,9 +3,13 @@
 Fallback binaries for the CapFrameX in-game OSD, built from the private
 [CXWorld/CapFrameX.OSD](https://github.com/CXWorld/CapFrameX.OSD) repository.
 
-The build uses these automatically when the `external/CapFrameX.OSD` submodule is not
-checked out (developers without access to the private repo). With the submodule present,
-the OSD is built from source instead and these files are ignored.
+Development builds prefer a sibling `CapFrameX.OSD` checkout, for example
+`E:\Code\CapFrameX.OSD` beside `E:\Code\CapFrameX`. The optional
+`external/CapFrameX.OSD` submodule remains a fallback for other checkout layouts.
+Without either source checkout, builds use these prebuilt managed and native binaries.
+Set `CfxOsdSourceDir` to use a different source location; the existing
+`CfxOsdSubmoduleDir` override remains supported. Set `CfxOsdFromSource=false` to use
+only prebuilts even when OSD sources are available.
 
 ## Build provenance
 

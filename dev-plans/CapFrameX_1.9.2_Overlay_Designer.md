@@ -115,7 +115,8 @@ keep their exact bindings. Empty source discovery does not consume the deferred 
 ![Overlay designer in the CapFrameX theme, showing labelled demo data](../images/1.9.2/overlay-designer.png)
 
 For a standalone demo without hardware initialization, build and run
-`external/CapFrameX.OSD/CapFrameX.OSD.Editor.Demo`. That host uses explicitly labelled demo data.
+`../CapFrameX.OSD/CapFrameX.OSD.Editor.Demo` in the sibling OSD checkout. That host uses
+explicitly labelled demo data.
 
 1. Open **Templates (59)**. Search or filter by category; drag a card onto the preview,
    double-click it or choose **Use template**. Undo restores the previous design.
@@ -325,18 +326,32 @@ Text telemetry uses metric tiles with a fixed, configurable line count.
 
 ## Build and validation
 
-OSD sources live in the optional private submodule. Build native core with CMake, then managed
-Interop/Controls. Build CapFrameX and its MSTest project with Visual Studio MSBuild in
+Development uses a separate sibling checkout: `E:\Code\CapFrameX.OSD` beside
+`E:\Code\CapFrameX`. Build native core with CMake, then managed Interop/Controls.
+Build CapFrameX and its MSTest project with Visual Studio MSBuild in
 `Release|x64`; run the DLL under `net10.0-windows`. Public builds use the matching Interop,
 Controls and native DLLs from `external/CapFrameX.OSD-prebuilt`.
 
 Visual Studio builds the optional managed OSD dependencies through
 `source/Directory.Build.targets` before resolving their references. They remain outside the
-public solution so a checkout without the private submodule still builds with the prebuilts.
+public solution so a checkout without private OSD sources still builds with the prebuilts.
 `source/Directory.Build.props` selects source/prebuilt mode before project references are
-evaluated. IDE source edits participate in its up-to-date check; design-time evaluation does
+evaluated. It prefers the sibling checkout, with the optional `external/CapFrameX.OSD`
+submodule as a fallback for other developer layouts. Override `CfxOsdSourceDir` for another
+location; the legacy `CfxOsdSubmoduleDir` override remains supported. Paths work with or
+without a trailing directory separator. `CfxOsdFromSource=false` selects only prebuilt
+managed and native payloads even when a source checkout is present.
+IDE source edits participate in its up-to-date check; design-time evaluation does
 not start recursive builds. A cold `Debug|x64` build with Visual Studio's reference-build flags
 is verified, including the application, WPF views and test project.
+
+Sibling-checkout validation (2026-10-09): 24 MSBuild evaluations pass 337 path/mode assertions.
+All five native DLLs rebuild from the standalone checkout. A source Debug app build and a
+prebuilt-only Release app/test build pass in isolated output directories; the normal Debug
+output was locked by a running app. Sixteen editor layout/renderer compatibility tests pass.
+Native DLLs and Vulkan manifests match the selected source outputs; all seven prebuilt DLLs
+and both manifests match the prebuilt-only output. The duplicate local submodule checkout is
+deinitialized, while its optional repository definition and commit pin remain available.
 
 Changes to shared native layout/rendering require rebuilding the core and both architectures
 of the DXGI hook and Vulkan layer. Development binaries must be signed again for a release.
