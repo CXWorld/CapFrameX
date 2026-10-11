@@ -26,7 +26,7 @@ namespace CapFrameX.OSD.Integration
         // Native CPU sensor names are defined by GenericCpu, IntelCpu and Amd17Cpu.
         // Restrict suffixes so temperatures, effective clocks and aggregates cannot mix.
         private static readonly Regex CoreSensorName = new Regex(
-            @"^(?:CPU\s+)?Core\s+#(?<core>\d{1,5})(?:\s+(?:LPE|LP|P|E|D))?(?:\s+Thread\s+#(?<thread>\d{1,3}))?\s*(?<suffix>\(Effective\)|Distance to TjMax|\(SMU\)|VID)?$",
+            @"^(?:CPU\s+)?Core\s+#(?<core>\d{1,5})(?:\s+(?<type>LPE|LP|P|E|D))?(?:\s+Thread\s+#(?<thread>\d{1,3}))?\s*(?<suffix>\(Effective\)|Distance to TjMax|\(SMU\)|VID)?$",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private readonly ISensorService _sensors;
@@ -74,6 +74,7 @@ namespace CapFrameX.OSD.Integration
                     (await _sensors.GetSensorEntries().ConfigureAwait(false))?.ToArray()
                     ?? Array.Empty<ISensorEntry>()).ConfigureAwait(false);
                 var sources = BuildHardwareSources(entries).ToList();
+                sources.AddRange(CreateMemoryTotals(sources).ToArray());
                 if (_metrics != null) sources.AddRange(CreateMetricSources());
                 if (_classic != null)
                 {
@@ -172,6 +173,9 @@ namespace CapFrameX.OSD.Integration
                     GroupKey = group.Family == null ? null : deviceKey + "/" + group.Family,
                     GroupName = group.Name,
                     GroupOrder = group.Order,
+                    CoreType = group.CoreType,
+                    CoreIndex = group.CoreIndex,
+                    ThreadIndex = group.ThreadIndex,
                     IsHardwareSensor = true,
                     IsStableIdentifierAmbiguous = ambiguous
                 };
@@ -194,7 +198,8 @@ namespace CapFrameX.OSD.Integration
             return identifier;
         }
 
-        private static (string Family, string Name, int Order) GetRepeatedSensorGroup(ISensorEntry entry)
+        private static (string Family, string Name, int Order, string CoreType, int? CoreIndex, int? ThreadIndex)
+            GetRepeatedSensorGroup(ISensorEntry entry)
         {
             if (entry.HardwareType != "Cpu" || string.IsNullOrWhiteSpace(entry.Name))
                 return default;
@@ -215,7 +220,12 @@ namespace CapFrameX.OSD.Integration
                 ("Voltage", "VID") => ("cpu-core-vid", "CPU core VID"),
                 _ => ((string)null, (string)null)
             };
-            return (family.Item1, family.Item2, core * 1024 + thread);
+            if (family.Item1 == null) return default;
+            // These labels come from native CPU topology. Never infer a core type from
+            // the presence of SMT threads, the model name or a clock reading.
+            string coreType = match.Groups["type"].Success ? match.Groups["type"].Value : null;
+            return (family.Item1, family.Item2, core * 1024 + thread, coreType, core,
+                match.Groups["thread"].Success ? thread : (int?)null);
         }
 
         private static string GetUnit(ISensorEntry entry)
@@ -255,10 +265,13 @@ namespace CapFrameX.OSD.Integration
             Assign("cpuLoad", "Load", s => s.HardwareType == "Cpu", "CPU Total");
             Assign("cpuTemp", "Temperature", s => s.HardwareType == "Cpu", "CPU Package (Tctl/Tdie)", "CPU Package", "CPU Max Core Temp");
             Assign("ramUsed", "Data", s => s.HardwareType == "Memory", "RAM Used", "Memory Used");
+            Assign("ramTotal", "Data", s => s.HardwareType == "Memory", "RAM Total", "Memory Total");
             Assign("vramUsed", "Data", s => IsGpu(s), "GPU Memory Dedicated", "GPU Memory Used", "GPU Memory Allocated");
+            Assign("vramTotal", "Data", s => IsGpu(s), "GPU Memory Total");
             Assign("gpuClock", "Clock", s => IsGpu(s), "GPU Core");
             Assign("gpuMemoryClock", "Clock", s => IsGpu(s), "GPU Memory");
-            Assign("gpuFan", "Fan", s => IsGpu(s), "GPU Fan", "GPU Fan 1");
+            Assign("gpuFan", "Fan", s => IsGpu(s), "GPU Fan", "GPU Fan 1", "GPU");
+            Assign("gpuFanPercent", "Control", s => IsGpu(s), "GPU Fan", "GPU Fan 1", "GPU");
             Assign("vramLoad", "Load", s => IsGpu(s), "GPU Memory");
             Assign("cpuClock", "Clock", s => s.HardwareType == "Cpu", "CPU Clock", "CPU Max", "CPU Max Clock");
             Assign("cpuPower", "Power", s => s.HardwareType == "Cpu", "CPU Package");
@@ -266,7 +279,7 @@ namespace CapFrameX.OSD.Integration
 
             void Assign(string key, string type, Func<OverlayTelemetrySource, bool> filter, params string[] names)
             {
-                var matching = sources.Where(s => s.IsHardwareSensor && filter(s)
+                var matching = sources.Where(s => (s.IsHardwareSensor || s.SumSourceIdA != null) && filter(s)
                     && s.SensorType == type && names.Contains(s.Name, StringComparer.Ordinal)).ToArray();
                 if (matching.Select(s => s.HardwareName).Distinct(StringComparer.Ordinal).Take(2).Count() > 1)
                     return;
@@ -283,6 +296,27 @@ namespace CapFrameX.OSD.Integration
 
         private static bool IsGpu(OverlayTelemetrySource source)
             => source.HardwareType?.StartsWith("Gpu", StringComparison.Ordinal) == true;
+
+        private static IEnumerable<OverlayTelemetrySource> CreateMemoryTotals(IReadOnlyList<OverlayTelemetrySource> sources)
+        {
+            foreach (var device in sources.Where(source => source.IsHardwareSensor && source.HardwareType == "Memory"
+                && source.SensorType == "Data").GroupBy(source => source.DeviceKey, StringComparer.Ordinal))
+            {
+                if (device.Any(source => source.Name == "RAM Total" || source.Name == "Memory Total")) continue;
+                var used = device.Where(source => source.Name == "RAM Used" || source.Name == "Memory Used").ToArray();
+                var free = device.Where(source => source.Name == "RAM Available" || source.Name == "Memory Available").ToArray();
+                if (used.Length != 1 || free.Length != 1 || used[0].Unit != free[0].Unit
+                    || used[0].IsStableIdentifierAmbiguous || free[0].IsStableIdentifierAmbiguous) continue;
+                string id = "derived/ram-total/" + used[0].Id;
+                yield return new OverlayTelemetrySource
+                {
+                    Id = id, Identifier = id, StableIdentifier = id, Name = "RAM Total",
+                    HardwareName = used[0].HardwareName, HardwareType = "Memory", SensorType = "Data",
+                    DeviceKey = used[0].DeviceKey, Category = "Memory", Subcategory = "Capacity & usage", Unit = used[0].Unit,
+                    SumSourceIdA = used[0].Id, SumSourceIdB = free[0].Id
+                };
+            }
+        }
 
         private static IEnumerable<OverlayTelemetrySource> CreateMetricSources()
         {
@@ -411,6 +445,11 @@ namespace CapFrameX.OSD.Integration
             foreach (var source in sources)
                 if (source.IsHardwareSensor && runtimeValues.TryGetValue(source.Identifier, out float value))
                     values[source.Id] = Finite(value);
+
+            foreach (var source in sources.Where(source => source.SumSourceIdA != null))
+                if (values.TryGetValue(source.SumSourceIdA, out double? used) && used >= 0
+                    && values.TryGetValue(source.SumSourceIdB, out double? free) && free >= 0)
+                    values[source.Id] = Finite(used.Value + free.Value);
 
             if (_metrics != null)
             {

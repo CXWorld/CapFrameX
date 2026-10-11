@@ -21,6 +21,36 @@ namespace CapFrameX.Test.Integration
     [TestClass]
     public class OverlayDesignRuntimeTest
     {
+        [TestMethod]
+        public void CompositeMetricsPublishBothSourcesAndKeepEmbeddedAssets()
+        {
+            var document = JObject.Parse(Scene("ramUsed"));
+            var metric = (JObject)document["root"]["children"][0];
+            metric["secondaryKey"] = "ramTotal";
+            metric["valueScale"] = 1024;
+            metric["secondaryScale"] = 1024;
+            ((JArray)document["root"]["children"]).Add(new JObject
+            {
+                ["type"] = "image", ["dataUri"] = "data:image/png;base64,aGVsbG8="
+            });
+            var design = OverlayRuntimeDesign.Parse("id", "Memory", document.ToString());
+            CollectionAssert.AreEqual(new[] { "ramTotal", "ramUsed" }, design.MetricKeys.ToArray());
+            var snapshot = new OverlayTelemetrySnapshot(DateTime.UtcNow,
+                new Dictionary<string, double?> { ["ramUsed"] = 26.25, ["ramTotal"] = 32 });
+            var metrics = JObject.Parse(design.CreateMetrics(snapshot, null));
+            Assert.AreEqual(26.25, (double)metrics["ramUsed"]);
+            Assert.AreEqual(32, (double)metrics["ramTotal"]);
+            StringAssert.Contains(design.TemplateJson, "data:image/png;base64,aGVsbG8=");
+        }
+
+        [TestMethod]
+        public void InvalidSecondaryTelemetryKeyIsRejected()
+        {
+            var document = JObject.Parse(Scene("ramUsed"));
+            document["root"]["children"][0]["secondaryKey"] = new JArray("ramTotal");
+            Assert.ThrowsException<InvalidDataException>(() => OverlayRuntimeDesign.Parse("id", "Invalid", document.ToString()));
+        }
+
         private string _folder;
         private Mock<IAppConfiguration> _configuration;
         private Subject<(string key, object value)> _changes;

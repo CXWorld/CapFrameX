@@ -12,9 +12,141 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Composite tile editor development payload (2026-10-09)
+
+The current binaries were built and verified from the sibling `E:\Code\CapFrameX.OSD`
+working tree before committing. The corresponding source changes are now published on
+`main` through `6faebc589e6fc57f836f54bcf101511c888d3afc`: native rich widgets in `542f107`,
+composite editing and topology-aware bar layouts in `4d4debc`, and CPU architecture templates
+in `6faebc5`. The only source edit after building was removal of a trailing blank line.
+Builds use VS 2026/v145, native `RelWithDebInfo`, and managed `Release|x64`, .NET 10.
+
+The payload adds editable nested containers, local grid drag/drop, layer order and locking;
+independent metric typography, paired sources and duration/scaled-number formatting;
+custom gauge arcs, minimal charts with value badges, and portable embedded PNG/JPEG images.
+Chart overlap preserves foreground drawing order. CPU groups grow inside containers, and
+three Turquoise presets bring the gallery to 62 templates. Existing row-overlay and RTSS
+gating remain covered by the CapFrameX regression selection.
+
+Verification: 1,600 editor checks and 1,159 native-preview checks pass; the CapFrameX selection
+passes 763 tests plus 100 focused checks after final source-binding changes. Core passes 16
+suites, DXGI 32 per architecture and Vulkan two per architecture. All five native backends
+were rebuilt after the last renderer change, with six focused native suites rerun successfully
+(331 design and 1,189 row-layout assertions). Actual production-designer mouse checks cover
+container entry, local move/resize, locking, pulling a child out via Back, and Undo.
+Reference/Compact/Wide previews were rendered with 8, 32 and 128 threads.
+Before the caption correction below, Release source and prebuilt-only application builds
+passed and all seven bundled files matched the prebuilt-only output by SHA-256; the
+x64/x86 Vulkan manifests are identical.
+
+The subsequent Turquoise Reference caption fix gives the frametime chart a separate,
+editable `FRAME TIME` text element while keeping axis labels hidden. Native previews
+still pass all 1,159 checks; the Controls payload and embedded starter scene were refreshed.
+Already saved profiles remain snapshots and are not overwritten by template updates.
+
+The subsequent inspector/gesture correction gives inherited and explicit fields stable
+geometry, separates color inputs from the reset action, and accepts decimal points or
+commas without thousands parsing. Empty optional colors restore inheritance. Root-canvas
+move/resize can grow right/down within native size limits; legacy flow gestures convert
+their measured geometry on commit, and layer-list drag uses the tile center. The editor
+verification now passes 1,638 checks, including cancellation, undo and pixel-budget edges.
+All 42 selected CapFrameX WPF tests pass, including ten new inspector layout/numeric-input
+cases across light/dark themes and narrow/regular sizes. Actual mouse checks cover root
+translation, horizontal resizing, layer-list positioning, Undo and the color section.
+The refreshed prebuilt-only Release application builds successfully; all seven bundled DLLs
+match its output by SHA-256. The native payload is unchanged by these editor corrections.
+Debug/Release source builds also succeed. The ten new inspector tests additionally pass
+against the exact Controls DLL recorded below.
+
+The 2026-10-11 update defers design text bindings until Enter or focus loss; Shift+Enter
+inserts a newline and source searches remain immediate. Pending text participates in save,
+selection and close guards without changing the model while typing. Inspector text starts
+at its label's left edge, removing duplicated padding and WPF's internal text inset.
+All 57 selected WPF/host tests and 1,638 editor checks pass against this Controls payload.
+Debug/Release source and prebuilt-only Release application builds pass; all seven bundled
+DLLs match the latter by SHA-256. The normal Debug application output has been updated.
+
+The subsequent bar-group update adds explicit member width/track height and a synchronized
+Rows selector for either orientation. Exact member frames wrap without stretching; resizing,
+caption changes and hardware source expansion use matching geometry. Invalid growth retains
+the accepted preview and blocks saving until corrected. Existing profiles keep their legacy
+packing until a dimension or Rows is edited. All 258 selected CapFrameX tests, 1,668 editor
+checks and 1,159 native preview checks pass, including pixel measurements of all 32/128 bars
+at 50%, 100% and 200% scale. The Controls DLL below contains this update; the native DLLs
+and Interop are unchanged.
+Debug/Release source and prebuilt-only Release application builds pass; all seven bundled
+DLLs match the prebuilt-only output by SHA-256. The normal Debug output is updated.
+
+These are unsigned development binaries. Real game compatibility and release signing remain
+release checks; no installer or update-server release was made.
+
+The manual height-fit follow-up hides the action for automatic bar groups and renames it
+**Fit height to content** for other canvas groups. It uses unrounded content height,
+retains real collision checks, and reports a successful fit only when geometry changes.
+Nested fits tolerate floating-point boundary noise without allowing actual overflow.
+All 119 selected regression tests and 1,668 editor / 1,159 native preview checks pass;
+the 15 new fit-height cases also pass the final container-boundary assertion. Release
+source and normal Debug builds pass. The Controls prebuilt below was refreshed from the
+tested Release output; the normal Debug output contains the matching Debug build.
+
+The width-resize follow-up makes horizontal tile resizing fit bar widths to the new inner
+width while preserving the current columns and rows. Only shrinking below the minimum
+one-pixel bar width plus gaps forces wrapping; direct **Bar width** edits still wrap normally.
+Height-only resizing preserves the requested bar width. All 145 selected tests pass,
+including actual resize-handle commits, nested groups, Undo and native pixel bounds after
+stretching/shrinking. The 1,668 editor and 1,159 native-preview checks also pass. Release
+source and normal Debug builds pass; Controls below is the tested Release binary and the
+Debug output matches the sibling Debug build. Native and Interop DLLs are unchanged.
+
+The initial template bar-layout follow-up balances sensor families after discovery, including
+Vertical Thermal Panel's 16 effective clocks as 8 + 8. Gallery templates and built-in saved
+profiles share editor/runtime geometry, prefer complete even rows, and retain explicit user
+dimensions. Tests cover 8–128 sensors, odd sensor counts, nested tiles, scaling and the real
+template/inspector path. All 154 selected cases pass (150 in the combined run and the four
+inspector cases after correcting their assertion to use native text measurements), together
+with 1,668 editor and 1,159 native-preview checks against the exact Controls payload below.
+Release source and normal Debug builds pass. The Debug payload matches the sibling build;
+native and Interop DLLs are unchanged.
+
+The hybrid CPU follow-up preserves P/E/LP-E/D/LP topology through telemetry, editor members
+and runtime binding. New hybrid bar groups separate core types into rows automatically;
+8 P + 16 E clocks start as 8 / 8 / 8, while SMT loads retain every thread. **Separate core
+types** controls the behavior explicitly; row selection, resize and Undo use the same
+geometry as the native preview. Existing explicit layouts retain their settings.
+All 266 selected tests pass, including four hybrid native pixel cases; the exact Controls
+payload below also passes 1,668 editor and 1,159 native-preview checks. Release source and
+normal Debug builds pass, and Debug Controls/Integration match their project outputs by
+SHA-256. The prebuilt-only Release application also builds successfully, and all seven
+bundled DLLs match its output by SHA-256. Native and Interop DLLs are unchanged.
+
+The core-type template follow-up adds six **CPU architectures** templates and three saved
+starter profiles: Core Types Overview, Core Types Compact and Core Types Thermal. Catalog
+version 3 adds these profiles without overwriting edits, changing the active selection or
+restoring deleted older profiles. The templates support the complete native core enum:
+Standard, P, E, LP-E, D and LP; optional sensor families remain unbound when unavailable.
+All 317 selected CapFrameX tests pass, including actual simulation sensor builders and
+catalog migration. The exact Controls payload passes 1,752 editor and 1,219 native-preview
+checks across 68 templates; thirty additional native renders cover five topologies.
+Release source, prebuilt-only Release and normal Debug builds pass. All seven bundled DLLs
+match the prebuilt-only application output by SHA-256; Debug Controls and Integration match
+their project outputs. Only Controls is refreshed in this follow-up; the native and Interop
+binaries retain their hashes.
+
+| Component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `C14AC5B90283EEA62BD2BF306C23DE93CA24334CAF5BA18056E6535A18A1BB0C` |
+| native\cfx_osd_hook.dll | `DC236FA36F2B756D276CA09FAE02372D5E7D35028F4BD73894C64C901DE76D97` |
+| native\x86\cfx_osd_hook.dll | `3503A72863D1F1AD1E6BE988C3A1EF1264ED2438D73D694D9AC44F57E97A0540` |
+| native\vk\cfx_osd_vklayer.dll | `586727F9DDDB6C37582BC9F9E15FEB1CC6F101D235D00E6B25D880A9B60644A7` |
+| native\vk\x86\cfx_osd_vklayer.dll | `8BE58112D93AB4EA4D754ABE360779D0E228A036F93D60B7BDADA0BEE758634E` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `27ACE6954C0994BA5270E4FDC2825162AC418C6918A81AE491A29E2238214CB3` |
+| net10.0-windows\CapFrameX.OSD.Interop.dll | `F1A65ADA6720543CF1D01A04082EEA937B30B1E925D7BF0564F84F06FA302E07` |
+
+Payload descriptions and hashes below are historical.
+
 ### Classic rows inside grid designs development payload (2026-10-09)
 
-The current binaries are built from the source state now committed as
+These earlier binaries were built from the source state now committed as
 `c96c00296225a76b92ad6ab0c0fa3765558bc13d`, published on `main`.
 Builds use VS 2026/v145,
 native `RelWithDebInfo` and managed `Release|x64`, .NET 10.

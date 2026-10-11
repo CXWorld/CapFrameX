@@ -88,6 +88,9 @@ namespace CapFrameX.OSD.Integration
                     var profiles = _profiles.ToList();
                     foreach (var starter in starters)
                     {
+                        // A catalog upgrade adds its new designs only. Older starters may have
+                        // been deliberately deleted or renamed; their absence is authoritative.
+                        if (starter.IntroducedInVersion <= _starterCatalogVersion) continue;
                         if (profiles.Count >= MaximumProfiles) break;
                         // A name already used by the user is authoritative, even when its ID
                         // or contents differ from the shipped design. Never rename or replace it.

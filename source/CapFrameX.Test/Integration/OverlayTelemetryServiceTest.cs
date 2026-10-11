@@ -24,6 +24,50 @@ namespace CapFrameX.Test.Integration
     public class OverlayTelemetryServiceTest
     {
         [TestMethod]
+        public async Task MemoryTotalUsesMatchingLiveUsedAndAvailableReadings()
+        {
+            var used = Sensor("/ram/data/0", "RAM Used", "Memory", "Data", "RAM");
+            var free = Sensor("/ram/data/1", "RAM Available", "Memory", "Data", "RAM");
+            using var fixture = new Fixture(new[] { used, free });
+            var sources = await fixture.Service.GetSourcesAsync();
+            var total = sources.Single(source => source.SemanticKey == "ramTotal");
+            Assert.AreEqual("GB", total.Unit);
+            Assert.AreEqual("Capacity & usage", total.Subcategory);
+            var snapshot = await fixture.Next(new Dictionary<ISensorEntry, float> { [used] = 26.25f, [free] = 5.75f });
+            Assert.AreEqual(32d, snapshot.Values[total.Id]);
+            var missing = await fixture.Next(new Dictionary<ISensorEntry, float> { [used] = 26.25f });
+            Assert.IsNull(missing.Values[total.Id], "Never reuse an old total when one of its readings is absent.");
+            var invalid = await fixture.Next(new Dictionary<ISensorEntry, float> { [used] = 26.25f, [free] = -1 });
+            Assert.IsNull(invalid.Values[total.Id]);
+        }
+
+        [TestMethod]
+        public async Task MemoryTotalsNeverCombineDifferentDevices()
+        {
+            using var fixture = new Fixture(new[]
+            {
+                Sensor("/ram/0/data/0", "RAM Used", "Memory", "Data", "RAM A"),
+                Sensor("/ram/1/data/1", "RAM Available", "Memory", "Data", "RAM B")
+            });
+            Assert.IsFalse((await fixture.Service.GetSourcesAsync()).Any(source => source.SemanticKey == "ramTotal"));
+        }
+
+        [TestMethod]
+        public async Task FanPercentAndRpmAreIndependentRoles()
+        {
+            using var fixture = new Fixture(new[]
+            {
+                Sensor("/gpu/0/fan/0", "GPU Fan", "GpuNvidia", "Fan", "GPU"),
+                Sensor("/gpu/0/control/0", "GPU Fan", "GpuNvidia", "Control", "GPU"),
+                Sensor("/gpu/0/data/2", "GPU Memory Total", "GpuNvidia", "Data", "GPU")
+            });
+            var sources = await fixture.Service.GetSourcesAsync();
+            Assert.AreEqual("RPM", sources.Single(source => source.SemanticKey == "gpuFan").Unit);
+            Assert.AreEqual("%", sources.Single(source => source.SemanticKey == "gpuFanPercent").Unit);
+            Assert.AreEqual("GB", sources.Single(source => source.SemanticKey == "vramTotal").Unit);
+        }
+
+        [TestMethod]
         public async Task CatalogIncludesUnselectedAndUnusualSensorsWithUnits()
         {
             var entries = new[]
@@ -369,6 +413,87 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(sources.Where(s => s.Name.EndsWith("Maximum") || s.SensorType == "Load").All(s => s.GroupKey == null));
             Assert.AreEqual("CPU core power", sources.First(s => s.SensorType == "Power").GroupName);
             Assert.AreEqual("CPU core VID", sources.First(s => s.SensorType == "Voltage").GroupName);
+        }
+
+        [DataTestMethod]
+        [DataRow("Core #1 P", "Clock", "P", 1, null)]
+        [DataRow("Core #2 P Thread #2", "Load", "P", 2, 2)]
+        [DataRow("Core #9 E (Effective)", "Clock", "E", 9, null)]
+        [DataRow("Core #10 E Thread #1 (Effective)", "Clock", "E", 10, 1)]
+        [DataRow("Core #25 LPE", "Temperature", "LPE", 25, null)]
+        [DataRow("Core #26 LPE Distance to TjMax", "Temperature", "LPE", 26, null)]
+        [DataRow("Core #7 D (SMU)", "Power", "D", 7, null)]
+        [DataRow("Core #8 LP VID", "Voltage", "LP", 8, null)]
+        [DataRow("CPU Core #12 P", "Clock", "P", 12, null)]
+        [DataRow("Core #4", "Clock", null, 4, null)]
+        [DataRow("Core #5 Thread #2 (Effective)", "Clock", null, 5, 2)]
+        public async Task NativeCpuNamesExposeCoreIdentityWithoutInferringMissingTopology(
+            string name, string sensorType, string coreType, int coreIndex, int? threadIndex)
+        {
+            using var fixture = new Fixture(new[]
+            {
+                Sensor("/cpu/0/" + sensorType.ToLowerInvariant() + "/1", name, "Cpu", sensorType, "CPU")
+            });
+            var source = (await fixture.Service.GetSourcesAsync()).Single();
+            Assert.IsNotNull(source.GroupKey);
+            Assert.AreEqual(coreType, source.CoreType);
+            Assert.AreEqual((int?)coreIndex, source.CoreIndex);
+            Assert.AreEqual(threadIndex, source.ThreadIndex);
+            Assert.AreEqual(coreIndex * 1024 + threadIndex.GetValueOrDefault(), source.GroupOrder);
+        }
+
+        [DataTestMethod]
+        [DataRow("CPU Total", "Cpu", "Load")]
+        [DataRow("CPU Effective", "Cpu", "Clock")]
+        [DataRow("Core Average", "Cpu", "Temperature")]
+        [DataRow("Core #1 P Maximum", "Cpu", "Clock")]
+        [DataRow("Core #1 P (Effective)", "Cpu", "Load")]
+        [DataRow("Core #1 P VID", "Cpu", "Clock")]
+        [DataRow("Core #1 P", "GpuNvidia", "Clock")]
+        [DataRow("Core #1 P", "SuperIO", "Load")]
+        [DataRow("Core #1 SMT", "Cpu", "Clock")]
+        [DataRow("Core #1 p", "Cpu", "Clock")]
+        public async Task UnrecognizedOrAggregateSensorsDoNotAcquireCoreTopology(
+            string name, string hardwareType, string sensorType)
+        {
+            using var fixture = new Fixture(new[]
+            {
+                Sensor("/device/0/" + sensorType.ToLowerInvariant() + "/1", name, hardwareType, sensorType, "Hybrid CPU")
+            });
+            var source = (await fixture.Service.GetSourcesAsync()).Single();
+            Assert.IsNull(source.GroupKey);
+            Assert.IsNull(source.CoreType);
+            Assert.IsNull(source.CoreIndex);
+            Assert.IsNull(source.ThreadIndex);
+        }
+
+        [TestMethod]
+        public async Task EightPerformanceAndSixteenEfficiencyCoresKeepPhysicalAndThreadIdentitiesDistinct()
+        {
+            var entries = Enumerable.Range(1, 24).SelectMany(core =>
+            {
+                string type = core <= 8 ? "P" : "E";
+                var clock = Sensor($"/intelcpu/0/clock/{core}", $"Core #{core} {type}", "Cpu", "Clock", "Hybrid CPU");
+                var threads = Enumerable.Range(1, core <= 8 ? 2 : 1).Select(thread =>
+                    Sensor($"/intelcpu/0/load/{core * 2 + thread}",
+                        $"Core #{core} {type}" + (core <= 8 ? $" Thread #{thread}" : ""), "Cpu", "Load", "Hybrid CPU"));
+                return new[] { clock }.Concat(threads);
+            });
+            using var fixture = new Fixture(entries.Reverse());
+            var sources = await fixture.Service.GetSourcesAsync();
+            var clocks = sources.Where(source => source.SensorType == "Clock").OrderBy(source => source.GroupOrder).ToArray();
+            var loads = sources.Where(source => source.SensorType == "Load").OrderBy(source => source.GroupOrder).ToArray();
+            Assert.AreEqual(24, clocks.Length);
+            Assert.AreEqual(32, loads.Length);
+            Assert.AreEqual(8, clocks.Count(source => source.CoreType == "P"));
+            Assert.AreEqual(16, clocks.Count(source => source.CoreType == "E"));
+            Assert.IsTrue(clocks.All(source => source.ThreadIndex == null));
+            Assert.AreEqual(16, loads.Count(source => source.CoreType == "P"));
+            Assert.AreEqual(16, loads.Count(source => source.CoreType == "E"));
+            Assert.AreEqual(8, loads.Where(source => source.CoreType == "P").Select(source => source.CoreIndex).Distinct().Count());
+            CollectionAssert.AreEqual(Enumerable.Range(1, 24).ToArray(), clocks.Select(source => source.CoreIndex.Value).ToArray());
+            CollectionAssert.AreEqual(new[] { 1, 2 }, loads.Where(source => source.CoreIndex == 1).Select(source => source.ThreadIndex.Value).ToArray());
+            Assert.IsTrue(loads.Where(source => source.CoreType == "E").All(source => source.ThreadIndex == null));
         }
 
         [TestMethod]

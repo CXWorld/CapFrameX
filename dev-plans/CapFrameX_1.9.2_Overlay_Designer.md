@@ -6,6 +6,174 @@ designs to the hook-free and in-game DXGI/Vulkan renderers. The Overlay tab expo
 design selection and preserves the existing row overlay configuration. The two tabs are named
 **Row overlay** and **Tile overlay**; renderer selection is separate from content selection.
 
+## Composite hardware tiles
+
+The **CPU architectures** gallery covers every `CpuCoreType` defined in
+`LibreHardwareMonitorLib/Hardware/Cpu/CpuId.cs`: Standard, Performance (P), Efficiency (E),
+Low-Power Efficiency (LP-E), Dense (D), and Low-Power (LP). Standard cores have no type
+suffix. Types come from the hardware sensor metadata; the templates do not infer a type
+from clock speed, SMT or a CPU model name.
+
+Six new templates are **Core Types Overview**, **Core Types Compact**, **Core Types Thermal**,
+**Intel Core Types**, **Intel Mobile Core Types** and **AMD Core Types**. All bind portable
+CPU sensor families and use the detected topology, even when used with a different CPU
+architecture. The first three are also saved starter profiles in catalog version 3.
+Upgrading adds only these three profiles and preserves existing edits, active selection,
+and deleted older starters. The gallery now contains 68 templates; a fresh library has
+18 saved profiles.
+
+Validation passes 317 selected tests, including actual simulated Intel/AMD sensor builders,
+every core enum value, editor/runtime parity for all six templates, and the version-2 to
+version-3 catalog upgrade. The exact bundled Controls DLL passes 1,752 editor checks and
+1,219 native-preview checks across 68 templates. Thirty additional native renders exercise
+the six new templates on five topologies. Release source and normal Debug builds pass.
+
+Native-rendered examples with synthetic telemetry: an 8 P + 16 E desktop, a 6 P + 8 E +
+2 LP-E mobile layout, and a P/D/LP layout that exercises the existing LP code value without
+asserting a shipping processor configuration. Missing sensor families remain unavailable;
+no values are inferred from another family.
+
+![Core Types Overview with 8 P and 16 E cores](../images/1.9.2/overlay-core-types-overview.png)
+
+![Core Types Compact with P, E and LP-E cores](../images/1.9.2/overlay-core-types-compact.png)
+
+![AMD Core Types with P, D and LP test values](../images/1.9.2/overlay-core-types-amd.png)
+
+Template bar groups choose their initial packing after discovering the actual sensor count.
+Homogeneous vertical groups start with two balanced rows (16 effective clocks become 8 + 8); large CPUs
+or narrow tiles use additional complete rows. Initial packing prefers even bars per row and
+even row counts. Odd sensor counts retain every reading without adding placeholder bars.
+The editor and runtime apply the same rule to gallery templates and built-in saved profiles;
+explicit bar dimensions and already bound user profiles retain their chosen layout.
+Validation covers every bar template and starter with 8–128 sensors, odd counts, nested
+layouts and the real gallery/inspector path: 154 selected cases, 1,668 editor checks and
+1,159 native-preview checks pass. Release source and normal Debug outputs are updated.
+
+Hybrid CPU groups retain the reported P/E/LP-E/D/LP core types, core indices and thread
+indices. New hybrid bar groups enable **Separate core types** automatically: each type starts
+on a new row and shares the same bar width. For 8 P-cores and 16 E-cores, clocks start in
+three rows of 8 P / 8 E / 8 E; 6 P + 8 E + 2 LP-E starts in three rows of 6 / 8 / 2.
+SMT load readings stay separate, so 8 P-cores with two threads each plus 16 E-cores use
+four eight-bar rows. Homogeneous CPUs retain balanced packing; missing type metadata does
+not invent a topology. Rows, bar dimensions, tile resizing and Undo stay synchronized.
+The checkbox allows flat packing, and explicit saved layouts retain their chosen behavior.
+The hybrid follow-up passes 266 selected tests, including native pixel checks in both bar
+orientations, plus 1,668 editor checks and 1,159 native-preview checks. Release source and
+normal Debug builds pass; the tested Controls prebuilt is refreshed.
+
+Bar groups expose **Bar width**, **Bar height** and **Rows** for both horizontal and vertical
+bars, in flow and canvas designs. Width is the member cell width; height controls the track
+without its captions. Wider bars wrap into another row when the tile cannot fit them.
+Rows shows the effective row count; selecting another feasible count adjusts the bar width
+to distribute equal-width members across the tile. Changing the tile width resizes bars
+to fill the available width while retaining the current columns and rows. Only extreme
+shrinking below one pixel per bar plus gaps forces additional rows. Editing **Bar width**
+directly still controls wrapping; changing tile height redistributes the track height.
+The tile grows as needed to keep every row visible, including after member/caption changes.
+The same layout is used by the preview and by hardware source expansion at runtime.
+Existing profiles retain their previous layout until a size or row setting is edited.
+Automatically sized bar groups hide the manual fit action. Other canvas groups offer
+**Fit height to content**, which adjusts only the tile height without rounding up to the
+placement grid. Real collisions still reject growth; an unchanged fit reports that the
+height already fits and creates neither an undo entry nor another preview update.
+The fit follow-up passes 119 selected tests, including 15 cases for visibility, feedback,
+one-step Undo, rounding-only versus genuine collisions and exact nested container bounds.
+The width-resize correction passes 145 selected tests, including real handle commits,
+nested and legacy groups, synchronized inspector values, Undo, minimum-width wrapping and
+native pixel measurements after horizontal resizing. The normal Debug output is updated.
+Validation passes 258 focused CapFrameX tests, 1,668 editor checks and 1,159 native preview
+checks. New cases cover Enter/Undo, both bar orientations, source expansion to 128 readings,
+wrap thresholds, container scaling/rollback, caption overflow recovery and rendered pixel
+dimensions at 50%, 100% and 200% scale.
+
+The inspector reserves consistent field heights for inherited and explicit values, including
+the color swatches and **Use design colors** action. Numeric inputs accept a decimal point
+or comma without treating it as a thousands separator. Clearing an optional number or color
+restores inheritance; invalid input remains marked and must be corrected before committing.
+
+Design text fields commit on **Enter** or **focus loss**, including numeric, color and font
+family inputs. Typing leaves the document and preview unchanged. **Shift+Enter** adds a
+line break in multiline text; searches continue to filter immediately. Saving (including
+Ctrl+S), switching tiles/profiles and closing the host handle pending text before proceeding,
+so drafts cannot silently disappear. An uncommitted draft counts as an unsaved change.
+The input text starts on the same left edge as its field title; the local text template
+removes duplicated content padding and compensates for WPF's internal text inset.
+The 2026-10-11 update passes 57 WPF/host tests and all 1,638 editor checks. Regressions cover
+deferred typing, Enter/Shift+Enter, focus loss, font input, one-step Undo, invalid corrections,
+tile selection, save/close prompts and measured input/label alignment in both themes.
+
+Preview handles resize tiles in both dimensions. A successful gesture in a legacy flow
+layout converts its measured positions to the fine grid; cancellation leaves the original
+layout intact. Moving or resizing a root tile beyond the right/bottom edge grows the canvas
+within the renderer's limits. A tile dragged from the layer list is positioned by its center;
+a tile dragged directly in the preview keeps its grab point. Each gesture is one undo step.
+
+The inspector/gesture correction passes 1,638 editor checks and 42 CapFrameX WPF tests.
+The latter include actual light/dark layouts at 1080×560 and 1280×820, inherited-field and
+underline geometry, color-reset spacing, decimal-comma/point entry, and invalid-edit guards.
+Production-designer mouse checks with isolated telemetry verify horizontal resizing beyond
+the old canvas edge, two-axis translation, layer-list placement, Undo and the color section.
+Debug/Release source and prebuilt-only Release builds succeed; the bundled files match the
+latter by hash. The ten new inspector tests also pass against the exact bundled Controls DLL.
+
+The **Composite dashboards** gallery contains **Turquoise Reference**, **Turquoise Compact**
+and **Turquoise Wide**. Each section is an editable container of metrics, captions, icons,
+bars and charts. Its hardware labels and readings bind to CapFrameX sources; the layouts
+do not assume that a particular processor or graphics card is installed.
+
+Double-click a container or choose **Edit contents** to work inside it. The breadcrumb and
+**Back** button return to its parent. The preview stays visible, while the layer list and
+position fields show the current container's contents. Elements and source readings can be
+dragged into containers, positioned on the local grid and resized. Moving the container
+moves its contents; resizing it scales their layout. Layer order controls overlapping
+elements. Lock a background or other element to protect it from accidental movement.
+
+The inspector exposes font family, separate metric label/value/unit sizes and colors,
+alignment, local padding and borders. A metric can show a second source with a custom
+separator, precision, unit and multiplier. Use a multiplier of `0.001` to display MHz as GHz.
+The duration format renders seconds as `h:mm:ss`; the capture timer remains the capture
+timer, not an invented session timer. **1% LOW**, CPU active time, GPU active time and PC
+latency retain their distinct source meanings.
+
+Gauges expose arc angles, thickness and value visibility. Charts can hide their frame,
+background and labels and display a current-value badge. Icon tiles use the installed icon
+font. Image tiles embed PNG/JPEG data in the profile, with contain/cover/stretch fitting and
+opacity, so exporting a profile does not leave dangling file paths. Imports are optimized
+to at most 1024 pixels and 128 KiB; the complete UTF-8 design must fit the existing 1 MiB
+transport limit. Font names are stored, but font files are not embedded.
+
+The source catalog distinguishes fan percentage from RPM. RAM total is the sum of used and
+available physical memory from the same device and snapshot; a missing constituent stays
+unavailable. GPU memory total uses its reported hardware sensor. Nested CPU groups expand
+to all discovered threads, and can hide labels and values for dense vertical bar strips.
+Runtime source binding and the editor use the same geometry, including growth of containers
+and subsequent tiles. Explicit bindings remain intact, and ambiguous devices are not chosen
+automatically.
+
+The saved-design catalog adds these three profiles as version 2. Upgrading a library keeps
+the active selection and user edits, and does not restore version-1 starter profiles that
+the user already deleted. Those version-2 additions brought the gallery to 62 templates and
+a fresh library to 15 saved designs; version 3 extends these totals to 68 and 18.
+
+Native-rendered examples with synthetic telemetry (32 threads in Reference, 128 in Wide):
+
+![Turquoise Reference](../images/1.9.2/overlay-turquoise-reference.png)
+
+![Turquoise Wide with 128 threads](../images/1.9.2/overlay-turquoise-wide-128.png)
+
+Composite validation on 2026-10-09: the editor passes 1,600 checks and native preview passes
+1,159 checks across all 62 templates. The CapFrameX regression selection passes 763 tests.
+An additional 100 focused checks pass after the final narrow-group source-binding fix.
+Native core passes 16 suites, DXGI passes 32 suites per architecture and Vulkan passes two
+suites per architecture; the final native rebuild also passes six focused rendering suites
+(331 design and 1,189 row-layout assertions). All five native DLLs build successfully.
+Production WPF designer mouse checks with isolated demo telemetry cover container entry,
+local move/resize, locking, pulling a child out via Back, and Undo. Release builds succeed
+with sibling sources and with `CfxOsdFromSource=false`; all seven bundled DLLs match the
+prebuilt-only application output by SHA-256, and both Vulkan manifests are identical.
+Real game compatibility and release signing remain separate release checks; the preview
+screenshots are not captures from a game.
+
 ## Row overlay inside a design
 
 Drag **Add → Row overlay** onto the preview, or select **Hybrid Benchmark**, **Hybrid Compact**
@@ -153,9 +321,11 @@ explicitly labelled demo data.
    from the bottom, with member labels below and optional values above. Disable **Show values**
    and reduce the shared bar height for a compact CPU load/clock panel. Up to 32 readings per
    row can be requested; the actual count adapts to the available width and label/value space.
-   **Fit group to content** adjusts a canvas group's frame after changing its appearance,
-   without moving neighboring tiles; the change supports Undo. Growth that would increase
-   overlap with another tile is rejected before changing the frame.
+   **Fit height to content** adjusts a manually sized canvas group's height to its current
+   readings and spacing, without a placement-grid rounding margin. Width and reading sizes
+   stay unchanged. Automatically sized bar groups hide this action. Successful changes support
+   Undo; repeated fits report no change. Growth that would increase overlap with another tile
+   is rejected before changing the frame. Nested containers grow only by the required amount.
    Narrow layouts reduce the actual column count to keep labels readable. Member checkboxes
    exclude individual readings; Refresh adds newly discovered members while retaining missing
    and excluded bindings. Up to 128 readings can be configured as one movable/duplicable tile.

@@ -10,9 +10,10 @@ namespace CapFrameX.OSD.Integration
 {
     public sealed class OverlayDesignStarterProfile
     {
-        internal OverlayDesignStarterProfile(string presetId, string json)
+        internal OverlayDesignStarterProfile(string presetId, string json, int introducedInVersion = 1)
         {
             PresetId = presetId;
+            IntroducedInVersion = introducedInVersion;
             Id = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes("CapFrameX.TileOverlay.Starter/" + presetId)))
                 .Substring(0, 32).ToLowerInvariant();
             DesignJson = OverlayRuntimeDesign.Canonicalize(json);
@@ -23,6 +24,7 @@ namespace CapFrameX.OSD.Integration
         public string Id { get; }
         public string Name { get; }
         public string DesignJson { get; }
+        internal int IntroducedInVersion { get; }
     }
 
     /// <summary>
@@ -32,7 +34,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 1;
+        public const int Version = 3;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -57,13 +59,17 @@ namespace CapFrameX.OSD.Integration
             {
                 "benchmark", "compact", "minimal", "frame-pacing", "gpu-dashboard", "memory-watch",
                 "vertical-thread-strip", "vertical-clock-deck", "vertical-thermal-panel",
-                "hybrid-benchmark", "hybrid-compact", "hybrid-thread-deck"
+                "hybrid-benchmark", "hybrid-compact", "hybrid-thread-deck",
+                "turquoise-reference", "turquoise-compact", "turquoise-wide",
+                "core-types-overview", "core-types-compact", "core-types-thermal"
             }.Select(id =>
             {
                 using var stream = assembly.GetManifestResourceStream("CapFrameX.OSD.Integration.StarterDesigns." + id + ".json")
                     ?? throw new InvalidOperationException("A built-in tile overlay design is missing: " + id);
                 using var reader = new StreamReader(stream, Encoding.UTF8);
-                return new OverlayDesignStarterProfile(id, reader.ReadToEnd());
+                int introducedInVersion = id.StartsWith("core-types-", StringComparison.Ordinal) ? 3
+                    : id.StartsWith("turquoise-", StringComparison.Ordinal) ? 2 : 1;
+                return new OverlayDesignStarterProfile(id, reader.ReadToEnd(), introducedInVersion);
             }).ToArray());
         }
     }

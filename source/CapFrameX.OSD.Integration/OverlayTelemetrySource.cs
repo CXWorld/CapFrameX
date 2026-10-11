@@ -20,10 +20,20 @@ namespace CapFrameX.OSD.Integration
         public string GroupName { get; init; }
         /// <summary>Numeric core/thread order within a repeated sensor family.</summary>
         public int GroupOrder { get; init; }
+        /// <summary>Native hybrid core type (P, E, LPE, D or LP), or null when the sensor supplies none.</summary>
+        public string CoreType { get; init; }
+        /// <summary>Core number as reported by a recognized per-core CPU sensor.</summary>
+        public int? CoreIndex { get; init; }
+        /// <summary>Thread number within the core, or null for a per-core reading.</summary>
+        public int? ThreadIndex { get; init; }
         public bool IsText { get; init; }
         public bool IsAvailable { get; init; } = true;
         public bool IsHardwareSensor { get; init; }
         public bool IsStableIdentifierAmbiguous { get; init; }
+
+        // Computed from the same hardware snapshot, never from a cached or inferred capacity.
+        internal string SumSourceIdA { get; init; }
+        internal string SumSourceIdB { get; init; }
 
         /// <summary>Optional preset role, assigned only to an unambiguous preferred source.</summary>
         public string SemanticKey { get; internal set; }
