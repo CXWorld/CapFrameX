@@ -34,7 +34,8 @@ namespace CapFrameX.View.Controls
         private int _designServiceGeneration;
 
         public OverlayDesignProfileSession ProfileSession => _profileSession;
-        public bool HasUnsavedChanges => _profileSession?.IsDirty == true;
+        public bool HasUnsavedChanges => _profileSession != null
+            && (_profileSession.IsDirty || Editor.HasPendingTextEdits);
         public bool IsProfileOperationPending => _profileOperationPending;
 
         public void ConfigureDesignService(IOverlayDesignService service)
@@ -49,6 +50,8 @@ namespace CapFrameX.View.Controls
         private void OnProfileHostLoaded(object sender, RoutedEventArgs e)
         {
             _profileHostLoaded = true;
+            Editor.PendingTextEditsChanged -= OnPendingTextEditsChanged;
+            Editor.PendingTextEditsChanged += OnPendingTextEditsChanged;
             AttachDesignService();
             UpdateProfileUi();
         }
@@ -56,6 +59,7 @@ namespace CapFrameX.View.Controls
         private void OnProfileHostUnloaded(object sender, RoutedEventArgs e)
         {
             _profileHostLoaded = false;
+            Editor.PendingTextEditsChanged -= OnPendingTextEditsChanged;
             DetachDesignService();
         }
 
@@ -136,6 +140,7 @@ namespace CapFrameX.View.Controls
             Editor.HostManagesFiles = true;
             Editor.DocumentEdited += OnDesignEdited;
             Editor.TemplateChanged += OnDesignEdited;
+            Editor.PendingTextEditsChanged += OnPendingTextEditsChanged;
             Editor.SaveRequested += OnSaveProfile;
         }
 
@@ -244,6 +249,15 @@ namespace CapFrameX.View.Controls
             UpdateProfileUi();
         }
 
+        private void OnPendingTextEditsChanged(object sender, EventArgs e)
+        {
+            if (_updatingProfileUi || _profileSession == null || _profileLoadFailed)
+                return;
+            // Drafts belong to the text field until Enter, focus loss or an explicit
+            // profile action. Only update the save/close affordances while typing.
+            UpdateProfileUi();
+        }
+
         private void SynchronizeWorkingDesign()
         {
             if (_profileSession == null || _profileLoadFailed)
@@ -312,7 +326,8 @@ namespace CapFrameX.View.Controls
                 ProfileToolbar.IsEnabled = !_profileOperationPending && !_profileLoadFailed && !_hostIsClosing;
                 DeleteProfileButton.IsEnabled = _profileStore.Profiles.Count > 1;
                 bool valid = !_profileSession.HasValidationErrors;
-                SaveProfileButton.IsEnabled = valid && _profileSession.IsDirty;
+                bool pendingText = Editor.HasPendingTextEdits;
+                SaveProfileButton.IsEnabled = pendingText || valid && _profileSession.IsDirty;
                 DuplicateProfileButton.IsEnabled = valid;
                 ExportProfileButton.IsEnabled = valid;
                 UseDesignButton.IsEnabled = valid && _designService?.CanActivate == true;
@@ -322,6 +337,7 @@ namespace CapFrameX.View.Controls
                 ToolTipService.SetShowOnDisabled(UseDesignButton, true);
                 ProfileStatus.Text = _profileLoadFailed
                     ? "Design unavailable · Saved profiles have been preserved."
+                    : pendingText ? "Unsaved text · Enter or leave the field to apply. Ctrl+S to save."
                     : _profileSession.HasValidationErrors
                     ? "Unsaved changes · Correct the highlighted values before saving."
                     : _profileSession.IsDirty ? "Unsaved changes · Ctrl+S to save."
@@ -349,6 +365,9 @@ namespace CapFrameX.View.Controls
             try
             {
                 ClearProfileError();
+                // Flush a focused field for Ctrl+S and host-driven close/profile
+                // switches. Failed validation must still allow Cancel or Discard.
+                Editor.TryCommitEdits();
                 SynchronizeWorkingDesign();
                 await action();
             }

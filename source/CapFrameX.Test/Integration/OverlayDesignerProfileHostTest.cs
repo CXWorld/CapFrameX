@@ -51,7 +51,7 @@ namespace CapFrameX.Test.Integration
         public void StarterCatalogIsAvailableImmediatelyAndBindingASavedGroupStartsClean()
         {
             using var fixture = new HostFixture();
-            Assert.AreEqual(12, fixture.ReopenStore().Profiles.Count);
+            Assert.AreEqual(OverlayDesignStarterCatalog.Profiles.Count, fixture.ReopenStore().Profiles.Count);
             var starter = fixture.ReopenStore().Profiles.Single(profile => profile.Name == "Vertical Thread Strip");
             fixture.Host.Designer.Sources = Enumerable.Range(1, 32).Select(index => new OsdTelemetrySource
             {
@@ -91,6 +91,109 @@ namespace CapFrameX.Test.Integration
             var saved = fixture.ReopenStore();
             Assert.AreEqual(expectedWidth, OsdDesignDocument.FromJson(saved.Get(saved.ActiveProfileId).DesignJson).Width);
             Assert.AreEqual(host.ProfileSession.ActiveProfile.Name, host.Designer.Document.Name);
+        }
+
+        [DataTestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void SavingCommitsPendingTextThroughTheHostAndEditorSaveRoutes(bool editorSaveRoute)
+        {
+            using var fixture = new HostFixture();
+            var host = fixture.Host;
+            var width = WidthField(fixture);
+            double originalWidth = host.Designer.Document.Width;
+            double expectedWidth = originalWidth + 40;
+            width.SetCurrentValue(TextBox.TextProperty, expectedWidth.ToString(System.Globalization.CultureInfo.CurrentCulture));
+            DrainDispatcher();
+
+            Assert.IsTrue(width.GetBindingExpression(TextBox.TextProperty).IsDirty);
+            Assert.AreEqual(originalWidth, host.Designer.Document.Width, "Typing must not publish the draft to the design.");
+            Assert.IsFalse(host.ProfileSession.IsDirty, "Typing must not serialize the previous model as an edited profile.");
+            Assert.IsTrue(host.HasUnsavedChanges, "The close guard must detect text that has not lost focus.");
+            Assert.IsTrue(fixture.Button("SaveProfileButton").IsEnabled);
+
+            if (editorSaveRoute)
+            {
+                // Ctrl+S and this editor button use the same SaveRequested route.
+                ((Button)host.Designer.FindName("SaveDesignButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+            }
+            else fixture.Click("SaveProfileButton");
+
+            Assert.AreEqual(expectedWidth, host.Designer.Document.Width);
+            Assert.IsFalse(host.Designer.HasPendingTextEdits);
+            Assert.IsFalse(host.HasUnsavedChanges);
+            Assert.AreEqual(expectedWidth,
+                OsdDesignDocument.FromJson(fixture.ReopenStore().Get(host.ProfileSession.ActiveProfile.Id).DesignJson).Width);
+        }
+
+        [DataTestMethod]
+        [DataRow(OverlayDesignPromptResult.Confirm)]
+        [DataRow(OverlayDesignPromptResult.Secondary)]
+        [DataRow(OverlayDesignPromptResult.Cancel)]
+        public void ClosingWithPendingTextHonorsSaveDiscardAndCancel(OverlayDesignPromptResult decision)
+        {
+            using var fixture = new HostFixture();
+            var host = fixture.Host;
+            var width = WidthField(fixture);
+            double originalWidth = host.Designer.Document.Width;
+            double expectedWidth = originalWidth + 40;
+            width.SetCurrentValue(TextBox.TextProperty, expectedWidth.ToString(System.Globalization.CultureInfo.CurrentCulture));
+            DrainDispatcher();
+            Assert.IsTrue(host.HasUnsavedChanges, "Owner shutdown checks this guard before preparing the designer close.");
+            Assert.IsFalse(host.ProfileSession.IsDirty);
+
+            bool closed = RunWithDecision(fixture, () => host.TryCloseAsync(), decision);
+
+            Assert.AreEqual(decision != OverlayDesignPromptResult.Cancel, closed);
+            Assert.AreEqual(decision == OverlayDesignPromptResult.Cancel, host.HasUnsavedChanges);
+            Assert.AreEqual(decision == OverlayDesignPromptResult.Confirm ? expectedWidth : originalWidth,
+                OsdDesignDocument.FromJson(fixture.ReopenStore().Get(host.ProfileSession.ActiveProfile.Id).DesignJson).Width);
+        }
+
+        [TestMethod]
+        public void CorrectingRejectedTextCanBeSavedWithoutAnotherFocusChange()
+        {
+            using var fixture = new HostFixture();
+            var host = fixture.Host;
+            var width = WidthField(fixture);
+            double correctedWidth = host.Designer.Document.Width + 40;
+            width.SetCurrentValue(TextBox.TextProperty, "invalid");
+            Assert.IsFalse(host.Designer.TryCommitEdits());
+            Assert.IsFalse(host.Designer.HasPendingTextEdits, "The unchanged rejected text has already been validated.");
+            Assert.IsFalse(fixture.Button("SaveProfileButton").IsEnabled);
+
+            width.SetCurrentValue(TextBox.TextProperty, correctedWidth.ToString(System.Globalization.CultureInfo.CurrentCulture));
+            DrainDispatcher();
+            Assert.IsTrue(host.Designer.HasPendingTextEdits);
+            Assert.IsTrue(fixture.Button("SaveProfileButton").IsEnabled, "A pending correction must be flushed by Save.");
+            fixture.Click("SaveProfileButton");
+            Assert.IsFalse(host.HasUnsavedChanges);
+            Assert.IsFalse(host.ProfileSession.HasValidationErrors);
+            Assert.AreEqual(correctedWidth,
+                OsdDesignDocument.FromJson(fixture.ReopenStore().Get(host.ProfileSession.ActiveProfile.Id).DesignJson).Width);
+        }
+
+        [TestMethod]
+        public void DiscardingPendingInvalidTextCanOpenAnotherProfileWithoutSavingIt()
+        {
+            using var fixture = new HostFixture(twoProfiles: true);
+            var host = fixture.Host;
+            var original = host.ProfileSession.ActiveProfile;
+            var requested = fixture.ReopenStore().Profiles.Single(profile => profile.Name == "Second");
+            var width = WidthField(fixture);
+            width.SetCurrentValue(TextBox.TextProperty, "invalid number");
+            DrainDispatcher();
+            Assert.IsTrue(host.Designer.HasPendingTextEdits);
+            Assert.IsFalse(host.ProfileSession.HasValidationErrors, "A draft is validated when it is committed, not on each keystroke.");
+            Assert.IsTrue(host.HasUnsavedChanges);
+
+            Assert.IsTrue(OpenWithDecision(fixture, requested.Id, OverlayDesignPromptResult.Secondary,
+                () => Assert.IsTrue(host.ProfileSession.HasValidationErrors, "The profile action must validate the pending draft before prompting.")));
+
+            Assert.AreEqual(requested.Id, host.ProfileSession.ActiveProfile.Id);
+            Assert.IsFalse(host.HasUnsavedChanges);
+            Assert.IsFalse(host.Designer.HasPendingTextEdits);
+            Assert.AreEqual(original.DesignJson, fixture.ReopenStore().Get(original.Id).DesignJson);
         }
 
         [TestMethod]
@@ -571,7 +674,20 @@ namespace CapFrameX.Test.Integration
             Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.Background, new Action(() => { }));
         }
 
+        private static TextBox WidthField(HostFixture fixture)
+        {
+            var tabs = (TabControl)fixture.Host.Designer.FindName("InspectorTabs");
+            tabs.SelectedItem = tabs.Items.Cast<TabItem>().Single(tab => Equals(tab.Header, "Layout"));
+            fixture.Arrange();
+            return Descendants<TextBox>(tabs).Single(input =>
+                BindingOperations.GetBinding(input, TextBox.TextProperty)?.Path?.Path == "Document.Width");
+        }
+
         private static bool OpenWithDecision(HostFixture fixture, string profileId,
+            OverlayDesignPromptResult decision, Action whilePromptOpen = null)
+            => RunWithDecision(fixture, () => fixture.Host.OpenProfileAsync(profileId), decision, whilePromptOpen);
+
+        private static bool RunWithDecision(HostFixture fixture, Func<Task<bool>> startOperation,
             OverlayDesignPromptResult decision, Action whilePromptOpen = null)
         {
             var dialog = (DialogHost)fixture.Host.FindName("ProfileDialogHost");
@@ -591,7 +707,7 @@ namespace CapFrameX.Test.Integration
             SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext(Dispatcher.CurrentDispatcher));
             try
             {
-                var operation = fixture.Host.OpenProfileAsync(profileId);
+                var operation = startOperation();
                 var frame = new DispatcherFrame();
                 var timeout = new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
                 timeout.Tick += (_, _) => frame.Continue = false;
