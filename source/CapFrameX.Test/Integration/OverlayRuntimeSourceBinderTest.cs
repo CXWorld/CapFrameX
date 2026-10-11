@@ -19,6 +19,45 @@ namespace CapFrameX.Test.Integration
     public class OverlayRuntimeSourceBinderTest
     {
         [DataTestMethod]
+        [DataRow(.5, 304)]
+        [DataRow(1.0, 304)]
+        [DataRow(2.0, 304)]
+        [DataRow(.5, 32)]
+        [DataRow(1.0, 32)]
+        [DataRow(2.0, 32)]
+        public void NestedSensorGroupsGrowTheirContainersAndBindBothMetricSources(double scale, int groupWidth)
+        {
+            var document = new OsdDesignDocument
+            {
+                Name = "Composite hardware", IsCanvas = true, Width = 640, CanvasHeight = 720,
+                Padding = 4, GridSize = 4, Scale = scale
+            };
+            var container = new OsdDesignTile
+            {
+                Kind = "container", Label = "Processor", X = 0, Y = 0, FrameWidth = 320, FrameHeight = 240
+            };
+            var group = ThreadStrip().Tiles.Single(tile => tile.Kind == "group").Copy();
+            group.X = 0; group.Y = 0; group.FrameWidth = groupWidth; group.FrameHeight = 120;
+            group.GroupColumns = 8;
+            group.GroupShowLabels = false;
+            group.GroupShowValues = false;
+            group.Height = 32;
+            container.Children.Add(group);
+            container.Children.Add(new OsdDesignTile
+            {
+                Kind = "metric", Key = "cpuClock", Unit = "GHz", ValueScale = .001,
+                SecondaryKey = "ramTotal", SecondaryUnit = "GB", SecondaryScale = 1,
+                X = 0, Y = 128, FrameWidth = 304, FrameHeight = 64
+            });
+            document.Tiles.Add(container);
+            document.Tiles.Add(new OsdDesignTile { X = 0, Y = 248, FrameWidth = 320, FrameHeight = 64 });
+            var catalog = Sources("cpu-loads", 128)
+                .Append(new OverlayTelemetrySource { Id = "cpu/clock", SemanticKey = "cpuClock", Unit = "MHz" })
+                .Append(new OverlayTelemetrySource { Id = "ram/total", SemanticKey = "ramTotal", Unit = "GB" }).ToArray();
+            AssertEditorParity(document, catalog, "Nested group expansion and scaled sources");
+        }
+
+        [DataTestMethod]
         [DataRow(.5)]
         [DataRow(1.0)]
         [DataRow(2.0)]
@@ -53,6 +92,114 @@ namespace CapFrameX.Test.Integration
             group.ValueSize = 16;
             document.GridSize = 5;
             AssertEditorParity(document, Sources("cpu-loads", 32), display + "/" + orientation + "/" + showValues);
+        }
+
+        [DataTestMethod]
+        [DataRow("horizontal", 32, 120.0, 12.0, .5)]
+        [DataRow("horizontal", 32, 120.0, 12.0, 1.0)]
+        [DataRow("horizontal", 128, 120.0, 12.0, 2.0)]
+        [DataRow("vertical", 32, 40.0, 32.0, .5)]
+        [DataRow("vertical", 32, 40.0, 32.0, 1.0)]
+        [DataRow("vertical", 128, 40.0, 32.0, 2.0)]
+        public void ExplicitBarDimensionsWrapDiscoveredSourcesAndPreserveEditorGeometry(
+            string orientation, int sourceCount, double barWidth, double barHeight, double scale)
+        {
+            var document = SizedBarDocument(orientation, barWidth, barHeight);
+            document.Scale = scale;
+            var group = document.Tiles.Single(tile => tile.Kind == "group");
+            // A legacy column preference must not cap the explicit bar layout.
+            group.GroupColumns = 1;
+            var catalog = Sources("cpu-loads", sourceCount);
+            var bound = OverlayRuntimeSourceBinder.Bind(OverlayRuntimeDesign.Parse("sized", "Sized bars", document.ToJson()), catalog);
+            var members = GroupMembers(bound).ToArray();
+            double gap = orientation == "vertical" ? 4 : 8;
+            int columns = Math.Min(sourceCount, (int)Math.Floor((256 + gap) / (barWidth + gap)));
+            Assert.AreEqual(sourceCount, members.Length);
+            Assert.AreEqual(0, (double)members[columns]["x"], .000001, "The next bar must start a new row.");
+            Assert.IsTrue((double)members[columns]["y"] > 0);
+            foreach (var member in members)
+            {
+                Assert.AreEqual(barWidth * scale, (double)member["width"], .000001);
+                Assert.AreEqual(barWidth * scale, (double)member["frameWidth"], .000001);
+                Assert.AreEqual(barHeight * scale, (double)member["height"], .000001);
+                Assert.IsTrue((double)member["x"] + (double)member["frameWidth"] <= 256 * scale + .000001);
+            }
+            AssertEditorParity(document, catalog, orientation + " fixed bars at scale " + scale);
+        }
+
+        [DataTestMethod]
+        [DataRow("horizontal", 124.0, 2)]
+        [DataRow("horizontal", 124.01, 1)]
+        [DataRow("vertical", 126.0, 2)]
+        [DataRow("vertical", 126.01, 1)]
+        [DataRow("vertical", 320.0, 1)]
+        public void ExplicitBarsWrapAtTheAvailableWidthAndClampAnOversizedSingleBar(string orientation, double width, int columns)
+        {
+            var document = SizedBarDocument(orientation, width, 8);
+            var group = document.Tiles.Single(tile => tile.Kind == "group");
+            group.GroupShowLabels = false;
+            group.GroupShowValues = false;
+            var catalog = Sources("cpu-loads", 32);
+            var bound = OverlayRuntimeSourceBinder.Bind(OverlayRuntimeDesign.Parse("wrap", "Wrap", document.ToJson()), catalog);
+            var members = GroupMembers(bound).ToArray();
+            Assert.AreEqual(0, (double)members[columns]["x"], .000001);
+            Assert.IsTrue((double)members[columns]["y"] > 0);
+            Assert.AreEqual(Math.Min(width, 256), (double)members[0]["frameWidth"], .000001);
+            AssertEditorParity(document, catalog, "Wrap boundary " + orientation + "/" + width);
+        }
+
+        [DataTestMethod]
+        [DataRow("horizontal", true)]
+        [DataRow("horizontal", false)]
+        [DataRow("vertical", true)]
+        [DataRow("vertical", false)]
+        public void OneExplicitBarDimensionUsesTheOtherLegacyDimension(string orientation, bool widthOnly)
+        {
+            var document = SizedBarDocument(orientation, widthOnly ? 60 : null, widthOnly ? null : 20);
+            AssertEditorParity(document, Sources("cpu-loads", 32), orientation + "/widthOnly=" + widthOnly);
+        }
+
+        [DataTestMethod]
+        [DataRow(.5)]
+        [DataRow(1.0)]
+        [DataRow(2.0)]
+        public void ExplicitBarsGrowNestedContainersAfter128ThreadDiscovery(double scale)
+        {
+            var document = SizedBarDocument("vertical", 24, 32);
+            document.Scale = scale;
+            var group = document.Tiles.Single(tile => tile.Kind == "group");
+            var following = document.Tiles.Last();
+            document.Tiles.Clear();
+            var container = new OsdDesignTile
+            {
+                Kind = "container", Padding = 0, X = 0, Y = 0, FrameWidth = 280, FrameHeight = 176
+            };
+            container.Children.Add(group);
+            container.Children.Add(following);
+            document.Tiles.Add(container);
+            document.Tiles.Add(new OsdDesignTile { X = 0, Y = 184, FrameWidth = 280, FrameHeight = 48 });
+            AssertEditorParity(document, Sources("cpu-loads", 128), "Nested fixed bars at scale " + scale);
+        }
+
+        [DataTestMethod]
+        [DataRow(.5)]
+        [DataRow(1.0)]
+        [DataRow(2.0)]
+        public void RuntimeRejectsGrowthThatWouldExhaustTheCanvasGridMargin(double scale)
+        {
+            var document = SizedBarDocument("vertical", 320, 27.828125);
+            document.Scale = scale;
+            document.Tiles.RemoveAt(1);
+            var group = document.Tiles[0];
+            group.GroupShowLabels = false;
+            group.GroupShowValues = false;
+            var catalog = Sources("cpu-loads", 128);
+            var design = OverlayRuntimeDesign.Parse("limit", "Grid margin", document.ToJson());
+            string original = design.AuthoringJson;
+            // The last bar fits within 4096 px, but the required trailing grid margin does not.
+            Assert.ThrowsException<FormatException>(() => OverlayRuntimeSourceBinder.Bind(design, catalog));
+            Assert.ThrowsException<FormatException>(() => document.BindPresetSources(catalog.Select(EditorSource)));
+            Assert.AreEqual(original, design.AuthoringJson);
         }
 
         [TestMethod]
@@ -163,6 +310,27 @@ namespace CapFrameX.Test.Integration
 
         private static OsdDesignDocument ThreadStrip() => OsdDesignDocument.FromJson(
             OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "vertical-thread-strip").DesignJson);
+
+        private static OsdDesignDocument SizedBarDocument(string orientation, double? width, double? height)
+        {
+            var group = ThreadStrip().Tiles.Single(tile => tile.Kind == "group").Copy();
+            group.X = 0;
+            group.Y = 0;
+            group.FrameWidth = 256;
+            group.FrameHeight = 112;
+            group.Padding = 0;
+            group.GroupBarOrientation = orientation;
+            group.GroupBarWidth = width;
+            group.GroupBarHeight = height;
+            var document = new OsdDesignDocument
+            {
+                Name = "Sized bars", IsCanvas = true, Width = 640, CanvasHeight = 720,
+                Padding = 0, GridSize = 4
+            };
+            document.Tiles.Add(group);
+            document.Tiles.Add(new OsdDesignTile { X = 0, Y = 120, FrameWidth = 256, FrameHeight = 48 });
+            return document;
+        }
 
         private static IEnumerable<JToken> GroupMembers(OverlayRuntimeDesign design) => JObject.Parse(design.TemplateJson)["root"]["children"]
             .Select(tile => tile["children"][0]).Where(widget => (string)widget["type"] == "panel")

@@ -147,6 +147,9 @@ namespace CapFrameX.View.Controls
                     GroupKey = source.GroupKey,
                     GroupName = source.GroupName,
                     GroupOrder = source.GroupOrder,
+                    CoreType = source.CoreType,
+                    CoreIndex = source.CoreIndex,
+                    ThreadIndex = source.ThreadIndex,
                     IsAvailable = source.IsAvailable,
                     IsText = source.IsText,
                     SuggestedValueLines = source.Identifier == "RunHistory" ? 8 : 1
@@ -241,7 +244,7 @@ namespace CapFrameX.View.Controls
         private async void RefreshClassicPreview(OverlayTelemetrySnapshot snapshot)
         {
             if (_classicReadPending || _classicPreview == null ||
-                !Editor.Document.Tiles.Any(tile => tile.Kind == "classicRows")) return;
+                !Editor.Document.EnumerateTiles().Any(tile => tile.Kind == "classicRows")) return;
             _classicReadPending = true;
             int generation = _liveGeneration;
             int sourceGeneration = _sourceGeneration;

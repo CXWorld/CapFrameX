@@ -43,11 +43,12 @@ namespace CapFrameX.OSD.Integration
                 }
                 // Group members are already expanded into native child widgets; disabled
                 // members exist only in editor metadata and must never request sensor values.
-                if (node["key"] != null)
+                foreach (string field in new[] { "key", "secondaryKey" })
                 {
-                    if (node["key"].Type != JTokenType.String)
+                    if (node[field] == null) continue;
+                    if (node[field].Type != JTokenType.String)
                         throw new InvalidDataException("An overlay widget has an invalid telemetry key.");
-                    string key = (string)node["key"];
+                    string key = (string)node[field];
                     if (string.IsNullOrWhiteSpace(key) || key.IndexOf('\0') >= 0 || Encoding.UTF8.GetByteCount(key) > 2048)
                         throw new InvalidDataException("An overlay widget has an invalid telemetry key.");
                     keys.Add(key);
