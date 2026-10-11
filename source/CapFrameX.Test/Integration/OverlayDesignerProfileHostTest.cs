@@ -93,7 +93,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(host.ProfileSession.ActiveProfile.Name, host.Designer.Document.Name);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public void SavingCommitsPendingTextThroughTheHostAndEditorSaveRoutes(bool editorSaveRoute)
@@ -126,7 +126,7 @@ namespace CapFrameX.Test.Integration
                 OsdDesignDocument.FromJson(fixture.ReopenStore().Get(host.ProfileSession.ActiveProfile.Id).DesignJson).Width);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(OverlayDesignPromptResult.Confirm)]
         [DataRow(OverlayDesignPromptResult.Secondary)]
         [DataRow(OverlayDesignPromptResult.Cancel)]

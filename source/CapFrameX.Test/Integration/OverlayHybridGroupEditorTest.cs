@@ -13,7 +13,7 @@ namespace CapFrameX.Test.Integration
     [DoNotParallelize]
     public class OverlayHybridGroupEditorTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("horizontal")]
         [DataRow("vertical")]
         public void CoreTypeToggleSeparatesRowsFitsHeightAndUndoesAsOneEdit(string orientation)
@@ -43,7 +43,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsFalse(((Button)host.Editor.FindName("UndoButton")).IsEnabled);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("horizontal")]
         [DataRow("vertical")]
         public void RowsChoiceAccountsForCoreTypeBoundaries(string orientation)
@@ -64,7 +64,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(host.Layout.ContentHeight + 24, host.Editor.SelectedElement.FrameHeight.Value, .001);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("horizontal")]
         [DataRow("vertical")]
         public void DisablingACompleteCoreTypeRemovesItsRowAndKeepsChoicesSynchronized(string orientation)
@@ -142,7 +142,7 @@ namespace CapFrameX.Test.Integration
             CollectionAssert.AreEqual(new[] { 8, 8, 8 }, document.GetGroupBarLayout(tile).RowCounts.ToArray());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(" p ", "P C1 T1")]
         [DataRow("lpe", "LP-E C1 T1")]
         [DataRow("future", "C1 T1")]

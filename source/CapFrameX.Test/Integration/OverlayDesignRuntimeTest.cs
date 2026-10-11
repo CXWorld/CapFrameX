@@ -48,7 +48,7 @@ namespace CapFrameX.Test.Integration
         {
             var document = JObject.Parse(Scene("ramUsed"));
             document["root"]["children"][0]["secondaryKey"] = new JArray("ramTotal");
-            Assert.ThrowsException<InvalidDataException>(() => OverlayRuntimeDesign.Parse("id", "Invalid", document.ToString()));
+            Assert.ThrowsExactly<InvalidDataException>(() => OverlayRuntimeDesign.Parse("id", "Invalid", document.ToString()));
         }
 
         private string _folder;

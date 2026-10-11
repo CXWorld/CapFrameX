@@ -18,7 +18,7 @@ namespace CapFrameX.Test.Integration
     [TestClass]
     public class OverlayRuntimeSourceBinderTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(.5, 304)]
         [DataRow(1.0, 304)]
         [DataRow(2.0, 304)]
@@ -57,7 +57,7 @@ namespace CapFrameX.Test.Integration
             AssertEditorParity(document, catalog, "Nested group expansion and scaled sources");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(.5)]
         [DataRow(1.0)]
         [DataRow(2.0)]
@@ -94,7 +94,7 @@ namespace CapFrameX.Test.Integration
             AssertEditorParity(document, Sources("cpu-loads", 32), display + "/" + orientation + "/" + showValues);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("horizontal", 32, 120.0, 12.0, .5)]
         [DataRow("horizontal", 32, 120.0, 12.0, 1.0)]
         [DataRow("horizontal", 128, 120.0, 12.0, 2.0)]
@@ -127,7 +127,7 @@ namespace CapFrameX.Test.Integration
             AssertEditorParity(document, catalog, orientation + " fixed bars at scale " + scale);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("horizontal", 124.0, 2)]
         [DataRow("horizontal", 124.01, 1)]
         [DataRow("vertical", 126.0, 2)]
@@ -148,7 +148,7 @@ namespace CapFrameX.Test.Integration
             AssertEditorParity(document, catalog, "Wrap boundary " + orientation + "/" + width);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("horizontal", true)]
         [DataRow("horizontal", false)]
         [DataRow("vertical", true)]
@@ -159,7 +159,7 @@ namespace CapFrameX.Test.Integration
             AssertEditorParity(document, Sources("cpu-loads", 32), orientation + "/widthOnly=" + widthOnly);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(.5)]
         [DataRow(1.0)]
         [DataRow(2.0)]
@@ -181,7 +181,7 @@ namespace CapFrameX.Test.Integration
             AssertEditorParity(document, Sources("cpu-loads", 128), "Nested fixed bars at scale " + scale);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(.5)]
         [DataRow(1.0)]
         [DataRow(2.0)]
@@ -197,8 +197,8 @@ namespace CapFrameX.Test.Integration
             var design = OverlayRuntimeDesign.Parse("limit", "Grid margin", document.ToJson());
             string original = design.AuthoringJson;
             // The last bar fits within 4096 px, but the required trailing grid margin does not.
-            Assert.ThrowsException<FormatException>(() => OverlayRuntimeSourceBinder.Bind(design, catalog));
-            Assert.ThrowsException<FormatException>(() => document.BindPresetSources(catalog.Select(EditorSource)));
+            Assert.ThrowsExactly<FormatException>(() => OverlayRuntimeSourceBinder.Bind(design, catalog));
+            Assert.ThrowsExactly<FormatException>(() => document.BindPresetSources(catalog.Select(EditorSource)));
             Assert.AreEqual(original, design.AuthoringJson);
         }
 
