@@ -44,12 +44,15 @@ namespace CapFrameX.OSD.Integration
         private IHookDesignChannel _channel;
         private IDisposable _demand, _snapshotSubscription;
         private IReadOnlyDictionary<string, string> _aliases = new Dictionary<string, string>();
+        private HashSet<string> _hardwareSourceIds = new HashSet<string>(StringComparer.Ordinal);
+        private HashSet<string> _processIndependentSourceIds = new HashSet<string>(StringComparer.Ordinal);
         private IReadOnlyList<OverlayTelemetrySource> _catalogSources, _boundCatalog;
         private OverlayRuntimeDesign _boundSourceDesign, _boundDesign;
         private OverlayTelemetrySnapshot _latestTelemetry;
         private int _pid, _catalogGeneration;
         private bool _active, _hookEnabled, _freeEnabled, _hasProcesses, _fallback, _disposed;
         private bool _channelFailureReported;
+        private bool _telemetryFailureReported;
         private ulong _designRevision, _metricsRevision;
         private DateTime _targetChangedUtc;
 
@@ -89,7 +92,6 @@ namespace CapFrameX.OSD.Integration
                 int previous = _pid;
                 _pid = Math.Max(0, pid);
                 if (previous > 0 && previous != _pid) HookTargetPolicy.Invalidate(previous);
-                _latestTelemetry = null;
                 _targetChangedUtc = DateTime.UtcNow;
                 _channel?.Disable();
             })));
@@ -114,7 +116,15 @@ namespace CapFrameX.OSD.Integration
 
         internal void ReportRendererError(string message) => _designs.ReportRuntimeError(message);
         internal void ReportRendererError(LocalizedText message) => _designs.ReportRuntimeError(message.Resolve);
-        internal void ReportRendererReady() => _designs.ReportRuntimeReady();
+        internal void ReportRendererReady()
+        {
+            lock (_gate)
+            {
+                // Applying an empty restart snapshot does not recover a failed sensor stream.
+                if (_disposed || _telemetryFailureReported) return;
+                _designs.ReportRuntimeReady();
+            }
+        }
 
         private void OnDesignChanged(object sender, EventArgs e)
         {
@@ -136,8 +146,11 @@ namespace CapFrameX.OSD.Integration
                     var design = _designs.CurrentDesign;
                     _observedDesign = design;
                     bool hookVisible = design != null && _active && _hookEnabled && _pid > 0 && _targetAllowed(_pid);
-                    bool freeVisible = design != null && _active && _hasProcesses && (_freeEnabled || _fallback);
-                    if (hookVisible || freeVisible)
+                    // Hardware sampling belongs to the enabled tile overlay, not to the
+                    // currently detected game. Loading screens can temporarily lose the PID
+                    // or process count without making the machine's sensors unavailable.
+                    bool needsTelemetry = design != null && _active && (_hookEnabled || _freeEnabled || _fallback);
+                    if (needsTelemetry)
                     {
                         if (_demand == null)
                         {
@@ -178,6 +191,17 @@ namespace CapFrameX.OSD.Integration
                         _channel?.Dispose();
                         _channel = null;
                     }
+                    if (_telemetryFailureReported && _demand != null && _latestTelemetry != null
+                        && _latestTelemetry.TimestampUtc <= DateTime.UtcNow.AddSeconds(1))
+                    {
+                        // A reconnected stream has recovered only after it delivers a sample.
+                        // This applies to hook-free publication as well as the in-game channel.
+                        _telemetryFailureReported = false;
+                        recovered = true;
+                    }
+                    // Clear the recovered error before notifying consumers. A renderer can
+                    // reject this update synchronously and its newer error must remain visible.
+                    if (recovered) _designs.ReportRuntimeReady();
                     _updates.OnNext(_current);
                 }
                 catch (Exception error)
@@ -190,7 +214,6 @@ namespace CapFrameX.OSD.Integration
                 }
             }
             if (errorMessage != null) _designs.ReportRuntimeError(errorMessage);
-            else if (recovered) _designs.ReportRuntimeReady();
         }
 
         private async Task RefreshCatalogAsync(int generation)
@@ -201,6 +224,11 @@ namespace CapFrameX.OSD.Integration
                 var aliases = sources.Where(source => !string.IsNullOrEmpty(source.SemanticKey) && source.IsAvailable)
                     .GroupBy(source => source.SemanticKey, StringComparer.Ordinal).Where(group => group.Count() == 1)
                     .ToDictionary(group => group.Key, group => group.Single().Id, StringComparer.Ordinal);
+                var hardwareSourceIds = sources.Where(source => source.IsHardwareSensor
+                        || (source.SumSourceIdA != null && source.SumSourceIdB != null))
+                    .Select(source => source.Id).ToHashSet(StringComparer.Ordinal);
+                var processIndependentSourceIds = sources.Where(source => !source.IsProcessSpecific)
+                    .Select(source => source.Id).ToHashSet(StringComparer.Ordinal);
                 // A cached catalog may complete inside Change. That call will publish the
                 // bound scene itself; recursively publishing here would retry a failed
                 // channel twice before its next heartbeat and erase the first error.
@@ -209,6 +237,8 @@ namespace CapFrameX.OSD.Integration
                 {
                     if (_disposed || generation != _catalogGeneration || _demand == null) return;
                     _aliases = aliases;
+                    _hardwareSourceIds = hardwareSourceIds;
+                    _processIndependentSourceIds = processIndependentSourceIds;
                     _catalogSources = sources;
                 }
                 if (publishAfterDiscovery) Change(null);
@@ -220,7 +250,7 @@ namespace CapFrameX.OSD.Integration
         {
             lock (_gate)
             {
-                if (_disposed || _demand == null || snapshot.TimestampUtc < _targetChangedUtc) return;
+                if (_disposed || _demand == null) return;
                 _latestTelemetry = snapshot;
             }
             Change(null);
@@ -232,6 +262,7 @@ namespace CapFrameX.OSD.Integration
             {
                 if (_disposed) return;
                 StopDemand();
+                _telemetryFailureReported = true;
                 _channel?.Disable();
             }
             _designs.ReportRuntimeError(() => CxLang.Format("OverlayDesignStatus_StreamStopped", OverlayDesignText.ExceptionMessage(error)));
@@ -249,12 +280,31 @@ namespace CapFrameX.OSD.Integration
             design = _boundDesign;
             bool changed = _current.Design?.ProfileId != design?.ProfileId || _current.Design?.TemplateJson != design?.TemplateJson;
             if (changed) ++_designRevision;
-            var fresh = _latestTelemetry;
-            if (fresh != null && (DateTime.UtcNow - fresh.TimestampUtc > TimeSpan.FromSeconds(3) || fresh.TimestampUtc > DateTime.UtcNow.AddSeconds(1)))
-                fresh = null;
-            string metrics = design?.CreateMetrics(fresh, _aliases) ?? "{}";
+            string metrics = design?.CreateMetrics(GetPublishableTelemetry(), _aliases) ?? "{}";
             if (changed || metrics != _current.MetricsJson || _metricsRevision == 0) ++_metricsRevision;
             _current = new OverlayDesignRuntimeSnapshot(design, metrics, _designRevision, _metricsRevision);
+        }
+
+        private OverlayTelemetrySnapshot GetPublishableTelemetry()
+        {
+            var snapshot = _latestTelemetry;
+            var now = DateTime.UtcNow;
+            if (snapshot == null || snapshot.TimestampUtc > now.AddSeconds(1)) return null;
+            bool expired = now - snapshot.TimestampUtc > TimeSpan.FromSeconds(3);
+            if (_hasProcesses && snapshot.TimestampUtc >= _targetChangedUtc
+                && !expired) return snapshot;
+
+            // A slow/background hardware poll leaves its last completed sample valid until
+            // the next poll, just as in SensorService. Fresh machine-wide readings (PMD,
+            // battery, system information) also survive target changes, while game metrics
+            // cannot cross targets. Never merge samples: an explicitly missing/NaN
+            // reading in the next snapshot must still replace the previous sensor value.
+            var retainedSources = expired ? _hardwareSourceIds : _processIndependentSourceIds;
+            var values = snapshot.Values.Where(value => retainedSources.Contains(value.Key))
+                .ToDictionary(value => value.Key, value => value.Value, StringComparer.Ordinal);
+            var textValues = snapshot.MetricValues.Where(value => value.Value is string && retainedSources.Contains(value.Key))
+                .ToDictionary(value => value.Key, value => value.Value, StringComparer.Ordinal);
+            return new OverlayTelemetrySnapshot(snapshot.TimestampUtc, values, textValues);
         }
 
         private void StopDemand()

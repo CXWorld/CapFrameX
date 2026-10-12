@@ -86,8 +86,8 @@ namespace CapFrameX.OSD.Integration
                 }
                 if (_metrics != null)
                 {
-                    sources.Add(AdditionalSource("ProcessName", "Selected application", "Performance", "Application", "", "processName", true));
-                    sources.Add(AdditionalSource("GraphicsAPI", "Graphics API / runtime", "Performance", "Application", "", "graphicsApi", true));
+                    sources.Add(AdditionalSource("ProcessName", "Selected application", "Performance", "Application", "", "processName", true, true));
+                    sources.Add(AdditionalSource("GraphicsAPI", "Graphics API / runtime", "Performance", "Application", "", "graphicsApi", true, true));
                 }
                 if (_overlay != null)
                 {
@@ -351,6 +351,7 @@ namespace CapFrameX.OSD.Integration
                 Name = name, Unit = unit, HardwareName = isPmd ? "PMD" : "PresentMon",
                 HardwareType = isPmd ? "PMD" : "Performance", SensorType = isPmd ? "Power" : "Metric",
                 Category = isPmd ? "Power" : "Performance", Subcategory = MetricCategory(identifier),
+                IsProcessSpecific = !isPmd,
                 SemanticKey = semantic
             };
         }
@@ -415,6 +416,9 @@ namespace CapFrameX.OSD.Integration
                 Id = "metric/" + id, Identifier = id, StableIdentifier = entry.StableIdentifier ?? id,
                 Name = entry.Description ?? id, Unit = info.Item3, Category = info.Item1,
                 Subcategory = info.Item2, IsText = info.Item5, SemanticKey = info.Item4,
+                IsProcessSpecific = id is "Framerate" or "Frametime" or "DisplayTime" or "ProcessName" or "GraphicsAPI" or "Resolution"
+                    or "HookOverlayStatus" or "FrameGenerationTechnology" or "FrameGenerationStatus"
+                    || id.StartsWith("Online", StringComparison.Ordinal),
                 // A renderer toggle controls live availability, never whether a source can be
                 // placed in a design intended for a different renderer or later session.
                 IsAvailable = true, HardwareName = "CapFrameX",
@@ -423,12 +427,13 @@ namespace CapFrameX.OSD.Integration
         }
 
         private static OverlayTelemetrySource AdditionalSource(string id, string name, string category,
-            string subcategory, string unit, string semantic, bool text)
+            string subcategory, string unit, string semantic, bool text, bool processSpecific = false)
             => new OverlayTelemetrySource
             {
                 Id = "metric/" + id, Identifier = id, StableIdentifier = id, Name = name,
                 Category = category, Subcategory = subcategory, Unit = unit, SemanticKey = semantic,
                 IsText = text, HardwareName = "CapFrameX", HardwareType = category,
+                IsProcessSpecific = processSpecific,
                 SensorType = text ? "Text" : "Metric"
             };
 

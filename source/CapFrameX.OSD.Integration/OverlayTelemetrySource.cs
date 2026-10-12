@@ -29,6 +29,8 @@ namespace CapFrameX.OSD.Integration
         public bool IsText { get; init; }
         public bool IsAvailable { get; init; } = true;
         public bool IsHardwareSensor { get; init; }
+        /// <summary>Whether the reading belongs to the selected game rather than the machine.</summary>
+        public bool IsProcessSpecific { get; init; }
         public bool IsStableIdentifierAmbiguous { get; init; }
 
         // Computed from the same hardware snapshot, never from a cached or inferred capacity.

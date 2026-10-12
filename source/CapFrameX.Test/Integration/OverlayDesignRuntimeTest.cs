@@ -286,7 +286,7 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void PublisherDemandsTelemetryOnlyForVisibleAllowedSavedDesignAndClearsOnHide()
+        public void PublisherDemandsTelemetryForAnActiveSavedDesignAndClearsOnHide()
         {
             var service = ActiveService();
             _configuration.Object.IsOverlayActive = false;
@@ -313,6 +313,11 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(0, channels.Last().Pid);
             Assert.IsTrue(channels.Last().Disposed);
             Assert.AreEqual(JTokenType.Null, JObject.Parse(publisher.Current.MetricsJson)["cpuLoad"].Type);
+            _changes.OnNext((nameof(IAppConfiguration.IsOverlayActive), true));
+            Assert.AreEqual(1, telemetry.Leases);
+            Assert.AreEqual(2, telemetry.Acquisitions);
+            Assert.AreEqual(JTokenType.Null, JObject.Parse(channels.Last().Metrics)["cpuLoad"].Type,
+                "Re-enabling the overlay must not replay hardware values cleared by an explicit hide.");
         }
 
         [TestMethod]
@@ -328,10 +333,13 @@ namespace CapFrameX.Test.Integration
             using var publisher = Publisher(service, telemetry, pids, ticks, channels, allowed: _ => false);
             pids.OnNext(42);
             ticks.OnNext(1);
-            Assert.AreEqual(0, telemetry.Leases);
+            Assert.AreEqual(1, telemetry.Leases, "A blocked render target must not stop machine-wide sensors.");
             Assert.AreEqual(0, channels.Count);
+            telemetry.Emit(38);
+            Assert.AreEqual(38, (int)JObject.Parse(publisher.Current.MetricsJson)["cpuLoad"]);
             service.Deactivate();
             Assert.IsNull(publisher.Current.Design);
+            Assert.AreEqual(0, telemetry.Leases);
             Assert.AreEqual(0, channels.Count);
         }
 
@@ -365,10 +373,173 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void TargetSwitchClearsValuesAndRejectsSnapshotsFromBeforeTheSwitch()
+        public void LoadingTargetGapKeepsHardwareDemandAndClearsOnlyPreviousProcessValues()
+        {
+            var service = ActiveService("cpuLoad", "fps", "processName", "pmdGpuPower", "cpuName");
+            _configuration.Object.EnableHookOverlay = true;
+            _configuration.Object.IsOverlayActive = true;
+            using var telemetry = new FakeTelemetry { Sources = HardwareAndProcessCatalog() };
+            using var pids = new Subject<int>();
+            using var ticks = new Subject<long>();
+            var channels = new List<FakeChannel>();
+            using var publisher = Publisher(service, telemetry, pids, ticks, channels);
+            Assert.AreEqual(1, telemetry.Leases, "Sensors must be ready before a game starts presenting.");
+            Assert.AreEqual(0, channels.Count);
+            pids.OnNext(42);
+            telemetry.Emit(new OverlayTelemetrySnapshot(DateTime.UtcNow,
+                new Dictionary<string, double?>
+                {
+                    ["cpu/total"] = 25, ["metric/Framerate"] = 120, ["metric/PmdGpuPowerCurrent"] = 240
+                }, new Dictionary<string, object>
+                {
+                    ["metric/ProcessName"] = "Previous game", ["metric/CustomCPU"] = "My CPU"
+                }));
+            var first = JObject.Parse(channels.Last().Metrics);
+            Assert.AreEqual(25, (int)first["cpuLoad"]);
+            Assert.AreEqual(120, (int)first["fps"]);
+            Assert.AreEqual("Previous game", (string)first["processName"]);
+
+            pids.OnNext(0);
+            Assert.AreEqual(1, telemetry.Leases);
+            Assert.AreEqual(1, telemetry.Acquisitions);
+            Assert.AreEqual(0, channels.Last().Pid);
+            Assert.IsTrue(channels.Last().Disposed);
+            var loading = JObject.Parse(publisher.Current.MetricsJson);
+            Assert.AreEqual(25, (int)loading["cpuLoad"]);
+            Assert.AreEqual(240, (int)loading["pmdGpuPower"]);
+            Assert.AreEqual("My CPU", (string)loading["cpuName"]);
+            Assert.AreEqual(JTokenType.Null, loading["fps"].Type);
+            Assert.AreEqual(JTokenType.Null, loading["processName"].Type);
+
+            telemetry.Emit(35);
+            Assert.AreEqual(35, (int)JObject.Parse(publisher.Current.MetricsJson)["cpuLoad"],
+                "New hardware readings must continue during the gap without a render target.");
+            DateTime previousTarget = DateTime.UtcNow.AddSeconds(-1);
+            pids.OnNext(43);
+            Assert.AreEqual(43, channels.Last().Pid);
+            Assert.AreEqual(35, (int)JObject.Parse(channels.Last().Metrics)["cpuLoad"]);
+            telemetry.Emit(new OverlayTelemetrySnapshot(previousTarget,
+                new Dictionary<string, double?>
+                {
+                    ["cpu/total"] = 99, ["metric/Framerate"] = 90, ["metric/PmdGpuPowerCurrent"] = 260
+                }, new Dictionary<string, object>
+                {
+                    ["metric/ProcessName"] = "Previous game", ["metric/CustomCPU"] = "My CPU"
+                }));
+            var delayed = JObject.Parse(channels.Last().Metrics);
+            Assert.AreEqual(99, (int)delayed["cpuLoad"]);
+            Assert.AreEqual(260, (int)delayed["pmdGpuPower"], "Fresh external power readings are not tied to the previous game.");
+            Assert.AreEqual("My CPU", (string)delayed["cpuName"]);
+            Assert.AreEqual(JTokenType.Null, delayed["fps"].Type);
+            Assert.AreEqual(JTokenType.Null, delayed["processName"].Type);
+            telemetry.Emit(new OverlayTelemetrySnapshot(DateTime.UtcNow,
+                new Dictionary<string, double?> { ["cpu/total"] = 70, ["metric/Framerate"] = 144 },
+                new Dictionary<string, object> { ["metric/ProcessName"] = "New game" }));
+            var current = JObject.Parse(channels.Last().Metrics);
+            Assert.AreEqual(70, (int)current["cpuLoad"]);
+            Assert.AreEqual(144, (int)current["fps"]);
+            Assert.AreEqual("New game", (string)current["processName"]);
+            Assert.AreEqual(1, telemetry.Leases);
+            Assert.AreEqual(1, telemetry.Acquisitions, "Target changes must not restart sensor discovery or polling.");
+        }
+
+        [TestMethod]
+        public void HookFreeFallbackKeepsSensorDemandAcrossProcessCountGapsWithoutAnInGameChannel()
+        {
+            var service = ActiveService("cpuLoad", "fps", "processName", "pmdGpuPower", "cpuName");
+            _configuration.Object.IsOverlayActive = true;
+            using var telemetry = new FakeTelemetry { Sources = HardwareAndProcessCatalog() };
+            using var pids = new Subject<int>();
+            using var ticks = new Subject<long>();
+            using var counts = new BehaviorSubject<int>(0);
+            using var fallback = new BehaviorSubject<bool>(true);
+            var channels = new List<FakeChannel>();
+            using var publisher = Publisher(service, telemetry, pids, ticks, channels, counts, fallback);
+            Assert.AreEqual(1, telemetry.Leases);
+            counts.OnNext(1);
+            telemetry.Emit(new OverlayTelemetrySnapshot(DateTime.UtcNow,
+                new Dictionary<string, double?>
+                {
+                    ["cpu/total"] = 40, ["metric/Framerate"] = 120, ["metric/PmdGpuPowerCurrent"] = 190
+                }, new Dictionary<string, object>
+                {
+                    ["metric/ProcessName"] = "Game", ["metric/CustomCPU"] = "My CPU"
+                }));
+            Assert.AreEqual(1, telemetry.Leases);
+            Assert.AreEqual(0, channels.Count);
+            counts.OnNext(0);
+            Assert.AreEqual(1, telemetry.Leases);
+            var loading = JObject.Parse(publisher.Current.MetricsJson);
+            Assert.AreEqual(40, (int)loading["cpuLoad"]);
+            Assert.AreEqual(190, (int)loading["pmdGpuPower"]);
+            Assert.AreEqual("My CPU", (string)loading["cpuName"]);
+            Assert.AreEqual(JTokenType.Null, loading["fps"].Type);
+            Assert.AreEqual(JTokenType.Null, loading["processName"].Type);
+            telemetry.Emit(new OverlayTelemetrySnapshot(DateTime.UtcNow,
+                new Dictionary<string, double?>
+                {
+                    ["cpu/total"] = 55, ["metric/Framerate"] = 90, ["metric/PmdGpuPowerCurrent"] = 205
+                }, new Dictionary<string, object>
+                {
+                    ["metric/ProcessName"] = "Game", ["metric/CustomCPU"] = "My CPU"
+                }));
+            var duringGap = JObject.Parse(publisher.Current.MetricsJson);
+            Assert.AreEqual(55, (int)duringGap["cpuLoad"]);
+            Assert.AreEqual(205, (int)duringGap["pmdGpuPower"]);
+            Assert.AreEqual("My CPU", (string)duringGap["cpuName"]);
+            Assert.AreEqual(JTokenType.Null, duringGap["fps"].Type);
+            Assert.AreEqual(JTokenType.Null, duringGap["processName"].Type);
+            counts.OnNext(1);
+            Assert.AreEqual(55, (int)JObject.Parse(publisher.Current.MetricsJson)["cpuLoad"]);
+            Assert.AreEqual(1, telemetry.Acquisitions);
+            Assert.AreEqual(0, channels.Count);
+        }
+
+        [TestMethod]
+        public void DelayedHardwarePollKeepsDirectGroupedAndDerivedSensorValuesButExpiresProcessMetrics()
+        {
+            var service = ActiveService("cpuLoad", "cpu/total", "cpu/thread/1", "ramTotal", "ram/total",
+                "fps", "processName", "pmdGpuPower", "cpuName");
+            _configuration.Object.IsOverlayActive = true;
+            using var telemetry = new FakeTelemetry { Sources = HardwareAndProcessCatalog() };
+            using var pids = new Subject<int>();
+            using var ticks = new Subject<long>();
+            var channels = new List<FakeChannel>();
+            using var publisher = Publisher(service, telemetry, pids, ticks, channels);
+            telemetry.Emit(new OverlayTelemetrySnapshot(DateTime.UtcNow.AddSeconds(-10),
+                new Dictionary<string, double?>
+                {
+                    ["cpu/total"] = 64, ["cpu/thread/1"] = 81,
+                    ["ram/used"] = 26, ["ram/free"] = 6, ["ram/total"] = 32,
+                    ["metric/Framerate"] = 120, ["metric/PmdGpuPowerCurrent"] = 240
+                }, new Dictionary<string, object>
+                {
+                    ["metric/ProcessName"] = "Game", ["metric/CustomCPU"] = "My CPU"
+                }));
+            ticks.OnNext(1);
+
+            // There has been no target change: expiry alone must remove old process metrics,
+            // while a stalled hardware poll retains its direct and aliased sensor values.
+            var values = JObject.Parse(publisher.Current.MetricsJson);
+            Assert.AreEqual(64, (int)values["cpuLoad"]);
+            Assert.AreEqual(64, (int)values["cpu/total"]);
+            Assert.AreEqual(81, (int)values["cpu/thread/1"], "Individual group bars use direct source IDs.");
+            Assert.AreEqual(32, (int)values["ramTotal"]);
+            Assert.AreEqual(32, (int)values["ram/total"]);
+            Assert.AreEqual(JTokenType.Null, values["fps"].Type);
+            Assert.AreEqual(JTokenType.Null, values["processName"].Type);
+            Assert.AreEqual(JTokenType.Null, values["pmdGpuPower"].Type);
+            Assert.AreEqual(JTokenType.Null, values["cpuName"].Type);
+            Assert.AreEqual(1, telemetry.Acquisitions);
+        }
+
+        [TestMethod]
+        [DataRow("missing")]
+        [DataRow("null")]
+        [DataRow("nan")]
+        public void NewUnavailableHardwareReadingReplacesPreviousValue(string unavailable)
         {
             var service = ActiveService();
-            _configuration.Object.EnableHookOverlay = true;
             _configuration.Object.IsOverlayActive = true;
             using var telemetry = new FakeTelemetry();
             using var pids = new Subject<int>();
@@ -376,35 +547,53 @@ namespace CapFrameX.Test.Integration
             var channels = new List<FakeChannel>();
             using var publisher = Publisher(service, telemetry, pids, ticks, channels);
             pids.OnNext(42);
-            telemetry.Emit(25);
-            DateTime previousTarget = DateTime.UtcNow.AddSeconds(-1);
-            pids.OnNext(43);
-            Assert.AreEqual(43, channels.Last().Pid);
-            Assert.AreEqual(JTokenType.Null, JObject.Parse(channels.Last().Metrics)["cpuLoad"].Type);
-            telemetry.Emit(99, previousTarget);
-            Assert.AreEqual(JTokenType.Null, JObject.Parse(channels.Last().Metrics)["cpuLoad"].Type);
-            telemetry.Emit(70);
-            Assert.AreEqual(70, (int)JObject.Parse(channels.Last().Metrics)["cpuLoad"]);
+            telemetry.Emit(75);
+            Assert.AreEqual(75, (int)JObject.Parse(channels.Last().Metrics)["cpuLoad"]);
+
+            var readings = new Dictionary<string, double?>();
+            if (unavailable != "missing") readings["cpu/total"] = unavailable == "nan" ? double.NaN : null;
+            telemetry.Emit(new OverlayTelemetrySnapshot(DateTime.UtcNow, readings));
+            ticks.OnNext(1);
+            Assert.AreEqual(JTokenType.Null, JObject.Parse(channels.Last().Metrics)["cpuLoad"].Type,
+                "A completed poll reporting an unavailable sensor must supersede its last measured value.");
         }
 
         [TestMethod]
-        public void HookFreeFallbackUsesProcessGateAndDoesNotCreateInGameChannel()
+        public void FutureDatedSnapshotsDoNotPublishHardwareValues()
         {
             var service = ActiveService();
             _configuration.Object.IsOverlayActive = true;
             using var telemetry = new FakeTelemetry();
             using var pids = new Subject<int>();
             using var ticks = new Subject<long>();
-            using var counts = new BehaviorSubject<int>(0);
-            using var fallback = new BehaviorSubject<bool>(true);
             var channels = new List<FakeChannel>();
-            using var publisher = Publisher(service, telemetry, pids, ticks, channels, counts, fallback);
-            Assert.AreEqual(0, telemetry.Leases);
-            counts.OnNext(1);
+            using var publisher = Publisher(service, telemetry, pids, ticks, channels);
+            pids.OnNext(42);
+            telemetry.Emit(48, DateTime.UtcNow.AddMinutes(1));
+            Assert.AreEqual(JTokenType.Null, JObject.Parse(channels.Last().Metrics)["cpuLoad"].Type);
+        }
+
+        [TestMethod]
+        public void DisposingPublisherReleasesContinuousSensorDemandAndDisablesTheChannel()
+        {
+            var service = ActiveService();
+            _configuration.Object.IsOverlayActive = true;
+            using var telemetry = new FakeTelemetry();
+            using var pids = new Subject<int>();
+            using var ticks = new Subject<long>();
+            var channels = new List<FakeChannel>();
+            var publisher = Publisher(service, telemetry, pids, ticks, channels);
+            pids.OnNext(42);
+            telemetry.Emit(64);
             Assert.AreEqual(1, telemetry.Leases);
-            Assert.AreEqual(0, channels.Count);
-            counts.OnNext(0);
+            publisher.Dispose();
             Assert.AreEqual(0, telemetry.Leases);
+            Assert.AreEqual(0, channels.Last().Pid);
+            Assert.IsTrue(channels.Last().Disposed);
+            ticks.OnNext(1);
+            pids.OnNext(43);
+            Assert.AreEqual(1, telemetry.Acquisitions);
+            Assert.AreEqual(1, channels.Count);
         }
 
         [TestMethod]
@@ -521,9 +710,9 @@ namespace CapFrameX.Test.Integration
             return store;
         }
         private OverlayDesignService Service() => new OverlayDesignService(_folder, _configuration.Object);
-        private OverlayDesignService ActiveService()
+        private OverlayDesignService ActiveService(params string[] keys)
         {
-            var profile = Store().Create("CPU", Scene("cpuLoad"));
+            var profile = Store().Create("CPU", Scene(keys.Length == 0 ? new[] { "cpuLoad" } : keys));
             var service = Service();
             service.Activate(profile.Id);
             return service;
@@ -535,26 +724,41 @@ namespace CapFrameX.Test.Integration
             => new OverlayDesignRuntimePublisher(service, telemetry, _configuration.Object, pids, counts, fallback,
                 allowed ?? (_ => true), () => { var channel = new FakeChannel(); channels.Add(channel); return channel; }, ticks);
 
-        private static string Scene(string key) => new JObject
+        private static string Scene(params string[] keys) => new JObject
         {
             ["version"] = 1, ["name"] = "Test", ["root"] = new JObject
             {
-                ["type"] = "panel", ["children"] = new JArray(new JObject { ["type"] = "metric", ["key"] = key })
+                ["type"] = "panel", ["children"] = new JArray(keys.Select(key => new JObject { ["type"] = "metric", ["key"] = key }))
             }
         }.ToString(Formatting.None);
+
+        private static IReadOnlyList<OverlayTelemetrySource> HardwareAndProcessCatalog() => new[]
+        {
+            new OverlayTelemetrySource { Id = "cpu/total", SemanticKey = "cpuLoad", IsHardwareSensor = true },
+            new OverlayTelemetrySource { Id = "cpu/thread/1", GroupKey = "cpu/loads", IsHardwareSensor = true },
+            new OverlayTelemetrySource { Id = "ram/used", IsHardwareSensor = true },
+            new OverlayTelemetrySource { Id = "ram/free", IsHardwareSensor = true },
+            new OverlayTelemetrySource { Id = "ram/total", SemanticKey = "ramTotal", SumSourceIdA = "ram/used", SumSourceIdB = "ram/free" },
+            new OverlayTelemetrySource { Id = "metric/Framerate", SemanticKey = "fps", IsProcessSpecific = true },
+            new OverlayTelemetrySource { Id = "metric/ProcessName", SemanticKey = "processName", IsText = true, IsProcessSpecific = true },
+            new OverlayTelemetrySource { Id = "metric/PmdGpuPowerCurrent", SemanticKey = "pmdGpuPower" },
+            new OverlayTelemetrySource { Id = "metric/CustomCPU", SemanticKey = "cpuName", IsText = true }
+        };
 
         private sealed class FakeTelemetry : IOverlayTelemetryService
         {
             private readonly Subject<OverlayTelemetrySnapshot> _snapshots = new Subject<OverlayTelemetrySnapshot>();
             public int Leases { get; private set; }
+            public int Acquisitions { get; private set; }
+            public IReadOnlyList<OverlayTelemetrySource> Sources { get; set; } = new[]
+            {
+                new OverlayTelemetrySource { Id = "cpu/total", SemanticKey = "cpuLoad", IsHardwareSensor = true }
+            };
             public bool FailSubscription;
             public IObservable<OverlayTelemetrySnapshot> Snapshots => FailSubscription
                 ? Observable.Throw<OverlayTelemetrySnapshot>(new IOException("Simulated telemetry failure")) : _snapshots;
-            public IDisposable AcquirePreview() { Leases++; return Disposable.Create(() => Leases--); }
-            public Task<IReadOnlyList<OverlayTelemetrySource>> GetSourcesAsync() => Task.FromResult<IReadOnlyList<OverlayTelemetrySource>>(new[]
-            {
-                new OverlayTelemetrySource { Id = "cpu/total", SemanticKey = "cpuLoad", IsAvailable = true }
-            });
+            public IDisposable AcquirePreview() { Leases++; Acquisitions++; return Disposable.Create(() => Leases--); }
+            public Task<IReadOnlyList<OverlayTelemetrySource>> GetSourcesAsync() => Task.FromResult(Sources);
             public void Emit(double load, DateTime? timestamp = null) => _snapshots.OnNext(new OverlayTelemetrySnapshot(timestamp ?? DateTime.UtcNow,
                 new Dictionary<string, double?> { ["cpu/total"] = load }));
             public void Emit(OverlayTelemetrySnapshot snapshot) => _snapshots.OnNext(snapshot);

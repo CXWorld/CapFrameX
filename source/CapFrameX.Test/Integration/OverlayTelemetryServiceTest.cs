@@ -5,6 +5,7 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Contracts.Configuration;
@@ -229,6 +230,54 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual("Low averages", sources.Single(s => s.Identifier == "Online1PercentLow").Subcategory);
             classic.Verify(p => p.GetOverlayEntries(It.IsAny<bool>()), Times.Never);
             classic.Verify(p => p.GetDefaultOverlayEntries(), Times.Never);
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public async Task CatalogDistinguishesGameMetricsFromIndependentHardwareAndSystemSources(bool includeOnlineMetrics)
+        {
+            var sensors = new[]
+            {
+                Sensor("/cpu/load/0", "CPU Total", "Cpu", "Load", "CPU"),
+                Sensor("/gpu/load/0", "GPU Core", "GpuNvidia", "Load", "GPU"),
+                Sensor("/ram/data/0", "RAM Used", "Memory", "Data", "RAM"),
+                Sensor("/ram/data/1", "RAM Available", "Memory", "Data", "RAM")
+            };
+            var classic = new Mock<IOverlayEntryProvider>();
+            classic.Setup(provider => provider.GetTelemetrySourcesAsync()).ReturnsAsync(
+                OverlayUtils.GetOverlayEntryDefaults(Mock.Of<IAppConfiguration>()).Cast<IOverlayEntry>()
+                    .Append(OverlayEntryProvider.CreateDisplayResolutionEntry(new DetectedDisplay("DISPLAY2", 2560, 1440, false)))
+                    .ToArray());
+            using var fixture = new Fixture(sensors,
+                includeOnlineMetrics ? Mock.Of<IOnlineMetricService>() : null, classic.Object, Mock.Of<IOverlayService>());
+            var sources = await fixture.Service.GetSourcesAsync();
+            var processSpecific = new List<string>
+            {
+                "Framerate", "Frametime", "DisplayTime", "OnlineAverage", "OnlineP1", "OnlineP0dot1", "OnlineP0dot2",
+                "Online1PercentLow", "Online0dot1PercentLow", "Online0dot2PercentLow", "OnlineFrameTimeAverage",
+                "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineGpuActiveTimePercentageDeviation",
+                "OnlineStutteringPercentage", "OnlinePcLatency", "OnlineAnimationError", "HookOverlayStatus",
+                "FrameGenerationTechnology", "FrameGenerationStatus", "Resolution"
+            };
+            if (includeOnlineMetrics) processSpecific.AddRange(new[] { "ProcessName", "GraphicsAPI" });
+            CollectionAssert.AreEquivalent(processSpecific.ToArray(),
+                sources.Where(source => source.IsProcessSpecific).Select(source => source.Identifier).ToArray(),
+                "Only readings belonging to a game may be invalidated when the target changes.");
+
+            foreach (var sensor in sensors)
+                Assert.IsFalse(sources.Single(source => source.Identifier == sensor.Identifier).IsProcessSpecific,
+                    "Hardware polling must remain independent of the selected game: " + sensor.Identifier);
+            Assert.IsFalse(sources.Single(source => source.SemanticKey == "ramTotal").IsProcessSpecific,
+                "A total derived from machine-wide hardware readings has the same lifetime as its inputs.");
+            foreach (string identifier in new[]
+            {
+                "PmdGpuPowerCurrent", "PmdCpuPowerCurrent", "PmdSystemPowerCurrent", "BatteryLifePercent",
+                "BatteryLifeRemaining", "CustomCPU", "CustomGPU", "CustomRAM", "Mainboard", "OS", "GPUDriver",
+                "DisplayResolution:DISPLAY2", "SystemTime", "CxAppCpuUsage", "Ping", "RunHistoryCount", "RunHistoryAggregation"
+            })
+                Assert.IsFalse(sources.Single(source => source.Identifier == identifier).IsProcessSpecific,
+                    "Fresh machine-wide readings must survive a temporary loss of game detection: " + identifier);
         }
 
         [TestMethod]
@@ -516,6 +565,257 @@ namespace CapFrameX.Test.Integration
             }
         }
 
+        [TestMethod]
+        public void FailedMetricLeaseAcquisitionReleasesSensorDemandAndAllowsRetry()
+        {
+            var metrics = new Mock<IOnlineMetricService>();
+            using var fixture = new Fixture(Array.Empty<ISensorEntry>(), metrics.Object);
+            int sensorDemand = 0;
+            int metricDemand = 0;
+            fixture.Config.Setup(config => config.AcquireAllSensors()).Returns(() =>
+            {
+                sensorDemand++;
+                return Disposable.Create(() => sensorDemand--);
+            });
+            metrics.Setup(service => service.AcquireTelemetry()).Throws(new InvalidOperationException("Unavailable"));
+
+            Assert.ThrowsExactly<InvalidOperationException>(() => fixture.Service.AcquirePreview());
+            Assert.AreEqual(0, sensorDemand, "A failed preview must not keep all hardware sensors polling.");
+
+            metrics.Setup(service => service.AcquireTelemetry()).Returns(() =>
+            {
+                metricDemand++;
+                return Disposable.Create(() => metricDemand--);
+            });
+            using var preview = fixture.Service.AcquirePreview();
+            Assert.AreEqual(1, sensorDemand);
+            Assert.AreEqual(1, metricDemand);
+            fixture.Service.Dispose();
+            preview.Dispose();
+            Assert.AreEqual(0, sensorDemand);
+            Assert.AreEqual(0, metricDemand);
+        }
+
+        [TestMethod]
+        public void PreviewLeasesKeepSensorAndMetricDemandUntilTheLastConsumerLeaves()
+        {
+            var metrics = new Mock<IOnlineMetricService>();
+            using var fixture = new Fixture(Array.Empty<ISensorEntry>(), metrics.Object);
+            int sensorDemand = 0;
+            int metricDemand = 0;
+            fixture.Config.Setup(config => config.AcquireAllSensors()).Returns(() =>
+            {
+                sensorDemand++;
+                return Disposable.Create(() => sensorDemand--);
+            });
+            metrics.Setup(service => service.AcquireTelemetry()).Returns(() =>
+            {
+                metricDemand++;
+                return Disposable.Create(() => metricDemand--);
+            });
+            using var first = fixture.Service.AcquirePreview();
+            using var second = fixture.Service.AcquirePreview();
+            first.Dispose();
+            first.Dispose();
+            Assert.AreEqual(1, sensorDemand);
+            Assert.AreEqual(1, metricDemand);
+
+            second.Dispose();
+            Assert.AreEqual(0, sensorDemand);
+            Assert.AreEqual(0, metricDemand);
+            using var reopened = fixture.Service.AcquirePreview();
+            Assert.AreEqual(1, sensorDemand);
+            Assert.AreEqual(1, metricDemand);
+            fixture.Service.Dispose();
+            Assert.AreEqual(0, sensorDemand);
+            Assert.AreEqual(0, metricDemand);
+        }
+
+        [TestMethod]
+        public async Task SnapshotConsumersSharePollingAndDisposalCompletesCurrentAndLateObservers()
+        {
+            using var stream = new Subject<(DateTime, Dictionary<ISensorEntry, float>)>();
+            int subscriptions = 0;
+            int releases = 0;
+            var provider = new Mock<ISensorService>();
+            provider.SetupGet(service => service.SensorSnapshotStream).Returns(Observable.Defer(() =>
+            {
+                Interlocked.Increment(ref subscriptions);
+                return stream.Finally(() => Interlocked.Increment(ref releases));
+            }));
+            var config = new Mock<ISensorConfig>();
+            using var service = new OverlayTelemetryService(provider.Object, config.Object);
+            var firstValue = new TaskCompletionSource<OverlayTelemetrySnapshot>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var secondValue = new TaskCompletionSource<OverlayTelemetrySnapshot>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var completed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var first = service.Snapshots.Subscribe(value => firstValue.TrySetResult(value), firstValue.SetException);
+            using var second = service.Snapshots.Subscribe(value => secondValue.TrySetResult(value),
+                secondValue.SetException, () => completed.TrySetResult(true));
+            var timestamp = new DateTime(2026, 10, 12, 8, 30, 0, DateTimeKind.Utc);
+            stream.OnNext((timestamp, new Dictionary<ISensorEntry, float>()));
+            var snapshots = await Task.WhenAll(firstValue.Task, secondValue.Task).WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.AreSame(snapshots[0], snapshots[1], "Editor and runtime must observe one coherent sample.");
+            Assert.AreEqual(timestamp, snapshots[0].TimestampUtc);
+            Assert.AreEqual(1, subscriptions);
+            first.Dispose();
+            Assert.IsTrue(stream.HasObservers, "Closing one consumer must not detach the remaining consumer.");
+            service.Dispose();
+            await completed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.AreEqual(1, releases);
+            Assert.IsFalse(stream.HasObservers);
+
+            var lateCompletion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var late = service.Snapshots.Subscribe(_ => Assert.Fail("A disposed service cannot publish new samples."),
+                lateCompletion.SetException, () => lateCompletion.TrySetResult(true));
+            await lateCompletion.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.IsFalse(stream.HasObservers);
+            config.Verify(sensorConfig => sensorConfig.AcquireAllSensors(), Times.Never,
+                "Subscribing alone must not change sensor demand; the host owns the preview leases.");
+        }
+
+        [TestMethod]
+        public async Task CatalogDiscoveryCompletingAfterDisposalIsRejectedAndReleasesTheCatalogGate()
+        {
+            var discoveryStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var discovered = new TaskCompletionSource<IEnumerable<ISensorEntry>>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var fixture = new Fixture(Array.Empty<ISensorEntry>());
+            fixture.Provider.Setup(provider => provider.GetSensorEntries()).Returns(() =>
+            {
+                discoveryStarted.TrySetResult(true);
+                return discovered.Task;
+            });
+
+            var pending = fixture.Service.GetSourcesAsync();
+            await discoveryStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            fixture.Service.Dispose();
+            discovered.SetResult(new[] { Sensor("/cpu/load/0", "CPU Total", "Cpu", "Load", "CPU") });
+
+            await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() => pending.WaitAsync(TimeSpan.FromSeconds(5)));
+            await Assert.ThrowsExactlyAsync<ObjectDisposedException>(() =>
+                fixture.Service.GetSourcesAsync().WaitAsync(TimeSpan.FromSeconds(5)));
+            fixture.Provider.Verify(provider => provider.GetSensorEntries(), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task RediscoveredSensorsKeepStableIdsButRejectReadingsFromTheRemovedRuntimeIdentity()
+        {
+            var original = Sensor("/cpu/0/temperature/1", "CPU Package", "Cpu", "Temperature", "CPU");
+            var rediscovered = Sensor("/cpu/0/temperature/42", "CPU Package", "Cpu", "Temperature", "CPU");
+            using var fixture = new Fixture(new[] { original });
+            var oldSource = (await fixture.Service.GetSourcesAsync()).Single();
+            var beforeRemoval = await fixture.Next(new Dictionary<ISensorEntry, float> { [original] = 61 });
+            fixture.Provider.Setup(provider => provider.GetSensorEntries()).ReturnsAsync(Array.Empty<ISensorEntry>());
+            Assert.AreEqual(0, (await fixture.Service.GetSourcesAsync()).Count);
+            var removed = await fixture.Next(new Dictionary<ISensorEntry, float> { [original] = 62 });
+            Assert.IsFalse(removed.Values.ContainsKey(oldSource.Id));
+
+            fixture.Provider.Setup(provider => provider.GetSensorEntries()).ReturnsAsync(new[] { rediscovered });
+            var newSource = (await fixture.Service.GetSourcesAsync()).Single();
+            Assert.AreEqual(oldSource.Id, newSource.Id);
+            Assert.AreEqual(oldSource.DeviceKey, newSource.DeviceKey);
+            var stale = await fixture.Next(new Dictionary<ISensorEntry, float> { [original] = 99 });
+            Assert.IsNull(stale.Values[newSource.Id]);
+            var resumed = await fixture.Next(new Dictionary<ISensorEntry, float> { [rediscovered] = 63 });
+            Assert.AreEqual(63d, resumed.Values[newSource.Id]);
+            Assert.AreEqual(61d, beforeRemoval.Values[oldSource.Id]);
+        }
+
+        [TestMethod]
+        public async Task MeasuredMemoryCapacityTakesPrecedenceWithoutInventingAFallbackWhenItIsMissing()
+        {
+            var used = Sensor("/ram/data/0", "RAM Used", "Memory", "Data", "RAM");
+            var free = Sensor("/ram/data/1", "RAM Available", "Memory", "Data", "RAM");
+            var total = Sensor("/ram/data/2", "RAM Total", "Memory", "Data", "RAM");
+            using var fixture = new Fixture(new[] { used, free, total });
+            var sources = await fixture.Service.GetSourcesAsync();
+            var capacity = sources.Single(source => source.SemanticKey == "ramTotal");
+            Assert.AreEqual(3, sources.Count);
+            Assert.AreEqual(total.Identifier, capacity.Identifier);
+            var measured = await fixture.Next(new Dictionary<ISensorEntry, float>
+            {
+                [used] = 20, [free] = 11, [total] = 32
+            });
+            Assert.AreEqual(32d, measured.Values[capacity.Id]);
+            var missing = await fixture.Next(new Dictionary<ISensorEntry, float> { [used] = 20, [free] = 11 });
+            Assert.IsNull(missing.Values[capacity.Id]);
+        }
+
+        [TestMethod]
+        public async Task NonfiniteSensorValuesStayUnavailableWhileZeroAndNegativeTemperaturesRemainValid()
+        {
+            var temperature = Sensor("/cpu/temperature/0", "CPU Package", "Cpu", "Temperature", "CPU");
+            var load = Sensor("/cpu/load/0", "CPU Total", "Cpu", "Load", "CPU");
+            var used = Sensor("/ram/data/0", "RAM Used", "Memory", "Data", "RAM");
+            var free = Sensor("/ram/data/1", "RAM Available", "Memory", "Data", "RAM");
+            using var fixture = new Fixture(new[] { temperature, load, used, free });
+            var sources = await fixture.Service.GetSourcesAsync();
+            string temperatureId = sources.Single(source => source.Identifier == temperature.Identifier).Id;
+            string loadId = sources.Single(source => source.Identifier == load.Identifier).Id;
+            string totalId = sources.Single(source => source.SemanticKey == "ramTotal").Id;
+            foreach (float invalid in new[] { float.NaN, float.PositiveInfinity, float.NegativeInfinity })
+            {
+                var snapshot = await fixture.Next(new Dictionary<ISensorEntry, float>
+                {
+                    [temperature] = -12.5f, [load] = invalid, [used] = 8, [free] = invalid
+                });
+                Assert.AreEqual(-12.5d, snapshot.Values[temperatureId]);
+                Assert.IsNull(snapshot.Values[loadId]);
+                Assert.IsNull(snapshot.Values[totalId], "An invalid capacity component must not enter a derived total.");
+            }
+            var idle = await fixture.Next(new Dictionary<ISensorEntry, float>
+            {
+                [temperature] = 0, [load] = 0, [used] = 0, [free] = 32
+            });
+            Assert.AreEqual(0d, idle.Values[temperatureId]);
+            Assert.AreEqual(0d, idle.Values[loadId]);
+            Assert.AreEqual(32d, idle.Values[totalId]);
+        }
+
+        [TestMethod]
+        public async Task FrameAndPmdFreshnessAreIndependentAndFutureTimestampsCannotRestoreStaleGameData()
+        {
+            var metrics = new Mock<IOnlineMetricService>();
+            var temperature = Sensor("/cpu/temperature/0", "CPU Package", "Cpu", "Temperature", "CPU");
+            metrics.SetupGet(service => service.LastFrameTimestampUtc).Returns(() => DateTime.UtcNow.AddMinutes(1));
+            metrics.Setup(service => service.GetOnlineFpsMetricValue(EMetric.Average)).Returns(144);
+            metrics.Setup(service => service.GetFrameTelemetrySnapshot()).Returns(() => new OnlineFrameTelemetrySnapshot
+            {
+                TimestampUtc = DateTime.UtcNow.AddMinutes(1), Framerate = 165, ProcessName = "Previous game", Runtime = "DXGI"
+            });
+            metrics.Setup(service => service.GetPmdTelemetrySnapshot()).Returns(() => new OnlinePmdMetrics
+            {
+                TimestampUtc = DateTime.UtcNow, GpuPowerCurrent = 220, CpuPowerCurrent = 65, SystemPowerCurrent = 320
+            });
+            using var fixture = new Fixture(new[] { temperature }, metrics.Object);
+            string temperatureId = (await fixture.Service.GetSourcesAsync()).Single(source => source.IsHardwareSensor).Id;
+            var loading = await fixture.Next(new Dictionary<ISensorEntry, float> { [temperature] = 58 });
+            Assert.AreEqual(58d, loading.Values[temperatureId]);
+            Assert.AreEqual(220d, loading.Values["metric/PmdGpuPowerCurrent"]);
+            Assert.IsNull(loading.Values["metric/Framerate"]);
+            Assert.IsNull(loading.Values["metric/OnlineAverage"]);
+            Assert.IsNull(loading.MetricValues["metric/ProcessName"]);
+            Assert.IsNull(loading.MetricValues["metric/GraphicsAPI"]);
+            metrics.Verify(service => service.GetOnlineFpsMetricValue(It.IsAny<EMetric>()), Times.Never);
+
+            metrics.SetupGet(service => service.LastFrameTimestampUtc).Returns(() => DateTime.UtcNow);
+            metrics.Setup(service => service.GetFrameTelemetrySnapshot()).Returns(() => new OnlineFrameTelemetrySnapshot
+            {
+                TimestampUtc = DateTime.UtcNow, Framerate = 120, ProcessName = "Current game", Runtime = "Vulkan"
+            });
+            metrics.Setup(service => service.GetPmdTelemetrySnapshot()).Returns(new OnlinePmdMetrics
+            {
+                TimestampUtc = DateTime.UtcNow.AddMinutes(-1), GpuPowerCurrent = 220
+            });
+            var resumed = await fixture.Next(new Dictionary<ISensorEntry, float> { [temperature] = 59 });
+            Assert.AreEqual(59d, resumed.Values[temperatureId]);
+            Assert.AreEqual(120d, resumed.Values["metric/Framerate"]);
+            Assert.AreEqual(144d, resumed.Values["metric/OnlineAverage"]);
+            Assert.AreEqual("Current game", resumed.MetricValues["metric/ProcessName"]);
+            Assert.AreEqual("Vulkan", resumed.MetricValues["metric/GraphicsAPI"]);
+            Assert.IsNull(resumed.Values["metric/PmdGpuPowerCurrent"]);
+        }
+
         private static SensorEntry Sensor(string id, string name, string hardwareType, string sensorType, string hardwareName)
             => new SensorEntry
             {
@@ -527,15 +827,15 @@ namespace CapFrameX.Test.Integration
         {
             public Subject<(DateTime, Dictionary<ISensorEntry, float>)> Stream { get; } = new Subject<(DateTime, Dictionary<ISensorEntry, float>)>();
             public Mock<ISensorConfig> Config { get; } = new Mock<ISensorConfig>();
+            public Mock<ISensorService> Provider { get; } = new Mock<ISensorService>();
             public OverlayTelemetryService Service { get; }
 
             public Fixture(IEnumerable<ISensorEntry> sensors, IOnlineMetricService metrics = null,
                 IOverlayEntryProvider classic = null, IOverlayService overlay = null)
             {
-                var provider = new Mock<ISensorService>();
-                provider.Setup(p => p.GetSensorEntries()).ReturnsAsync(sensors);
-                provider.SetupGet(p => p.SensorSnapshotStream).Returns(Stream);
-                Service = new OverlayTelemetryService(provider.Object, Config.Object, metrics, classic, overlay);
+                Provider.Setup(p => p.GetSensorEntries()).ReturnsAsync(sensors);
+                Provider.SetupGet(p => p.SensorSnapshotStream).Returns(Stream);
+                Service = new OverlayTelemetryService(Provider.Object, Config.Object, metrics, classic, overlay);
             }
 
             public async Task<OverlayTelemetrySnapshot> Next(Dictionary<ISensorEntry, float> values)

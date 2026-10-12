@@ -12,6 +12,41 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Full rebuild with Vulkan Auto SR lifetime fix (2026-10-12)
+
+All seven bundled DLLs were refreshed from the sibling `CapFrameX.OSD` source tree
+now committed as `265b991480f92fb4d18368d6540c70f54e896632`, including the Vulkan
+Auto SR/ONNX lifetime fix and its native regression tests. The five native DLLs were
+clean-built with VS 2026/v145 in `RelWithDebInfo`; Interop and Controls were rebuilt
+in `Release|x64` for .NET 10. `CapFrameX.OSD.Integration` remains source-built in the
+main repository and is not an external payload.
+
+The Vulkan fix retains one ordinary reference to the already-loaded ONNX runtime
+for the affected Intel Auto SR package, preventing its OpenVINO provider from
+outliving that runtime. It checks the package path and loaded file versions and
+does not preload ONNX. Real DOOM validation remains outstanding.
+
+Verification: all 100 native CTests pass (16 core, 32 DXGI per architecture and
+10 Vulkan per architecture). All 26 Vulkan ABI/lifetime integration cases pass
+against these DLLs and again against the matching installed DLLs. The registered
+x64/x86 layers are enabled in their matching HKLM registry views; each loader smoke
+test completed 30 frames with three requested resizes and verified the loaded DLL
+path. The seven external DLLs match the tested build outputs by SHA-256. Both
+Vulkan manifests match the source manifest and each other; the English/Korean
+review catalogs match their source files.
+
+| Current component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `E051DD649C0669AB541341BA6B7E2084A6D15F2CEF24EB3C41BA24B4275117E2` |
+| native\cfx_osd_hook.dll | `03E6EC5AA40A758C9BB6FAE30E9ABAB4D8596F195DAADC4C557454F9D773E077` |
+| native\x86\cfx_osd_hook.dll | `FD5270CA2C9626163C8A3BCB758F40CA3FCA12384D7875A43248AC27C110248C` |
+| native\vk\cfx_osd_vklayer.dll | `3B561A766B3A61E869A8E980868831F656523178D21FD9BE66D7F7DEF8522EB2` |
+| native\vk\x86\cfx_osd_vklayer.dll | `AB4033F56290E3053E39D9A541A35B9ED53307DDA50CF4CC3DFA0EEC6686AF31` |
+| net10.0-windows\CapFrameX.OSD.Interop.dll | `218867D9BE90E97B926F83AE1CB6528F67239DBBC06B60DB44363E36B550D3F3` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `C1D5ADF5789AFFF0BACAF806CFA21D685E476101AE700034785DA16A81ADAC53` |
+
+These are unsigned development binaries. The entries below describe earlier payloads.
+
 ### Five-language overlay editor (2026-10-12)
 
 The Controls DLL was rebuilt in `Release|x64` for .NET 10 from the sibling
