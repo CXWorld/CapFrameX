@@ -918,6 +918,7 @@ namespace CapFrameX.ViewModel
                 {
                     RaisePropertyChanged(nameof(InGameOverlayDescription));
                     RaisePropertyChanged(nameof(DeleteDesignMessage));
+                    RaisePropertyChanged(nameof(DesignStatus));
                     RefreshHookLearnedProfileText();
                 }
             };

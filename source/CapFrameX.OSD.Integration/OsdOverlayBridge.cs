@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Reactive.Linq;
 using System.Threading;
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.OSD.Interop;
 using Serilog;
@@ -401,7 +402,7 @@ namespace CapFrameX.OSD.Integration
                 }
             }
             if (rejected)
-                _designRuntime.ReportRendererError("The hook-free renderer rejected the saved design. The previous overlay remains active.");
+                _designRuntime.ReportRendererError(new LocalizedText("OverlayDesignStatus_RendererRejected"));
             else
                 _designRuntime.ReportRendererReady();
         }

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using CapFrameX.Contracts.Localization;
 
 namespace CapFrameX.OSD.Integration
 {
@@ -32,14 +33,14 @@ namespace CapFrameX.OSD.Integration
         {
             var channel = new HookDesignChannel();
             if (!ConvertStringSecurityDescriptorToSecurityDescriptorW("D:(A;;GA;;;WD)S:(ML;;NW;;;LW)", 1, out IntPtr descriptor, out _))
-                throw new Win32Exception(Marshal.GetLastWin32Error(), "Could not create the design channel security descriptor.");
+                throw CreateChannelError(new LocalizedText("OverlayDesignError_ChannelSecurity"));
             try
             {
                 var security = new SecurityAttributes { Length = Marshal.SizeOf<SecurityAttributes>(), Descriptor = descriptor };
                 channel._mapping = CreateFileMappingW(new IntPtr(-1), ref security, 4, 0, MapSize, name);
-                if (channel._mapping == IntPtr.Zero) throw new Win32Exception(Marshal.GetLastWin32Error(), "Could not create the overlay design channel.");
+                if (channel._mapping == IntPtr.Zero) throw CreateChannelError(new LocalizedText("OverlayDesignError_ChannelCreate"));
                 channel._view = MapViewOfFile(channel._mapping, 2, 0, 0, (UIntPtr)MapSize);
-                if (channel._view == IntPtr.Zero) throw new Win32Exception(Marshal.GetLastWin32Error(), "Could not map the overlay design channel.");
+                if (channel._view == IntPtr.Zero) throw CreateChannelError(new LocalizedText("OverlayDesignError_ChannelMap"));
                 channel._sequence = Marshal.ReadInt32(channel._view, 8) & ~1;
                 channel.Disable();
                 return channel;
@@ -50,6 +51,12 @@ namespace CapFrameX.OSD.Integration
                 throw;
             }
             finally { LocalFree(descriptor); }
+        }
+
+        private static Win32Exception CreateChannelError(LocalizedText text)
+        {
+            int errorCode = Marshal.GetLastWin32Error();
+            return OverlayDesignText.Error(text, message => new Win32Exception(errorCode, message));
         }
 
         public void Publish(int targetPid, string templateJson, string metricsJson, ulong designRevision, ulong metricsRevision)
@@ -116,9 +123,9 @@ namespace CapFrameX.OSD.Integration
         internal static byte[] Encode(string json)
         {
             if (string.IsNullOrWhiteSpace(json) || json.IndexOf('\0') >= 0)
-                throw new ArgumentException("Design channel JSON must be nonempty and contain no embedded NUL.", nameof(json));
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ChannelJson"), message => new ArgumentException(message, nameof(json)));
             byte[] bytes = Utf8.GetBytes(json);
-            if (bytes.Length > PayloadCapacity) throw new ArgumentException("Design channel JSON exceeds the 1 MiB UTF-8 limit.", nameof(json));
+            if (bytes.Length > PayloadCapacity) throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ChannelSize"), message => new ArgumentException(message, nameof(json)));
             return bytes;
         }
 

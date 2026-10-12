@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using CapFrameX.Contracts.Localization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -53,7 +54,7 @@ namespace CapFrameX.OSD.Integration
         public OverlayDesignProfileStore(string configurationFolder, Func<string, string> canonicalize)
         {
             if (string.IsNullOrWhiteSpace(configurationFolder))
-                throw new ArgumentException("A configuration folder is required.", nameof(configurationFolder));
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ConfigurationFolder"), message => new ArgumentException(message, nameof(configurationFolder)));
             _canonicalize = canonicalize ?? throw new ArgumentNullException(nameof(canonicalize));
             _directory = Path.Combine(Path.GetFullPath(configurationFolder), "OverlayDesigns");
             _filePath = Path.Combine(_directory, "profiles.json");
@@ -63,8 +64,10 @@ namespace CapFrameX.OSD.Integration
 
         public IReadOnlyList<OverlayDesignProfile> Profiles => _profiles;
         public string ActiveProfileId { get; private set; }
-        public string RecoveryWarning { get; private set; }
-        public string StarterInitializationWarning { get; private set; }
+        private LocalizedText _recoveryWarning;
+        private LocalizedText _starterInitializationWarning;
+        public string RecoveryWarning => _recoveryWarning?.Resolve();
+        public string StarterInitializationWarning => _starterInitializationWarning?.Resolve();
 
         internal bool EnsureStarterProfiles(IReadOnlyList<OverlayDesignStarterProfile> starters, int catalogVersion)
         {
@@ -72,7 +75,7 @@ namespace CapFrameX.OSD.Integration
             lock (StarterInitializationGate)
             {
                 if (_starterCatalogVersion >= catalogVersion) return true;
-                StarterInitializationWarning = null;
+                _starterInitializationWarning = null;
                 try
                 {
                     // A service and an editor may open the same library before either seeds it.
@@ -82,7 +85,7 @@ namespace CapFrameX.OSD.Integration
                     if (_starterCatalogVersion >= catalogVersion) return true;
                     if (_recovered)
                     {
-                        StarterInitializationWarning = "Starter designs were not added while the saved-design library is being recovered. Save the recovered library first.";
+                        _starterInitializationWarning = new LocalizedText("OverlayDesignStatus_StartersRecovered");
                         return false;
                     }
                     var profiles = _profiles.ToList();
@@ -107,7 +110,7 @@ namespace CapFrameX.OSD.Integration
                     // Read-only and concurrently edited libraries remain usable. The marker is
                     // written in the same atomic replacement as the profiles, so retrying later
                     // cannot duplicate a partially installed catalog.
-                    StarterInitializationWarning = "Starter designs could not be added. Existing saved designs were preserved. " + error.Message;
+                    _starterInitializationWarning = new LocalizedText("OverlayDesignStatus_StartersFailed", OverlayDesignText.Details(error));
                     return false;
                 }
             }
@@ -116,19 +119,20 @@ namespace CapFrameX.OSD.Integration
         private void Reload()
         {
             var profiles = _profiles;
-            string activeId = ActiveProfileId, expectedHash = _expectedFileHash, warning = RecoveryWarning;
+            string activeId = ActiveProfileId, expectedHash = _expectedFileHash;
+            var warning = _recoveryWarning;
             int catalogVersion = _starterCatalogVersion;
             bool recovered = _recovered;
             _profiles = Array.Empty<OverlayDesignProfile>();
             ActiveProfileId = null;
             _starterCatalogVersion = 0;
             _recovered = false;
-            RecoveryWarning = null;
+            _recoveryWarning = null;
             try { Load(); }
             catch
             {
                 _profiles = profiles; ActiveProfileId = activeId; _expectedFileHash = expectedHash;
-                _starterCatalogVersion = catalogVersion; _recovered = recovered; RecoveryWarning = warning;
+                _starterCatalogVersion = catalogVersion; _recovered = recovered; _recoveryWarning = warning;
                 throw;
             }
         }
@@ -137,7 +141,7 @@ namespace CapFrameX.OSD.Integration
         {
             ValidateId(id);
             return _profiles.FirstOrDefault(profile => profile.Id == id)
-                ?? throw new KeyNotFoundException("The overlay profile no longer exists.");
+                ?? throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ProfileMissing"), message => new KeyNotFoundException(message));
         }
 
         public OverlayDesignProfile Create(string name, string designJson)
@@ -145,7 +149,7 @@ namespace CapFrameX.OSD.Integration
             lock (_gate)
             {
                 if (_profiles.Count >= MaximumProfiles)
-                    throw new InvalidOperationException($"The library can contain at most {MaximumProfiles} profiles.");
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ProfileLimit", MaximumProfiles), message => new InvalidOperationException(message));
                 name = ValidateName(name);
                 EnsureUniqueName(name, null);
                 var profile = new OverlayDesignProfile(Guid.NewGuid().ToString("N"), name,
@@ -187,7 +191,7 @@ namespace CapFrameX.OSD.Integration
             {
                 Get(id);
                 if (_profiles.Count < 2)
-                    throw new InvalidOperationException("Keep at least one overlay profile. Create another profile before deleting this one.");
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_KeepProfile"), message => new InvalidOperationException(message));
                 var remaining = _profiles.Where(profile => profile.Id != id).ToArray();
                 Persist(remaining, ActiveProfileId == id ? remaining.FirstOrDefault()?.Id : ActiveProfileId);
             }
@@ -227,14 +231,14 @@ namespace CapFrameX.OSD.Integration
             try
             {
                 if (primary == null)
-                    throw new InvalidDataException("The profile library is missing.");
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_LibraryMissing"), message => new InvalidDataException(message));
                 Apply(Parse(primary));
             }
             catch (Exception error) when (IsInvalidData(error))
             {
                 var backup = ReadBytes(_backupPath);
                 if (backup == null)
-                    throw new InvalidDataException("The overlay profile library is damaged and no backup is available. The original file was retained.", error);
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_DamagedNoBackup"), message => new InvalidDataException(message, error));
                 Library recovered;
                 try
                 {
@@ -242,11 +246,11 @@ namespace CapFrameX.OSD.Integration
                 }
                 catch (Exception backupError) when (IsInvalidData(backupError))
                 {
-                    throw new InvalidDataException("The overlay profile library and its backup are damaged. Both files were retained.", backupError);
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_DamagedBackup"), message => new InvalidDataException(message, backupError));
                 }
                 Apply(recovered);
                 _recovered = true;
-                RecoveryWarning = "The overlay profile library was recovered from its previous backup. The damaged file will be retained when you save.";
+                _recoveryWarning = new LocalizedText("OverlayDesignStatus_Recovered");
             }
         }
 
@@ -258,30 +262,30 @@ namespace CapFrameX.OSD.Integration
             });
             // A newer library must never be replaced with an older backup by this version.
             if (document.Value<int?>(nameof(Library.Version)) > FormatVersion)
-                throw new NotSupportedException("This profile library was saved by a newer version of CapFrameX.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_NewerLibrary"), message => new NotSupportedException(message));
             var library = document.ToObject<Library>(JsonSerializer.Create(new JsonSerializerSettings
             {
                 MaxDepth = 64,
                 TypeNameHandling = TypeNameHandling.None
             }));
             if (library.Version != FormatVersion || library.Profiles == null || library.Profiles.Count > MaximumProfiles || library.StarterCatalogVersion < 0)
-                throw new InvalidDataException("The profile library version or profile count is invalid.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_InvalidLibrary"), message => new InvalidDataException(message));
             var ids = new HashSet<string>(StringComparer.Ordinal);
             var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var profile in library.Profiles)
             {
                 if (profile == null)
-                    throw new InvalidDataException("The library contains an empty profile.");
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_EmptyProfile"), message => new InvalidDataException(message));
                 ValidateId(profile.Id);
                 profile.Name = ValidateName(profile.Name);
                 if (!ids.Add(profile.Id) || !names.Add(profile.Name))
-                    throw new InvalidDataException("The library contains duplicate profile identifiers or names.");
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_DuplicateProfiles"), message => new InvalidDataException(message));
                 profile.DesignJson = Canonicalize(profile.DesignJson);
                 if (profile.ModifiedUtc == default)
-                    throw new InvalidDataException("A profile has an invalid modification date.");
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ModifiedDate"), message => new InvalidDataException(message));
             }
             if (library.Profiles.Count == 0 ? library.ActiveProfileId != null : !ids.Contains(library.ActiveProfileId ?? string.Empty))
-                throw new InvalidDataException("The selected overlay profile is missing from the library.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_SelectedMissing"), message => new InvalidDataException(message));
             return library;
         }
 
@@ -302,7 +306,7 @@ namespace CapFrameX.OSD.Integration
             };
             byte[] bytes = Utf8.GetBytes(JsonConvert.SerializeObject(library, Formatting.Indented));
             if (bytes.Length > MaximumLibraryBytes)
-                throw new InvalidOperationException("The overlay profile library is too large. Export and remove unused profiles first.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_LibraryTooLarge"), message => new InvalidOperationException(message));
             Directory.CreateDirectory(_directory);
             string temporary = Path.Combine(_directory, Guid.NewGuid().ToString("N") + ".tmp");
             // Separate instances cooperate through this lock and detect stale snapshots. They
@@ -311,7 +315,7 @@ namespace CapFrameX.OSD.Integration
                 FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
             {
                 if (Hash(ReadBytes(_filePath)) != _expectedFileHash)
-                    throw new IOException("The overlay profile library changed in another window. Reopen the designer before saving; your current edits have not been discarded.");
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ConcurrentChange"), message => new IOException(message));
                 try
                 {
                     using (var output = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
@@ -342,7 +346,7 @@ namespace CapFrameX.OSD.Integration
                     ActiveProfileId = activeId;
                     _starterCatalogVersion = library.StarterCatalogVersion;
                     _recovered = false;
-                    RecoveryWarning = null;
+                    _recoveryWarning = null;
                 }
                 finally
                 {
@@ -366,27 +370,27 @@ namespace CapFrameX.OSD.Integration
         private void EnsureUniqueName(string name, string exceptId)
         {
             if (_profiles.Any(profile => profile.Id != exceptId && string.Equals(profile.Name, name, StringComparison.OrdinalIgnoreCase)))
-                throw new ArgumentException("An overlay profile with this name already exists.", nameof(name));
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_NameExists"), message => new ArgumentException(message, nameof(name)));
         }
 
         private static string ValidateName(string name)
         {
             name = name?.Trim();
             if (string.IsNullOrEmpty(name) || name.Length > MaximumNameLength || name.Any(char.IsControl) || name.IndexOfAny(new[] { '/', '\\' }) >= 0)
-                throw new ArgumentException($"Use a profile name of 1–{MaximumNameLength} characters without slashes or control characters.", nameof(name));
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_NameInvalid", MaximumNameLength), message => new ArgumentException(message, nameof(name)));
             return name;
         }
 
         private static void ValidateId(string id)
         {
             if (!Guid.TryParseExact(id, "N", out _))
-                throw new ArgumentException("The overlay profile identifier is invalid.", nameof(id));
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_IdInvalid"), message => new ArgumentException(message, nameof(id)));
         }
 
         private static void CheckDesignSize(string designJson)
         {
             if (string.IsNullOrWhiteSpace(designJson) || Utf8.GetByteCount(designJson) > MaximumDesignBytes)
-                throw new ArgumentException("The overlay design is empty or exceeds the 1 MiB size limit.", nameof(designJson));
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_DesignSize"), message => new ArgumentException(message, nameof(designJson)));
         }
 
         private static byte[] ReadBytes(string path)
@@ -396,7 +400,7 @@ namespace CapFrameX.OSD.Integration
             using (var input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 if (input.Length > MaximumLibraryBytes)
-                    throw new InvalidDataException("The overlay profile library exceeds the 16 MiB size limit.");
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_LibrarySize"), message => new InvalidDataException(message));
                 var bytes = new byte[(int)input.Length];
                 input.ReadExactly(bytes);
                 return bytes;

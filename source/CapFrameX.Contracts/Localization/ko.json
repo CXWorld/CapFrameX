@@ -1,0 +1,2679 @@
+{
+  // =========================================================================
+  // CapFrameX Localization Catalog (Korean / 한국어)
+  // Translation of en.json. Keep keys and format placeholders identical to en.json;
+  // new languages should start from en.json, not from this file.
+  // Units, product names and technical metric abbreviations are preserved.
+  // All Localization/*.json files are automatically embedded on build.
+  // =========================================================================
+  "name": "한국어",
+  "culture": "ko-KR",
+  "strings": {
+    "OverlayDesignError_LayoutDimensions": "프리셋 소스 레이아웃의 배율 또는 격자 크기가 올바르지 않습니다.",
+    "OverlayDesignError_GroupLayout": "프리셋 센서 그룹에 구성 요소의 네이티브 레이아웃이 없습니다.",
+    "OverlayDesignError_GroupWidth": "센서 그룹의 내부에 사용할 수 있는 너비가 없습니다.",
+    "OverlayDesignError_GroupBars": "센서 그룹의 막대 크기가 올바르지 않습니다.",
+    "OverlayDesignError_GroupHeight": "센서 그룹에 더 많은 높이가 필요합니다. 타일의 너비를 넓히거나 열 수를 늘리세요.",
+    "OverlayDesignError_ChannelSecurity": "디자인 채널의 보안 설명자를 만들 수 없습니다.",
+    "OverlayDesignError_ChannelCreate": "오버레이 디자인 채널을 만들 수 없습니다.",
+    "OverlayDesignError_ChannelMap": "오버레이 디자인 채널을 메모리에 매핑할 수 없습니다.",
+    "OverlayDesignError_ChannelJson": "디자인 채널의 JSON은 비어 있거나 NUL 문자를 포함할 수 없습니다.",
+    "OverlayDesignError_ChannelSize": "디자인 채널의 JSON이 UTF-8 기준 1 MiB 제한을 초과합니다.",
+    "OverlayDesignStatus_RendererRejected": "후킹 없는 렌더러가 저장된 디자인을 거부했습니다. 이전 오버레이가 계속 활성화됩니다.",
+    "OverlayDesignStatus_InGame": "게임 내",
+    "OverlayDesignStatus_HookFree": "후킹 없음",
+    "OverlayEditor_Title": "CapFrameX · 타일 오버레이 편집기",
+    "OverlayEditor_Profile": "타일 프로필",
+    "OverlayEditor_ProfileHint": "저장된 타일 프로필입니다. 다음에 편집기를 열면 선택한 프로필이 복원됩니다.",
+    "OverlayEditor_New": "새로 만들기",
+    "OverlayEditor_Duplicate": "복제",
+    "OverlayEditor_Rename": "이름 바꾸기",
+    "OverlayEditor_Delete": "삭제",
+    "OverlayEditor_Save": "저장",
+    "OverlayEditor_Discard": "변경 내용 버리기",
+    "OverlayEditor_Cancel": "취소",
+    "OverlayEditor_SaveHint": "이 디자인 저장 (Ctrl+S)",
+    "OverlayEditor_Use": "타일 오버레이 사용",
+    "OverlayEditor_UseHint": "선택한 CapFrameX 렌더러로 이 저장된 타일 프로필을 표시합니다.",
+    "OverlayEditor_Import": "가져오기…",
+    "OverlayEditor_ImportHint": "CapFrameX 디자인을 새 프로필로 가져오기",
+    "OverlayEditor_Export": "내보내기…",
+    "OverlayEditor_ExportHint": "현재 디자인을 JSON으로 내보내기",
+    "OverlayEditor_Loading": "저장된 타일 프로필을 불러오는 중…",
+    "OverlayEditor_SourceHelp": "프리셋을 선택한 다음 타일을 선택하여 소스와 모양을 편집하세요.",
+    "OverlayEditor_RefreshSources": "소스 새로 고침",
+    "OverlayEditor_RefreshSourcesHint": "사용 가능한 모든 CapFrameX 하드웨어 센서를 다시 검색합니다.",
+    "OverlayEditor_DemoSources": "데모 미리 보기입니다. 하드웨어 소스를 선택하려면 CapFrameX 원격 측정을 연결하세요.",
+    "OverlayEditor_DiscoveringSources": "CapFrameX 원격 측정 소스를 검색하는 중…",
+    "OverlayEditor_SourcesReady": "소스 {0}개 · 오버레이 값 및 하드웨어 원격 측정 · 없는 측정값은 —로 표시됩니다",
+    "OverlayEditor_SourcesFailed": "소스를 새로 고칠 수 없습니다: {0}",
+    "OverlayEditor_TelemetryStopped": "실시간 원격 측정이 중지되었습니다: {0}",
+    "OverlayEditor_PreviewUnavailable": "실시간 미리 보기를 사용할 수 없습니다: {0}",
+    "OverlayEditor_RowsFailed": "기존 행을 새로 고칠 수 없습니다: {0}",
+    "OverlayEditor_RuntimeRefreshFailed": "오버레이에서 저장된 디자인을 새로 고칠 수 없습니다. {0}",
+    "OverlayEditor_LoadFailed": "저장된 디자인을 불러올 수 없습니다. {0}",
+    "OverlayEditor_LibraryUnavailable": "프로필 라이브러리를 사용할 수 없습니다. {0}",
+    "OverlayEditor_ReadOnlyLibrary": "프로필 라이브러리 사용 불가 · 편집기가 읽기 전용입니다. 기존 파일은 보존되었습니다.",
+    "OverlayEditor_DesignLoadFailed": "이 디자인을 불러올 수 없습니다. 편집기가 읽기 전용입니다. 다시 시도하려면 편집기를 다시 여세요. {0}",
+    "OverlayEditor_RtssHint": "RTSS는 행 오버레이를 사용합니다. 타일 오버레이를 활성화하려면 오버레이 설정에서 ‘게임 내’ 또는 ‘후킹 없음’을 선택하세요.",
+    "OverlayEditor_DesignUnavailable": "디자인 사용 불가 · 저장된 프로필은 보존되었습니다.",
+    "OverlayEditor_UnsavedText": "저장하지 않은 텍스트 · Enter를 누르거나 입력란을 벗어나면 적용됩니다. Ctrl+S로 저장하세요.",
+    "OverlayEditor_InvalidChanges": "저장하지 않은 변경 내용 · 저장하기 전에 강조 표시된 값을 수정하세요.",
+    "OverlayEditor_UnsavedChanges": "저장하지 않은 변경 내용 · Ctrl+S로 저장하세요.",
+    "OverlayEditor_Saved": "저장됨 · 다음에 이 디자인이 다시 열립니다.",
+    "OverlayEditor_TileActive": "타일 오버레이 활성화됨",
+    "OverlayEditor_RtssInactive": "RTSS: 타일 오버레이가 꺼져 있습니다. 디자인을 활성화하려면 ‘게임 내’ 또는 ‘후킹 없음’을 선택하세요.",
+    "OverlayEditor_SaveChangesTitle": "변경 내용을 저장하시겠습니까?",
+    "OverlayEditor_SaveChangesMessage": "“{0}”에 저장하지 않은 변경 내용이 있습니다. 계속하기 전에 저장하시겠습니까?",
+    "OverlayEditor_SaveInvalidMessage": "“{0}”에 저장하지 않은 변경 내용이 있습니다. 일부 값이 올바르지 않습니다. 취소하여 값을 수정하거나 변경 내용을 버리세요.",
+    "OverlayEditor_ChooseName": "이 디자인의 이름을 입력하세요.",
+    "OverlayEditor_NameLimit": "최대 {0}자까지 사용할 수 있습니다.",
+    "OverlayEditor_NameExists": "같은 이름의 디자인이 이미 있습니다.",
+    "OverlayEditor_NewDesign": "새 디자인",
+    "OverlayEditor_DuplicateDesign": "디자인 복제",
+    "OverlayEditor_CopyName": "{0} 복사본",
+    "OverlayEditor_RenameDesign": "디자인 이름 바꾸기",
+    "OverlayEditor_DeleteTitle": "디자인을 삭제하시겠습니까?",
+    "OverlayEditor_DeleteMessage": "저장된 디자인에서 “{0}”을(를) 삭제하시겠습니까?",
+    "OverlayEditor_DeleteDirtyMessage": "저장된 디자인에서 “{0}”을(를) 삭제하시겠습니까? 저장하지 않은 변경 내용도 버려집니다.",
+    "OverlayEditor_FileFilter": "CapFrameX 오버레이 디자인 (*.json)|*.json",
+    "OverlayEditor_ImportDesign": "디자인 가져오기",
+    "OverlayEditor_NameHint": "디자인 이름 (1–80자)",
+    "OverlayEditor_EnterName": "디자인 이름을 입력하세요.",
+    "OverlayDesignStatus_Row": "행 오버레이",
+    "OverlayDesignStatus_Tile": "타일 오버레이: {0}",
+    "OverlayDesignStatus_Deleted": "활성 타일 디자인이 삭제되었습니다. 행 오버레이가 복원되었습니다.",
+    "OverlayDesignStatus_LoadFailedRows": "저장된 디자인을 불러올 수 없습니다. {0}. {1}",
+    "OverlayDesignStatus_LoadFailedActive": "저장된 디자인을 불러올 수 없습니다. 마지막으로 불러온 디자인이 계속 활성화됩니다. {0}",
+    "OverlayDesignStatus_PublishFailed": "저장된 디자인을 전송할 수 없습니다. 행 오버레이는 계속 사용할 수 있습니다. {0}",
+    "OverlayDesignStatus_StreamStopped": "저장된 디자인의 원격 측정 스트림이 중지되었습니다. {0}",
+    "OverlayDesignStatus_StartersRecovered": "저장된 디자인 라이브러리를 복구하는 동안 기본 디자인을 추가하지 않았습니다. 먼저 복구된 라이브러리를 저장하세요.",
+    "OverlayDesignStatus_StartersFailed": "기본 디자인을 추가할 수 없습니다. 기존에 저장된 디자인은 보존되었습니다. {0}",
+    "OverlayDesignStatus_Recovered": "오버레이 프로필 라이브러리를 이전 백업에서 복구했습니다. 저장할 때 손상된 파일은 따로 보존됩니다.",
+    "OverlayDesignError_ConfigureFirst": "편집기를 불러오기 전에 프로필 라이브러리를 구성하세요.",
+    "OverlayDesignError_ProfileGone": "이 저장된 타일 프로필이 더 이상 존재하지 않습니다. 프로필 목록을 새로 고친 다음 다른 프로필을 선택하세요.",
+    "OverlayDesignError_InvalidValues": "저장하기 전에 올바르지 않은 디자인 값을 수정하거나 변경 내용을 버리세요.",
+    "OverlayDesignError_ChangedElsewhere": "편집 중인 프로필이 다른 곳에서 변경되거나 삭제되었습니다. 현재 편집 내용은 그대로 열려 있습니다. 계속 편집하려면 취소하고, 다른 프로필을 열려면 변경 내용을 버리세요.",
+    "OverlayDesignError_ImportSize": "디자인 파일이 1 MB를 초과합니다.",
+    "OverlayDesignError_Rtss": "RTSS는 행 오버레이를 사용합니다. 타일 디자인을 활성화하기 전에 ‘게임 내’ 또는 ‘후킹 없음’을 선택하세요.",
+    "OverlayDesignError_ConfigurationFolder": "설정 폴더가 필요합니다.",
+    "OverlayDesignError_ProfileMissing": "오버레이 프로필이 더 이상 존재하지 않습니다.",
+    "OverlayDesignError_ProfileLimit": "라이브러리에는 최대 {0}개의 프로필을 저장할 수 있습니다.",
+    "OverlayDesignError_KeepProfile": "오버레이 프로필을 하나 이상 유지해야 합니다. 이 프로필을 삭제하기 전에 다른 프로필을 만드세요.",
+    "OverlayDesignError_LibraryMissing": "프로필 라이브러리가 없습니다.",
+    "OverlayDesignError_DamagedNoBackup": "오버레이 프로필 라이브러리가 손상되었으며 사용할 수 있는 백업이 없습니다. 원본 파일은 보존되었습니다.",
+    "OverlayDesignError_DamagedBackup": "오버레이 프로필 라이브러리와 백업이 모두 손상되었습니다. 두 파일은 보존되었습니다.",
+    "OverlayDesignError_NewerLibrary": "이 프로필 라이브러리는 더 최신 버전의 CapFrameX에서 저장되었습니다.",
+    "OverlayDesignError_InvalidLibrary": "프로필 라이브러리 버전 또는 프로필 수가 올바르지 않습니다.",
+    "OverlayDesignError_EmptyProfile": "라이브러리에 빈 프로필이 있습니다.",
+    "OverlayDesignError_DuplicateProfiles": "라이브러리에 중복된 프로필 식별자 또는 이름이 있습니다.",
+    "OverlayDesignError_ModifiedDate": "프로필의 수정 날짜가 올바르지 않습니다.",
+    "OverlayDesignError_SelectedMissing": "선택한 오버레이 프로필이 라이브러리에 없습니다.",
+    "OverlayDesignError_LibraryTooLarge": "오버레이 프로필 라이브러리가 너무 큽니다. 먼저 사용하지 않는 프로필을 내보낸 다음 삭제하세요.",
+    "OverlayDesignError_ConcurrentChange": "오버레이 프로필 라이브러리가 다른 창에서 변경되었습니다. 저장하기 전에 편집기를 다시 여세요. 현재 편집 내용은 버려지지 않았습니다.",
+    "OverlayDesignError_NameExists": "같은 이름의 오버레이 프로필이 이미 있습니다.",
+    "OverlayDesignError_NameInvalid": "슬래시나 제어 문자를 제외한 1–{0}자의 프로필 이름을 사용하세요.",
+    "OverlayDesignError_IdInvalid": "오버레이 프로필 식별자가 올바르지 않습니다.",
+    "OverlayDesignError_DesignSize": "오버레이 디자인이 비어 있거나 1 MiB 크기 제한을 초과합니다.",
+    "OverlayDesignError_LibrarySize": "오버레이 프로필 라이브러리가 16 MiB 크기 제한을 초과합니다.",
+    "OverlayDesignError_SessionInitialized": "오버레이 프로필 세션이 이미 초기화되었습니다.",
+    "OverlayDesignError_SessionMissing": "먼저 오버레이 프로필 세션을 초기화하세요.",
+    "OverlayDesignError_StarterMissing": "내장 타일 오버레이 디자인이 없습니다: {0}",
+    "OverlayDesignError_NodeLimit": "오버레이 디자인이 노드 512개 또는 깊이 32단계 제한을 초과합니다.",
+    "OverlayDesignError_WidgetType": "오버레이 위젯에 유형이 지정되지 않았습니다.",
+    "OverlayDesignError_TelemetryKey": "오버레이 위젯의 원격 측정 키가 올바르지 않습니다.",
+    "OverlayDesignError_ChildInvalid": "오버레이 위젯에 올바르지 않은 하위 요소가 있습니다.",
+    "OverlayDesignError_ChildrenArray": "오버레이 위젯의 하위 요소는 배열이어야 합니다.",
+    "OverlayDesignError_SavedSize": "저장된 오버레이 디자인이 비어 있거나 1 MiB 제한을 초과합니다.",
+    "OverlayDesignError_TrailingContent": "저장된 오버레이 디자인 뒤에 예상하지 못한 내용이 있습니다.",
+    "OverlayDesignError_SceneVersion": "저장된 오버레이 디자인의 버전이 지원되지 않거나 네이티브 장면이 없습니다.",
+    "OverlayDesignError_TelemetryCapacity": "선택한 오버레이 측정값이 원격 측정 채널의 용량을 초과합니다.",
+    "OverlayDesignError_StreamStart": "원격 측정 스트림을 시작할 수 없습니다.",
+    "OverlayView_OverlayMode": "오버레이 모드",
+    "OverlayDesigns_Tab": "타일 오버레이",
+    "OverlayDesigns_Title": "타일 오버레이",
+    "OverlayDesigns_Description": "설정 가능한 격자에 모니터링 타일과 연결된 행 오버레이를 배치하고 CapFrameX 렌더러로 미리 확인합니다.",
+    "OverlayDesigns_Open": "타일 편집기 열기",
+    "OverlayDesigns_Refresh": "프로필 새로 고침",
+    "OverlayDesigns_Empty": "편집기에서 타일 오버레이를 만들고 저장하면 여기에서 선택할 수 있습니다.",
+    "OverlayDesigns_Saved": "저장된 타일 프로필",
+    "OverlayDesigns_Edit": "편집기에서 열기",
+    "OverlayDesigns_Show": "오버레이에 표시",
+    "OverlayDesigns_Delete": "삭제",
+    "OverlayDesigns_DeleteTitle": "타일 프로필을 삭제하시겠습니까?",
+    "OverlayDesigns_DeleteMessage": "저장된 타일 프로필에서 “{0}”을(를) 삭제하시겠습니까?",
+    "OverlayDesigns_DeleteActiveNote": "오버레이가 행 오버레이로 돌아갑니다.",
+    "OverlayDesigns_Cancel": "취소",
+    "OverlayDesigns_KeepOneProfile": "저장된 타일 프로필을 하나 이상 유지하세요.",
+    "OverlayDesigns_Classic": "행 오버레이 사용",
+    "OverlayDesigns_Output": "타일 오버레이 출력",
+    "OverlayDesigns_OutputHelp": "게임 내 오버레이와 후킹 없는 오버레이 모두 행 오버레이와 타일 오버레이를 지원합니다. 위에서 사용할 타일 프로필을 선택하세요.",
+    "OverlayDesigns_RendererHint": "선택한 타일 프로필을 현재 게임 내 렌더러 또는 후킹 없는 렌더러와 함께 사용합니다.",
+    "OverlayDesigns_InGame": "게임 내 오버레이",
+    "OverlayDesigns_HookFree": "후킹 없는 오버레이",
+    "OverlayDesigns_Visible": "오버레이 표시",
+
+    // =========================================================================
+    // AGGREGATION VIEW - Merging and averaging multiple benchmark sessions
+    // =========================================================================
+    "AggregationViewModel_ErrorWhileCalculatingResult": "결과를 계산하는 중 오류가 발생했습니다. 다시 시도하세요.",
+    "AggregationView_Aggregate": "집계",
+    "AggregationView_AggregateAllEntries": "모든 항목 집계",
+    "AggregationView_AggregateExcludingOutliers": "이상값을 제외하고 집계",
+    "AggregationView_AggregateIncludingOutliers": "이상값을 포함하여\n집계",
+    "AggregationView_AggregationSettings": "집계 설정",
+    "AggregationView_AggregationTable": "집계 표",
+    "AggregationView_Average": "평균",
+    "AggregationView_Date": "날짜",
+    "AggregationView_DropItemsHereOrDouble": "수동으로 집계하려면 항목을 여기에 끌어다 놓거나 기록 목록에서 두 번 클릭하세요.\n\n벤치마크 중 자동으로 집계하려면 캡처 페이지의 설정을 사용하세요.",
+    "AggregationView_Game": "게임",
+    "AggregationView_MetricUsedToDetermineOutliers": "이상값 판단에 사용할 지표",
+    "AggregationView_OnlyUseEntiresThatAre": "집계 시 이상값이 아닌 항목만 사용",
+    "AggregationView_OutlierMetric": "이상값 판단 지표",
+    "AggregationView_OutlierPercentage": "이상값 판단 비율",
+    "AggregationView_RemoveAllEntries": "모든 항목 제거",
+    "AggregationView_SecondMetric": "두 번째 지표",
+    "AggregationView_SecondMetricShownInAggregation": "집계 표에 표시할 두 번째 지표",
+    "AggregationView_ThePercentageTheFPSOf": "항목의 FPS가 전체 항목의 중앙값에서 이 비율을 초과하여 벗어나면 이상값으로 판단합니다",
+    "AggregationView_ThirdMetric": "세 번째 지표",
+    "AggregationView_ThirdMetricShownInAggregation": "집계 표에 표시할 세 번째 지표",
+    "AggregationView_Time": "시간",
+    "AggregationView_UseAllEntriesForAggregation": "이상값 여부와 관계없이 모든 항목을 집계에 사용",
+
+    // =========================================================================
+    // APPLICATION SHELL & GENERAL DIALOGS
+    // =========================================================================
+    "AppHelper_ThereIsAlreadyAnInstance": "이미 실행 중인 인스턴스가 있습니다...",
+    "Appxaml_AnUnexpectedErrorOccuredDo": "예기치 않은 오류가 발생했습니다. 자세한 분석을 위해 CapFrameX 로그를 업로드하시겠습니까?",
+    "Appxaml_EtwSessionConflictDetected": "ETW 세션 충돌 감지",
+    "Appxaml_FatalError": "치명적 오류",
+    "Appxaml_FrameViewEtwSessionDetected": "FrameViewService ETW 세션이 감지되었습니다.\n\nNVIDIA FrameView SDK가 현재 실행 중인 ETW 추적 세션이 PresentMon과 충돌할 수 있습니다. 캡처 중 CapFrameX에 성능 지표가 표시되지 않으면 NVIDIA FrameView SDK 제거를 고려하세요.\n\n계속 진행하고 다음에도 이 경고를 표시하려면 '예'를 클릭하세요.\n계속 진행하고 이 경고를 다시 표시하지 않으려면 '아니요'를 클릭하세요.",
+    "Appxaml_YourReportIdIs0": "보고서 ID는 {0}입니다.\n지원 문의 시 이 ID를 포함하세요. 자세한 내용은 https://www.capframex.com/support 에서 확인하세요.",
+
+    // =========================================================================
+    // BENCHLAB - Power unit label
+    // =========================================================================
+    "BenchlabMetricsManager_W": "W",
+
+    // =========================================================================
+    // CAPTURE VIEW - Benchmark recording triggers, hotkeys, process monitoring
+    // =========================================================================
+    "CaptureViewModel_0AutoDetected": "\"{0}\" 자동 감지됨.",
+    "CaptureViewModel_0Selected": "\"{0}\" 선택됨.",
+    "CaptureViewModel_CaptureDurationSavedFor": "{0}의 캡처 시간이 저장되었습니다({1}). 전역 시간을 사용하려면 클릭하세요.",
+    "CaptureViewModel_CaptureHotkeyDisabled": "캡처 단축키가 비활성화되었습니다.",
+    "CaptureViewModel_CaptureStartingWithDelay": "{0}초 후 캡처를 시작합니다...",
+    "CaptureViewModel_CapturingInProgress": "캡처 중...",
+    "CaptureViewModel_CapturingInProgressSetTime": "캡처 중(설정 시간: {0}초)...",
+    "CaptureViewModel_ChangesApplyTo0Only": "변경 사항은 {0}에만 적용됩니다",
+    "CaptureViewModel_CreatingCaptureFile": "캡처 파일 생성 중...",
+    "CaptureViewModel_FrametimeMs": "프레임 시간 [ms]",
+    "CaptureViewModel_Global": "전역",
+    "CaptureViewModel_GlobalCaptureDuration": "전역 캡처 시간",
+    "CaptureViewModel_GlobalCaptureDurationClick": "전역 캡처 시간입니다. 선택한 게임의 시간을 별도로 저장하려면 클릭하세요.",
+    "CaptureViewModel_MultipleProcessesDetected": "여러 프로세스가 감지되었습니다.",
+    "CaptureViewModel_NoLimit": "제한 없음",
+    "CaptureViewModel_Press0ToStartCapture": "캡처를 시작하려면 \"{0}\"을(를) 누르세요.",
+    "CaptureViewModel_Press0ToStartCaptureOfRunningProcess": "실행 중인 프로세스의 캡처를 시작하려면 {0}을(를) 누르세요.",
+    "CaptureViewModel_Press0ToStopCapture": "캡처를 중지하려면 {0}을(를) 누르세요.",
+    "CaptureViewModel_ProcessListClear": "프로세스 목록이 비어 있습니다.",
+    "CaptureViewModel_RemoteCapturingInProgress": "원격 캡처 중...",
+    "CaptureViewModel_RemovesThisGamesCustom": " · 이 게임의 사용자 지정 시간을 제거합니다",
+    "CaptureViewModel_Samples": "샘플",
+    "CaptureViewModel_SelectAProcessFirst": "먼저 프로세스를 선택하세요",
+    "CaptureViewModel_SelectOneOrMoveUnwanted": "프로세스 하나를 선택하거나 원하지 않는 프로세스를 제외 목록으로 이동하세요.",
+    "CaptureViewModel_ServiceReady": "서비스 준비 완료...",
+    "CaptureViewModel_StartAnyGameAndPress0": "게임 또는 애플리케이션을 실행하고 \"{0}\"을(를) 눌러 캡처를 시작하세요.",
+    "CaptureViewModel_ThisGame": "이 게임",
+    "CaptureViewModel_UsedByGamesWithoutA": " · 사용자 지정 시간이 없는 게임에서 사용합니다",
+    "CaptureView_AdvancedInfo": "고급 정보",
+    "CaptureView_AggregationOfRunHistory": "실행 이력 집계",
+    "CaptureView_BasicInfo": "기본 정보",
+    "CaptureView_CaptureDelayS": "캡처 지연 [s]",
+    "CaptureView_CaptureDurationScope": "캡처 시간 적용 범위",
+    "CaptureView_CaptureHotkey": "캡처 단축키",
+    "CaptureView_CaptureLogger": "캡처 로거",
+    "CaptureView_CaptureServiceLoggerOutput": "캡처 서비스 로그 출력...",
+    "CaptureView_CaptureSettings": "캡처 설정",
+    "CaptureView_CaptureTimeS": "캡처 시간 [s]",
+    "CaptureView_ClearLoggerOutput": "로그 출력 지우기",
+    "CaptureView_EnterAValidDuration": "0초 이상의 유효한 시간을 입력하세요(0 = 제한 없음).",
+    "CaptureView_Errors": "오류",
+    "CaptureView_HotkeyPressBackspaceDeleteOrEsc": "단축키는 최대 두 개의 보조 키(Ctrl, Shift 또는 Alt)와 조합할 수 있습니다. 지우려면 Backspace, Delete 또는 Esc를 누르세요.",
+    "CaptureView_HotkeySound": "단축키 소리",
+    "CaptureView_IfCheckedTheSingleRuns": "선택하면 집계 결과만 저장하고 개별 실행 기록은 저장하지 않습니다.",
+    "CaptureView_IfTheSelectedMetricOf": "실행 기록의 선택한 지표가 전체 실행 기록의 중앙값에서 설정한 비율을 초과하여 벗어나면 이상값으로 표시합니다.\n\n\n표시 후 사용\n이력이 가득 차면 모든 실행 기록을 집계합니다.\n\n\n표시 후 교체\n표시된 실행 기록을 추가 실행 기록으로 교체해야 합니다.\n\n이력에 이상값이 더 이상 없으면 실행 기록을 집계합니다.",
+    "CaptureView_MessageFilter": "메시지 필터",
+    "CaptureView_MetricUsedToDetermineOutliers": "이상값 판단에 사용할 지표",
+    "CaptureView_MoveToIgnoreList": "제외 목록으로 이동",
+    "CaptureView_NoDelay": "0 = 지연 없음",
+    "CaptureView_NoLimitPressEnterOrLeave": "0 = 제한 없음. 저장하려면 Enter를 누르거나 입력란을 벗어나세요.",
+    "CaptureView_NumberOfRuns": "실행 횟수",
+    "CaptureView_OnceTheRunHistoryIs": "실행 이력이 가득 차면 모든 프레임 시간 데이터를 하나의 새 기록 파일로 합쳐 저장합니다.\n\n\n이는 여러 개별 기록 파일에서 평균 지표를 계산하는 것과는 다릅니다. 하나의 벤치마크에서 같은 장면을 여러 번 실행한 것과 같은 효과를 냅니다.\n전체 프레임 시간 데이터를 사용하여 성능 지표를 한 번 계산합니다.",
+    "CaptureView_OutlierHandling": "이상값 처리",
+    "CaptureView_OutlierMetric": "이상값 판단 지표",
+    "CaptureView_OutlierPercentage": "이상값 판단 비율",
+    "CaptureView_ProcessIgnoreList": "프로세스 제외 목록",
+    "CaptureView_RememberForThisGame": "이 게임에 대해 저장",
+    "CaptureView_RemoveFromIgnoreList": "제외 목록에서 제거",
+    "CaptureView_ResetAndRescanProcesses": "프로세스 초기화 및 다시 검색",
+    "CaptureView_ResetRunHistory": "실행 이력 초기화",
+    "CaptureView_RunHistory": "실행 이력",
+    "CaptureView_RunHistoryAndAggregation": "실행 이력 및 집계",
+    "CaptureView_RunningProcesses": "실행 중인 프로세스",
+    "CaptureView_SaveAggregatedResultOnly": "집계 결과만 저장",
+    "CaptureView_SavesASetNumberOf": "설정한 횟수만큼 실행 기록을 이력에 저장하며, 이 이력을 오버레이에도 표시할 수 있습니다",
+    "CaptureView_SecondMetric": "두 번째 지표",
+    "CaptureView_SecondMetricShownForHistory": "오버레이의 이력 항목에 표시할 두 번째 지표",
+    "CaptureView_ShowProcessDetails": "프로세스 세부 정보 표시",
+    "CaptureView_SoundLevelControl": "음량 조절",
+    "CaptureView_TheMaxPercentageTheFPS": "실행 기록의 FPS가 전체 실행 기록의 중앙값에서 이 비율을 초과하여 벗어나면 이상값으로 판단합니다",
+    "CaptureView_TheNumberOfRunsWritten": "이력에 저장할 실행 횟수입니다.\n집계를 사용하지 않을 때 이력이 가득 차면 새 실행 기록이 가장 오래된 기록을 대체합니다.",
+    "CaptureView_ThirdMetric": "세 번째 지표",
+    "CaptureView_ThirdMetricShownForHistory": "오버레이의 이력 항목에 표시할 세 번째 지표",
+    "CaptureView_UseGlobalDuration": "전역 시간 사용",
+
+    // =========================================================================
+    // CLOUD VIEW - Sharing benchmarks on capframex.com
+    // =========================================================================
+    "CloudViewModel_UploadSizeLimitExceeded0": "선택한 세션의 크기가 업로드당 제한인 {0}바이트를 초과합니다",
+    "CloudView_AnyNewGameNameOr": "새로 추가한 게임 이름이나 제외 프로세스를 저희 목록에 추가할 수 있도록 전송합니다",
+    "CloudView_AutoUpdateList": "목록 자동 업데이트",
+    "CloudView_Comment": "메모",
+    "CloudView_CopyToClipboard": "클립보드에 복사",
+    "CloudView_Date": "날짜",
+    "CloudView_DownloadFolder": "다운로드 폴더",
+    "CloudView_DownloadLinkID": "다운로드 링크 / ID",
+    "CloudView_DownloadLinkID2": "다운로드 링크 / ID",
+    "CloudView_DownloadRecords": "기록 다운로드",
+    "CloudView_DownloadTheRecordsBoundTo": "다운로드 ID에 연결된 기록을 지정한 다운로드 폴더에 다운로드합니다",
+    "CloudView_Downloading": "다운로드 중...",
+    "CloudView_DropItemsHereOrDouble": "항목을 여기에 끌어다 놓거나 기록 목록에서 두 번 클릭하세요",
+    "CloudView_Game": "게임",
+    "CloudView_ItHoldsInformationAboutThe": "표시되는 프로세스 이름과 캡처 서비스에서 해당 프로세스를 제외하는지에 대한 정보를 담고 있습니다.",
+    "CloudView_ObserveDownloadFolder": "다운로드 폴더 감시",
+    "CloudView_OnFirstStartupYourOwn": "처음 실행하면 CapFrameX의 새 버전마다 제공하는 기본 목록을 바탕으로 사용자 프로세스 목록을 만들고 업데이트합니다. 기본 목록에는 올바른 이름이 지정된 여러 게임 프로세스와 제외할 다른 프로세스가 이미 포함되어 있습니다.",
+    "CloudView_OnStartupYourOwnProcess": "시작 시 사용자 프로세스 목록을 온라인 목록과 비교하고, 사용자 목록에 없는 항목을 추가합니다.\n\n이미 목록에 있는 프로세스의 제외 여부나 사용자 지정 게임 이름에는 영향을 주지 않습니다",
+    "CloudView_OptionalUploadDescription": "(선택 사항) 업로드 설명",
+    "CloudView_ProcessListOptions": "프로세스 목록 옵션",
+    "CloudView_RecordDownload": "기록 다운로드",
+    "CloudView_RecordUpload": "기록 업로드",
+    "CloudView_RemoveAllEntries": "모든 항목 제거",
+    "CloudView_ShareNewEntries": "새 항목 공유",
+    "CloudView_TheOptionsBelowHelpUs": "아래 옵션을 통해 기본 목록에 추가할 항목을 수집할 수 있으며, 사용자도 최근 추가된 항목을 바로 받을 수 있습니다.",
+    "CloudView_TheProcessListContainsAll": "프로세스 목록에는 CapFrameX가 알고 있는 모든 프로세스가 포함되어 있습니다.",
+    "CloudView_Time": "시간",
+    "CloudView_UploadRecords": "기록 업로드",
+    "CloudView_UploadYourRecordsToOur": "기록을 서버에 업로드하고 공유용 ID를 받습니다",
+    "CloudView_Uploading": "업로드 중...",
+    "CloudView_WhatIsTheProcessList": "프로세스 목록이란?",
+
+    // =========================================================================
+    // SETTINGS & NAVIGATION (COLORBAR) - Options, hardware detection, overlay
+    // =========================================================================
+    "ColorbarView_AGGREGATION": "집계",
+    "ColorbarView_ANALYSIS": "분석",
+    "ColorbarView_ActiveSensorsWebSocketURL": "활성 센서 WebSocket URL",
+    "ColorbarView_AddsPresentMonSMsPCLatencyColumn": "캡처 데이터에 PresentMon의 MsPCLatency 열을 추가합니다. 캡처 서비스를 다시 시작해야 합니다.",
+    "ColorbarView_AdjustAppearanceStartupBehaviorAnd": "모양, 시작 동작 및 애플리케이션 전체 서비스를 조정합니다.",
+    "ColorbarView_AllowsYouToReceiveImportant": "앱 시작 시 CX 팀의 중요한 메시지를 받을 수 있습니다",
+    "ColorbarView_AppearanceAndNotifications": "모양 및 알림",
+    "ColorbarView_Application": "애플리케이션",
+    "ColorbarView_Application2": "애플리케이션",
+    "ColorbarView_AskTheCapFrameXUpdateServer": "CapFrameX 업데이트 서버에서 새 버전이 있는지 확인합니다",
+    "ColorbarView_AutomaticChecksFollowTheInstalled": "자동 확인은 설치된 채널을 따릅니다. 게시된 모든 정식 및 베타 빌드는 아래에서 계속 선택할 수 있습니다.",
+    "ColorbarView_AvailableEndpoints": "사용 가능한 엔드포인트",
+    "ColorbarView_AverageTimeWindowInMilliseconds": "평균 계산 시간 범위(밀리초).",
+    "ColorbarView_CAPTURE": "캡처",
+    "ColorbarView_CHECKFORUPDATES": "업데이트 확인",
+    "ColorbarView_CLOUD": "클라우드",
+    "ColorbarView_COMPARISON": "비교",
+    "ColorbarView_CPU": "CPU",
+    "ColorbarView_CXRemoteServiceInfoURL": "CX Remote Service 정보 URL",
+    "ColorbarView_CapFrameXCom": "CapFrameX.com",
+    "ColorbarView_CaptureFileMode": "캡처 파일 모드",
+    "ColorbarView_CaptureMetrics": "캡처 지표",
+    "ColorbarView_ChartsAndExport": "차트 및 내보내기",
+    "ColorbarView_CheckForANewerCapFrameX": "애플리케이션을 시작할 때마다 새 CapFrameX 릴리스를 확인합니다.",
+    "ColorbarView_CheckForUpdatesEveryTime": "CapFrameX를 시작할 때마다 업데이트 확인",
+    "ColorbarView_CheckForUpdatesOrDeliberately": "업데이트를 확인하거나 지원되는 이전 릴리스로 되돌립니다.",
+    "ColorbarView_CheckOnStart": "시작 시 확인",
+    "ColorbarView_ChooseThePrimaryAdapterUsed": "모니터링과 로깅에 사용할 기본 어댑터를 선택합니다. 변경 후 CapFrameX를 다시 시작하세요.",
+    "ColorbarView_ChooseTheTimingDataStored": "성능 분석에 사용할 시간 데이터와 캡처 저장 방식을 선택합니다.",
+    "ColorbarView_ChooseWhereScreenshotsCreatedFrom": "도구 모음에서 촬영한 스크린샷을 저장할 위치를 선택합니다.",
+    "ColorbarView_ChooseWhetherTheHardwareNamesStored": "캡처와 함께 저장할 하드웨어 이름을 자동 감지할지 직접 입력할지 선택합니다.",
+    "ColorbarView_Close": "닫기",
+    "ColorbarView_CloseThisMessageAndNot": "이 메시지를 닫고 새 메시지가 있을 때까지 다시 표시하지 않습니다",
+    "ColorbarView_ConfigureCapFrameXToMatchYour": "작업 방식에 맞게 CapFrameX를 설정합니다.",
+    "ColorbarView_ConfigureChartsCaptureMetricsLatency": "차트, 캡처 지표와 파일 형식, 지연 시간 추적, 스크린샷을 설정합니다.",
+    "ColorbarView_ConfigureLocalServiceAccessAnd": "로컬 서비스 접근을 설정하고 CapFrameX가 제공하는 엔드포인트를 확인합니다.",
+    "ColorbarView_ControlHowCapFrameXStartsAnd": "CapFrameX의 시작 방식과 최소화 시 동작을 설정합니다.",
+    "ColorbarView_ControlHowFPSValuesAre": "FPS 값의 계산, 표시 및 내보내기 방식을 설정합니다.",
+    "ColorbarView_ControlWhichPowerSensorIs": "전력 관련 지표에 사용할 전력 센서를 설정합니다.",
+    "ColorbarView_Copy": "복사",
+    "ColorbarView_CustomHardwareLabels": "사용자 지정 하드웨어 레이블",
+    "ColorbarView_DarkMode": "다크 모드",
+    "ColorbarView_DecimalPlaces": "소수 자릿수",
+    "ColorbarView_DisplayedDecimalPlaces": "표시할 소수 자릿수.",
+    "ColorbarView_EnableMCPServer": "MCP 서버 사용",
+    "ColorbarView_EnablePCLatencyTrackingVia": "PresentMon을 통한 PC 지연 시간 추적을 사용합니다. 활성화하면 캡처 데이터에서 \"MsPCLatency\" 열을 사용할 수 있습니다.\n적용하려면 캡처 서비스를 다시 시작해야 합니다.",
+    "ColorbarView_EnablesTheLocalMCPEndpoint": "도구 연동을 위한 로컬 MCP 엔드포인트를 활성화합니다. 이 설정을 변경한 후 CapFrameX를 다시 시작하세요.",
+    "ColorbarView_Events": "이벤트",
+    "ColorbarView_ExposeTheLocalMCPEndpoint": "도구 연동을 위한 로컬 MCP 엔드포인트를 제공합니다. 다시 시작해야 합니다.",
+    "ColorbarView_FPSDecimals": "FPS 소수 자릿수",
+    "ColorbarView_FPSGraphFilter": "FPS 그래프 필터",
+    // Dropdown hint for selecting capture file format (JSON vs JSON + CSV)
+    "ColorbarView_FileMode": "파일 모드",
+    "ColorbarView_GPU": "GPU",
+    "ColorbarView_GraphExportResolution": "그래프 내보내기 해상도",
+    "ColorbarView_GraphicsAdapter": "그래픽 어댑터",
+    "ColorbarView_HTTPURLToAccessThe": "현재 오버레이 출력에 접근할 HTTP URL(오버레이가 활성 상태여야 함)",
+    "ColorbarView_Hardware": "하드웨어",
+    "ColorbarView_Hardware2": "하드웨어",
+    "ColorbarView_HardwareInfoSource": "하드웨어 정보 소스",
+    // Settings card title for hardware info source
+    "ColorbarView_HardwareLabels": "하드웨어 레이블",
+    "ColorbarView_Height": "높이",
+    "ColorbarView_Help": "도움말",
+    "ColorbarView_Help2": "도움말",
+    "ColorbarView_HideOSDOnRTSS": "RTSS에서 OSD 숨기기",
+    "ColorbarView_INFO": "정보",
+    "ColorbarView_IfCheckedTheOverlayWill": "선택하면 RTSS에 오버레이가 표시되지 않지만 원격 API를 통해 계속 접근할 수 있습니다.",
+    "ColorbarView_IfSensorDataOfA": "기록의 센서 데이터에 \"TBP Sim\" 값이 포함되어 있으면(RDNA 및 Intel Arc GPU만 해당), FPS/W 등의 분석에서 \"GPU Total\" 대신 이 값을 사용합니다.\n변경 사항을 적용하려면 분석 및 비교 페이지를 다시 로드하고, 보고서 페이지에 이미 추가된 기록을 다시 추가해야 합니다.",
+    "ColorbarView_ImportantMessage": "중요 메시지:",
+    "ColorbarView_InstallAnyPublishedReleaseFrom": "게시된 릴리스 설치 가능 범위:",
+    "ColorbarView_InstalledVersion": "설치된 버전",
+    "ColorbarView_InterfaceLanguage": "인터페이스 언어",
+    // Description for "JSON + CSV" file mode option
+    "ColorbarView_JSONCSVAdditionallySaves": "JSON + CSV는 각 기록의 모든 PresentMon 데이터를 CSV 파일로도 저장합니다.",
+    "ColorbarView_JSONRecordsAreSavedAs": "JSON:\n필요한 모든 데이터가 포함된 JSON 파일로 기록을 저장합니다.\n\nJSON + CSV:\n각 기록의 JSON 파일 외에 CSV 파일도 생성합니다. CSV에는 모든 PresentMon 데이터가 포함되며 특수 분석에 사용할 수 있습니다.",
+    "ColorbarView_KeepCapFrameXRunningInThe": "최소화 시 알림 영역에서 CapFrameX를 계속 실행합니다.",
+    "ColorbarView_KeepTheOverlayAvailableThrough": "RTSS에 표시하지 않고 원격 API를 통해 오버레이를 계속 제공합니다.",
+    "ColorbarView_LanguageOfMenusPagesAnd": "메뉴, 페이지 및 대화 상자의 언어입니다.",
+    "ColorbarView_LanguageOfOverlayLabelsSuch": "CPU, GPU 핫스팟, 프레임 시간과 같은 오버레이 레이블의 언어입니다. 인터페이스 언어와 별도로 설정합니다.",
+    "ColorbarView_LatestBeta": "최신 베타",
+    "ColorbarView_LatestRelease": "최신 정식 버전",
+    "ColorbarView_LaunchCapFrameXAutomaticallyAfterSigning": "로그인 후 CapFrameX를 자동으로 실행합니다.",
+    "ColorbarView_ListeningPortForTheLocal": "로컬 원격 서비스의 수신 포트입니다. 다시 시작해야 합니다.",
+    "ColorbarView_Login": "로그인",
+    "ColorbarView_Logout": "로그아웃",
+    "ColorbarView_Mainboard": "메인보드",
+    "ColorbarView_ManageTheLocalWebService": "로컬 웹 서비스, RTSS 출력 및 MCP 연동을 관리합니다.",
+    "ColorbarView_MinimizeToTray": "트레이로 최소화",
+    "ColorbarView_MoreCloselyReflectsDisplayedFrames": "실제로 표시되는 프레임을 더 잘 반영하며, 프레임 생성 사용 시 권장됩니다.",
+    "ColorbarView_NetworkTarget": "네트워크 대상",
+    "ColorbarView_NumberOfPresentEventsPresentMon": "PresentMon이 순환 버퍼에 보관할 Present 이벤트 수입니다(--set_circular_buffer_size). 매우 높은 프레임 레이트에서 프레임이 누락되면 이 값을 높이세요. PresentMon의 기본값은 2048입니다.\n변경하면 캡처 서비스를 다시 시작하므로 잠시 시간이 걸립니다. 서비스가 중지되어 있거나 캡처 중일 때는 설정을 변경할 수 없습니다.",
+    "ColorbarView_OSDHTTPURL": "OSD HTTP URL",
+    "ColorbarView_OSDLanguage": "OSD 언어",
+    "ColorbarView_OSDWebSocketURL": "OSD WebSocket URL",
+    "ColorbarView_OVERLAY": "오버레이",
+    "ColorbarView_OnwardSelectingAnOlderVersion": "이후. 이전 버전을 선택하면 해당 버전으로 되돌리기가 시작됩니다.",
+    "ColorbarView_OpenCapFrameXWithoutBringingThe": "기본 창을 전면에 표시하지 않고 CapFrameX를 엽니다.",
+    "ColorbarView_OpenScreenshotFolder": "스크린샷 폴더 열기",
+    "ColorbarView_Options": "옵션",
+    "ColorbarView_Options2": "옵션",
+    "ColorbarView_OverrideTheHardwareNamesStored": "캡처와 함께 저장할 하드웨어 이름을 직접 지정합니다.",
+    "ColorbarView_PMD": "PMD",
+    "ColorbarView_PackagesAreVerifiedBeforeInstallation": "설치 전에 패키지를 검증합니다.",
+    "ColorbarView_PersonalizeTheInterfaceAndChoose": "인터페이스를 꾸미고 CapFrameX 팀 메시지를 표시할지 선택합니다.",
+    "ColorbarView_PingURL": "Ping URL",
+    "ColorbarView_PixelDimensionsUsedByGraph": "내보낸 그래프의 픽셀 크기입니다.",
+    "ColorbarView_Port": "포트",
+    "ColorbarView_PowerAnalysis": "전력 분석",
+    "ColorbarView_PreferSimulatedTotalBoardPower": "지원되는 RDNA 및 Intel Arc GPU에서 추정된 총 보드 전력 데이터를 우선 사용합니다.",
+    "ColorbarView_PresentMonEventBuffer": "PresentMon 이벤트 버퍼",
+    "ColorbarView_PrimaryGraphicsAdapter": "기본 그래픽 어댑터",
+    "ColorbarView_PublishedVersion": "게시된 버전",
+    "ColorbarView_QuickReferenceForWorkingWith": "CapFrameX 사용을 위한 빠른 참조입니다.",
+    "ColorbarView_RAM": "RAM",
+    "ColorbarView_REPORT": "보고서",
+    "ColorbarView_ReadOnlyAddressesGeneratedFrom": "현재 서비스 설정에서 생성한 읽기 전용 주소입니다.",
+    "ColorbarView_ReceiveNotifications": "알림 받기",
+    "ColorbarView_Remote": "원격",
+    "ColorbarView_Remote2": "원격",
+    "ColorbarView_RollbackReplacesTheApplicationVersion": "되돌리기를 수행하면 애플리케이션 버전이 교체됩니다. 캡처와 설정은 유지되지만, 최신 설정은 선택한 릴리스와 호환되지 않을 수 있습니다.",
+    "ColorbarView_SENSOR": "센서",
+    "ColorbarView_SHOWUPDATE": "업데이트 내용 보기",
+    "ColorbarView_Save": "저장",
+    "ColorbarView_ScreenshotDirectory": "스크린샷 폴더",
+    "ColorbarView_Screenshots": "스크린샷",
+    "ColorbarView_SelectMonitoringHardwareAndControl": "모니터링할 하드웨어와 시스템 정보 저장 방식을 선택합니다.",
+    "ColorbarView_SelectResolutionForGraphExport": "그래프 내보내기 해상도 선택(컨텍스트 메뉴 사용)",
+    "ColorbarView_SelectScreenshotFolder": "스크린샷 폴더 선택",
+    "ColorbarView_SensorStreamWebSocketURL": "센서 스트림 WebSocket URL",
+    "ColorbarView_ServiceConfiguration": "서비스 설정",
+    "ColorbarView_SetTheHostUsedBy": "네트워크 Ping 오버레이 항목에서 사용할 호스트를 설정합니다.",
+    "ColorbarView_SetsTheNumberOfDecimal": "표시되는 FPS 값의 소수 자릿수를 설정합니다",
+    "ColorbarView_SetsThePrimaryGraphicsAdapter": "모니터링과 로깅에 사용할 기본 그래픽 어댑터를 설정합니다. 어댑터 변경 후 CapFrameX를 다시 시작하세요.",
+    "ColorbarView_SetsTheTimeWindowFor": "평균 FPS 그래프의 평균 계산 시간 범위를 설정합니다",
+    "ColorbarView_Settings": "설정",
+    "ColorbarView_SettingsMarkedInTheirDescription": "설명에 표시된 설정은 다시 시작해야 적용될 수 있습니다.",
+    "ColorbarView_ShowImportantMessagesFromThe": "시작 시 CapFrameX 팀의 중요한 메시지를 표시합니다.",
+    "ColorbarView_ShowWhatTheAvailableUpdate": "사용 가능한 업데이트의 내용을 표시합니다",
+    "ColorbarView_SizeOfPresentMonSPresent": "PresentMon의 Present 이벤트 순환 버퍼 크기입니다. 캡처 서비스를 다시 시작합니다.",
+    "ColorbarView_StartMinimized": "최소화 상태로 시작",
+    "ColorbarView_StartWithWindows": "Windows 시작 시 실행",
+    "ColorbarView_TakeAScreenshot": "스크린샷 촬영",
+    "ColorbarView_TargetVersion": "대상 버전",
+    "ColorbarView_TimeWindowMs": "시간 범위 (ms)",
+    "ColorbarView_URLToUseForThe": "네트워크 Ping 오버레이 항목에서 사용할 URL",
+    "ColorbarView_Update": "업데이트",
+    "ColorbarView_Update2": "업데이트",
+    "ColorbarView_UpdateStatus": "업데이트 상태",
+    "ColorbarView_UseMsBetweenDisplayChangeMetrics": "MsBetweenDisplayChange 지표 사용",
+    "ColorbarView_UseMsBetweenDisplayChangeToCalculatePerformance": "성능 지표 계산에 \"MsBetweenDisplayChange\"를 사용합니다. 이 옵션은 프레임 생성 사용 시 더 일관된 지표를 제공합니다.\nMsBetweenDisplayChange는 사용자 경험을 더 잘 반영합니다.",
+    "ColorbarView_UsePCLatency": "PC 지연 시간 사용",
+    "ColorbarView_UseTBPSimValuesFor": "사용 가능한 경우 분석에 TBP Sim 값 사용",
+    "ColorbarView_UseTheDarkCapFrameXColor": "어두운 CapFrameX 색상 테마를 사용합니다.",
+    "ColorbarView_VersionHistory": "버전 이력",
+    "ColorbarView_VersionStatus": "버전 상태",
+    "ColorbarView_WebSocketURLToAccessAll": "센서 탭에서 현재 선택된 모든 센서에 접근할 WebSocket URL",
+    "ColorbarView_WebSocketURLToAccessThe": "현재 오버레이 출력에 접근할 WebSocket URL(오버레이가 활성 상태여야 함)",
+    "ColorbarView_WebSocketURLToAccessThe2": "전체 센서 스트림에 접근할 WebSocket URL",
+    "ColorbarView_WebservicePort": "웹 서비스 포트",
+    "ColorbarView_Width": "너비",
+    "ColorbarView_WindowsBehavior": "Windows 동작",
+
+    // =========================================================================
+    // COMPARISON VIEW - Multi-run comparison graphs, bar charts, custom labels
+    // =========================================================================
+    // Chart Y-axis label: frames per second calculated from display change
+    "ComparisonViewModel_DisplayFPS": "화면 표시 FPS",
+    // Chart Y-axis label with unit: frames per second calculated from display change
+    "ComparisonViewModel_DisplayFPSPerSecond": "화면 표시 FPS [1/s]",
+    // Distribution chart Y-axis label: share of time per display-change interval
+    "ComparisonViewModel_DisplayTimeDistribution": "화면 표시 간격 분포 [%]",
+    // Chart axis label with unit: time between display change samples
+    "ComparisonViewModel_DisplayTimeMs": "화면 표시 간격 [ms]",
+    // L-shape chart axis label: time between display change samples
+    "ComparisonViewModel_DisplayTimeMsLShape": "화면 표시 간격 (ms)",
+    "ComparisonViewModel_FPS": "FPS",
+    "ComparisonViewModel_FPS1S": "FPS [1/s]",
+    "ComparisonViewModel_FrameTimeDistribution": "프레임 시간 분포 [%]",
+    "ComparisonViewModel_FrameTimeMs2": "프레임 시간 [ms]",
+    "ComparisonViewModel_FramesIn01": "{1}s 동안 {0}프레임",
+    "ComparisonViewModel_FrametimeMs": "프레임 시간 [ms]",
+    "ComparisonViewModel_Frametimes": "프레임 시간",
+    "ComparisonViewModel_GPUActiveTimeMs": "GPU 활성 시간 [ms]",
+    "ComparisonViewModel_LegendDisplay": "화면 표시",
+    "ComparisonViewModel_LegendGPUActive": "GPU 활성",
+    "ComparisonViewModel_LegendPresent": "Present",
+    "ComparisonViewModel_MetricFps01": "{0} FPS ({1})",
+    // Chart Y-axis label: frames per second calculated from present calls
+    "ComparisonViewModel_PresentFPS": "Present FPS",
+    // Chart Y-axis label with unit: frames per second calculated from present calls
+    "ComparisonViewModel_PresentFPSPerSecond": "Present FPS [1/s]",
+    // Distribution chart Y-axis label: share of time per present interval
+    "ComparisonViewModel_PresentFrametimeDistribution": "Present 프레임 시간 분포 [%]",
+    // Chart axis label with unit: time between present calls
+    "ComparisonViewModel_PresentFrametimeMs": "Present 프레임 시간 [ms]",
+    // L-shape chart axis label: time between present calls
+    "ComparisonViewModel_PresentFrametimeMsLShape": "Present 프레임 시간 (ms)",
+    "ComparisonViewModel_RecordAlreadyInList": "이 기록은 이미 목록에 있어 추가할 수 없습니다. 비교할 다른 기록을 선택하세요.",
+    "ComparisonViewModel_RecordingTimeS": "기록 시간 [s]",
+    "ComparisonViewModel_RecordingTimeS2": "기록 시간 [s]",
+    "ComparisonViewModel_SortCPULabel": "CPU 레이블",
+    "ComparisonViewModel_SortCommentLabel": "메모 레이블",
+    "ComparisonViewModel_SortFirstMetric": "첫 번째 지표",
+    "ComparisonViewModel_SortGPULabel": "GPU 레이블",
+    "ComparisonViewModel_SortSecondMetric": "두 번째 지표",
+    "ComparisonViewModel_SortThirdMetric": "세 번째 지표",
+    "ComparisonViewModel_SourceDisplayChangesAverageFPS": "소스: 화면 표시 변경(평균 FPS: Present)",
+    "ComparisonViewModel_SourcePresents": "소스: Present",
+    "ComparisonViewModel_SourcePresentsDisplayDataUnavailable": "소스: Present(화면 표시 데이터 없음)",
+    "ComparisonView_AllComparedRecordsUseThis": "비교 중인 모든 기록은 이 시간 측정 소스를 사용합니다. 화면 표시와 Present 데이터를 혼합한 비교는 허용되지 않습니다.",
+    "ComparisonView_AutoScale": "자동 배율:",
+    "ComparisonView_AutoScaleVarianceBarsBased": "첫 번째 변동폭 그룹을 기준으로 변동폭 막대의 배율 자동 조정",
+    "ComparisonView_BarCharts": "막대 차트",
+    "ComparisonView_ChangeTheOrderInWhich": "새 그래프에 색상을 적용하는 순서를 변경합니다",
+    "ComparisonView_ColorOrder": "색상\n순서",
+    "ComparisonView_Comparisons": "비교",
+    "ComparisonView_CustomTitle": "사용자 지정 제목:",
+    "ComparisonView_DropItemsHereOrDouble": "항목을 여기에 끌어다 놓거나 기록 목록에서 두 번 클릭하세요.",
+    "ComparisonView_EndS": "종료 (s)",
+    "ComparisonView_EndS2": "종료 (s)",
+    "ComparisonView_FilterMode": "필터 모드",
+    "ComparisonView_FirstLabel": "첫 번째 레이블",
+    "ComparisonView_FirstMetric": "첫 번째 지표",
+    "ComparisonView_FrameTimeDistribution": "프레임 시간 분포",
+    "ComparisonView_Frametimes": "프레임 시간",
+    "ComparisonView_FurtherSettings": "추가 설정",
+    "ComparisonView_GPUBusyTimes": "GPU-Busy 시간:",
+    "ComparisonView_Grouping": "그룹화:",
+    "ComparisonView_Labels": "레이블",
+    "ComparisonView_Legend": "범례:",
+    "ComparisonView_LegendSize": "범례 크기",
+    "ComparisonView_LineChartsLShapes": "꺾은선 차트/L자 곡선",
+    "ComparisonView_MaximumTheSingleHighestValue": "최댓값:\n\n전체 값 중 가장 높은 값\n\n\n평균:\n\n전체 값의 평균\n\n\n중앙값:\n\n전체 값을 오름차순으로 정렬했을 때 가운데에 있는 값\n\n\n최솟값:\n\n전체 값 중 가장 낮은 값\n\n\nX% 백분위수:\n\n전체 값의 X%가 이 값보다 낮음\n\n\nX% Low 평균:\n\n전체 값 중 하위 X%의 평균\n\n\nX% Low 적분:\n\n전체 벤치마크 시간의 X% 동안 값이 이 값보다 낮음\n\n\n적응형 STDEV:\n\n이동 평균을 기준으로 계산한 값의 표준 편차\n\n\nCPU/GPU FPS/10W:\n\n소비 전력 10W당 평균 프레임 레이트(다른 FPS 지표와 함께 사용할 때 막대 차트에서 쉽게 비교할 수 있도록 10을 곱함)",
+    "ComparisonView_MetricInfo": "지표 정보",
+    "ComparisonView_Metrics": "지표",
+    "ComparisonView_OrderInWhichColorsAre": "추가한 기록에\n색상을 적용하는\n순서",
+    "ComparisonView_Percentiles": "백분위수 (%)",
+    "ComparisonView_Range": "범위:",
+    "ComparisonView_Range2": "범위:",
+    "ComparisonView_RangeSlider": "범위 슬라이더:",
+    "ComparisonView_RangeSliderEndPoint": "범위 슬라이더 끝점",
+    "ComparisonView_RangeSliderEndPoint2": "범위 슬라이더 끝점",
+    "ComparisonView_RangeSliderStartPoint": "범위 슬라이더 시작점",
+    "ComparisonView_RangeSliderStartPoint2": "범위 슬라이더 시작점",
+    "ComparisonView_RealTimeUpdate": "실시간 업데이트",
+    "ComparisonView_RealTimeUpdate2": "실시간 업데이트",
+    "ComparisonView_RelativeMode": "상대 모드:",
+    "ComparisonView_RemoveAllComparisons": "모든 비교 제거",
+    "ComparisonView_SavePlotAsPNG": "그래프를 PNG로 저장",
+    "ComparisonView_SavePlotAsPNG2": "그래프를 PNG로 저장",
+    "ComparisonView_SavePlotAsPNG3": "그래프를 PNG로 저장",
+    "ComparisonView_SavePlotAsSVG": "그래프를 SVG로 저장",
+    "ComparisonView_SavePlotAsSVG2": "그래프를 SVG로 저장",
+    "ComparisonView_SavePlotAsSVG3": "그래프를 SVG로 저장",
+    "ComparisonView_SecondLabel": "두 번째 레이블",
+    "ComparisonView_SecondMetric": "두 번째 지표",
+    "ComparisonView_SelectMetricsToBeShown": "표시할 지표 선택",
+    "ComparisonView_SelectUpTo2Labels": "각 기록에 표시할 레이블을 최대 2개 선택합니다",
+    "ComparisonView_ShowCustomTitleEditBox": "사용자 지정 제목 입력란 표시",
+    "ComparisonView_ShowGPUBusyTimesInstead": "일반 프레임 시간 대신 GPU-Busy 시간 표시",
+    "ComparisonView_ShowSelectedLabelsAsChart": "선택한 레이블을 차트 범례로 표시",
+    "ComparisonView_SortEntriesByGameFirst": "게임을 우선 기준으로 항목 정렬",
+    "ComparisonView_SortMethod": "정렬 방식",
+    "ComparisonView_StartS": "시작 (s)",
+    "ComparisonView_StartS2": "시작 (s)",
+    "ComparisonView_ThirdMetric": "세 번째 지표",
+    "ComparisonView_TimeDifferencesBetweenTwoConsecutive": "연속된 두 프레임 시간 값의 차이",
+    "ComparisonView_ToggleFixedRelativeModeTarget": "고정 상대 모드를 전환합니다. 마우스 클릭으로 대상 값을 선택할 수 있습니다.",
+    "ComparisonView_TypeYourTitleHere": "여기에 제목을 입력하세요...",
+    "ComparisonView_TypeYourTitleHere2": "여기에 제목을 입력하세요...",
+    "ComparisonView_TypeYourTitleHere3": "여기에 제목을 입력하세요...",
+    "ComparisonView_TypeYourTitleHere4": "여기에 제목을 입력하세요...",
+    "ComparisonView_Values": "값",
+    "ComparisonView_Variances": "변동폭",
+
+    // =========================================================================
+    // MESSAGE DIALOGS - Shared close buttons
+    // =========================================================================
+    "ConditionalMessageDialog_Close": "닫기",
+
+    // =========================================================================
+    // RECORD LIST (CONTROL VIEW) - Capture folders, record list and record details
+    // =========================================================================
+    "ControlViewModel_SearchIn01Items": "\"{0}\"에서 검색({1}개 항목)",
+    "ControlView_Aggregated": "집계됨",
+    "ControlView_Aggregated2": "집계됨",
+    "ControlView_ApplyTheDescriptionsToThe": "선택한 기록에 설명을 적용합니다. 입력란에서 Enter를 눌러도 저장됩니다.",
+    "ControlView_CPU": "CPU",
+    "ControlView_CPU2": "CPU",
+    "ControlView_CPUDescription": "CPU 설명",
+    "ControlView_Captures": "캡처",
+    "ControlView_ColumnOptions": "열 옵션",
+    "ControlView_Comment": "메모",
+    "ControlView_Comment2": "메모",
+    "ControlView_Comment3": "메모",
+    "ControlView_CopyPasteRecordingFileS": "기록 파일 복사/붙여넣기",
+    "ControlView_CreateNewSubfolder": "새 하위 폴더 만들기",
+    "ControlView_DateTime": "날짜 / 시간",
+    "ControlView_DateTime2": "날짜 / 시간",
+    "ControlView_DeleteFolder": "폴더 삭제",
+    "ControlView_DeleteRecordingFileS": "기록 파일 삭제",
+    "ControlView_DirectoryIsEmptyRefreshDirectory": "폴더가 비어 있습니다. 폴더를 새로 고침하거나(컨텍스트 메뉴), 게임을 시작한 후 캡처 키를 눌러 기록을 만드세요.",
+    "ControlView_GPU": "GPU",
+    "ControlView_GPU2": "GPU",
+    "ControlView_GPUDescription": "GPU 설명",
+    "ControlView_Game": "게임",
+    "ControlView_Loading": "로드 중...",
+    "ControlView_LoadingRecords": "기록 로드 중...",
+    "ControlView_MoveRecordingFileS": "기록 파일 이동",
+    "ControlView_ObservedDirectoryMissingOpenThe": "감시 중인 폴더를 찾을 수 없습니다.\n위의 폴더 버튼을 열고 폴더를 선택하세요.",
+    "ControlView_OpenFolder": "폴더 열기",
+    "ControlView_RAM": "RAM",
+    "ControlView_RAM2": "RAM",
+    "ControlView_RAMDescription": "RAM 설명",
+    "ControlView_RecordInfo": "기록 정보",
+    "ControlView_RefreshDirectory": "폴더 새로 고침",
+    "ControlView_ReloadRootFolder": "루트 폴더 다시 로드",
+    "ControlView_Resolution": "해상도",
+    "ControlView_RootCaptureFolder": "루트 캡처 폴더",
+    "ControlView_SAVE": "저장",
+    "CreateFolderDialog_Cancel": "취소",
+    "CreateFolderDialog_Create": "만들기",
+    "CreateFolderDialog_NewSubfolderName": "새 하위 폴더 이름",
+
+    // =========================================================================
+    // ANALYSIS VIEW - Frametime graphs, FPS trends, L-shape curves, percentiles
+    // =========================================================================
+    "DataThresholdViewModel_Frames": "프레임",
+    "DataThresholdViewModel_Time": "시간",
+    "DataViewModel_BarAdaptiveSTDEV": "적응형 STDEV",
+    "DataViewModel_BarAverage": "평균",
+    "DataViewModel_BarAverageAnimationError": "평균 |애니메이션 오차|",
+    "DataViewModel_BarCpuFpsPer10W": "CPU FPS/10W",
+    "DataViewModel_BarGpuBusyAverage": "GPU-Busy 평균",
+    "DataViewModel_BarGpuBusyOnePercentHighAverage": "GPU-Busy 1% High 평균",
+    "DataViewModel_BarGpuBusyOnePercentLowAverage": "GPU-Busy 1% Low 평균",
+    "DataViewModel_BarGpuBusyP1": "GPU-Busy P1",
+    "DataViewModel_BarGpuBusyP99": "GPU-Busy P99",
+    "DataViewModel_BarGpuFpsPer10W": "GPU FPS/10W",
+    "DataViewModel_BarMax": "최대",
+    "DataViewModel_BarMedian": "중앙값",
+    "DataViewModel_BarMin": "최소",
+    "DataViewModel_BarOnePercentHighAverage": "1% High 평균",
+    "DataViewModel_BarOnePercentHighIntegral": "1% High 적분",
+    "DataViewModel_BarOnePercentLowAverage": "1% Low 평균",
+    "DataViewModel_BarOnePercentLowIntegral": "1% Low 적분",
+    "DataViewModel_BarP99AnimationError": "P99 |애니메이션 오차|",
+    "DataViewModel_BarPointOnePercentHighAverage": "0.1% High 평균",
+    "DataViewModel_BarPointOnePercentHighIntegral": "0.1% High 적분",
+    "DataViewModel_BarPointOnePercentLowAverage": "0.1% Low 평균",
+    "DataViewModel_BarPointOnePercentLowIntegral": "0.1% Low 적분",
+    "DataViewModel_FrametimesMs": "프레임 시간 (ms)",
+    "DataViewModel_LowFPS01": "낮은 FPS:  {0}s ({1}%)",
+    "DataViewModel_OutlierCleaned0": "{0} (이상값 제거됨)",
+    "DataViewModel_RemoveOutliersIsOnlyASimulation": "이상값 제거는 이상값이 없을 때 지표가 어떻게 달라지는지 시뮬레이션하는 기능입니다.\n이 결과만으로 벤치마크 실행을 최종 평가할 수는 없습니다.",
+    "DataViewModel_Smooth01": "원활:  {0}s ({1}%)",
+    "DataViewModel_Stuttering01": "스터터링:  {0}s ({1}%)",
+    "DataViewModel_VarianceAbove01": "> {0}ms ({1}%)",
+    "DataViewModel_VarianceBelow01": "< {0}ms ({1}%)",
+    "DataView_01Percentile": "0.1% 백분위수",
+    "DataView_02Percentile": "0.2% 백분위수",
+    "DataView_1Percentile": "1% 백분위수",
+    "DataView_1Percentile2": "1% 백분위수",
+    "DataView_5Percentile": "5% 백분위수",
+    "DataView_5Percentile2": "5% 백분위수",
+    "DataView_95Percentile": "95% 백분위수",
+    "DataView_95Percentile2": "95% 백분위수",
+    "DataView_998Percentile": "99.8% 백분위수",
+    "DataView_999Percentile": "99.9% 백분위수",
+    "DataView_99Percentile": "99% 백분위수",
+    "DataView_99Percentile2": "99% 백분위수",
+    "DataView_AdaptiveSTDEV": "적응형 STDEV",
+    "DataView_AdaptiveSTDEV2": "적응형 STDEV",
+    "DataView_AdditionalGraphs": "추가 그래프:",
+    "DataView_AnimationError": "애니메이션 오차",
+    "DataView_Average": "평균",
+    "DataView_Average2": "평균",
+    "DataView_Average3": "평균",
+    "DataView_AverageAnimationErrorOnlyMs": "평균 |애니메이션 오차| (ms만 해당)",
+    "DataView_Avg": "평균",
+    "DataView_CPUBusyTimes": "CPU-Busy 시간",
+    "DataView_CPUFPS10W": "CPU FPS/10W",
+    "DataView_CPUFPS10W2": "CPU FPS/10W",
+    "DataView_ChangeFpsThresholdsDirection": "FPS 임계값 방향 변경",
+    "DataView_ChangeFpsThresholdsDirection2": "FPS 임계값 방향 변경",
+    "DataView_CopyMetrics": "지표 복사",
+    "DataView_CopyQuantiles": "분위수 복사",
+    "DataView_CopyRawSensorData": "센서 원시 데이터 복사",
+    "DataView_CopyRawSensorData2": "센서 원시 데이터 복사",
+    "DataView_CopySensorDataMinAvg": "센서 데이터 복사(최소, 평균, 최대)",
+    "DataView_CopySensorDataMinAvg2": "센서 데이터 복사(최소, 평균, 최대)",
+    "DataView_CopySystemInfo": "시스템 정보 복사",
+    "DataView_CopyThresholdData": "임계값 데이터 복사",
+    "DataView_CopyThresholdData2": "임계값 데이터 복사",
+    "DataView_Counts": "개수",
+    "DataView_Counts2": "개수",
+    "DataView_CustomTitle": "사용자 지정 제목:",
+    "DataView_CutInside": "범위 안쪽 제거",
+    "DataView_CutOutside": "범위 바깥쪽 제거",
+    "DataView_EndS": "종료 (s)",
+    "DataView_FPS": "FPS",
+    "DataView_FPS2": "FPS",
+    "DataView_FPSThresholdForTheLow": "낮은 FPS 시간의 FPS 임계값입니다.\n스터터링으로 집계되지 않은 프레임 시간 중 FPS로 환산한 값이 이 임계값보다 낮은 프레임 시간을 낮은 FPS 시간에 더합니다.",
+    "DataView_FPSThresholds": "FPS 임계값",
+    "DataView_FPSThresholds2": "FPS 임계값",
+    "DataView_FactorForTheStutteringTime": "스터터링 시간의 배율입니다.\n해당 시점의 프레임 시간 이동 평균에 이 배율을 곱한 값보다 큰 프레임 시간을 스터터링 시간에 더합니다.",
+    "DataView_FilterMode": "필터 모드",
+    "DataView_FrameTimeDistribution": "프레임 시간 분포",
+    "DataView_FrameTimes": "프레임 시간",
+    "DataView_GPUBusy1HighAverage": "GPU-Busy 1% High 평균(ms만 해당)",
+    "DataView_GPUBusy1HighAvg": "GPU-Busy 1% High 평균(ms만 해당)",
+    "DataView_GPUBusy99PercentileOnly": "GPU-Busy 99% 백분위수(ms만 해당)",
+    "DataView_GPUBusy99PercentileOnly2": "GPU-Busy 99% 백분위수(ms만 해당)",
+    "DataView_GPUBusyAverageOnlyMs": "GPU-Busy 평균(ms만 해당)",
+    "DataView_GPUBusyAverageOnlyMs2": "GPU-Busy 평균(ms만 해당)",
+    "DataView_GPUBusyDeviation": "GPU-Busy 편차:",
+    "DataView_GPUBusyTimes": "GPU-Busy 시간",
+    "DataView_GPUFPS10W": "GPU FPS/10W",
+    "DataView_GPUFPS10W2": "GPU FPS/10W",
+    "DataView_GPULoad": "GPU 사용률",
+    "DataView_GPUPowerLimit": "GPU 전력 제한",
+    "DataView_HardwareTelemetry": "하드웨어 모니터링",
+    "DataView_LShape": "L자 곡선",
+    "DataView_LowFPSThreshold": "낮은 FPS 임계값",
+    "DataView_Max": "최대",
+    "DataView_Max2": "최대",
+    "DataView_MaxCPUThreadLoad": "최대 CPU 스레드 사용률",
+    "DataView_Maximum": "최댓값",
+    "DataView_Maximum2": "최댓값",
+    "DataView_MaximumTheSingleHighestValue": "최댓값:\n\n모든 값 중 가장 큰 값\n\n\n평균:\n\n모든 값의 평균\n\n\n중앙값:\n\n모든 값을 오름차순으로 정렬했을 때 가운데에 있는 값\n\n\n최솟값:\n\n모든 값 중 가장 작은 값\n\n\nX% 백분위수:\n\n전체 값의 X%가 이 값보다 낮음\n\n\nX% Low 평균:\n\n전체 값 중 하위 X%의 평균\n\n\nX% Low 적분:\n\n전체 벤치마크 시간의 X% 동안 값이 이 값보다 낮음\n\n\nGPU-Busy:\n\nGPU가 한 프레임을 처리한 시간\n\n\n적응형 STDEV:\n\n이동 평균을 기준으로 계산한 값들의 표준 편차",
+    "DataView_MaximumTheSingleHighestValue2": "최댓값:\n\n모든 값 중 가장 큰 값\n\n\n평균:\n\n모든 값의 평균\n\n\n중앙값:\n\n모든 값을 오름차순으로 정렬했을 때 가운데에 있는 값\n\n\n최솟값:\n\n모든 값 중 가장 작은 값\n\n\nX% 백분위수:\n\n전체 값의 X%가 이 값보다 낮음\n\n\nX% High 평균:\n\n전체 값 중 상위 X%의 평균\n\n\nX% High 적분:\n\n전체 벤치마크 시간의 X% 동안 값이 이 값보다 높음\n\n\nGPU-Busy:\n\nGPU가 한 프레임을 처리한 시간\n\n\n적응형 STDEV:\n\n이동 평균을 기준으로 계산한 값들의 표준 편차",
+    "DataView_Median": "중앙값",
+    "DataView_Median2": "중앙값",
+    "DataView_Metric": "지표",
+    "DataView_Min": "최소",
+    "DataView_Min2": "최소",
+    "DataView_Minimum": "최솟값",
+    "DataView_Minimum2": "최솟값",
+    "DataView_Ms": "ms",
+    "DataView_OnePercentHighAverage": "1% High 평균",
+    "DataView_OnePercentHighIntegral": "1% High 적분",
+    "DataView_OnePercentLowAverage": "1% Low 평균",
+    "DataView_OnePercentLowIntegral": "1% Low 적분",
+    "DataView_Options": "옵션",
+    "DataView_OptionsForTheStutterAnd": "원형 차트의 스터터링 및 낮은 FPS 값 옵션",
+    "DataView_P99AnimationErrorOnlyMs": "P99 |애니메이션 오차| (ms만 해당)",
+    "DataView_PCLatency": "PC 지연 시간",
+    "DataView_Percentiles": "백분위수 (%)",
+    "DataView_PointOnePercentHighAverage": "0.1% High 평균",
+    "DataView_PointOnePercentHighIntegral": "0.1% High 적분",
+    "DataView_PointOnePercentLowAverage": "0.1% Low 평균",
+    "DataView_PointOnePercentLowIntegral": "0.1% Low 적분",
+    "DataView_PresentMetrics": "Present 지표",
+    "DataView_Range": "범위:",
+    "DataView_RangeSlider": "범위 슬라이더:",
+    "DataView_RangeSliderEndPoint": "범위 슬라이더 끝점",
+    "DataView_RangeSliderStartPoint": "범위 슬라이더 시작점",
+    "DataView_RealTimeUpdate": "실시간 업데이트",
+    "DataView_RemoveDataInsideOfRange": "범위 슬라이더 안쪽 데이터(파란색)를 제거하고 남은 데이터(빨간색)로 새 파일 생성",
+    "DataView_RemoveDataOutsideOfRange": "범위 슬라이더 바깥쪽 데이터(빨간색)를 제거하고 남은 데이터(파란색)로 새 파일 생성",
+    "DataView_RemoveOutliers": "이상값 제거:",
+    "DataView_SYSTEMINFO": "시스템 정보",
+    "DataView_Sensor": "센서",
+    "DataView_Sensor2": "센서",
+    "DataView_SensorData": "센서 데이터",
+    "DataView_SensorData2": "센서 데이터",
+    "DataView_ShowAdditionalGraphsForCPU": "CPU 및 GPU 사용률의 추가 그래프 표시",
+    "DataView_ShowAggregation": "집계 표시:",
+    "DataView_ShowAnimationErrorGraph": "애니메이션 오차 그래프 표시",
+    "DataView_ShowCPUBusyTimeIn": "프레임 시간 그래프에 CPU-Busy 시간 표시",
+    "DataView_ShowCPUUsageGraph": "CPU 사용률 그래프 표시",
+    "DataView_ShowCustomTitleEditBox": "사용자 지정 제목 입력란 표시",
+    "DataView_ShowGPUBusyTimeIn": "프레임 시간 그래프에 GPU-Busy 시간 표시",
+    "DataView_ShowGPUPowerLimit": "GPU 전력 제한 표시",
+    "DataView_ShowGPUUsageGraph": "GPU 사용률 그래프 표시",
+    "DataView_ShowInCharts": "차트에 표시",
+    "DataView_ShowMaxCPUThreadUsage": "최대 CPU 스레드 사용률 그래프 표시",
+    "DataView_ShowNumberOfFramesAbove": "임계값 초과 또는 미만인 프레임 수 표시",
+    "DataView_ShowNumberOfFramesAbove2": "임계값 초과 또는 미만인 프레임 수 표시",
+    "DataView_ShowOrHideTheSystemInfo": "이 캡처의 시스템 정보 표시 또는 숨기기",
+    "DataView_ShowPCLatencyGraph": "PC 지연 시간 그래프 표시",
+    "DataView_ShowSeparatorLinesForThe": "세션 내 각 실행을 구분하는 선 표시",
+    "DataView_ShowThresholdLinesForStuttering": "프레임 시간 및 FPS 차트에 스터터링과 낮은 FPS 임계선 표시",
+    "DataView_ShowTimeAboveOrBelow": "임계값 초과 또는 미만인 시간 표시",
+    "DataView_ShowTimeAboveOrBelow2": "임계값 초과 또는 미만인 시간 표시",
+    "DataView_StartS": "시작 (s)",
+    "DataView_StatisticParameterSettings": "통계 지표 설정:",
+    "DataView_StatisticParameterSettings2": "통계 지표 설정:",
+    "DataView_Stuttering": "스터터링",
+    "DataView_StutteringFactor": "스터터링 배율",
+    "DataView_TimeDifferencesBetweenTwoConsecutive": "연속된 두 프레임 시간 값 사이의\n시간 차이",
+    "DataView_Times": "시간",
+    "DataView_Times2": "시간",
+    "DataView_ToggleBetweenAbsoluteAndRelative": "절댓값과 상대값 전환",
+    "DataView_ToggleBetweenAbsoluteAndRelative2": "절댓값과 상대값 전환",
+    "DataView_TotalCPULoad": "전체 CPU 사용률",
+    "DataView_TypeYourTitleHere": "여기에 제목을 입력하세요...",
+    "DataView_Variances": "변동폭",
+    "DataView_YAxisScale": "Y축 스케일",
+
+    // =========================================================================
+    // DEBUG MONITOR - CapFrameX and PresentMon resource usage, ETW buffer status
+    // =========================================================================
+    "DebugMonitorWindow_BufferFill": "버퍼 사용률 %:",
+    "DebugMonitorWindow_BuffersInUse": "사용 중인 버퍼:",
+    "DebugMonitorWindow_BuffersLost": "손실된 버퍼:",
+    "DebugMonitorWindow_CPUUsage": "CPU 사용률:",
+    "DebugMonitorWindow_CPUUsage2": "CPU 사용률:",
+    "DebugMonitorWindow_DebugMonitor": "디버그 모니터",
+    "DebugMonitorWindow_ETWBufferStatus": "ETW 버퍼 상태",
+    "DebugMonitorWindow_Error": "오류",
+    "DebugMonitorWindow_EventsLost": "손실된 이벤트:",
+    "DebugMonitorWindow_MemoryUsage": "메모리 사용량:",
+    "DebugMonitorWindow_MemoryUsage2": "메모리 사용량:",
+    "DebugMonitorWindow_NotRunning": "실행되지 않음",
+    "DebugMonitorWindow_ProcessingDelay": "처리 지연:",
+    "DebugMonitorWindow_Running": "실행 중",
+    "DebugMonitorWindow_Status": "상태:",
+    "DebugMonitorWindow_TotalBuffers": "전체 버퍼:",
+
+    // =========================================================================
+    // ENUMS & METRICS - Metric descriptions, sensor types, capture file formats
+    // =========================================================================
+    "ECaptureFileMode_Json": "JSON",
+    "ECaptureFileMode_JsonCsv": "JSON + CSV",
+    "EChartYAxisSetting_FullFit": "전체 범위에 맞춤",
+    "EChartYAxisSetting_IQR": "사분위 범위",
+    "EChartYAxisSetting_Zero_Eighty": "0-80ms",
+    "EChartYAxisSetting_Zero_Forty": "0-40ms",
+    "EChartYAxisSetting_Zero_Hundred": "0-100ms",
+    "EChartYAxisSetting_Zero_Sixty": "0-60ms",
+    "EChartYAxisSetting_Zero_Ten": "0-10ms",
+    "EChartYAxisSetting_Zero_Thirty": "0-30ms",
+    "EChartYAxisSetting_Zero_Twenty": "0-20ms",
+    "EComparisonContext_API": "API",
+    "EComparisonContext_CPU": "CPU",
+    "EComparisonContext_Custom": "사용자 지정 설명",
+    "EComparisonContext_DateTime": "날짜 및 시간",
+    "EComparisonContext_GPU": "GPU",
+    "EComparisonContext_GPUDriver": "GPU 드라이버",
+    "EComparisonContext_None": "없음",
+    "EComparisonContext_SystemRam": "RAM",
+    "EFilterMode_None": "원시 데이터",
+    "EFilterMode_RawPlusAverage": "원시 데이터 + 평균",
+    "EFilterMode_TimeIntervalAverage": "평균",
+    "EHardwareInfoSource_Auto": "자동 감지",
+    "EHardwareInfoSource_Custom": "사용자 지정 설명",
+    "EHookOverlayStatus_Active": "활성",
+    "EHookOverlayStatus_Blocked": "차단됨",
+    "EHookOverlayStatus_Disabled": "꺼짐",
+    "EHookOverlayStatus_Error": "오류",
+    "EHookOverlayStatus_Fallback": "대체 모드",
+    "EHookOverlayStatus_Hidden": "숨김",
+    "EHookOverlayStatus_Idle": "유휴",
+    "EHookOverlayStatus_Initializing": "초기화 중",
+    "EHookOverlayStatus_Injected": "주입됨",
+    "EHookOverlayStatus_Injecting": "주입 중",
+    "EHookOverlayStatus_Probing": "확인 중",
+    "EHookOverlayStatus_RestartPending": "게임 다시 시작",
+    "EHookOverlayStatus_Waiting": "대기 중",
+    "ELogMessageType_AdvancedInfo": "고급 정보",
+    "ELogMessageType_BasicInfo": "기본 정보",
+    "ELogMessageType_Error": "오류",
+    "EMetric_AdaptiveStd": "적응형 STDEV",
+    // Compact / abbreviated label for EMetric_AdaptiveStd (used in tight table headers or OSD)
+    "EMetric_AdaptiveStd_Short": "적응 STDEV",
+    "EMetric_Average": "평균",
+    // Compact / abbreviated label for EMetric_Average (used in tight table headers or OSD)
+    "EMetric_Average_Short": "평균",
+    "EMetric_CpuActiveAverage": "CPU 활성 시간 평균",
+    // Compact / abbreviated label for EMetric_CpuActiveAverage (used in tight table headers or OSD)
+    "EMetric_CpuActiveAverage_Short": "CPU 평균",
+    "EMetric_CpuFpsPerWatt": "CPU 10W당 FPS",
+    // Compact / abbreviated label for EMetric_CpuFpsPerWatt (used in tight table headers or OSD)
+    "EMetric_CpuFpsPerWatt_Short": "CPU FPS/10W",
+    "EMetric_GpuActiveAverage": "GPU 활성 시간 평균",
+    // Compact / abbreviated label for EMetric_GpuActiveAverage (used in tight table headers or OSD)
+    "EMetric_GpuActiveAverage_Short": "GPU 평균",
+    "EMetric_GpuActiveOnePercentLowAverage": "GPU 활성 시간 1% Low 평균",
+    // Compact / abbreviated label for EMetric_GpuActiveOnePercentLowAverage (used in tight table headers or OSD)
+    "EMetric_GpuActiveOnePercentLowAverage_Short": "GPU 1% Low 평균",
+    "EMetric_GpuActiveP1": "GPU 활성 시간 1% 백분위수",
+    // Compact / abbreviated label for EMetric_GpuActiveP1 (used in tight table headers or OSD)
+    "EMetric_GpuActiveP1_Short": "GPU P1",
+    "EMetric_GpuFpsPerWatt": "GPU 10W당 FPS",
+    // Compact / abbreviated label for EMetric_GpuFpsPerWatt (used in tight table headers or OSD)
+    "EMetric_GpuFpsPerWatt_Short": "GPU FPS/10W",
+    "EMetric_Max": "최댓값",
+    // Compact / abbreviated label for EMetric_Max (used in tight table headers or OSD)
+    "EMetric_Max_Short": "최대",
+    "EMetric_Median": "중앙값",
+    // Compact / abbreviated label for EMetric_Median (used in tight table headers or OSD)
+    "EMetric_Median_Short": "중앙값",
+    "EMetric_Min": "최솟값",
+    // Compact / abbreviated label for EMetric_Min (used in tight table headers or OSD)
+    "EMetric_Min_Short": "최소",
+    "EMetric_None": "없음",
+    // Compact / abbreviated label for EMetric_None (used in tight table headers or OSD)
+    "EMetric_None_Short": "없음",
+    "EMetric_OnePercentLowAverage": "1% Low 평균",
+    // Compact / abbreviated label for EMetric_OnePercentLowAverage (used in tight table headers or OSD)
+    "EMetric_OnePercentLowAverage_Short": "1% Low 평균",
+    "EMetric_OnePercentLowIntegral": "1% Low 적분",
+    // Compact / abbreviated label for EMetric_OnePercentLowIntegral (used in tight table headers or OSD)
+    "EMetric_OnePercentLowIntegral_Short": "1% Low 적분",
+    "EMetric_P0dot1": "0.1% 백분위수",
+    // Compact / abbreviated label for EMetric_P0dot1 (used in tight table headers or OSD)
+    "EMetric_P0dot1_Short": "P0.1",
+    "EMetric_P0dot2": "0.2% 백분위수",
+    // Compact / abbreviated label for EMetric_P0dot2 (used in tight table headers or OSD)
+    "EMetric_P0dot2_Short": "P0.2",
+    "EMetric_P1": "1% 백분위수",
+    // Compact / abbreviated label for EMetric_P1 (used in tight table headers or OSD)
+    "EMetric_P1_Short": "P1",
+    "EMetric_P5": "5% 백분위수",
+    // Compact / abbreviated label for EMetric_P5 (used in tight table headers or OSD)
+    "EMetric_P5_Short": "P5",
+    "EMetric_P95": "95% 백분위수",
+    // Compact / abbreviated label for EMetric_P95 (used in tight table headers or OSD)
+    "EMetric_P95_Short": "P95",
+    "EMetric_P99": "99% 백분위수",
+    // Compact / abbreviated label for EMetric_P99 (used in tight table headers or OSD)
+    "EMetric_P99_Short": "P99",
+    "EMetric_ZerodotOnePercentLowAverage": "0.1% Low 평균",
+    // Compact / abbreviated label for EMetric_ZerodotOnePercentLowAverage (used in tight table headers or OSD)
+    "EMetric_ZerodotOnePercentLowAverage_Short": "0.1% Low 평균",
+    "EMetric_ZerodotOnePercentLowIntegral": "0.1% Low 적분",
+    // Compact / abbreviated label for EMetric_ZerodotOnePercentLowIntegral (used in tight table headers or OSD)
+    "EMetric_ZerodotOnePercentLowIntegral_Short": "0.1% Low 적분",
+    "EMetric_ZerodotTwoPercentLowAverage": "0.2% Low 평균",
+    // Compact / abbreviated label for EMetric_ZerodotTwoPercentLowAverage (used in tight table headers or OSD)
+    "EMetric_ZerodotTwoPercentLowAverage_Short": "0.2% Low 평균",
+    "EMetric_ZerodotTwoPercentLowIntegral": "0.2% Low 적분",
+    // Compact / abbreviated label for EMetric_ZerodotTwoPercentLowIntegral (used in tight table headers or OSD)
+    "EMetric_ZerodotTwoPercentLowIntegral_Short": "0.2% Low 적분",
+    "EOutlierHandling_Ignore": "표시 후 사용",
+    "EOutlierHandling_Replace": "표시 후 대체",
+    "EOverlayEntryType_CPU": "CPU 센서",
+    // Compact / abbreviated label for EOverlayEntryType_CPU (used in tight table headers or OSD)
+    "EOverlayEntryType_CPU_Short": "CPU",
+    "EOverlayEntryType_CX": "애플리케이션 정보",
+    // Compact / abbreviated label for EOverlayEntryType_CX (used in tight table headers or OSD)
+    "EOverlayEntryType_CX_Short": "앱",
+    "EOverlayEntryType_FanController": "팬 컨트롤러 센서",
+    // Compact / abbreviated label for EOverlayEntryType_FanController (used in tight table headers or OSD)
+    "EOverlayEntryType_FanController_Short": "팬",
+    "EOverlayEntryType_GPU": "GPU 센서",
+    // Compact / abbreviated label for EOverlayEntryType_GPU (used in tight table headers or OSD)
+    "EOverlayEntryType_GPU_Short": "GPU",
+    "EOverlayEntryType_HDD": "저장 장치 센서",
+    // Compact / abbreviated label for EOverlayEntryType_HDD (used in tight table headers or OSD)
+    "EOverlayEntryType_HDD_Short": "저장 장치",
+    "EOverlayEntryType_Mainboard": "메인보드 센서",
+    // Compact / abbreviated label for EOverlayEntryType_Mainboard (used in tight table headers or OSD)
+    "EOverlayEntryType_Mainboard_Short": "메인보드",
+    "EOverlayEntryType_OnlineMetric": "성능 지표",
+    // Compact / abbreviated label for EOverlayEntryType_OnlineMetric (used in tight table headers or OSD)
+    "EOverlayEntryType_OnlineMetric_Short": "지표",
+    "EOverlayEntryType_RAM": "메모리 센서",
+    // Compact / abbreviated label for EOverlayEntryType_RAM (used in tight table headers or OSD)
+    "EOverlayEntryType_RAM_Short": "RAM",
+    "EOverlayEntryType_Undefined": "기타",
+    // Compact / abbreviated label for EOverlayEntryType_Undefined (used in tight table headers or OSD)
+    "EOverlayEntryType_Undefined_Short": "기타",
+    "EOverlayTemplate_Basic": "기본",
+    "EOverlayTemplate_Detailed": "상세",
+    "EOverlayTemplate_Enthusiast": "고급 사용자",
+    "EPmdDriverStatus_Connected": "연결됨",
+    "EPmdDriverStatus_Error": "오류",
+    "EPmdDriverStatus_Ready": "준비됨",
+    "EPmdServiceStatus_Error": "오류",
+    "EPmdServiceStatus_Running": "실행 중",
+    "EPmdServiceStatus_Stopped": "중지됨",
+    "EPmdServiceStatus_Waiting": "대기 중",
+    "EPresentMode_ComposedCompositionAtlas": "합성: Composition Atlas",
+    "EPresentMode_ComposedCopyWithCPUGDI": "합성: CPU GDI를 사용한 복사",
+    "EPresentMode_ComposedCopyWithGPUGDI": "합성: GPU GDI를 사용한 복사",
+    "EPresentMode_ComposedFlip": "합성: 플립",
+    "EPresentMode_HardwareComposedIndependentFlip": "하드웨어 합성: 독립 플립",
+    "EPresentMode_HardwareIndependentFlip": "하드웨어: 독립 플립",
+    "EPresentMode_HardwareLegacyCopyToFrontBuffer": "하드웨어: 전면 버퍼로 레거시 복사",
+    "EPresentMode_HardwareLegacyFlip": "하드웨어: 레거시 플립",
+    "EPresentMode_Other": "기타",
+    "EPresentMode_Unknown": "알 수 없음",
+    "EReportSensorName_CpuMaxClock": "CPU 최대 클럭 (MHz)",
+    "EReportSensorName_CpuMaxThreadUsage": "CPU 최대 스레드 사용률 (%)",
+    "EReportSensorName_CpuPower": "CPU 전력 (W)",
+    "EReportSensorName_CpuTemp": "CPU 온도 (°C)",
+    "EReportSensorName_CpuUsage": "CPU 사용률 (%)",
+    "EReportSensorName_GpuClock": "GPU 클럭 (MHz)",
+    "EReportSensorName_GpuLoadLimit": "GPU 사용률 한계에 도달한 시간 (%)",
+    "EReportSensorName_GpuPower": "GPU 전력 (W)",
+    "EReportSensorName_GpuTBPSim": "GPU TBP 추정값 (W)",
+    "EReportSensorName_GpuTemp": "GPU 온도 (°C)",
+    "EReportSensorName_GpuUsage": "GPU 사용률 (%)",
+    "EReportSensorName_RamUsage": "RAM 사용량 (GB)",
+    "EReportSensorName_VRamUsage": "GPU VRAM 사용량 (MB)",
+    "EReportSensorName_VRamUsageGB": "GPU VRAM 사용량 (GB)",
+
+    // =========================================================================
+    // EDITING DIALOG - Custom hardware names and benchmark run comments
+    // =========================================================================
+
+    // =========================================================================
+    // OVERLAY DIAGNOSTICS - Extended OSD logging errors
+    // =========================================================================
+    "ExtendedOsdLoggingViewModel_CouldNotBeRead0": "확장 OSD 로깅 설정을 읽을 수 없습니다: {0}",
+    "ExtendedOsdLoggingViewModel_CouldNotBeUpdated0": "확장 OSD 로깅 설정을 업데이트할 수 없습니다: {0}",
+    "ExtendedOsdLoggingViewModel_FolderCouldNotBeOpened0": "OSD 로그 폴더를 열 수 없습니다: {0}",
+
+    // =========================================================================
+    // CHART CONTEXT MENUS - Copy and export actions of the analysis charts
+    // =========================================================================
+    "FpsGraphControl_CopyFpsGPUBusyFps": "FPS + GPU-Busy FPS 값 복사 (f)",
+    "FpsGraphControl_CopyFpsGPUBusyFps2": "FPS + GPU-Busy FPS 좌표 복사 (t, f(t))",
+    "FpsGraphControl_CopyFpsPointsTF": "FPS 좌표 복사 (t, f(t))",
+    "FpsGraphControl_CopyFpsValuesF": "FPS 값 복사 (f)",
+    "FpsGraphControl_SavePlotAsPNG": "그래프를 PNG로 저장",
+    "FpsGraphControl_SavePlotAsSVG": "그래프를 SVG로 저장",
+    "FrametimeDistributionGraphControl_CopyDistributionPointsMs": "분포 좌표 복사 (ms, %)",
+    "FrametimeDistributionGraphControl_SavePlotAsPNG": "그래프를 PNG로 저장",
+    "FrametimeDistributionGraphControl_SavePlotAsSVG": "그래프를 SVG로 저장",
+    "FrametimeGraphControl_CopyFrametimeGPUBusyFrametime": "프레임 시간 + GPU-Busy 프레임 시간 값 복사 (f)",
+    "FrametimeGraphControl_CopyFrametimeGPUBusyFrametime2": "프레임 시간 + GPU-Busy 프레임 시간 좌표 복사 (t, f(t))",
+    "FrametimeGraphControl_CopyFrametimePointsTF": "프레임 시간 좌표 복사 (t, f(t))",
+    "FrametimeGraphControl_CopyFrametimeValuesF": "프레임 시간 값 복사 (f)",
+    "FrametimeGraphControl_SavePlotAsPNG": "그래프를 PNG로 저장",
+    "FrametimeGraphControl_SavePlotAsSVG": "그래프를 SVG로 저장",
+
+    // =========================================================================
+    // HOTKEY FIELDS - Placeholder and validation message of hotkey text boxes
+    // =========================================================================
+    "HotkeyValidationRule_HotkeyIsNotValid": "유효하지 않은 단축키입니다.",
+    "HotkeyValidationRule_NotSet": "설정되지 않음",
+
+    // =========================================================================
+    // SYSTEM INFO VIEW - CPU, GPU, RAM, motherboard and driver details
+    // =========================================================================
+    "InfoViewModel_Detecting": "감지 중...",
+    "InfoViewModel_Disabled": "비활성화됨",
+    "InfoViewModel_Enabled": "활성화됨",
+    "InfoViewModel_GraphicsCard": "그래픽 카드",
+    "InfoViewModel_Mainboard": "메인보드",
+    "InfoViewModel_Memory": "메모리",
+    "InfoViewModel_OperatingSystem": "운영 체제",
+    "InfoViewModel_Processor": "프로세서",
+    // {0}: CapFrameX version, {1}: release channel
+    "InfoViewModel_ReportHeader01": "CapFrameX {0} ({1})",
+    "InfoViewModel_Unknown": "알 수 없음",
+    "InfoViewModel_VirtualizationBasedSecurity": "가상화 기반 보안",
+    "InfoView_Available": "사용 가능",
+    "InfoView_COPYSYSTEMINFO": "시스템 정보 복사",
+    "InfoView_Clock": "클럭",
+    "InfoView_Clock2": "클럭",
+    "InfoView_CopyTheSystemInformationAsText": "버그 보고서 등에 사용할 수 있도록 시스템 정보를 텍스트로 복사",
+    "InfoView_Driver0": "드라이버 {0}",
+    "InfoView_GRAPHICSCARD": "그래픽 카드",
+    "InfoView_HardwareAcceleratedGPUScheduling": "하드웨어 가속 GPU 일정 예약",
+    "InfoView_InUse": "사용 중",
+    "InfoView_Load": "사용률",
+    "InfoView_Load2": "사용률",
+    "InfoView_MAINBOARD": "메인보드",
+    "InfoView_MEMORY": "메모리",
+    "InfoView_MemoryIntegrity": "메모리 무결성",
+    "InfoView_OPERATINGSYSTEM": "운영 체제",
+    "InfoView_PLATFORMSECURITY": "플랫폼 보안",
+    "InfoView_PROCESSOR": "프로세서",
+    "InfoView_PawnIODriver": "PawnIO 드라이버",
+    "InfoView_Power": "전력",
+    "InfoView_Power2": "전력",
+    "InfoView_PresentMon": "PresentMon",
+    "InfoView_RTSS": "RTSS",
+    "InfoView_ResizableBAR": "Resizable BAR",
+    "InfoView_SOFTWARECOMPONENTS": "소프트웨어 구성 요소",
+    "InfoView_SecureBoot": "보안 부팅",
+    "InfoView_Temperature": "온도",
+    "InfoView_Temperature2": "온도",
+    "InfoView_TestSigning": "테스트 서명",
+    "InfoView_Usage": "사용량",
+    "InfoView_VBS": "VBS",
+    "InfoView_VRAM": "VRAM",
+    "InfoView_VulkanLayer": "Vulkan 레이어",
+    "InfoView_WindowsGameMode": "Windows 게임 모드",
+
+    // =========================================================================
+    // VOLTAGE MONITOR - Panther Lake voltage diagnostics tool
+    // =========================================================================
+    "MainWindow_Core": "코어",
+    "MainWindow_PantherLakeVoltageCandidates": "Panther Lake 전압 후보",
+    "MainWindow_PantherLakeVoltageMonitor": "Panther Lake 전압 모니터",
+    "MainWindow_Polling1s": "폴링: 1s",
+    "MainWindow_Raw0x019C": "원시 값 0x019C",
+
+    // =========================================================================
+    // MESSAGE DIALOGS - Shared close buttons
+    // =========================================================================
+    "MessageDialog_Close": "닫기",
+
+    // =========================================================================
+    // OVERLAY CONFIGURATION - OSD layout, grouped sensors, colors, font sizes
+    // =========================================================================
+    "OverlayViewModel_InjectedIntoTheGameFor": "스왑체인 내 그래프를 표시하기 위해 게임에 주입됩니다.",
+    "OverlayViewModel_LearnedProfilesNoGame": "학습된 호환성 프로필 {0}개. 선택된 게임이 없습니다.",
+    "OverlayViewModel_NoLearnedCompatibilityProfiles": "아직 학습된 호환성 프로필이 없습니다.",
+    "OverlayViewModel_NoLearnedProfileForProcess": "{0}에 대해 학습된 호환성 프로필이 아직 없습니다(전체 {1}개).",
+    "OverlayViewModel_ProfileExhausted0": "{0}: 호환성을 확보하지 못했습니다. 다음 게임 실행 시 다시 검사합니다.",
+    "OverlayViewModel_ProfileNextLaunchStage01": "{0}: 다음 실행은 {1}에서 시작합니다.",
+    "OverlayViewModel_ProfileNotVerified01": "{0}: 마지막으로 {1}을(를) 시도했으며 아직 검증되지 않았습니다.",
+    "OverlayViewModel_ProfileVerified012": "{0}: {1}({2}에 검증됨).",
+    "OverlayViewModel_ProfilesUnavailable0": "학습된 호환성 프로필을 사용할 수 없습니다({0}).",
+    "OverlayView_AddsDisplayTimesOffUses": "화면 표시 간격을 추가합니다. 끄면 후킹에서 측정한 로컬 프레임 시간을 사용합니다.",
+    "OverlayView_AdjustThePlacementAndBackground": "CapFrameX 오버레이 콘텐츠의 위치와 배경을 조정합니다.",
+    "OverlayView_AllEntries": "모든 항목",
+    "OverlayView_AlwaysLearnsCompatibilitySettingsFor": "게임별 호환성 설정을 항상 학습합니다.",
+    "OverlayView_AnchorCornerAndDistanceIn": "후킹 없는 렌더러의 기준 모서리와 픽셀 단위 거리를 설정합니다. RTSS 위치는 RTSS 설정에서 지정합니다.",
+    "OverlayView_AnimateIntermediateValuesBetweenData": "데이터 업데이트 사이의 중간값을 애니메이션으로 표시합니다. 끄면 전달된 모든 값을 즉시 표시합니다. RTSS에는 영향을 주지 않습니다.",
+    "OverlayView_AppearanceAndPosition": "모양 및 위치",
+    "OverlayView_AppliesToTheHookFree": "후킹 없는 렌더러에 적용됩니다. RTSS는 자체 설정을 사용합니다.",
+    "OverlayView_Apply": "적용",
+    "OverlayView_ApplySelectedTemplate": "선택한 템플릿 적용",
+    "OverlayView_ApplyToMultipleEntries": "여러 항목에 적용",
+    "OverlayView_AutoDisableWhileCapturing": "캡처 중 자동 비활성화",
+    "OverlayView_BackgroundOpacity": "배경 불투명도",
+    "OverlayView_BottomLeft": "왼쪽 아래",
+    "OverlayView_BottomRight": "오른쪽 아래",
+    "OverlayView_CPUCoreClocks": "CPU 코어 클럭",
+    "OverlayView_CPUCoreLoads": "CPU 코어 부하",
+    "OverlayView_CPUCorePowers": "CPU 코어 전력",
+    "OverlayView_CPUCoreTemps": "CPU 코어 온도",
+    "OverlayView_CPUCoreVoltages": "CPU 코어 전압",
+    "OverlayView_CalculationTimeFrame": "계산 시간 범위",
+    "OverlayView_CapFrameXHookFree": "CapFrameX 후킹 없는 오버레이",
+    "OverlayView_CapFrameXInGame": "CapFrameX 게임 내 오버레이",
+    "OverlayView_CaptureItems": "캡처 항목",
+    "OverlayView_ChartRefreshRate": "차트 갱신 빈도",
+    "OverlayView_CheckCPUClocks": "CPU 클럭 선택",
+    "OverlayView_CheckCPUClocks2": "CPU 클럭 선택",
+    "OverlayView_CheckCPUCoreTemps": "CPU 코어 온도 선택",
+    "OverlayView_CheckCPUCoreVoltages": "CPU 코어 전압 선택",
+    "OverlayView_CheckCPULoads": "CPU 부하 선택",
+    "OverlayView_CheckCaptureItems": "캡처 항목 선택",
+    "OverlayView_CheckGPUBasics": "GPU 기본 항목 선택",
+    "OverlayView_CheckRAMItems": "RAM 항목 선택",
+    "OverlayView_CheckRealTimeMetrics": "실시간 지표 선택",
+    "OverlayView_CheckSystemInfo": "시스템 정보 선택",
+    "OverlayView_ChooseOneOutputBackendRenderer": "출력 백엔드 하나를 선택합니다. 렌더러별 옵션은 해당 렌더러에 유지됩니다.",
+    "OverlayView_ClearFilters": "필터 지우기",
+    "OverlayView_CollectDetailedDataForTroubleshooting": "CapFrameX 오버레이 렌더러의 문제 해결을 위해 상세 데이터를 수집합니다.",
+    "OverlayView_Colors": "색상",
+    "OverlayView_ColorsAndLimits": "색상 및 한계값",
+    "OverlayView_Config1": "설정  1",
+    "OverlayView_Config2": "설정  2",
+    "OverlayView_Config3": "설정  3",
+    "OverlayView_ConfigHotkey": "설정 단축키",
+    "OverlayView_ConfigureOverlayControlsAndData": "오버레이 조작 방법과 데이터 업데이트 간격을 설정합니다.",
+    "OverlayView_ControlWhenTheOverlayIs": "오버레이 표시 시점과 공통 항목의 동작을 설정합니다.",
+    "OverlayView_CustomPosition": "사용자 지정 위치",
+    "OverlayView_CyclePosition": "위치 순환",
+    "OverlayView_Description": "설명",
+    "OverlayView_DetailedDirectXVulkanAndHook": "각 프레임 표시의 통계를 포함한 DirectX, Vulkan 및 후킹 없는 렌더러의 상세 로그입니다.",
+    "OverlayView_Diagnostics": "진단",
+    "OverlayView_DisableHideOSDOnRTSS": "오버레이를 표시하려면 \"RTSS에서 OSD 숨기기\"를 비활성화하세요.",
+    "OverlayView_Display": "디스플레이",
+    "OverlayView_DisplayUsedByTheHook": "후킹 없는 오버레이에 사용할 디스플레이",
+    "OverlayView_DragDropToChangeOrder": "끌어서 놓아 순서 변경",
+    "OverlayView_EntryType": "항목 유형",
+    "OverlayView_EntryType2": "항목 유형",
+    "OverlayView_ExtendedOSDLogging": "확장 OSD 로깅",
+    "OverlayView_FilterByEntryType": "항목 유형으로 필터링",
+    "OverlayView_Format": "형식",
+    "OverlayView_FormatOptions": "형식 옵션",
+    "OverlayView_PercentageDisplay": "백분율 표시",
+    "OverlayView_PercentageDisplayHint": "단위가 %인 항목에 적용됩니다. 막대는 고정된 0–100% 눈금을 사용합니다. 숫자 + 막대 모드에서는 백분율이 막대 앞에 표시됩니다.",
+    "OverlayView_ValueDisplayText": "숫자",
+    "OverlayView_ValueDisplayBar": "막대",
+    "OverlayView_ValueDisplayTextAndBar": "숫자 + 막대",
+    "OverlayView_GPUBasics": "GPU 기본 항목",
+    "OverlayView_General": "일반",
+    "OverlayView_Graph": "그래프",
+    "OverlayView_GroupColor": "그룹 색상:",
+    "OverlayView_GroupControl": "그룹 제어:",
+    "OverlayView_GroupName": "그룹 이름",
+    "OverlayView_GroupName2": "그룹 이름",
+    "OverlayView_GroupName3": "그룹 이름",
+    "OverlayView_GroupNameFontSize": "그룹 이름 글꼴 크기",
+    "OverlayView_Groups": "그룹",
+    "OverlayView_HardwareController": "하드웨어 컨트롤러",
+    "OverlayView_HideTheOSDWhileA": "벤치마크 캡처가 진행되는 동안 OSD를 숨깁니다.",
+    "OverlayView_HookFreeAppliesLiveRestart": "후킹 없는 렌더러에는 즉시 적용됩니다. 게임 내 로깅을 사용하려면 CapFrameX와 게임을 다시 시작하세요.",
+    "OverlayView_HookFreeOutputDisplay": "후킹 없는 오버레이 출력 디스플레이",
+    "OverlayView_Hotkey": "단축키",
+    "OverlayView_HotkeyCombinableWithUpTo": "최대 두 개의 보조 키(Ctrl, Shift 또는 Alt)와 조합할 수 있는 단축키",
+    "OverlayView_HotkeyPressBackspaceDeleteOrEsc": "최대 두 개의 보조 키(Ctrl, Shift 또는 Alt)와 조합할 수 있는 단축키입니다. Backspace, Delete 또는 Esc를 누르면 지워집니다.",
+    "OverlayView_IncludeSecondsInTheSystem": "시스템 시간 오버레이 항목에 초를 포함합니다.",
+    "OverlayView_LaunchPreviewApp": "미리 보기 앱 실행",
+    "OverlayView_Limits": "한계값",
+    "OverlayView_LowerLimitColor": "하한값 + 색상:",
+    "OverlayView_LowerLimitColorHint": "값이 하한값 이하이면 값의 색상을 변경합니다.\n한계값을 비활성화하려면 이 입력란을 비우세요.",
+    "OverlayView_ManuallyPositionTheCapFrameXOverlay": "CapFrameX 오버레이 항목의 위치를 수동으로 지정합니다.",
+    "OverlayView_MaximumVisibleChartUpdatesPer": "초당 화면에 표시할 최대 차트 업데이트 횟수",
+    "OverlayView_MetricIntervalS": "지표 간격 (s)",
+    "OverlayView_MinOSD": "최소 OSD",
+    "OverlayView_MinimumBufferingUsedToSmooth": "불규칙하게 전달되는 PresentMon 프레임 데이터를 부드럽게 표시하기 위한 최소 버퍼링입니다. 업데이트 사이에 그래프가 멈추면 값을 높이세요. 값이 높을수록 지연이 증가합니다. 후킹 없는 렌더러에 적용됩니다.",
+    "OverlayView_OSD": "OSD",
+    "OverlayView_OSDOptions": "OSD 옵션",
+    "OverlayView_OSDParameterGroupControl": "OSD 매개변수 그룹 제어",
+    "OverlayView_OSDUpdatePeriod": "OSD 업데이트 주기",
+    "OverlayView_OpenConfigurationFolder": "설정 폴더 열기",
+    "OverlayView_OpenOSDLogFolder": "OSD 로그 폴더 열기",
+    "OverlayView_OpenTheFolderContainingThe": "OSD 로그 파일이 있는 폴더를 엽니다.",
+    "OverlayView_OverlayActive": "오버레이 활성",
+    "OverlayView_OverlayCoordinates": "오버레이 좌표",
+    "OverlayView_OverlayHotkey": "오버레이 단축키",
+    "OverlayView_OverlayItems": "행 오버레이",
+    "OverlayView_OverlayItems2": "행 오버레이 항목",
+    "OverlayView_OverlayPosition": "오버레이 위치",
+    "OverlayView_OverlayRefresh": "오버레이 갱신",
+    "OverlayView_OverlayRenderer": "오버레이 렌더러",
+    "OverlayView_OverlaySize": "오버레이 크기",
+    "OverlayView_OverlayTemplate": "오버레이 템플릿",
+    "OverlayView_PercentageFormatHint": "양의 백분율 = 위 첨자\n음의 백분율 = 아래 첨자",
+    "OverlayView_PositionHotkey": "위치 단축키",
+    "OverlayView_PositivePercentageSuperscriptNegativePercentage": "양의 백분율 = 위 첨자\n음의 백분율 = 아래 첨자",
+    "OverlayView_PresentMonReplayBuffer": "PresentMon 재생 버퍼",
+    "OverlayView_Preview": "미리 보기",
+    "OverlayView_RAMItems": "RAM 항목",
+    "OverlayView_RTSS": "RTSS",
+    "OverlayView_RealTimeMetrics": "실시간 지표",
+    "OverlayView_RealTimeMetrics2": "실시간 지표",
+    "OverlayView_RefreshPeriodMs": "갱신 주기 (ms)",
+    "OverlayView_RefreshRate": "갱신 빈도",
+    "OverlayView_RequiresRivaTunerStatisticsServer": "RivaTuner Statistics Server가 필요합니다.",
+    "OverlayView_ResetMetrics": "지표 초기화",
+    "OverlayView_ResetMetricsHotkey": "지표 초기화 단축키",
+    "OverlayView_ResetToDefaults": "기본값으로 초기화",
+    "OverlayView_ResetToDefaults2": "기본값으로 초기화",
+    "OverlayView_Revert": "되돌리기",
+    "OverlayView_RevertToLastAppliedTemplate": "마지막으로 적용한 템플릿으로 되돌리기",
+    "OverlayView_SaveSelectionToCurrentConfig": "현재 설정에 선택 항목 저장",
+    "OverlayView_SaveSelectionToOtherConfigs": "다른 설정에 선택 항목 저장",
+    "OverlayView_Saving": "저장 중...",
+    "OverlayView_ScalesTextSpacingAndGraphs": "후킹 없는 렌더러의 텍스트, 간격 및 그래프 크기를 조절합니다. RTSS는 자체 확대/축소 설정을 사용합니다.",
+    "OverlayView_Search": "검색...",
+    "OverlayView_SearchInDescriptionGroupName": "설명, 그룹 이름 및 식별자에서 검색",
+    "OverlayView_SendFutureSessionProfilesGame": "향후 세션의 프로필, 게임/런타임 버전 및 해시, Windows, GPU/드라이버, 렌더링 진행 상황, 게임 창 상태, 대체 렌더링/FG 진단 정보를 분석을 위해 CapFrameX로 전송합니다. 보고서는 임의의 ID를 사용하며 창 제목, 경로, 계정 정보 또는 원시 로그는 포함하지 않습니다. 끄면 업로드가 중단되고 미전송 보고서가 삭제됩니다. 이미 제출한 보고서는 유지됩니다.",
+    "OverlayView_SensorType": "센서 유형",
+    "OverlayView_Separators": "구분선",
+    "OverlayView_SetOSDItemsToMinimum": "OSD 항목을 최소화합니다. 프레임 레이트와 프레임 시간만 표시합니다.",
+    "OverlayView_SetSelectedOptionsForAll": "이 그룹 이름을 사용하는 모든 항목에 선택한 옵션 적용",
+    "OverlayView_SetSelectedOptionsForAll2": "이 센서 유형을 사용하는 모든 항목에 선택한 옵션 적용",
+    "OverlayView_SetSelectedOptionsForAll3": "모든 항목 그룹에 선택한 옵션 적용",
+    "OverlayView_SetSelectedOptionsForAll4": "모든 항목 값에 선택한 옵션 적용",
+    "OverlayView_SetsTheThreadAffinityFor": "Intel 하이브리드 아키텍처 및 CCD가 2개인 Ryzen CPU의 스레드 선호도를 설정합니다.",
+    "OverlayView_ShareOverlayCompatibilityReports": "오버레이 호환성 보고서 공유",
+    "OverlayView_ShortcutsAndTiming": "단축키 및 시간 설정",
+    "OverlayView_ShowOrHideTheOverlay": "오버레이 표시 또는 숨기기",
+    "OverlayView_ShowOrHideTheSelected": "선택한 오버레이 렌더러를 표시하거나 숨깁니다.",
+    "OverlayView_SmoothNumericValues": "숫자 값을 부드럽게 표시",
+    "OverlayView_SortEntriesByType": "유형별 항목 정렬",
+    "OverlayView_StandardValueColor": "기본 값 색상:",
+    "OverlayView_SwitchConfig": "설정 전환",
+    "OverlayView_SystemInfos": "시스템 정보",
+    "OverlayView_SystemTimeSeconds": "시스템 시간에 초 표시",
+    "OverlayView_ThreadAffinityController": "스레드 선호도 컨트롤러",
+    "OverlayView_ThreadAffinityHotkey": "스레드 선호도 단축키",
+    "OverlayView_ToggleOverlay": "오버레이 켜기/끄기",
+    "OverlayView_TopCenter": "위쪽 가운데",
+    "OverlayView_TopLeft": "왼쪽 위",
+    "OverlayView_TopRight": "오른쪽 위",
+    "OverlayView_UncheckCPUClocks": "CPU 클럭 선택 해제",
+    "OverlayView_UncheckCPUClocks2": "CPU 클럭 선택 해제",
+    "OverlayView_UncheckCPUCoreTemps": "CPU 코어 온도 선택 해제",
+    "OverlayView_UncheckCPUCoreVoltages": "CPU 코어 전압 선택 해제",
+    "OverlayView_UncheckCPULoads": "CPU 부하 선택 해제",
+    "OverlayView_UncheckCaptureItems": "캡처 항목 선택 해제",
+    "OverlayView_UncheckGPUBasics": "GPU 기본 항목 선택 해제",
+    "OverlayView_UncheckRAMItems": "RAM 항목 선택 해제",
+    "OverlayView_UncheckRealTimeMetrics": "실시간 지표 선택 해제",
+    "OverlayView_UncheckSystemInfo": "시스템 정보 선택 해제",
+    "OverlayView_UpdateIntervals": "업데이트 간격",
+    "OverlayView_UpperLimitColor": "상한값 + 색상:",
+    "OverlayView_UpperLimitColorHint": "값이 상한값 이상이면 값의 색상을 변경합니다.\n한계값을 비활성화하려면 이 입력란을 비우세요.",
+    "OverlayView_UsePresentMonFrameTimes": "PresentMon 프레임 시간 사용",
+    "OverlayView_UsesDWMDirectCompositionWithoutGame": "게임에 주입하지 않고 DWM/DirectComposition을 사용하므로 안티치트로 보호되는 게임에서도 안전하게 사용할 수 있습니다.",
+    "OverlayView_ValueFontSize": "값 글꼴 크기",
+    "OverlayView_Values": "값",
+    "PlatformSecurityStatus_MemoryIntegrityOffToolTip": "메모리 무결성(하이퍼바이저로 보호되는 코드 무결성)이 꺼져 있습니다.",
+    "PlatformSecurityStatus_MemoryIntegrityOnToolTip": "메모리 무결성(하이퍼바이저로 보호되는 코드 무결성)이 켜져 있습니다. 성능이 다소 저하되며 Microsoft의 취약한 드라이버 목록에 있는 드라이버가 차단됩니다.",
+    "PlatformSecurityStatus_Off": "꺼짐",
+    "PlatformSecurityStatus_On": "켜짐",
+    "PlatformSecurityStatus_Running": "실행 중",
+    "PlatformSecurityStatus_SecureBootOffToolTip": "UEFI 보안 부팅이 꺼져 있습니다. 일부 안티치트 시스템은 이 기능이 꺼져 있으면 실행되지 않습니다.",
+    "PlatformSecurityStatus_SecureBootOnToolTip": "UEFI 보안 부팅이 켜져 있습니다. 일부 안티치트 시스템에서 필요하며, 켜져 있는 동안 Windows는 테스트 서명 옵션을 무시합니다.",
+    "PlatformSecurityStatus_TestSigningOffToolTip": "Windows는 정식 서명이 있는 드라이버만 로드합니다.",
+    "PlatformSecurityStatus_TestSigningOnToolTip": "Windows가 테스트 서명된 드라이버를 로드합니다. 이 방식으로만 로드되는 드라이버는 보안 부팅을 켜면 작동하지 않습니다.",
+    "PlatformSecurityStatus_Unknown": "알 수 없음",
+    "PlatformSecurityStatus_VbsOffToolTip": "가상화 기반 보안이 실행되고 있지 않습니다.",
+    "PlatformSecurityStatus_VbsRunningToolTip": "가상화 기반 보안이 실행 중입니다. 성능이 다소 저하되므로 동일한 설정에서 수행한 결과끼리만 비교하세요.",
+
+    // =========================================================================
+    // POWER MEASUREMENT (PMD / POWENETICS / BENCHLAB) - Real-time power metrics
+    // =========================================================================
+    "PmdAnalysisChartManager_CPUPowerW": "CPU 전력 [W]",
+    "PmdAnalysisChartManager_GPUPowerW": "GPU 전력 [W]",
+    "PmdAnalysisChartManager_TimeS": "시간 [s]",
+    "PmdAnalysisChartManager_TimeS2": "시간 [s]",
+    "PmdAnalysisChartManager_TimeS3": "시간 [s]",
+    "PmdAnalysisChartManager_TimeS4": "시간 [s]",
+    "PmdAnalysisChartManager_TimeS5": "시간 [s]",
+    "PmdChart_CpuPowerW": "CPU 전력 [W]",
+    "PmdChart_FrametimeMs": "프레임 시간 [ms]",
+    "PmdChart_GpuPowerW": "GPU 전력 [W]",
+    "PmdChart_PowerW": "전력 [W]",
+    "PmdChart_TimeS": "시간 [s]",
+    "PmdSampleFilterMode_Average": "N개 평균",
+    "PmdSampleFilterMode_Single": "N개 중 마지막 값",
+    "PmdView_ATXPower": "ATX 전력",
+    "PmdView_AutoStartPMD": "PMD 자동 시작",
+    "PmdView_AverageMetrics": "평균 지표",
+    "PmdView_Avg": "평균",
+    "PmdView_Avg10": "평균",
+    "PmdView_Avg2": "평균",
+    "PmdView_Avg3": "평균",
+    "PmdView_Avg4": "평균",
+    "PmdView_Avg5": "평균",
+    "PmdView_Avg6": "평균",
+    "PmdView_Avg7": "평균",
+    "PmdView_Avg8": "평균",
+    "PmdView_Avg9": "평균",
+    "PmdView_AvgPMDPower": "평균 PMD 전력",
+    "PmdView_BENCHLAB": "BENCHLAB",
+    "PmdView_COMPort": "COM 포트",
+    "PmdView_CPU": "CPU :",
+    "PmdView_CPUPower": "CPU 전력",
+    "PmdView_CPUTotalPower": "CPU 총 전력",
+    "PmdView_ChartLengthS": "차트 길이 [s]",
+    "PmdView_ChartLengthS2": "차트 길이 [s]",
+    "PmdView_CopyCPUPowerFrameTimes": "CPU 전력/프레임 시간 복사 (t, f(t), p(t))",
+    "PmdView_CopyCPUPowerPointsT": "CPU 전력 좌표 복사 (t, p(t))",
+    "PmdView_CopyCPUPowerValuesF": "CPU 전력 값 복사 (f)",
+    "PmdView_CopyGPUPowerFrameTimes": "GPU 전력/프레임 시간 복사 (t, f(t), p(t))",
+    "PmdView_CopyGPUPowerPointsT": "GPU 전력 좌표 복사 (t, p(t))",
+    "PmdView_CopyGPUPowerValuesF": "GPU 전력 값 복사 (f)",
+    "PmdView_Cur": "현재",
+    "PmdView_Cur10": "현재",
+    "PmdView_Cur2": "현재",
+    "PmdView_Cur3": "현재",
+    "PmdView_Cur4": "현재",
+    "PmdView_Cur5": "현재",
+    "PmdView_Cur6": "현재",
+    "PmdView_Cur7": "현재",
+    "PmdView_Cur8": "현재",
+    "PmdView_Cur9": "현재",
+    "PmdView_DownsamplingFactor": "다운샘플링 배율",
+    "PmdView_DownsamplingMode": "다운샘플링 모드",
+    "PmdView_EfficiencyFPS10W": "효율 (FPS/10W)",
+    "PmdView_FPS": "FPS :",
+    "PmdView_Frametimes": "프레임 시간",
+    "PmdView_GPU": "GPU :",
+    "PmdView_GPUPower": "GPU 전력",
+    "PmdView_GPUTotalPower": "GPU 총 전력",
+    "PmdView_GraphSelection": "그래프 선택",
+    "PmdView_LogPMDData": "PMD 데이터 로깅",
+    "PmdView_LogPMDData2": "PMD 데이터 로깅",
+    "PmdView_LostPackets": "손실된 패킷:",
+    "PmdView_MainboardPower": "메인보드 전력",
+    "PmdView_Max": "최대",
+    "PmdView_Max10": "최대",
+    "PmdView_Max2": "최대",
+    "PmdView_Max3": "최대",
+    "PmdView_Max4": "최대",
+    "PmdView_Max5": "최대",
+    "PmdView_Max6": "최대",
+    "PmdView_Max7": "최대",
+    "PmdView_Max8": "최대",
+    "PmdView_Max9": "최대",
+    "PmdView_MonitoringIntervalMs": "모니터링 간격 [ms]",
+    "PmdView_PCIePower": "PCIe 전력",
+    "PmdView_PCIeSlotPower": "PCIe 슬롯 전력",
+    "PmdView_PMDAnalysis": "PMD 분석",
+    "PmdView_PMDCPU": "PMD CPU :",
+    "PmdView_PMDGPU": "PMD GPU :",
+    "PmdView_PMDPower": "PMD 전력",
+    "PmdView_PMDServiceStatus": "PMD 서비스 상태:",
+    "PmdView_PMDServiceStatus2": "PMD 서비스 상태:",
+    "PmdView_Performance": "성능",
+    "PmdView_Performance2": "성능",
+    "PmdView_Powenetics": "Powenetics",
+    "PmdView_ResetPMDMetrics": "PMD 지표 초기화",
+    "PmdView_ResetPMDMetrics2": "PMD 지표 초기화",
+    "PmdView_SampleRate": "샘플링 빈도:",
+    "PmdView_SelectTheCOMPort": "COM 포트를 선택하세요.",
+    "PmdView_SensorCPU": "CPU 센서 :",
+    "PmdView_SensorGPU": "GPU 센서 :",
+    "PmdView_SensorPower": "센서 전력",
+    "PmdView_SetsTheDownsamplingMode": "다운샘플링 모드를 설정합니다.",
+    "PmdView_SetsTheLenghtSOf": "차트의 길이 [s]를 설정합니다.",
+    "PmdView_SetsTheLenghtSOf2": "차트의 길이 [s]를 설정합니다.",
+    "PmdView_SetsTheMonitoringIntervalMs": "PMD 장치의 모니터링 간격 [ms]을 설정합니다.",
+    "PmdView_SetsTheRefreshRateMs": "PMD 장치의 갱신 주기 [ms]를 설정합니다.",
+    "PmdView_ShowCharts": "차트 표시",
+    "PmdView_ShowCharts2": "차트 표시",
+    "PmdView_SomeNeededPowerSourcesAre": "이 지표를 정확히 계산하는 데 필요한 일부 전원 측정값이 없습니다.",
+    "PmdView_SomeNeededPowerSourcesAre2": "이 지표를 정확히 계산하는 데 필요한 일부 전원 측정값이 없습니다.",
+    "PmdView_StartOrStopBENCHLABMonitoring": "BENCHLAB 모니터링을 시작하거나 중지합니다. 기존의 호환되는 서비스를 사용하거나 포함된 서비스를 시작합니다.",
+    "PmdView_StartOrStopThePMD": "PMD 서비스를 시작하거나 중지합니다.",
+    "PmdView_StartStopPMD": "PMD 시작/중지",
+    "PmdView_StartStopPMD2": "PMD 시작/중지",
+    "PmdView_System": "시스템 :",
+    "PmdView_System2": "시스템 :",
+    "PmdView_SystemPower": "시스템 전력",
+    "PmdView_SystemPower2": "시스템 전력",
+    "PmdView_Values": "값",
+    "PoweneticsMetricsManager_W": "W",
+    "PoweneticsViewModel_1S": "[1/s]",
+
+    // =========================================================================
+    // OUTLIER DETECTION - Metric compared to find outlier runs (capture and aggregation)
+    // =========================================================================
+    "RelatedMetric_Average": "평균",
+    "RelatedMetric_Second": "두 번째",
+    "RelatedMetric_Third": "세 번째",
+
+    // =========================================================================
+    // REPORT VIEW - Comprehensive tabular benchmark and sensor summary
+    // =========================================================================
+    "ReportViewModel_AveragedValues": "평균값",
+    "ReportView_AdaptiveSTDEV": "적응형 STDEV",
+    "ReportView_AdaptiveSTDEV2": "적응형 STDEV",
+    "ReportView_AppLatencyMs": "앱 지연 시간 (ms)",
+    "ReportView_AppLatencyMs2": "앱 지연 시간 (ms)",
+    "ReportView_Average": "평균",
+    "ReportView_AverageAnimationErrorMs": "평균 |애니메이션 오차| (ms)",
+    "ReportView_AverageAnimationErrorMs2": "평균 |애니메이션 오차| (ms)",
+    "ReportView_AverageFPS": "평균 FPS",
+    "ReportView_CPU": "CPU",
+    "ReportView_CPUClockMHz": "CPU 클럭 (MHz)",
+    "ReportView_CPUClockMHz2": "CPU 클럭 (MHz)",
+    "ReportView_CPUFPS10W": "CPU FPS / 10W",
+    "ReportView_CPUFPS10W2": "CPU FPS/10W",
+    "ReportView_CPUMaxThread": "CPU 최대 스레드 부하 (%)",
+    "ReportView_CPUMaxThread2": "CPU 최대 스레드 부하 (%)",
+    "ReportView_CPUName": "CPU 이름",
+    "ReportView_CPUPowerW": "CPU 전력 (W)",
+    "ReportView_CPUPowerW2": "CPU 전력 (W)",
+    "ReportView_CPUTempC": "CPU 온도 (°C)",
+    "ReportView_CPUTempC2": "CPU 온도 (°C)",
+    "ReportView_Comment": "메모",
+    "ReportView_Comment2": "메모",
+    "ReportView_CopyTable": "표 복사",
+    "ReportView_CreationDate": "생성 날짜",
+    "ReportView_CreationDate2": "생성 날짜",
+    "ReportView_CreationTime": "생성 시간",
+    "ReportView_CreationTime2": "생성 시간",
+    "ReportView_DropItemsHereOrDouble": "여기에 항목을 놓거나 기록 목록에서 두 번 클릭하세요.",
+    "ReportView_GPU": "GPU",
+    "ReportView_GPUBusyAvgMs": "GPU-Busy 평균 (ms)",
+    "ReportView_GPUBusyTimeAvgMs": "GPU-Busy 시간 평균 (ms)",
+    "ReportView_GPUBusyTimeDev": "GPU-Busy 시간 편차 (%)",
+    "ReportView_GPUBusyTimeDev2": "GPU-Busy 시간 편차 (%)",
+    "ReportView_GPUClockMHz": "GPU 클럭 (MHz)",
+    "ReportView_GPUClockMHz2": "GPU 클럭 (MHz)",
+    "ReportView_GPUFPS10W": "GPU FPS / 10W",
+    "ReportView_GPUFPS10W2": "GPU FPS/10W",
+    "ReportView_GPUName": "GPU 이름",
+    "ReportView_GPUPowerW": "GPU 전력 (W)",
+    "ReportView_GPUPowerW2": "GPU 전력 (W)",
+    "ReportView_GPUTBPSimW": "GPU TBP 추정값 (W)",
+    "ReportView_GPUTBPSimW2": "GPU TBP 추정값 (W)",
+    "ReportView_GPUTempC": "GPU 온도 (°C)",
+    "ReportView_GPUTempC2": "GPU 온도 (°C)",
+    "ReportView_GPUUsage": "GPU 사용률 (%)",
+    "ReportView_GPUUsage2": "GPU 사용률 (%)",
+    "ReportView_GameName": "게임 이름",
+    "ReportView_IfAvailableUsePMDValues": "가능한 경우 CPU/GPU 전력과 효율 계산에 센서 측정값 대신 PMD 값을 사용합니다.",
+    "ReportView_MaxFPS": "최대 FPS",
+    "ReportView_Maximum": "최댓값",
+    "ReportView_Median": "중앙값",
+    "ReportView_MedianFPS": "중앙값 FPS",
+    "ReportView_MetricsSettings": "지표 설정:",
+    "ReportView_MinFPS": "최소 FPS",
+    "ReportView_Minimum": "최솟값",
+    "ReportView_OnePercentLowAverage": "1% Low 평균",
+    "ReportView_OnePercentLowAverageFps": "1% Low 평균 FPS",
+    "ReportView_OnePercentLowIntegral": "1% Low 적분",
+    "ReportView_OnePercentLowIntegralFps": "1% Low 적분 FPS",
+    "ReportView_P01FPS": "P0.1 FPS",
+    "ReportView_P02FPS": "P0.2 FPS",
+    "ReportView_P1FPS": "P1 FPS",
+    "ReportView_P5FPS": "P5 FPS",
+    "ReportView_P95FPS": "P95 FPS",
+    "ReportView_P99AnimationErrorMs": "P99 |애니메이션 오차| (ms)",
+    "ReportView_P99AnimationErrorMs2": "P99 |애니메이션 오차| (ms)",
+    "ReportView_P99FPS": "P99 FPS",
+    "ReportView_Percentile01": "0.1% 백분위수",
+    "ReportView_Percentile02": "0.2% 백분위수",
+    "ReportView_Percentile1": "1% 백분위수",
+    "ReportView_Percentile5": "5% 백분위수",
+    "ReportView_Percentile95": "95% 백분위수",
+    "ReportView_Percentile99": "99% 백분위수",
+    "ReportView_PointOnePercentLowAverage": "0.1% Low 평균",
+    "ReportView_PointOnePercentLowAverageFps": "0.1% Low 평균 FPS",
+    "ReportView_PointOnePercentLowIntegral": "0.1% Low 적분",
+    "ReportView_PointOnePercentLowIntegralFps": "0.1% Low 적분 FPS",
+    "ReportView_RAM": "RAM",
+    "ReportView_RAMName": "RAM 이름",
+    "ReportView_RecordTimeS": "기록 시간 (s)",
+    "ReportView_RecordingTime": "기록 시간",
+    "ReportView_RemoveAllReportEntries": "모든 보고서 항목 제거",
+    "ReportView_Samples": "샘플",
+    "ReportView_Samples2": "샘플",
+    "ReportView_SelectMetricsToBeShown": "표시할 지표 선택",
+    "ReportView_ShowAverageRow": "평균 행 표시",
+    "ReportView_ShowsAnAdditionalRowContaining": "추가한 모든 기록의 평균 FPS 지표를 담은 행을 추가로 표시합니다.",
+    "ReportView_UsePMDValues": "PMD 값 사용",
+
+    // =========================================================================
+    // OVERLAY PROFILE DIALOGS - Reset confirmation and unsaved changes alerts
+    // =========================================================================
+    "ResetOverlayConfigDialog_Cancel": "취소",
+    "ResetOverlayConfigDialog_DoYouReallyWantTo": "설정을 초기화하시겠습니까? 이전 설정이 사라집니다!",
+    "ResetOverlayConfigDialog_OK": "확인",
+
+    // =========================================================================
+    // SENSOR VIEW - Hardware sensors logging and real-time monitoring
+    // =========================================================================
+    // Multi-line button text: line 1 "Evaluate", line 2 "multiple entries"
+    "SensorViewModel_EvaluateMultipleEntries": "여러 항목\n평가",
+    "SensorViewModel_SensorStatisticsForMultipleSelected": "선택한 여러 기록의 센서 통계",
+    "SensorViewModel_SensorStatisticsForSelectedRecord": "선택한 기록의 센서 통계",
+    "SensorViewModel_SensorStatisticsForSelectedRecord2": "선택한 기록의 센서 통계",
+    "SensorViewModel_Working": "처리 중",
+    "SensorView_AllSensors": "모든 센서",
+    "SensorView_Avg": "평균",
+    "SensorView_CPUBasics": "CPU 기본 항목",
+    "SensorView_CPUCoreClocks": "CPU 코어 클럭",
+    "SensorView_CPUThreadLoads": "CPU 스레드 부하",
+    "SensorView_CheckAllSensors": "모든 센서 선택",
+    "SensorView_CheckCPUBasics": "CPU 기본 항목 선택",
+    "SensorView_CheckCPUCoreClocks": "CPU 코어 클럭 선택",
+    "SensorView_CheckCPUThreadLoads": "CPU 스레드 부하 선택",
+    "SensorView_CheckGPUBasics": "GPU 기본 항목 선택",
+    "SensorView_CheckOrUncheckGroupsOf": "센서 그룹 선택 또는 선택 해제",
+    "SensorView_CopyRawSensorData": "원시 센서 데이터 복사",
+    "SensorView_CopySensorDataMinAvg": "센서 데이터 복사(최소, 평균, 최대)",
+    "SensorView_Evaluation": "평가",
+    "SensorView_GPUBasics": "GPU 기본 항목",
+    "SensorView_GroupControl": "그룹 제어",
+    "SensorView_LogSensors": "센서 로깅",
+    "SensorView_LogsSelectedSensorValuesDuring": "캡처 중 선택한 센서 값을 로그에 기록합니다.",
+    "SensorView_Max": "최대",
+    "SensorView_Min": "최소",
+    "SensorView_OpenConfigurationFolder": "설정 폴더 열기",
+    "SensorView_ResetToDefaults": "기본값으로 초기화",
+    "SensorView_ResyncWindowsPerformanceMonitorWhen": "메모리 카운터가 0으로 표시되는 문제가 있으면 Windows 성능 모니터를 다시 동기화하세요. 실행 후 CX를 다시 시작하세요.",
+    "SensorView_SaveSelectedSensorsForLogging": "로깅할 센서 선택 사항 저장",
+    "SensorView_SelectTheMethodForEvaluating": "여러 항목을 평가할 방법을 선택하세요.\n\n\n집계: 모든 항목의 센서 데이터를 합쳐 보고서를 생성합니다.\n\n\n평균: 각 개별 보고서의 평균을 바탕으로 보고서를 생성합니다.\n\n(모든 항목에 존재하는 센서만 포함됩니다.)",
+    "SensorView_Sensor": "센서",
+    "SensorView_Sensor2": "센서",
+    "SensorView_SensorItems": "센서 항목",
+    "SensorView_SensorPollingMs": "센서 폴링 [ms]",
+    "SensorView_ShowSensorStatisticsForAll": "기록 목록에서 현재 선택한 모든 항목의 센서 통계를 표시합니다.",
+    "SensorView_Type": "유형",
+    "SensorView_UncheckAllSensors": "모든 센서 선택 해제",
+    "SensorView_UncheckCPUBasics": "CPU 기본 항목 선택 해제",
+    "SensorView_UncheckCPUCoreClocks": "CPU 코어 클럭 선택 해제",
+    "SensorView_UncheckCPUThreadLoads": "CPU 스레드 부하 선택 해제",
+    "SensorView_UncheckGPUBasics": "GPU 기본 항목 선택 해제",
+    "SensorView_UseForLogging": "로깅에 사용",
+
+    // =========================================================================
+    // SHELL, SOUNDS & SPLASH SCREEN - Tray menu, capture sound modes, startup screen
+    // =========================================================================
+    "Shell_CapFrameX": "CapFrameX",
+    "Shell_Close": "닫기",
+    "Shell_OverlayProfileCouldNotBeSaved": "오버레이 프로필을 저장하지 못했습니다. 변경 사항을 잃지 않도록 CapFrameX를 계속 열어 둡니다.",
+    "Shell_ShowMainWindow": "기본 창 표시",
+    "SoftwareComponentStatus_BlockedByWindows": "Windows에서 차단됨",
+    "SoftwareComponentStatus_Bundled": "포함됨",
+    "SoftwareComponentStatus_ConflictingRegistration": "등록 충돌",
+    "SoftwareComponentStatus_Incomplete": "불완전",
+    "SoftwareComponentStatus_Installed": "설치됨",
+    "SoftwareComponentStatus_Missing": "누락됨",
+    "SoftwareComponentStatus_NotInstalled": "설치되지 않음",
+    "SoftwareComponentStatus_NotRegistered": "등록되지 않음",
+    "SoftwareComponentStatus_PawnIoBlockedToolTip": "Windows가 등록된 PawnIO 드라이버의 로드를 거부합니다(코드 무결성, 오류 577). CPU, 메모리 및 메인보드 센서를 사용할 수 없습니다. 제거해야 할 드라이버 패키지 이름은 CapFrameX 로그에 표시됩니다.",
+    "SoftwareComponentStatus_PawnIoNotInstalledToolTip": "PawnIO가 설치되지 않았습니다. CPU, 메모리 및 메인보드 센서를 사용할 수 없습니다.",
+    "SoftwareComponentStatus_PawnIoRunningToolTip": "CPU, 메모리 및 메인보드 센서용 커널 드라이버입니다.",
+    "SoftwareComponentStatus_PawnIoStoppedToolTip": "PawnIO 드라이버가 설치되어 있지만 로드되지 않았습니다. CPU, 메모리 및 메인보드 센서를 사용할 수 없습니다.",
+    "SoftwareComponentStatus_PawnIoUnknownToolTip": "PawnIO 서비스를 조회하지 못했습니다.",
+    "SoftwareComponentStatus_PresentMonBundledToolTip": "프레임 시간을 기록하는 캡처 백엔드입니다.",
+    "SoftwareComponentStatus_PresentMonMissingToolTip": "포함된 PresentMon 실행 파일이 없어 캡처를 시작할 수 없습니다. CapFrameX를 다시 설치하세요.",
+    "SoftwareComponentStatus_Registered": "등록됨",
+    "SoftwareComponentStatus_RtssInstalledToolTip": "RTSS 오버레이에서 사용하는 RivaTuner Statistics Server입니다.",
+    "SoftwareComponentStatus_RtssNotInstalledToolTip": "RTSS가 설치되지 않아 RTSS 오버레이를 사용할 수 없습니다. 게임 내 오버레이와 후킹 없는 오버레이에는 RTSS가 필요하지 않습니다.",
+    "SoftwareComponentStatus_Running": "실행 중",
+    "SoftwareComponentStatus_Stopped": "중지됨",
+    "SoftwareComponentStatus_Unknown": "알 수 없음",
+    // {0}: implementation version of the Vulkan layer manifest (e.g. 1)
+    "SoftwareComponentStatus_Version0": "v{0}",
+    "SoftwareComponentStatus_VulkanLayerConflictingToolTip": "Vulkan 로더가 사용할 수 없는 등록 항목이 정상 항목을 가려 해당 비트 수의 레이어를 비활성화합니다. 영향을 받는 게임은 후킹 없는 오버레이로 전환됩니다. CapFrameX를 다시 설치하면 불필요한 등록 항목이 제거됩니다.",
+    "SoftwareComponentStatus_VulkanLayerIncompleteToolTip": "레이어가 한 가지 비트 수에만 등록되어 있습니다. 다른 비트 수의 Vulkan 게임에서는 게임 내 오버레이 대신 후킹 없는 오버레이가 표시됩니다. CapFrameX를 다시 설치하면 두 비트 수 모두 등록됩니다.",
+    "SoftwareComponentStatus_VulkanLayerNotRegisteredToolTip": "Vulkan 레이어가 등록되지 않아 Vulkan 게임에서는 게임 내 오버레이 대신 후킹 없는 오버레이가 표시됩니다. CapFrameX를 다시 설치하면 등록됩니다.",
+    "SoftwareComponentStatus_VulkanLayerRegisteredToolTip": "Vulkan 게임에서 게임 내 오버레이를 그리는 암시적 Vulkan 레이어입니다.",
+    "SoftwareComponentStatus_VulkanLayerUnknownToolTip": "Vulkan 레이어 등록 정보를 읽지 못했습니다.",
+    "SoundMode_None": "없음",
+    "SoundMode_Simple": "단순",
+    "SoundMode_Voice": "음성",
+    "SplashScreenWindow_CapFrameX": "CapFrameX",
+    "SplashScreenWindow_Starting": "시작 중...",
+
+    // =========================================================================
+    // STATUS BAR - Hook overlay status, capture indicators, HAGS status
+    // =========================================================================
+    "StateViewModelSystemStatus_Off": "꺼짐",
+    "StateViewModelSystemStatus_On": "켜짐",
+    "StateViewModelSystemStatus_Partial": "부분적",
+    "StateViewModel_NoInfoAvailable": "정보 없음",
+    "StateViewModel_Revision0": "리비전: {0}",
+    "StateViewModel_SwitchTheOverlayOnOrOff": "오버레이를 켜거나 끕니다.",
+    "StateViewModel_SwitchTheOverlayOnOrOffHotkey0": "오버레이를 켜거나 끕니다(단축키 {0}).",
+    // Tooltip shown while waiting for game process detection hook
+    "StateViewModel_WaitingForHookStatus": "후킹 상태를 기다리는 중입니다.",
+    "StateView_CaptureService": "캡처 서비스:",
+    // Status toggle (active): shown when benchmark capture is in progress
+    "StateView_Capturing": "캡처 중",
+    "StateView_Hook": "후킹:",
+    // User account status: logged in to capframex.com
+    "StateView_LoggedIn": "로그인됨",
+    "StateView_LoginStatus": "로그인 상태:",
+    // User account status: not logged in
+    "StateView_NotLoggedIn": "로그인되지 않음",
+    // Boolean toggle: status is disabled (e.g. HAGS)
+    "StateView_Off": "꺼짐",
+    // Boolean toggle: status is enabled (e.g. HAGS)
+    "StateView_On": "켜짐",
+    "StateView_Overlay": "오버레이:",
+    // Status toggle (idle): shown when ready to record a benchmark
+    "StateView_Ready": "준비됨",
+    "StateView_ResizableBar": "Resizable Bar:",
+    "StateView_ResizableBarD3D": "Resizable Bar D3D:",
+    "StateView_ResizableBarHW": "Resizable Bar HW:",
+    "StateView_ResizableBarVulkan": "Resizable Bar Vulkan:",
+    "StateView_SensorLogging": "센서 로깅:",
+    "StateView_UpdateSystemInfoStatus": "시스템 정보 상태 업데이트",
+    "StateView_Version": "버전:",
+    "StateView_WinGameMode": "Windows 게임 모드:",
+
+    // =========================================================================
+    // SYNCHRONIZATION & DISPLAY TIMING - Display change metrics and latency
+    // =========================================================================
+    "SynchronizationViewModel_AverageInputLag": "평균 입력 지연",
+    "SynchronizationViewModel_DroppedFrames": "누락된 프레임",
+    "SynchronizationViewModel_Expected": "예상값",
+    "SynchronizationViewModel_FrametimeInputLagMs": "프레임 시간 + 입력 지연 [ms]",
+    "SynchronizationViewModel_FrametimeUntilDisplayedTimeMs": "프레임 시간 + 화면 표시까지의 시간 [ms]",
+    "SynchronizationViewModel_Frametimes": "프레임 시간",
+    "SynchronizationViewModel_Frametimes2": "프레임 시간",
+    "SynchronizationViewModel_InputLagHigh": "입력 지연 상한",
+    "SynchronizationViewModel_InputLagLow": "입력 지연 하한",
+    "SynchronizationViewModel_InputLagTimeDistribution": "입력 지연 시간 분포",
+    "SynchronizationViewModel_LowerBound": "하한",
+    "SynchronizationViewModel_Samples": "샘플",
+    "SynchronizationViewModel_Samples2": "샘플",
+    "SynchronizationViewModel_SyncedFrames": "동기화된 프레임",
+    "SynchronizationViewModel_UntilDisplayedTimeDistribution": "화면 표시까지의 시간 분포",
+    "SynchronizationViewModel_UntilDisplayedTimes": "화면 표시까지의 시간",
+    "SynchronizationViewModel_UpperBound": "상한",
+    "SynchronizationView_CopyHistogramData": "히스토그램 데이터 복사",
+    "SynchronizationView_CopyHistogramData2": "히스토그램 데이터 복사",
+    "SynchronizationView_CopyMetrics": "지표 복사",
+    "SynchronizationView_CopyUntilDisplayedTimeValues": "화면 표시까지의 시간 값 복사",
+    "SynchronizationView_Distribution": "분포",
+    "SynchronizationView_Distribution2": "분포",
+    "SynchronizationView_ExpectedInputLagMs": "예상 입력 지연 (ms)",
+    "SynchronizationView_FramesWithinMonitorSyncRange": "모니터 동기화 범위 내 프레임:",
+    "SynchronizationView_InputLagApproximation": "입력 지연 추정",
+    "SynchronizationView_InputLagOffsetMs": "입력 지연 오프셋 (ms):",
+    "SynchronizationView_Lower": "하한",
+    "SynchronizationView_Ms": "ms",
+    "SynchronizationView_Offset": "오프셋",
+    "SynchronizationView_OffsetForDisplayAndMouse": "디스플레이 및 마우스/키보드/게임패드 지연 시간의 오프셋",
+    "SynchronizationView_RangeOpen": "(범위:",
+    "SynchronizationView_SavePlotAsPNG": "그래프를 PNG로 저장",
+    "SynchronizationView_SavePlotAsPNG2": "그래프를 PNG로 저장",
+    "SynchronizationView_SavePlotAsSVG": "그래프를 SVG로 저장",
+    "SynchronizationView_SavePlotAsSVG2": "그래프를 SVG로 저장",
+    "SynchronizationView_UntilDisplayedTimeMs": "화면 표시까지의 시간 (ms)",
+    "SynchronizationView_UntilDisplayedTimes": "화면 표시까지의 시간",
+    "SynchronizationView_Upper": "상한",
+
+    // =========================================================================
+    // UNSAVED OVERLAY PROFILE DIALOG - Prompt when closing with unsaved overlay changes
+    // =========================================================================
+    "UnsavedOverlayProfileDialog_Cancel": "취소",
+    "UnsavedOverlayProfileDialog_ClosingWithoutSavingPermanentlyDiscards": "저장하지 않고 닫으면 현재 변경 사항이 영구적으로 삭제됩니다.",
+    "UnsavedOverlayProfileDialog_ExitWithoutSaving": "저장하지 않고 종료",
+    "UnsavedOverlayProfileDialog_SaveAndExit": "저장 후 종료",
+    "UnsavedOverlayProfileDialog_TheCurrentOverlayItemsProfile": "현재 오버레이 항목 프로필에 저장하지 않은 변경 사항이 있습니다. CapFrameX를 닫기 전에 저장하시겠습니까?",
+    "UnsavedOverlayProfileDialog_UnsavedOverlayProfile": "저장하지 않은 오버레이 프로필",
+
+    // =========================================================================
+    // AUTO-UPDATER & ROLLBACK - Update notifications and version installation
+    // =========================================================================
+    "UpdateDialog_Cancel": "취소",
+    "UpdateDialog_Close": "닫기",
+    "UpdateDialog_RELEASENOTES": "릴리스 노트",
+    "UpdateDialog_TargetVersion": "대상 버전",
+    "UpdateService_ChecksumFailed": "다운로드한 패키지가 체크섬 검사에 실패하여 삭제되었습니다.",
+    "UpdateService_DownloadCancelled": "다운로드가 취소되었습니다.",
+    "UpdateService_DownloadingVersion": "버전 {0} 다운로드 중...",
+    "UpdateService_LoadingAvailableVersions": "사용 가능한 버전 불러오는 중...",
+    "UpdateService_NoSelectedVersionToDownload": "다운로드할 버전이 선택되지 않았습니다.",
+    "UpdateService_NoTargetVersionSelected": "대상 버전이 선택되지 않았습니다.",
+    "UpdateService_PackageCouldNotBeDownloaded": "선택한 패키지를 다운로드하지 못했습니다.",
+    "UpdateService_RollbackDownloaded": "버전 {0}으로의 롤백이 다운로드되었으며 다음 CapFrameX 실행 시 시작됩니다.",
+    "UpdateService_RollbackReady": "버전 {0}으로의 롤백이 준비되었습니다.",
+    "UpdateService_SignatureInvalid": "다운로드한 패키지에 CapFrameX 게시자의 서명이 없어 삭제되었습니다.",
+    "UpdateService_StartingDownload": "다운로드 시작 중...",
+    "UpdateService_VersionAlreadyInstalled": "버전 {0}이(가) 이미 설치되어 있습니다.",
+    "UpdateService_VersionDownloaded": "버전 {0}이(가) 다운로드되었으며 다음 CapFrameX 실행 시 설치됩니다.",
+    "UpdateService_VersionNotInCatalog": "버전 {0}이(가) 검증된 릴리스 목록에 없습니다.",
+    "UpdateService_VersionReady": "버전 {0}이(가) 준비되었습니다.",
+    "UpdateService_VersionsOlderThanCannotBeInstalled": "{0}보다 오래된 버전은 설치할 수 없습니다.",
+    "UpdateViewModel_CapFrameXHasNotCheckedFor": "CapFrameX가 아직 업데이트를 확인하지 않았습니다.",
+    "UpdateViewModel_CapFrameXIsUpToDate": "CapFrameX가 최신 버전입니다.",
+    // {0}: channel name, {1}: count of versions available
+    "UpdateViewModel_CapFrameXUpToDateOnChannel": "CapFrameX가 {0} 채널의 최신 버전입니다. {1}개의 버전을 사용할 수 있습니다.",
+    "UpdateViewModel_CapFrameXUpdate": "CapFrameX 업데이트",
+    "UpdateViewModel_DownloadSize0MB": "다운로드 크기: {0} MB",
+    // Status while a capture holds back the installation of a downloaded update; {0}: version string
+    "UpdateViewModel_InstallAfterCapture": "버전 {0}이(가) 다운로드되었으며 진행 중인 캡처가 끝나는 대로 설치됩니다.",
+    // Dialog message when installing a beta release
+    "UpdateViewModel_InstallConfirmationBeta": "지금 이 베타 빌드를 다운로드합니다. 이후 CapFrameX를 종료하고 설치한 다음 다시 시작합니다. 베타 빌드는 정식 릴리스보다 안정성이 낮을 수 있습니다.",
+    // Dialog message when installing a stable release
+    "UpdateViewModel_InstallConfirmationRegular": "지금 업데이트를 다운로드합니다. 이후 CapFrameX를 종료하고 설치한 다음 다시 시작합니다.",
+    // Dialog message when installing an older version (rollback)
+    "UpdateViewModel_InstallConfirmationRollback": "선택한 버전은 다운로드되는 대로 현재 설치된 버전을 대체하며, 이를 위해 CapFrameX가 종료됩니다. 캡처와 설정은 유지되지만 최신 버전에서 생성된 설정은 이전 버전에서 인식하지 못할 수 있습니다.",
+    "UpdateViewModel_InstallVersion": "버전 설치",
+    "UpdateViewModel_LookingForUpdates": "업데이트 확인 중...",
+    // {0}: channel name (e.g. Beta), {1}: count of other versions available
+    "UpdateViewModel_NoChannelBuildPublished": "현재 공개된 {0} 빌드가 없습니다. 다른 버전 {1}개를 사용할 수 있습니다.",
+    "UpdateViewModel_NoDescriptionWasProvidedFor": "이 업데이트에 대한 설명이 없습니다.",
+    "UpdateViewModel_NoUpdateServerIsConfigured": "업데이트 서버가 설정되지 않았습니다.",
+    // Status shown right before CapFrameX closes to install a downloaded update; {0}: version string
+    "UpdateViewModel_RestartingToInstall": "버전 {0}을(를) 설치하기 위해 CapFrameX를 종료합니다...",
+    "UpdateViewModel_RollBack": "롤백",
+    "UpdateViewModel_RollBackCapFrameX": "CapFrameX 롤백",
+    "UpdateViewModel_TheUpdateCheckFailed": "업데이트 확인에 실패했습니다.",
+    // Status message when update check is cancelled by user
+    "UpdateViewModel_TheUpdateCheckWasCancelled": "업데이트 확인이 취소되었습니다.",
+    // Error message when update server connection fails
+    "UpdateViewModel_TheUpdateServerCouldNotBeReached": "업데이트 서버에 연결하지 못했습니다.",
+    "UpdateViewModel_Update": "업데이트",
+    // {0}: channel name, {1}: version string (e.g. 1.9.2)
+    "UpdateViewModel_VersionAvailable": "{0} 버전 {1}을(를) 사용할 수 있습니다.",
+    "VulkanLayerRegistrationProbe_LayerDllIsMissing": "레이어 DLL이 없음",
+    // {0}: registry path of the missing layer manifest
+    "VulkanLayerRegistrationProbe_LeftoverRegistration0": "매니페스트 없이 남아 있는 등록 항목: {0}",
+    "VulkanLayerRegistrationProbe_NotRegistered": "등록되지 않음",
+    "VulkanLayerRegistrationProbe_PointsTo32BitDll": "32비트 DLL을 가리킴",
+    "VulkanLayerRegistrationProbe_PointsTo64BitDll": "64비트 DLL을 가리킴",
+    "VulkanLayerRegistrationProbe_RegisteredInHkcu": "HKCU에 등록됨"
+  },
+  // =========================================================================
+  // OVERLAY - Real-time On-Screen Display label overrides
+  // =========================================================================
+  "overlay": {
+    "0.1% Low": "0.1% Low",
+    "0.2% Low": "0.2% Low",
+    "1% Low": "1% Low",
+    "<APP>": "<앱>",
+    "Animation Error": "애니메이션 오차",
+    "Animation Error (ms)": "애니메이션 오차 (ms)",
+    "App Resolution": "앱 해상도",
+    "Application Resolution": "애플리케이션 해상도",
+    "Average": "평균",
+    "Battery Life": "배터리 잔량",
+    "Battery Life (%)": "배터리 잔량 (%)",
+    "Battery Life Remaining (min)": "남은 배터리 시간 (min)",
+    "CPU Active Time Average (ms)": "CPU 활성 시간 평균 (ms)",
+    "CPU Info": "CPU 정보",
+    "CPUBusy Avg": "CPUBusy 평균",
+    "CX CPU": "CX CPU",
+    "CapFrameX CPU Usage (%)": "CapFrameX CPU 사용률 (%)",
+    "Capture service ready...": "캡처 서비스 준비 완료...",
+    "Capture service status": "캡처 서비스 상태",
+    "Capture starting in": "캡처 시작까지",
+    "Capture timer": "캡처 타이머",
+    "Click-to-Screen-Response Latency (ms)": "클릭부터 화면 응답까지의 지연 시간 (ms)",
+    "Custom CPU Name": "사용자 지정 CPU 이름",
+    "Custom GPU Name": "사용자 지정 GPU 이름",
+    "Custom RAM Description": "사용자 지정 RAM 설명",
+    "Display 1 Resolution": "디스플레이 1 해상도",
+    "Displaytime": "표시 간격",
+    "Frame Generation": "프레임 생성",
+    "Frame Time Average (ms)": "프레임 시간 평균 (ms)",
+    "Frame generation status": "프레임 생성 상태",
+    "Frame generation technology": "프레임 생성 기술",
+    "Framerate": "프레임 레이트",
+    "Frametime": "프레임 시간",
+    "Frametime Avg": "프레임 시간 평균",
+    "GPU Active Time Average (ms)": "GPU 활성 시간 평균 (ms)",
+    "GPU Active Time Deviation (%)": "GPU 활성 시간 편차 (%)",
+    "GPU Driver": "GPU 드라이버",
+    "GPU Info": "GPU 정보",
+    "GPU Software Version": "GPU 소프트웨어 버전",
+    "GPUBusy Avg": "GPUBusy 평균",
+    "GPUBusy Deviation": "GPUBusy 편차",
+    "Hook": "후킹",
+    "MB Info": "메인보드 정보",
+    "Mainboard Name": "메인보드 이름",
+    "Multiple processes detected": "여러 프로세스 감지됨",
+    "Network Ping": "네트워크 핑",
+    "OS": "OS",
+    "OS Version": "OS 버전",
+    "Overlay hook status": "오버레이 후킹 상태",
+    "P0.1%": "P0.1%",
+    "P0.2%": "P0.2%",
+    "P1%": "P1%",
+    "PC Latency": "PC 지연 시간",
+    "PC Latency (ms)": "PC 지연 시간 (ms)",
+    "PMD CPU Power": "PMD CPU 전력",
+    "PMD CPU Power (W)": "PMD CPU 전력 (W)",
+    "PMD GPU Power": "PMD GPU 전력",
+    "PMD GPU Power (W)": "PMD GPU 전력 (W)",
+    "PMD Sys Power": "PMD 시스템 전력",
+    "PMD System Power (W)": "PMD 시스템 전력 (W)",
+    "Ping": "핑",
+    "Present Resolution": "Present 해상도",
+    "Processing data": "데이터 처리 중",
+    "RAM Info": "RAM 정보",
+    "Ready to capture...": "캡처 준비 완료...",
+    "Real-time 0.1% Low FPS": "실시간 0.1% Low FPS",
+    "Real-time 0.2% Low FPS": "실시간 0.2% Low FPS",
+    "Real-time 1% Low FPS": "실시간 1% Low FPS",
+    "Real-time P0.1 FPS": "실시간 P0.1 FPS",
+    "Real-time P0.2 FPS": "실시간 P0.2 FPS",
+    "Real-time P1 FPS": "실시간 P1 FPS",
+    "Real-time average FPS": "실시간 평균 FPS",
+    "Recording frametimes": "프레임 시간 기록 중",
+    "Resolution": "해상도",
+    "Result:": "결과:",
+    "Run history": "실행 이력",
+    "Scanning for process...": "프로세스 검색 중...",
+    "Status:": "상태:",
+    "Stuttering": "스터터링",
+    "Stuttering Time (%)": "스터터링 시간 (%)",
+    "System time": "시스템 시간",
+    "Time": "시간",
+    // Values of the "Overlay hook status" entry (HookOverlayStatusLabel).
+    "Active": "활성",
+    "Blocked": "차단됨",
+    "Error": "오류",
+    "Fallback": "대체 모드",
+    "Hidden": "숨김",
+    "Idle": "유휴",
+    "Initializing": "초기화 중",
+    "Injected": "주입됨",
+    "Injecting": "주입 중",
+    "Off": "꺼짐",
+    "Probing": "확인 중",
+    "Restart game": "게임 다시 시작",
+    "Waiting": "대기 중"
+  },
+  // Phrases: regex rules for OSD labels that have no exact "overlay" entry (sensor and group names).
+  // Matched case-insensitively ("(?-i)" at the start makes a pattern case-sensitive) and applied
+  // longest pattern first; patterns of the same length run in the order listed, so list a specific
+  // rule above a generic one of the same length. Text in double quotes (game names) is not translated.
+  // Korean replacements preserve units and technical abbreviations.
+  "phrases": [
+    {
+      "pattern": "^Aggregate$",
+      "replacement": "집계"
+    },
+    {
+      "pattern": "^TimeSpan$",
+      "replacement": "시간 간격"
+    },
+    {
+      "pattern": "^Timing$",
+      "replacement": "타이밍"
+    },
+    {
+      "pattern": "CapFrameX overlay refresh",
+      "replacement": "CapFrameX 오버레이 갱신"
+    },
+    {
+      "pattern": "\\bCPU Max Thread Load\\b",
+      "replacement": "CPU 최대 스레드 사용률"
+    },
+    {
+      "pattern": "\\bGPU Computing\\b",
+      "replacement": "GPU 연산"
+    },
+    {
+      "pattern": "\\bGPU Effective\\b",
+      "replacement": "GPU 유효 클럭"
+    },
+    {
+      "pattern": "\\bGPU Overvoltage\\b",
+      "replacement": "GPU 추가 전압 비율"
+    },
+    {
+      "pattern": "\\bGPU Power Budget\\b",
+      "replacement": "GPU 전력 한도 사용률"
+    },
+    {
+      "pattern": "\\bGPU Thermal Budget\\b",
+      "replacement": "GPU 온도 한도 사용률"
+    },
+    {
+      "pattern": "\\bGPU Intake\\b",
+      "replacement": "GPU 흡기 온도"
+    },
+    {
+      "pattern": "\\bMemory Controller\\b",
+      "replacement": "메모리 컨트롤러"
+    },
+    {
+      "pattern": "\\bData Rate\\b",
+      "replacement": "데이터 전송률"
+    },
+    {
+      "pattern": "\\bUncore Ring\\b",
+      "replacement": "언코어 링"
+    },
+    {
+      "pattern": "\\bPower Limit\\b",
+      "replacement": "전력 제한"
+    },
+    {
+      "pattern": "\\bThermal Limit\\b",
+      "replacement": "온도 제한"
+    },
+    {
+      "pattern": "\\bVoltage Limit\\b",
+      "replacement": "전압 제한"
+    },
+    {
+      "pattern": "\\bController Writes to NAND\\b",
+      "replacement": "컨트롤러의 NAND 쓰기"
+    },
+    {
+      "pattern": "\\bHost Writes to Controller\\b",
+      "replacement": "호스트의 컨트롤러 쓰기"
+    },
+    {
+      "pattern": "\\bHost Writes\\b",
+      "replacement": "호스트 쓰기"
+    },
+    {
+      "pattern": "\\bHost Reads\\b",
+      "replacement": "호스트 읽기"
+    },
+    {
+      "pattern": "\\bCharge/Discharge Current\\b",
+      "replacement": "충전/방전 전류"
+    },
+    {
+      "pattern": "\\bCharge/Discharge Rate\\b",
+      "replacement": "충전/방전 전력"
+    },
+    {
+      "pattern": "\\bDesigned Capacity\\b",
+      "replacement": "설계 용량"
+    },
+    {
+      "pattern": "\\bFully-Charged Capacity\\b",
+      "replacement": "완전 충전 용량"
+    },
+    {
+      "pattern": "\\bRemaining Capacity\\b",
+      "replacement": "남은 용량"
+    },
+    {
+      "pattern": "\\bRemaining Time \\(Estimated\\)",
+      "replacement": "예상 남은 시간"
+    },
+    {
+      "pattern": "\\bData Downloaded\\b",
+      "replacement": "다운로드한 데이터"
+    },
+    {
+      "pattern": "\\bData Uploaded\\b",
+      "replacement": "업로드한 데이터"
+    },
+    {
+      "pattern": "\\bWater Quality\\b",
+      "replacement": "수질"
+    },
+    {
+      "pattern": "\\bViritual Flow\\b",
+      "replacement": "가상 유량"
+    },
+    {
+      "pattern": "\\bDissipated Power\\b",
+      "replacement": "방열 전력"
+    },
+    {
+      "pattern": "\\bMaxFrequency\\b",
+      "replacement": "최대 주파수"
+    },
+    {
+      "pattern": "\\bCCDs\\b",
+      "replacement": "CCD"
+    },
+    {
+      "pattern": "\\bGear\\b",
+      "replacement": "기어 모드"
+    },
+    {
+      "pattern": "\\bTemp\\b",
+      "replacement": "온도"
+    },
+    {
+      "pattern": "\\bPackage\\b",
+      "replacement": "패키지"
+    },
+    {
+      "pattern": "\\bFans\\b",
+      "replacement": "팬"
+    },
+    {
+      "pattern": "\\bFlowmeter\\b",
+      "replacement": "유량계"
+    },
+    {
+      "pattern": "\\bCoolant\\b",
+      "replacement": "냉각수"
+    },
+    {
+      "pattern": "\\bLiquid\\b",
+      "replacement": "액체"
+    },
+    {
+      "pattern": "\\bWater\\b",
+      "replacement": "냉각수"
+    },
+    {
+      "pattern": "\\bPressure\\b",
+      "replacement": "압력"
+    },
+    {
+      "pattern": "\\bConductivity\\b",
+      "replacement": "전도도"
+    },
+    {
+      "pattern": "\\bInput\\b",
+      "replacement": "입력"
+    },
+    {
+      "pattern": "\\bExternal\\b",
+      "replacement": "외부"
+    },
+    {
+      "pattern": "\\bInternal\\b",
+      "replacement": "내부"
+    },
+    {
+      "pattern": "\\bSensor\\b",
+      "replacement": "센서"
+    },
+    {
+      "pattern": "\\bAlarm\\b",
+      "replacement": "경보"
+    },
+    {
+      "pattern": "\\bAnalog\\b",
+      "replacement": "아날로그"
+    },
+    {
+      "pattern": "\\bDigital\\b",
+      "replacement": "디지털"
+    },
+    {
+      "pattern": "\\bChannel\\b",
+      "replacement": "채널"
+    },
+    {
+      "pattern": "\\bRead\\b",
+      "replacement": "읽기"
+    },
+    {
+      "pattern": "\\bWrite\\b",
+      "replacement": "쓰기"
+    },
+    {
+      "pattern": "\\bThreads\\b",
+      "replacement": "스레드"
+    },
+    {
+      "pattern": "\\bThread\\b",
+      "replacement": "스레드"
+    },
+    {
+      "pattern": "\\bJunction\\b",
+      "replacement": "접합부"
+    },
+    {
+      "pattern": "\\bThreshold\\b",
+      "replacement": "임계값"
+    },
+    {
+      "pattern": "\\bLifetime\\b",
+      "replacement": "수명"
+    },
+    {
+      "pattern": "\\bActivity\\b",
+      "replacement": "활성 시간"
+    },
+    {
+      "pattern": "\\bModel\\b",
+      "replacement": "모델"
+    },
+    {
+      "pattern": "\\bLimits?\\b",
+      "replacement": "제한"
+    },
+    {
+      "pattern": "\\bStorage\\b",
+      "replacement": "저장 장치"
+    },
+    {
+      "pattern": "ready to capture\\.\\.\\.",
+      "replacement": "캡처 준비 완료..."
+    },
+    {
+      "pattern": "Run (\\d+):",
+      "replacement": "실행 $1:"
+    },
+    {
+      "pattern": "\\bDisplay (\\d+) Resolution\\b",
+      "replacement": "디스플레이 $1 해상도"
+    },
+    {
+      "pattern": "\\bMonitor Refresh Rate\\b",
+      "replacement": "모니터 주사율"
+    },
+    {
+      "pattern": "\\bAMD FLM Latency\\b",
+      "replacement": "AMD FLM 지연 시간"
+    },
+    {
+      "pattern": "\\bLatency\\b",
+      "replacement": "지연 시간"
+    },
+    {
+      "pattern": "\\bPerformance\\b",
+      "replacement": "성능"
+    },
+    {
+      "pattern": "\\b([CG]PU) Load/Temp/Pwr\\b",
+      "replacement": "$1 사용률/온도/전력"
+    },
+    {
+      "pattern": "\\bCPU Max Core Temp\\b",
+      "replacement": "CPU 최대 코어 온도"
+    },
+    {
+      "pattern": "\\bCPU Max Effective\\b",
+      "replacement": "CPU 최대 유효 클럭"
+    },
+    {
+      "pattern": "\\bCPU Max Clock\\b",
+      "replacement": "CPU 최대 클럭"
+    },
+    {
+      "pattern": "\\bCPU Effective\\b",
+      "replacement": "CPU 유효 클럭"
+    },
+    {
+      "pattern": "(?-i)\\bCPU Max\\b",
+      "replacement": "CPU 최대"
+    },
+    {
+      "pattern": "\\bCPU Total\\b",
+      "replacement": "CPU 전체"
+    },
+    {
+      "pattern": "\\bCPU Cores\\b",
+      "replacement": "CPU 코어"
+    },
+    {
+      "pattern": "\\bCPU Graphics\\b",
+      "replacement": "CPU 그래픽"
+    },
+    {
+      "pattern": "\\b([CG]PU) Package Power\\b",
+      "replacement": "$1 패키지 전력"
+    },
+    {
+      "pattern": "\\b([CG]PU) Package\\b",
+      "replacement": "$1 패키지"
+    },
+    {
+      "pattern": "\\b([CG]PU) Core Voltage\\b",
+      "replacement": "$1 코어 전압"
+    },
+    {
+      "pattern": "\\b([CG]PU) Core\\b",
+      "replacement": "$1 코어"
+    },
+    {
+      "pattern": "\\b([CG]PU) Clocks\\b",
+      "replacement": "$1 클럭"
+    },
+    {
+      "pattern": "\\b([CG]PU) Clock\\b",
+      "replacement": "$1 클럭"
+    },
+    {
+      "pattern": "\\b([CG]PU) Model\\b",
+      "replacement": "$1 모델"
+    },
+    {
+      "pattern": "\\b([CG]PU) Bus\\b",
+      "replacement": "$1 버스"
+    },
+    {
+      "pattern": "\\bGPU Power Limit\\b",
+      "replacement": "GPU 전력 제한"
+    },
+    {
+      "pattern": "\\bGPU Thermal Limit\\b",
+      "replacement": "GPU 온도 제한"
+    },
+    {
+      "pattern": "\\bGPU Voltage Limit\\b",
+      "replacement": "GPU 전압 제한"
+    },
+    {
+      "pattern": "\\bGPU Board Power\\b",
+      "replacement": "GPU 보드 전력"
+    },
+    {
+      "pattern": "\\b([CG]PU) Power\\b",
+      "replacement": "$1 전력"
+    },
+    {
+      "pattern": "\\b([CG]PU) Voltage\\b",
+      "replacement": "$1 전압"
+    },
+    {
+      "pattern": "\\b(i?GPU|CPU) Load\\b",
+      "replacement": "$1 사용률"
+    },
+    {
+      "pattern": "\\b([CG]PU) Temp\\b",
+      "replacement": "$1 온도"
+    },
+    {
+      "pattern": "\\b([CG]PU) Hot ?Spot\\b",
+      "replacement": "$1 핫스팟"
+    },
+    {
+      "pattern": "\\bGPU Fan\\b",
+      "replacement": "GPU 팬"
+    },
+    {
+      "pattern": "\\bGPU Media Engine\\b",
+      "replacement": "GPU 미디어 엔진"
+    },
+    {
+      "pattern": "\\bGPU Video Engine\\b",
+      "replacement": "GPU 비디오 엔진"
+    },
+    {
+      "pattern": "\\bGPU PCIe Slot\\b",
+      "replacement": "GPU PCIe 슬롯"
+    },
+    {
+      "pattern": "\\bGPU Memory Controller\\b",
+      "replacement": "GPU 메모리 컨트롤러"
+    },
+    {
+      "pattern": "\\bGPU Memory Bandwidth\\b",
+      "replacement": "GPU 메모리 대역폭"
+    },
+    {
+      "pattern": "\\bGPU Memory Junction\\b",
+      "replacement": "GPU 메모리 접합부"
+    },
+    {
+      "pattern": "\\bGPU Memory Clock\\b",
+      "replacement": "GPU 메모리 클럭"
+    },
+    {
+      "pattern": "\\bGPU Memory\\b",
+      "replacement": "GPU 메모리"
+    },
+    {
+      "pattern": "\\bGPU Mem\\b",
+      "replacement": "VRAM"
+    },
+    {
+      "pattern": "\\bDedicated Game\\b",
+      "replacement": "게임 전용"
+    },
+    {
+      "pattern": "\\bShared Game\\b",
+      "replacement": "게임 공유"
+    },
+    {
+      "pattern": "\\bGame Used\\b",
+      "replacement": "게임 사용량"
+    },
+    {
+      "pattern": "\\bVRAM Bandwidth\\b",
+      "replacement": "VRAM 대역폭"
+    },
+    {
+      "pattern": "\\bVRAM Hot ?Spot\\b",
+      "replacement": "VRAM 핫스팟"
+    },
+    {
+      "pattern": "\\bVirtual Memory Used\\b",
+      "replacement": "가상 메모리 사용량"
+    },
+    {
+      "pattern": "\\bVirtual RAM Available\\b",
+      "replacement": "사용 가능한 가상 RAM"
+    },
+    {
+      "pattern": "\\bVirtual RAM Usage\\b",
+      "replacement": "가상 RAM 사용률"
+    },
+    {
+      "pattern": "\\bVirtual RAM Used\\b",
+      "replacement": "가상 RAM 사용량"
+    },
+    {
+      "pattern": "\\bRAM Usage\\b",
+      "replacement": "RAM 사용률"
+    },
+    {
+      "pattern": "\\bMemory Load\\b",
+      "replacement": "메모리 사용률"
+    },
+    {
+      "pattern": "\\bTotal Memory\\b",
+      "replacement": "전체 메모리"
+    },
+    {
+      "pattern": "\\bP-Core #(\\d+)",
+      "replacement": "P-코어 #$1"
+    },
+    {
+      "pattern": "\\bE-Core #(\\d+)",
+      "replacement": "E-코어 #$1"
+    },
+    {
+      "pattern": "\\bCore #(\\d+)",
+      "replacement": "코어 #$1"
+    },
+    {
+      "pattern": "\\bThread #(\\d+)",
+      "replacement": "스레드 #$1"
+    },
+    {
+      "pattern": "\\bCore Average\\b",
+      "replacement": "코어 평균"
+    },
+    {
+      "pattern": "\\bCore Power\\b",
+      "replacement": "코어 전력"
+    },
+    {
+      "pattern": "\\bCore Max\\b",
+      "replacement": "코어 최대"
+    },
+    {
+      "pattern": "\\bCores\\b",
+      "replacement": "코어"
+    },
+    {
+      "pattern": "\\bCore\\b",
+      "replacement": "코어"
+    },
+    {
+      "pattern": "\\(Effective\\)",
+      "replacement": "(유효)"
+    },
+    {
+      "pattern": "\\bEffective\\b",
+      "replacement": "유효"
+    },
+    {
+      "pattern": "\\bAverage Clock\\b",
+      "replacement": "평균 클럭"
+    },
+    {
+      "pattern": "\\bBus Speed\\b",
+      "replacement": "버스 클럭"
+    },
+    {
+      "pattern": "\\bTotal Power\\b",
+      "replacement": "총 전력"
+    },
+    {
+      "pattern": "\\bSOC Current\\b",
+      "replacement": "SoC 전류"
+    },
+    {
+      "pattern": "\\bSOC Power\\b",
+      "replacement": "SoC 전력"
+    },
+    {
+      "pattern": "\\bMisc Current\\b",
+      "replacement": "기타 전류"
+    },
+    {
+      "pattern": "\\bIOD Hot ?Spot\\b",
+      "replacement": "IOD 핫스팟"
+    },
+    {
+      "pattern": "\\bDistance to TjMax\\b",
+      "replacement": "TjMax까지의 온도 차이"
+    },
+    {
+      "pattern": "\\bFan #(\\d+)",
+      "replacement": "팬 #$1"
+    },
+    {
+      "pattern": "\\bPump\\b",
+      "replacement": "펌프"
+    },
+    {
+      "pattern": "\\bNetwork Utilization\\b",
+      "replacement": "네트워크 사용률"
+    },
+    {
+      "pattern": "\\bUpload Speed\\b",
+      "replacement": "업로드 속도"
+    },
+    {
+      "pattern": "\\bDownload Speed\\b",
+      "replacement": "다운로드 속도"
+    },
+    {
+      "pattern": "\\bBattery\\b",
+      "replacement": "배터리"
+    },
+    {
+      "pattern": "\\bCharge Level\\b",
+      "replacement": "충전율"
+    },
+    {
+      "pattern": "\\bDegradation Level\\b",
+      "replacement": "열화율"
+    },
+    {
+      "pattern": "\\bCapacity\\b",
+      "replacement": "용량"
+    },
+    {
+      "pattern": "\\bAvailable Spare Threshold\\b",
+      "replacement": "가용 예비 공간 임계값"
+    },
+    {
+      "pattern": "\\bAvailable Spare\\b",
+      "replacement": "가용 예비 공간"
+    },
+    {
+      "pattern": "\\bTotal Bytes Written\\b",
+      "replacement": "총 쓰기 바이트"
+    },
+    {
+      "pattern": "\\bWrite Amplification\\b",
+      "replacement": "쓰기 증폭"
+    },
+    {
+      "pattern": "\\bLifetime Used\\b",
+      "replacement": "수명 사용률"
+    },
+    {
+      "pattern": "\\bRemaining Life\\b",
+      "replacement": "남은 수명"
+    },
+    {
+      "pattern": "\\bTotal Activity\\b",
+      "replacement": "총 활성 시간"
+    },
+    {
+      "pattern": "\\bRead Activity\\b",
+      "replacement": "읽기 활성 시간"
+    },
+    {
+      "pattern": "\\bWrite Activity\\b",
+      "replacement": "쓰기 활성 시간"
+    },
+    {
+      "pattern": "\\bData Written\\b",
+      "replacement": "기록한 데이터"
+    },
+    {
+      "pattern": "\\bData Read\\b",
+      "replacement": "읽은 데이터"
+    },
+    {
+      "pattern": "\\bUsed Space\\b",
+      "replacement": "사용한 공간"
+    },
+    {
+      "pattern": "\\bRead Rate\\b",
+      "replacement": "읽기 속도"
+    },
+    {
+      "pattern": "\\bWrite Rate\\b",
+      "replacement": "쓰기 속도"
+    },
+    {
+      "pattern": "\\bDrive\\b",
+      "replacement": "드라이브"
+    },
+    {
+      "pattern": "\\bHot ?Spot\\b",
+      "replacement": "핫스팟"
+    },
+    {
+      "pattern": "\\bTemperature\\b",
+      "replacement": "온도"
+    },
+    {
+      "pattern": "\\bClocks\\b",
+      "replacement": "클럭"
+    },
+    {
+      "pattern": "\\bClock\\b",
+      "replacement": "클럭"
+    },
+    {
+      "pattern": "\\bUsage\\b",
+      "replacement": "사용률"
+    },
+    {
+      "pattern": "\\bLoad\\b",
+      "replacement": "사용률"
+    },
+    {
+      "pattern": "\\bPower\\b",
+      "replacement": "전력"
+    },
+    {
+      "pattern": "\\bVoltage\\b",
+      "replacement": "전압"
+    },
+    {
+      "pattern": "\\bCurrent\\b",
+      "replacement": "전류"
+    },
+    {
+      "pattern": "\\bFan\\b",
+      "replacement": "팬"
+    },
+    {
+      "pattern": "\\bMemory\\b",
+      "replacement": "메모리"
+    },
+    {
+      "pattern": "\\bMem\\b",
+      "replacement": "메모리"
+    },
+    {
+      "pattern": "\\bAllocated\\b",
+      "replacement": "할당량"
+    },
+    {
+      "pattern": "\\bDedicated\\b",
+      "replacement": "전용"
+    },
+    {
+      "pattern": "\\bShared\\b",
+      "replacement": "공유"
+    },
+    {
+      "pattern": "\\bAvailable\\b",
+      "replacement": "가용량"
+    },
+    {
+      "pattern": "\\bUsed\\b",
+      "replacement": "사용량"
+    },
+    {
+      "pattern": "\\bFree\\b",
+      "replacement": "여유 공간"
+    },
+    {
+      "pattern": "\\bTotal\\b",
+      "replacement": "전체"
+    },
+    {
+      "pattern": "\\bAverage\\b",
+      "replacement": "평균"
+    },
+    {
+      "pattern": "(?-i)\\bMax\\b",
+      "replacement": "최대"
+    },
+    {
+      "pattern": "(?-i)\\bMin\\b",
+      "replacement": "최소"
+    },
+    {
+      "pattern": "\\bGame\\b",
+      "replacement": "게임"
+    },
+    {
+      "pattern": "\\bSpeed\\b",
+      "replacement": "속도"
+    },
+    {
+      "pattern": "\\bBandwidth\\b",
+      "replacement": "대역폭"
+    },
+    {
+      "pattern": "\\bSmallData\\b",
+      "replacement": "데이터"
+    },
+    {
+      "pattern": "\\bDataRate\\b",
+      "replacement": "데이터 전송률"
+    },
+    {
+      "pattern": "\\bData\\b",
+      "replacement": "데이터"
+    },
+    {
+      "pattern": "\\bThroughput\\b",
+      "replacement": "처리량"
+    },
+    {
+      "pattern": "\\bFrequency\\b",
+      "replacement": "주파수"
+    },
+    {
+      "pattern": "\\bControl\\b",
+      "replacement": "제어"
+    },
+    {
+      "pattern": "\\bLevel\\b",
+      "replacement": "수준"
+    },
+    {
+      "pattern": "\\bFactor\\b",
+      "replacement": "계수"
+    },
+    {
+      "pattern": "\\bFlow\\b",
+      "replacement": "유량"
+    },
+    {
+      "pattern": "\\bEnergy\\b",
+      "replacement": "에너지"
+    },
+    {
+      "pattern": "\\bNoise\\b",
+      "replacement": "소음"
+    },
+    {
+      "pattern": "\\bHumidity\\b",
+      "replacement": "습도"
+    }
+  ]
+}

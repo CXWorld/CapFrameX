@@ -15,20 +15,22 @@ namespace CapFrameX.ViewModel
     {
         private IOverlayDesignService _designService;
         private OverlayDesignInfo _selectedDesign;
-        private string _designActionError;
+        private Exception _designActionError;
+        private string _designStatusLanguage = CxLang.Instance.UiLanguage;
         private int _selectedOverlayTabIndex;
         private OverlayDesignInfo _pendingDesignDeletion;
         private bool _isDeleteDesignDialogOpen;
 
         public IReadOnlyList<OverlayDesignInfo> SavedDesigns => _designService?.Profiles ?? Array.Empty<OverlayDesignInfo>();
-        public string DesignStatus => _designActionError ?? _designService?.Status ?? string.Empty;
+        public string DesignStatus => _designActionError == null ? _designService?.Status ?? string.Empty
+            : OverlayDesignText.ExceptionMessage(_designActionError);
         public bool HasActiveDesign => _designService?.IsEnabled == true;
         public bool IsTileOverlayAvailable => !OverlayModeRtss;
         public bool IsTileOverlayTabVisible => IsTileOverlayAvailable && IsTileOverlayEnabled;
         public bool CanUseDesign => IsTileOverlayAvailable && _designService?.CanActivate == true;
         public bool HasSavedDesigns => SavedDesigns.Count > 0;
         public bool ShowDesignRecoveryActions => IsTileOverlayAvailable && !HasActiveDesign
-            && (!HasSavedDesigns || !string.IsNullOrEmpty(_designActionError));
+            && (!HasSavedDesigns || _designActionError != null);
         public bool CanToggleOverlayMode => !IsDeleteDesignDialogOpen
             && (HasActiveDesign || (CanUseDesign && PreferredTileOverlayProfile != null));
         public bool IsTileOverlayEnabled
@@ -167,7 +169,8 @@ namespace CapFrameX.ViewModel
         {
             void Update()
             {
-                _designActionError = null;
+                if (_designStatusLanguage == CxLang.Instance.UiLanguage) _designActionError = null;
+                _designStatusLanguage = CxLang.Instance.UiLanguage;
                 UpdateDesignSelection();
             }
             var dispatcher = Application.Current?.Dispatcher;
@@ -245,7 +248,7 @@ namespace CapFrameX.ViewModel
                 || error is InvalidOperationException || error is ArgumentException || error is FormatException
                 || error is NotSupportedException)
             {
-                _designActionError = error.Message;
+                _designActionError = error;
             }
             UpdateDesignSelection();
         }

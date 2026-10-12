@@ -1,4 +1,5 @@
 using System;
+using CapFrameX.Contracts.Localization;
 
 namespace CapFrameX.OSD.Integration
 {
@@ -28,7 +29,7 @@ namespace CapFrameX.OSD.Integration
         public void Initialize(string defaultName, string defaultJson)
         {
             if (ActiveProfile != null)
-                throw new InvalidOperationException("The overlay profile session is already initialized.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_SessionInitialized"), message => new InvalidOperationException(message));
             Load(_store.Profiles.Count == 0 ? _store.Create(defaultName, defaultJson) : _store.Get(_store.ActiveProfileId));
         }
 
@@ -115,7 +116,7 @@ namespace CapFrameX.OSD.Integration
         {
             EnsureInitialized();
             if (_store.Profiles.Count < 2)
-                throw new InvalidOperationException("Keep at least one overlay profile. Create another profile before deleting this one.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_KeepProfile"), message => new InvalidOperationException(message));
             if (!ResolveUnsaved(decision))
                 return false;
             _store.Delete(ActiveProfile.Id);
@@ -152,14 +153,14 @@ namespace CapFrameX.OSD.Integration
         private void EnsureInitialized()
         {
             if (ActiveProfile == null)
-                throw new InvalidOperationException("Initialize the overlay profile session first.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_SessionMissing"), message => new InvalidOperationException(message));
         }
 
         private void EnsureValid()
         {
             EnsureInitialized();
             if (HasValidationErrors)
-                throw new InvalidOperationException("Fix the invalid design values before saving, or discard your changes.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_InvalidValues"), message => new InvalidOperationException(message));
         }
     }
 }

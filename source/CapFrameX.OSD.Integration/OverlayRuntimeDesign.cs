@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using CapFrameX.Contracts.Localization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -29,12 +30,12 @@ namespace CapFrameX.OSD.Integration
             void Inspect(JObject node, int depth)
             {
                 if (depth > 32 || ++count > 512)
-                    throw new InvalidDataException("An overlay design exceeds the 512-node or 32-level limit.");
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_NodeLimit"), message => new InvalidDataException(message));
                 if (node["type"]?.Type != JTokenType.String)
-                    throw new InvalidDataException("An overlay widget has no type.");
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_WidgetType"), message => new InvalidDataException(message));
                 string type = (string)node["type"];
                 classicRows |= type == "classicRows";
-                if (string.IsNullOrWhiteSpace(type)) throw new InvalidDataException("An overlay widget has no type.");
+                if (string.IsNullOrWhiteSpace(type)) throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_WidgetType"), message => new InvalidDataException(message));
                 if (type == "chart")
                 {
                     string series = (string)node["series"];
@@ -47,10 +48,10 @@ namespace CapFrameX.OSD.Integration
                 {
                     if (node[field] == null) continue;
                     if (node[field].Type != JTokenType.String)
-                        throw new InvalidDataException("An overlay widget has an invalid telemetry key.");
+                        throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_TelemetryKey"), message => new InvalidDataException(message));
                     string key = (string)node[field];
                     if (string.IsNullOrWhiteSpace(key) || key.IndexOf('\0') >= 0 || Encoding.UTF8.GetByteCount(key) > 2048)
-                        throw new InvalidDataException("An overlay widget has an invalid telemetry key.");
+                        throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_TelemetryKey"), message => new InvalidDataException(message));
                     keys.Add(key);
                 }
                 if (node["children"] is JArray children)
@@ -58,12 +59,12 @@ namespace CapFrameX.OSD.Integration
                     foreach (var child in children)
                     {
                         if (child is not JObject childNode)
-                            throw new InvalidDataException("An overlay widget contains an invalid child.");
+                            throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ChildInvalid"), message => new InvalidDataException(message));
                         Inspect(childNode, depth + 1);
                     }
                 }
                 else if (node["children"] != null)
-                    throw new InvalidDataException("Overlay widget children must be an array.");
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ChildrenArray"), message => new InvalidDataException(message));
             }
             Inspect((JObject)document["root"], 0);
             string authoringJson = document.ToString(Formatting.None);
@@ -87,13 +88,13 @@ namespace CapFrameX.OSD.Integration
         private static JObject ParseDocument(string json)
         {
             if (string.IsNullOrWhiteSpace(json) || json.IndexOf('\0') >= 0 || Encoding.UTF8.GetByteCount(json) > HookDesignChannel.PayloadCapacity)
-                throw new InvalidDataException("The saved overlay design is empty or exceeds the 1 MiB limit.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_SavedSize"), message => new InvalidDataException(message));
             using var reader = new JsonTextReader(new StringReader(json)) { MaxDepth = 64, DateParseHandling = DateParseHandling.None };
             var document = JObject.Load(reader, new JsonLoadSettings { DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error });
             if (reader.Read())
-                throw new InvalidDataException("Unexpected content follows the saved overlay design.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_TrailingContent"), message => new InvalidDataException(message));
             if (document["version"]?.Type != JTokenType.Integer || document["version"].ToString() != "1" || document["root"] is not JObject)
-                throw new InvalidDataException("The saved overlay design has an unsupported version or no native scene.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_SceneVersion"), message => new InvalidDataException(message));
             return document;
         }
 
@@ -109,7 +110,7 @@ namespace CapFrameX.OSD.Integration
             }
             string json = values.ToString(Formatting.None);
             if (Encoding.UTF8.GetByteCount(json) > HookDesignChannel.PayloadCapacity)
-                throw new InvalidDataException("The selected overlay readings exceed the telemetry channel capacity.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_TelemetryCapacity"), message => new InvalidDataException(message));
             return json;
         }
 

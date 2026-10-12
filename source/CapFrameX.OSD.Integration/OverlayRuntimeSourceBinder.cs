@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using CapFrameX.Contracts.Localization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -30,7 +31,7 @@ namespace CapFrameX.OSD.Integration
             double scale = (double?)document["editor"]?["scale"] ?? 1;
             double gridSize = (double?)document["editor"]?["gridSize"] ?? 8;
             if (!double.IsFinite(scale) || scale < .5 || scale > 2 || !double.IsFinite(gridSize) || gridSize < 1 || gridSize > 128)
-                throw new FormatException("The preset source layout has invalid scale or grid dimensions.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_LayoutDimensions"), message => new FormatException(message));
             bool changed = false;
             BindTiles(root, tiles);
             return changed ? OverlayRuntimeDesign.Parse(design.ProfileId, design.Name, document.ToString(Formatting.None)) : design;
@@ -86,7 +87,7 @@ namespace CapFrameX.OSD.Integration
         {
             if (widget["children"] is not JArray sections || sections.Count != 2 || sections[1] is not JObject grid
                 || grid["children"] is not JArray oldMembers || oldMembers.FirstOrDefault() is not JObject prototype)
-                throw new FormatException("The preset sensor group has no native member layout.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_GroupLayout"), message => new FormatException(message));
             string display = (string)editor["groupDisplay"];
             bool vertical = display == "bar" && (string)editor["groupBarOrientation"] == "vertical";
             bool showValues = (bool?)editor["groupShowValues"] ?? true;
@@ -131,7 +132,7 @@ namespace CapFrameX.OSD.Integration
             double outerWidth = (double?)outer["frameWidth"] ?? flowWidth * columnSpan + rootGap * (columnSpan - 1);
             double innerWidth = outerWidth - 2 * padding;
             if (!double.IsFinite(innerWidth) || innerWidth <= 0)
-                throw new FormatException("The sensor group has no usable inner width.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_GroupWidth"), message => new FormatException(message));
             double gap = (vertical ? 4 : 8) * scale;
             int fitting = Math.Max(1, (int)Math.Floor((innerWidth + gap) / (minimumWidth * scale + gap)));
             int columns = Math.Min(Math.Min((int?)editor["groupColumns"] ?? 2, sources.Length), fitting);
@@ -236,7 +237,7 @@ namespace CapFrameX.OSD.Integration
             double trackHeight = (double?)editor["groupBarHeight"] ?? (vertical ? (double?)editor["height"] ?? 32 : 8);
             if (!double.IsFinite(requestedWidth) || requestedWidth < 1 || requestedWidth > 1600
                 || !double.IsFinite(trackHeight) || trackHeight < 1 || trackHeight * scale > 4096)
-                throw new FormatException("The sensor group has invalid bar dimensions.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_GroupBars"), message => new FormatException(message));
             double availableWidth = innerWidth / scale;
             double gap = vertical ? 4 : 8;
             int columns = Math.Min(sources.Length, Math.Max(1,
@@ -300,7 +301,7 @@ namespace CapFrameX.OSD.Integration
                 && (double?)tile["x"] < right && (double?)tile["x"] + (double?)tile["frameWidth"] > x).ToArray();
             double bottom = Math.Max(y + required, following.Select(tile => (double)tile["y"] + (double)tile["frameHeight"] + increase).DefaultIfEmpty().Max());
             double needed = Math.Ceiling((bottom / scale + gridSize) / gridSize) * gridSize * scale;
-            if (needed > 4096 * scale) throw new FormatException("The sensor group needs more height. Widen its tile or increase its columns.");
+            if (needed > 4096 * scale) throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_GroupHeight"), message => new FormatException(message));
             outer["frameHeight"] = required;
             foreach (var next in following) next["y"] = (double)next["y"] + increase;
             root["height"] = Math.Max((double?)root["height"] ?? 0, needed);

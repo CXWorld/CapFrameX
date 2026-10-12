@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using CapFrameX.Contracts.Localization;
 using Newtonsoft.Json.Linq;
 
 namespace CapFrameX.OSD.Integration
@@ -65,7 +66,7 @@ namespace CapFrameX.OSD.Integration
             }.Select(id =>
             {
                 using var stream = assembly.GetManifestResourceStream("CapFrameX.OSD.Integration.StarterDesigns." + id + ".json")
-                    ?? throw new InvalidOperationException("A built-in tile overlay design is missing: " + id);
+                    ?? throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_StarterMissing", id), message => new InvalidOperationException(message));
                 using var reader = new StreamReader(stream, Encoding.UTF8);
                 int introducedInVersion = id.StartsWith("core-types-", StringComparison.Ordinal) ? 3
                     : id.StartsWith("turquoise-", StringComparison.Ordinal) ? 2 : 1;

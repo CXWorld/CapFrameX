@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using Serilog;
@@ -16,9 +18,9 @@ namespace CapFrameX.OSD.Integration
         private readonly object _gate = new object();
         private IReadOnlyList<OverlayDesignInfo> _profiles = Array.Empty<OverlayDesignInfo>();
         private OverlayRuntimeDesign _current;
-        private string _status = "Row overlay";
+        private Func<string> _status = () => CxLang.T("OverlayDesignStatus_Row");
         private bool _runtimeError;
-        private string _statusBeforeRuntimeError;
+        private Func<string> _statusBeforeRuntimeError;
         private readonly IDisposable _configurationSubscription;
         private bool _updatingConfiguration;
 
@@ -38,6 +40,7 @@ namespace CapFrameX.OSD.Integration
                     || change.key == nameof(IAppConfiguration.EnableHookFreeOverlay)
                     || change.key == nameof(IAppConfiguration.ActiveOverlayDesignProfileId))
                 .Subscribe(change => OnConfigurationChanged(change.key));
+            CxLang.Instance.PropertyChanged += OnLanguageChanged;
         }
 
         public IReadOnlyList<OverlayDesignInfo> Profiles { get { lock (_gate) return _profiles; } }
@@ -45,7 +48,7 @@ namespace CapFrameX.OSD.Integration
         public string ActiveProfileId => CurrentDesign?.ProfileId;
         public bool IsEnabled => CurrentDesign != null;
         public bool CanActivate => _configuration.EnableHookOverlay || _configuration.EnableHookFreeOverlay;
-        public string Status { get { lock (_gate) return _status; } }
+        public string Status { get { lock (_gate) return _status(); } }
         public event EventHandler Changed;
 
         public void RefreshProfiles()
@@ -78,14 +81,13 @@ namespace CapFrameX.OSD.Integration
                     if (active == null && !string.IsNullOrEmpty(selected) && !retainValidated)
                     {
                         SetActiveProfileId(null);
-                        _status = "The active tile design was deleted. Row overlay restored.";
+                        _status = () => CxLang.T("OverlayDesignStatus_Deleted");
                     }
                     else
                     {
-                        _status = CurrentModeStatus();
+                        _status = CurrentModeStatus;
                     }
-                    if (store.RecoveryWarning != null) _status += " · " + store.RecoveryWarning;
-                    if (store.StarterInitializationWarning != null) _status += " · " + store.StarterInitializationWarning;
+                    AppendLibraryWarnings(store);
                     _runtimeError = false;
                     _statusBeforeRuntimeError = null;
                 }
@@ -93,8 +95,9 @@ namespace CapFrameX.OSD.Integration
                 {
                     // Preserve the last fully validated design and the files. On initial load
                     // there is no such snapshot, so the classic overlay stays active.
-                    _status = "Saved designs could not be loaded; " + (_current == null ? CurrentModeStatus() + ". "
-                        : "the last loaded design remains active. ") + error.Message;
+                    _status = _current == null
+                        ? () => CxLang.Format("OverlayDesignStatus_LoadFailedRows", CurrentModeStatus(), OverlayDesignText.ExceptionMessage(error))
+                        : () => CxLang.Format("OverlayDesignStatus_LoadFailedActive", OverlayDesignText.ExceptionMessage(error));
                     _runtimeError = false;
                     _statusBeforeRuntimeError = null;
                     Log.Warning(error, "Overlay designer: runtime library refresh failed");
@@ -108,7 +111,7 @@ namespace CapFrameX.OSD.Integration
             lock (_gate)
             {
                 if (!CanActivate)
-                    throw new InvalidOperationException("RTSS uses Row overlay. Select In-game or Hook-free before activating a tile design.");
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_Rtss"), message => new InvalidOperationException(message));
                 var store = Open();
                 var profile = store.Get(profileId);
                 var design = OverlayRuntimeDesign.Parse(profile.Id, profile.Name, profile.DesignJson);
@@ -116,9 +119,8 @@ namespace CapFrameX.OSD.Integration
                 _current = design;
                 RememberProfile(profile.Id);
                 _profiles = Array.AsReadOnly(store.Profiles.Select(item => new OverlayDesignInfo(item.Id, item.Name)).ToArray());
-                _status = CurrentModeStatus();
-                if (store.RecoveryWarning != null) _status += " · " + store.RecoveryWarning;
-                if (store.StarterInitializationWarning != null) _status += " · " + store.StarterInitializationWarning;
+                _status = CurrentModeStatus;
+                AppendLibraryWarnings(store);
                 _runtimeError = false;
                 _statusBeforeRuntimeError = null;
             }
@@ -151,7 +153,7 @@ namespace CapFrameX.OSD.Integration
                 if (_current?.ProfileId == profileId || _configuration.ActiveOverlayDesignProfileId == profileId)
                 {
                     ClearActiveDesign();
-                    _status = "The active tile design was deleted. Row overlay restored.";
+                    _status = () => CxLang.T("OverlayDesignStatus_Deleted");
                 }
             }
             Changed?.Invoke(this, EventArgs.Empty);
@@ -166,9 +168,17 @@ namespace CapFrameX.OSD.Integration
 
         private string CurrentModeStatus()
         {
-            string renderer = _configuration.EnableHookOverlay ? "In-game"
-                : _configuration.EnableHookFreeOverlay ? "Hook-free" : "RTSS";
-            return (_current == null ? "Row overlay" : "Tile overlay: " + _current.Name) + " · " + renderer;
+            string renderer = _configuration.EnableHookOverlay ? CxLang.T("OverlayDesignStatus_InGame")
+                : _configuration.EnableHookFreeOverlay ? CxLang.T("OverlayDesignStatus_HookFree") : "RTSS";
+            return (_current == null ? CxLang.T("OverlayDesignStatus_Row") : CxLang.Format("OverlayDesignStatus_Tile", _current.Name)) + " · " + renderer;
+        }
+
+        private void AppendLibraryWarnings(OverlayDesignProfileStore store)
+        {
+            var modeStatus = _status;
+            _status = () => modeStatus()
+                + (store.RecoveryWarning == null ? string.Empty : " · " + store.RecoveryWarning)
+                + (store.StarterInitializationWarning == null ? string.Empty : " · " + store.StarterInitializationWarning);
         }
 
         private void SetActiveProfileId(string profileId)
@@ -189,7 +199,7 @@ namespace CapFrameX.OSD.Integration
         {
             SetActiveProfileId(null);
             _current = null;
-            _status = CurrentModeStatus();
+            _status = CurrentModeStatus;
             _runtimeError = false;
             _statusBeforeRuntimeError = null;
         }
@@ -204,23 +214,37 @@ namespace CapFrameX.OSD.Integration
                 if (!refresh)
                 {
                     if (!CanActivate) ClearActiveDesign();
-                    else if (_runtimeError) _statusBeforeRuntimeError = CurrentModeStatus();
-                    else _status = CurrentModeStatus();
+                    else if (_runtimeError) _statusBeforeRuntimeError = CurrentModeStatus;
+                    else _status = CurrentModeStatus;
                 }
             }
             if (refresh) RefreshProfiles();
             else Changed?.Invoke(this, EventArgs.Empty);
         }
 
-        public void Dispose() => _configurationSubscription?.Dispose();
+        private void OnLanguageChanged(object sender, PropertyChangedEventArgs e)
+        {
+            // A language change only invalidates presentation; it must not reopen the library
+            // or replace the runtime scene or a pending editor working copy.
+            if (e.PropertyName == nameof(CxLang.UiLanguage))
+                Changed?.Invoke(this, EventArgs.Empty);
+        }
 
-        internal void ReportRuntimeError(string message)
+        public void Dispose()
+        {
+            CxLang.Instance.PropertyChanged -= OnLanguageChanged;
+            _configurationSubscription?.Dispose();
+        }
+
+        internal void ReportRuntimeError(string message) => ReportRuntimeError(() => message);
+
+        internal void ReportRuntimeError(Func<string> message)
         {
             lock (_gate)
             {
                 // A renderer callback may finish after RTSS has already cleared its design.
                 if (_current == null) return;
-                if (_status == message) return;
+                if (_status() == message()) return;
                 if (!_runtimeError) _statusBeforeRuntimeError = _status;
                 _status = message;
                 _runtimeError = true;
@@ -234,7 +258,7 @@ namespace CapFrameX.OSD.Integration
             {
                 if (!_runtimeError) return;
                 _runtimeError = false;
-                _status = _statusBeforeRuntimeError ?? CurrentModeStatus();
+                _status = _statusBeforeRuntimeError ?? CurrentModeStatus;
                 _statusBeforeRuntimeError = null;
             }
             Changed?.Invoke(this, EventArgs.Empty);

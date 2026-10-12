@@ -1,11 +1,13 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.OSD.Controls;
 using CapFrameX.OSD.Integration;
 using CapFrameX.OSD.Interop;
@@ -43,6 +45,8 @@ namespace CapFrameX.View.Controls
         private IReadOnlyList<OverlayTelemetrySource> _previewSources = Array.Empty<OverlayTelemetrySource>();
         private bool _classicReadPending;
         private Action _editClassicProfile;
+        private Func<string> _sourceStatusText;
+        private bool _languageSubscribed;
 
         public void ConfigureClassicPreview(OverlayClassicPreviewFeed feed, Action editProfile = null)
         {
@@ -67,6 +71,7 @@ namespace CapFrameX.View.Controls
 
         public OverlayDesignerControl()
         {
+            OsdLocalization.SetLanguage(CxLang.Instance.UiLanguage);
             InitializeComponent();
             _previewTimer = new DispatcherTimer(DispatcherPriority.Background, Dispatcher)
             {
@@ -99,6 +104,12 @@ namespace CapFrameX.View.Controls
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
+            if (!_languageSubscribed)
+            {
+                CxLang.Instance.PropertyChanged += OnUiLanguageChanged;
+                _languageSubscribed = true;
+            }
+            RefreshLanguage();
             AttachOwnerWindow();
             RefreshSources();
             UpdateLivePreview();
@@ -106,6 +117,11 @@ namespace CapFrameX.View.Controls
 
         private void OnUnloaded(object sender, RoutedEventArgs e)
         {
+            if (_languageSubscribed)
+            {
+                CxLang.Instance.PropertyChanged -= OnUiLanguageChanged;
+                _languageSubscribed = false;
+            }
             ++_sourceGeneration;
             StopLivePreview();
             DetachOwnerWindow();
@@ -115,6 +131,30 @@ namespace CapFrameX.View.Controls
         private void OnLivePreviewChanged(object sender, EventArgs e) => UpdateLivePreview();
         private void OnRefreshSources(object sender, RoutedEventArgs e) => RefreshSources();
 
+        private void OnUiLanguageChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName != nameof(CxLang.UiLanguage)) return;
+            if (Dispatcher.CheckAccess()) RefreshLanguage();
+            else if (!Dispatcher.HasShutdownStarted && !Dispatcher.HasShutdownFinished)
+                _ = Dispatcher.BeginInvoke(new Action(() => { if (_languageSubscribed) RefreshLanguage(); }));
+        }
+
+        private void RefreshLanguage()
+        {
+            OsdLocalization.SetLanguage(CxLang.Instance.UiLanguage);
+            if (_sourceStatusText != null) SourceStatus.Text = _sourceStatusText();
+            if (_profileErrorText != null) ProfileError.Text = _profileErrorText();
+            if (_profileSession == null && _profileErrorText != null)
+                ProfileStatus.Text = CxLang.T("OverlayEditor_ReadOnlyLibrary");
+            UpdateProfileUi();
+        }
+
+        private void SetSourceStatus(Func<string> message)
+        {
+            _sourceStatusText = message;
+            SourceStatus.Text = message();
+        }
+
         private async void RefreshSources()
         {
             var service = TelemetryService;
@@ -122,13 +162,13 @@ namespace CapFrameX.View.Controls
             if (service == null)
             {
                 Editor.Sources = Array.Empty<OsdTelemetrySource>();
-                SourceStatus.Text = "Demo preview. Connect CapFrameX telemetry to select hardware sources.";
+                SetSourceStatus(() => CxLang.T("OverlayEditor_DemoSources"));
                 RefreshSourcesButton.IsEnabled = false;
                 return;
             }
 
             RefreshSourcesButton.IsEnabled = false;
-            SourceStatus.Text = "Discovering CapFrameX telemetry sources…";
+            SetSourceStatus(() => CxLang.T("OverlayEditor_DiscoveringSources"));
             try
             {
                 var sources = await service.GetSourcesAsync();
@@ -154,12 +194,12 @@ namespace CapFrameX.View.Controls
                     IsText = source.IsText,
                     SuggestedValueLines = source.Identifier == "RunHistory" ? 8 : 1
                 }).ToArray();
-                SourceStatus.Text = $"{sources.Count} sources · Overlay values and hardware telemetry · Missing readings appear as —";
+                SetSourceStatus(() => CxLang.Format("OverlayEditor_SourcesReady", sources.Count));
             }
             catch (Exception ex)
             {
                 if (IsLoaded && generation == _sourceGeneration)
-                    SourceStatus.Text = "Sources could not be refreshed: " + ex.Message;
+                    SetSourceStatus(() => CxLang.Format("OverlayEditor_SourcesFailed", OverlayDesignText.ExceptionMessage(ex)));
             }
             finally
             {
@@ -205,7 +245,7 @@ namespace CapFrameX.View.Controls
                         StopLivePreview();
                         Editor.SetMetricsJson("{}");
                         Editor.UpdateClassicEntries(Array.Empty<OsdEntry>());
-                        SourceStatus.Text = "Live telemetry stopped: " + ex.Message;
+                        SetSourceStatus(() => CxLang.Format("OverlayEditor_TelemetryStopped", OverlayDesignText.ExceptionMessage(ex)));
                     })));
                 _previewLease = TelemetryService.AcquirePreview();
                 _frameSubscription = FrameFeed?.Subscribe(frame => OnFrame(frame, generation),
@@ -216,7 +256,7 @@ namespace CapFrameX.View.Controls
             catch (Exception ex)
             {
                 StopLivePreview();
-                SourceStatus.Text = "Live preview is unavailable: " + ex.Message;
+                SetSourceStatus(() => CxLang.Format("OverlayEditor_PreviewUnavailable", OverlayDesignText.ExceptionMessage(ex)));
             }
         }
 
@@ -260,7 +300,7 @@ namespace CapFrameX.View.Controls
             {
                 if (generation != _liveGeneration) return;
                 Editor.UpdateClassicEntries(Array.Empty<OsdEntry>());
-                SourceStatus.Text = "Classic rows could not be refreshed: " + error.Message;
+                SetSourceStatus(() => CxLang.Format("OverlayEditor_RowsFailed", OverlayDesignText.ExceptionMessage(error)));
             }
             finally { _classicReadPending = false; }
         }

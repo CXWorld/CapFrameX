@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Configuration;
 using Serilog;
 
@@ -112,6 +113,7 @@ namespace CapFrameX.OSD.Integration
         public IObservable<OverlayDesignRuntimeSnapshot> Snapshots => _updates.AsObservable();
 
         internal void ReportRendererError(string message) => _designs.ReportRuntimeError(message);
+        internal void ReportRendererError(LocalizedText message) => _designs.ReportRuntimeError(message.Resolve);
         internal void ReportRendererReady() => _designs.ReportRuntimeReady();
 
         private void OnDesignChanged(object sender, EventArgs e)
@@ -123,7 +125,7 @@ namespace CapFrameX.OSD.Integration
 
         private void Change(Action mutation)
         {
-            string errorMessage = null;
+            Func<string> errorMessage = null;
             bool recovered = false;
             lock (_gate)
             {
@@ -144,7 +146,7 @@ namespace CapFrameX.OSD.Integration
                             {
                                 _snapshotSubscription = _telemetry.Snapshots.Subscribe(OnTelemetry, OnTelemetryError);
                                 if (_demand == null)
-                                    throw new InvalidOperationException("The telemetry stream could not be started.");
+                                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_StreamStart"), message => new InvalidOperationException(message));
                             }
                             catch
                             {
@@ -184,7 +186,7 @@ namespace CapFrameX.OSD.Integration
                     if (!_channelFailureReported)
                         Log.Warning(error, "Overlay designer: runtime publication failed; classic overlay remains available");
                     _channelFailureReported = true;
-                    errorMessage = "The saved design could not be published. Row overlay remains available. " + error.Message;
+                    errorMessage = () => CxLang.Format("OverlayDesignStatus_PublishFailed", OverlayDesignText.ExceptionMessage(error));
                 }
             }
             if (errorMessage != null) _designs.ReportRuntimeError(errorMessage);
@@ -232,7 +234,7 @@ namespace CapFrameX.OSD.Integration
                 StopDemand();
                 _channel?.Disable();
             }
-            _designs.ReportRuntimeError("The saved design's telemetry stream stopped. " + error.Message);
+            _designs.ReportRuntimeError(() => CxLang.Format("OverlayDesignStatus_StreamStopped", OverlayDesignText.ExceptionMessage(error)));
         }
 
         private void UpdateSnapshot(OverlayRuntimeDesign design)

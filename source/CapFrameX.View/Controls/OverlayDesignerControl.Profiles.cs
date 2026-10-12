@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.OSD.Controls;
 using CapFrameX.OSD.Integration;
@@ -32,6 +33,7 @@ namespace CapFrameX.View.Controls
         private bool _profileHostLoaded;
         private bool _designServiceSubscribed;
         private int _designServiceGeneration;
+        private Func<string> _profileErrorText;
 
         public OverlayDesignProfileSession ProfileSession => _profileSession;
         public bool HasUnsavedChanges => _profileSession != null
@@ -105,7 +107,7 @@ namespace CapFrameX.View.Controls
             }
             catch (Exception error) when (IsProfileError(error))
             {
-                ShowProfileError("The saved design could not be refreshed in the overlay. " + error.Message);
+                ShowProfileError(() => CxLang.Format("OverlayEditor_RuntimeRefreshFailed", OverlayDesignText.ExceptionMessage(error)));
             }
         }
 
@@ -149,7 +151,7 @@ namespace CapFrameX.View.Controls
         {
             if (_profileStore != null || _profileInitializationAttempted)
             {
-                throw new InvalidOperationException("Configure the profile library before loading the designer.");
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ConfigureFirst"), message => new InvalidOperationException(message));
             }
             try
             {
@@ -162,8 +164,8 @@ namespace CapFrameX.View.Controls
             }
             catch (Exception error) when (IsProfileError(error))
             {
-                ShowProfileError("Saved designs could not be loaded. " + error.Message);
-                ProfileStatus.Text = "Profile library unavailable · Editor is read-only. Existing files have been preserved.";
+                ShowProfileError(() => CxLang.Format("OverlayEditor_LoadFailed", OverlayDesignText.ExceptionMessage(error)));
+                ProfileStatus.Text = CxLang.T("OverlayEditor_ReadOnlyLibrary");
                 Editor.IsEnabled = false;
             }
         }
@@ -188,18 +190,18 @@ namespace CapFrameX.View.Controls
                 RefreshRuntimeProfiles();
                 if (!_profileLoadFailed && !string.IsNullOrWhiteSpace(_profileStore.RecoveryWarning))
                 {
-                    ShowProfileError(_profileStore.RecoveryWarning);
+                    ShowProfileError(() => _profileStore.RecoveryWarning);
                 }
                 else if (!_profileLoadFailed && !string.IsNullOrWhiteSpace(_profileStore.StarterInitializationWarning))
                 {
-                    ShowProfileError(_profileStore.StarterInitializationWarning);
+                    ShowProfileError(() => _profileStore.StarterInitializationWarning);
                 }
             }
             catch (Exception error) when (IsProfileError(error))
             {
                 _profileSession = null;
-                ShowProfileError("The profile library is unavailable. " + error.Message);
-                ProfileStatus.Text = "Profile library unavailable · Editor is read-only. Existing files have been preserved.";
+                ShowProfileError(() => CxLang.Format("OverlayEditor_LibraryUnavailable", OverlayDesignText.ExceptionMessage(error)));
+                ProfileStatus.Text = CxLang.T("OverlayEditor_ReadOnlyLibrary");
                 Editor.IsEnabled = false;
             }
         }
@@ -235,7 +237,7 @@ namespace CapFrameX.View.Controls
             }
             catch (Exception error) when (IsProfileError(error))
             {
-                ShowProfileError(error.Message);
+                ShowProfileError(() => OverlayDesignText.ExceptionMessage(error));
             }
         }
 
@@ -301,7 +303,7 @@ namespace CapFrameX.View.Controls
                 // The neutral editor keeps its previous accepted document on rejection.
                 // It must never be synchronized into the newly selected profile.
                 _profileLoadFailed = true;
-                ShowProfileError("This design could not be loaded. The editor is read-only; reopen the designer to retry. " + error.Message);
+                ShowProfileError(() => CxLang.Format("OverlayEditor_DesignLoadFailed", OverlayDesignText.ExceptionMessage(error)));
             }
             finally
             {
@@ -332,20 +334,20 @@ namespace CapFrameX.View.Controls
                 ExportProfileButton.IsEnabled = valid;
                 UseDesignButton.IsEnabled = valid && _designService?.CanActivate == true;
                 UseDesignButton.ToolTip = _designService?.CanActivate == true
-                    ? "Show this saved tile profile with the selected CapFrameX renderer."
-                    : "RTSS uses Row overlay. Select In-game or Hook-free in Overlay settings to activate Tile overlay.";
+                    ? CxLang.T("OverlayEditor_UseHint")
+                    : CxLang.T("OverlayEditor_RtssHint");
                 ToolTipService.SetShowOnDisabled(UseDesignButton, true);
                 ProfileStatus.Text = _profileLoadFailed
-                    ? "Design unavailable · Saved profiles have been preserved."
-                    : pendingText ? "Unsaved text · Enter or leave the field to apply. Ctrl+S to save."
+                    ? CxLang.T("OverlayEditor_DesignUnavailable")
+                    : pendingText ? CxLang.T("OverlayEditor_UnsavedText")
                     : _profileSession.HasValidationErrors
-                    ? "Unsaved changes · Correct the highlighted values before saving."
-                    : _profileSession.IsDirty ? "Unsaved changes · Ctrl+S to save."
-                    : "Saved · This design will reopen next time.";
+                    ? CxLang.T("OverlayEditor_InvalidChanges")
+                    : _profileSession.IsDirty ? CxLang.T("OverlayEditor_UnsavedChanges")
+                    : CxLang.T("OverlayEditor_Saved");
                 if (_designService?.IsEnabled == true && _designService.ActiveProfileId == _profileSession.ActiveProfile.Id)
-                    ProfileStatus.Text += " · Tile overlay active";
+                    ProfileStatus.Text += " · " + CxLang.T("OverlayEditor_TileActive");
                 if (_designService != null && !_designService.CanActivate)
-                    ProfileStatus.Text += " · RTSS: Tile overlay is off. Select In-game or Hook-free to activate a design.";
+                    ProfileStatus.Text += " · " + CxLang.T("OverlayEditor_RtssInactive");
             }
             finally
             {
@@ -373,7 +375,7 @@ namespace CapFrameX.View.Controls
             }
             catch (Exception error) when (IsProfileError(error))
             {
-                ShowProfileError(error.Message);
+                ShowProfileError(() => OverlayDesignText.ExceptionMessage(error));
             }
             finally
             {
@@ -389,30 +391,31 @@ namespace CapFrameX.View.Controls
             {
                 return OverlayDesignUnsavedChangesDecision.Discard;
             }
-            var prompt = new OverlayDesignPrompt("Save changes?",
-                $"“{_profileSession.ActiveProfile.Name}” has unsaved changes."
-                    + (_profileSession.HasValidationErrors ? " Some values are invalid. Cancel to correct them, or discard the changes." : " Save them before continuing?"),
-                "Save", secondary: "Discard", canConfirm: !_profileSession.HasValidationErrors);
+            var prompt = new OverlayDesignPrompt(() => CxLang.T("OverlayEditor_SaveChangesTitle"),
+                () => _profileSession.HasValidationErrors
+                    ? CxLang.Format("OverlayEditor_SaveInvalidMessage", _profileSession.ActiveProfile.Name)
+                    : CxLang.Format("OverlayEditor_SaveChangesMessage", _profileSession.ActiveProfile.Name),
+                () => CxLang.T("OverlayEditor_Save"), secondary: () => CxLang.T("OverlayEditor_Discard"), canConfirm: !_profileSession.HasValidationErrors);
             var result = await DialogHost.Show(prompt, _profileDialogId);
             return result is OverlayDesignPromptResult.Confirm ? OverlayDesignUnsavedChangesDecision.Save
                 : result is OverlayDesignPromptResult.Secondary ? OverlayDesignUnsavedChangesDecision.Discard
                 : OverlayDesignUnsavedChangesDecision.Cancel;
         }
 
-        private async Task<string> AskProfileNameAsync(string title, string initialName, string currentId = null)
+        private async Task<string> AskProfileNameAsync(Func<string> title, string initialName, string currentId = null)
         {
-            var prompt = new OverlayDesignPrompt(title, "Choose a name for this design.", "Save", initialName,
+            var prompt = new OverlayDesignPrompt(title, () => CxLang.T("OverlayEditor_ChooseName"), () => CxLang.T("OverlayEditor_Save"), initialName,
                 name => name.Length > OverlayDesignProfileStore.MaximumNameLength
-                    ? $"Use at most {OverlayDesignProfileStore.MaximumNameLength} characters."
+                    ? CxLang.Format("OverlayEditor_NameLimit", OverlayDesignProfileStore.MaximumNameLength)
                     : _profileStore.Profiles.Any(profile => profile.Id != currentId && string.Equals(profile.Name, name, StringComparison.OrdinalIgnoreCase))
-                        ? "A design with this name already exists." : null);
+                        ? CxLang.T("OverlayEditor_NameExists") : null);
             return await DialogHost.Show(prompt, _profileDialogId) is OverlayDesignPromptResult.Confirm
                 ? prompt.EnteredName : null;
         }
 
         private string SuggestName(string basis)
         {
-            basis = string.IsNullOrWhiteSpace(basis) ? "New design" : basis.Trim();
+            basis = string.IsNullOrWhiteSpace(basis) ? CxLang.T("OverlayEditor_NewDesign") : basis.Trim();
             basis = basis.Substring(0, Math.Min(basis.Length, OverlayDesignProfileStore.MaximumNameLength - 8));
             string result = basis;
             for (int number = 2; _profileStore.Profiles.Any(profile => string.Equals(profile.Name, result, StringComparison.OrdinalIgnoreCase)); number++)
@@ -448,7 +451,7 @@ namespace CapFrameX.View.Controls
                     var library = new OverlayDesignProfileStore(_profileConfigurationFolder,
                         json => OsdDesignDocument.FromJson(json).ToJson());
                     if (!library.Profiles.Any(profile => profile.Id == profileId))
-                        throw new InvalidOperationException("This saved tile profile no longer exists. Refresh the profile list and select another profile.");
+                        throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ProfileGone"), message => new InvalidOperationException(message));
                     return library;
                 }
                 ReadLibrary();
@@ -465,10 +468,10 @@ namespace CapFrameX.View.Controls
                 if (_profileSession.IsDirty && decision == OverlayDesignUnsavedChangesDecision.Save)
                 {
                     if (_profileSession.HasValidationErrors)
-                        throw new InvalidOperationException("Correct the invalid design values before saving, or discard your changes.");
+                        throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_InvalidValues"), message => new InvalidOperationException(message));
                     var saved = refreshed.Profiles.FirstOrDefault(profile => profile.Id == _profileSession.ActiveProfile.Id);
                     if (saved == null || saved.DesignJson != _profileSession.ActiveProfile.DesignJson)
-                        throw new InvalidOperationException("The profile being edited was changed or deleted elsewhere. Your edits are still open; cancel to keep editing, or discard them when opening another profile.");
+                        throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ChangedElsewhere"), message => new InvalidOperationException(message));
                     refreshed.Save(saved.Id, _profileSession.WorkingTemplateJson);
                 }
                 refreshed.SetActive(profileId);
@@ -497,7 +500,7 @@ namespace CapFrameX.View.Controls
         {
             await RunProfileActionAsync(async () =>
             {
-                string name = await AskProfileNameAsync("New design", SuggestName("New design"));
+                string name = await AskProfileNameAsync(() => CxLang.T("OverlayEditor_NewDesign"), SuggestName(CxLang.T("OverlayEditor_NewDesign")));
                 if (name == null)
                 {
                     return;
@@ -518,7 +521,7 @@ namespace CapFrameX.View.Controls
         {
             await RunProfileActionAsync(async () =>
             {
-                string name = await AskProfileNameAsync("Duplicate design", SuggestName(_profileSession.ActiveProfile.Name + " copy"));
+                string name = await AskProfileNameAsync(() => CxLang.T("OverlayEditor_DuplicateDesign"), SuggestName(CxLang.Format("OverlayEditor_CopyName", _profileSession.ActiveProfile.Name)));
                 if (name != null)
                 {
                     _profileSession.Duplicate(name);
@@ -532,7 +535,7 @@ namespace CapFrameX.View.Controls
         {
             await RunProfileActionAsync(async () =>
             {
-                string name = await AskProfileNameAsync("Rename design", _profileSession.ActiveProfile.Name, _profileSession.ActiveProfile.Id);
+                string name = await AskProfileNameAsync(() => CxLang.T("OverlayEditor_RenameDesign"), _profileSession.ActiveProfile.Name, _profileSession.ActiveProfile.Id);
                 if (name != null)
                 {
                     _profileSession.Rename(name);
@@ -553,9 +556,11 @@ namespace CapFrameX.View.Controls
         {
             await RunProfileActionAsync(async () =>
             {
-                var prompt = new OverlayDesignPrompt("Delete design?",
-                    $"Delete “{_profileSession.ActiveProfile.Name}” from your saved designs?"
-                        + (_profileSession.IsDirty ? " Its unsaved changes will also be discarded." : ""), "Delete");
+                var prompt = new OverlayDesignPrompt(() => CxLang.T("OverlayEditor_DeleteTitle"),
+                    () => _profileSession.IsDirty
+                        ? CxLang.Format("OverlayEditor_DeleteDirtyMessage", _profileSession.ActiveProfile.Name)
+                        : CxLang.Format("OverlayEditor_DeleteMessage", _profileSession.ActiveProfile.Name),
+                    () => CxLang.T("OverlayEditor_Delete"));
                 if (await DialogHost.Show(prompt, _profileDialogId) is OverlayDesignPromptResult.Confirm
                     && _profileSession.DeleteActive(OverlayDesignUnsavedChangesDecision.Discard))
                 {
@@ -569,17 +574,17 @@ namespace CapFrameX.View.Controls
         {
             await RunProfileActionAsync(async () =>
             {
-                var dialog = new OpenFileDialog { Filter = "CapFrameX overlay design (*.json)|*.json", CheckFileExists = true };
+                var dialog = new OpenFileDialog { Filter = CxLang.T("OverlayEditor_FileFilter"), CheckFileExists = true };
                 if (dialog.ShowDialog(Window.GetWindow(this)) != true)
                 {
                     return;
                 }
                 if (new FileInfo(dialog.FileName).Length > OsdDesignDocument.MaximumJsonLength)
                 {
-                    throw new FormatException("The design file exceeds 1 MB.");
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ImportSize"), message => new FormatException(message));
                 }
                 var document = OsdDesignDocument.FromJson(File.ReadAllText(dialog.FileName));
-                string name = await AskProfileNameAsync("Import design", SuggestName(document.Name));
+                string name = await AskProfileNameAsync(() => CxLang.T("OverlayEditor_ImportDesign"), SuggestName(document.Name));
                 if (name == null)
                 {
                     return;
@@ -605,7 +610,7 @@ namespace CapFrameX.View.Controls
                 }
                 var dialog = new SaveFileDialog
                 {
-                    Filter = "CapFrameX overlay design (*.json)|*.json", FileName = name + ".json",
+                    Filter = CxLang.T("OverlayEditor_FileFilter"), FileName = name + ".json",
                     DefaultExt = ".json", AddExtension = true
                 };
                 if (dialog.ShowDialog(Window.GetWindow(this)) == true)
@@ -652,14 +657,16 @@ namespace CapFrameX.View.Controls
             return canClose;
         }
 
-        private void ShowProfileError(string message)
+        private void ShowProfileError(Func<string> message)
         {
-            ProfileError.Text = message;
+            _profileErrorText = message;
+            ProfileError.Text = message();
             ProfileError.Visibility = Visibility.Visible;
         }
 
         private void ClearProfileError()
         {
+            _profileErrorText = null;
             ProfileError.Text = string.Empty;
             ProfileError.Visibility = Visibility.Collapsed;
         }

@@ -12,6 +12,34 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Five-language overlay editor (2026-10-12)
+
+The Controls DLL was rebuilt in `Release|x64` for .NET 10 from the sibling
+`CapFrameX.OSD` sources committed as `89f86a02b4c97e83fac9e9515b778521dc05ee6c`.
+Its embedded catalogs cover English,
+German, Spanish, Russian and Korean: 447 editor strings and 148 gallery strings per
+language, including the names and descriptions of all 68 templates. Language changes
+refresh open controls and error messages without rewriting user profile names, overlay
+text, source identities or pending text edits. The native and Interop DLLs are unchanged.
+
+Verification: the Release source build and 304 selected CapFrameX regression tests pass,
+including catalog/placeholder parity and preservation of profiles and pending edits during
+language changes. Thirty WPF renderings cover the editor, sources, group inspector and
+gallery in all five languages, including the 1080-pixel editor width. A prebuilt-only Release
+application build with a fresh restore also passes; all seven bundled DLLs match that output
+by SHA-256, and its restore graph contains no OSD source-project references. The normal
+source-project restore graph was restored afterward.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `1B33AAD249EB4A56B3497A4D081D25B9D34C001E51869DB67CBE2FCE2E70106D` |
+
+This Controls DLL is an unsigned development build.
+
+The English and Korean [editor and template catalogs](Localization/) are included beside
+the prebuilt for public translation review. They match the resources embedded in the Controls
+DLL. Update these copies when rebuilding that DLL; the editor loads its embedded resources.
+
 ### Composite tile editor development payload (2026-10-09)
 
 The current binaries were built and verified from the sibling `E:\Code\CapFrameX.OSD`
