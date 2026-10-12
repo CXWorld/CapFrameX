@@ -23,6 +23,8 @@ internal sealed class IntelCpu : GenericCpu
     private readonly Sensor[][] _threadEffectiveClocks;
     private readonly Sensor _coreEffectiveMax;
     private readonly Sensor _maxClock;
+    private readonly CoreTypeClockSensor[] _coreTypeMaxClocks;
+    private readonly CoreTypeClockSensor[] _coreTypeMaxEffectiveClocks;
     private readonly Sensor _coreMax;
     private readonly Sensor[] _coreTemperatures;
     private readonly Sensor[] _coreVIDs;
@@ -651,6 +653,31 @@ internal sealed class IntelCpu : GenericCpu
             }
         }
 
+        // Append the core-type aggregates after the existing clock sensor range so
+        // persisted identifiers for per-core and platform clocks remain unchanged.
+        int coreTypeSensorIndex = _hasAperfMperf
+            ? _coreClocks.Length + 2 + _threadEffectiveClocks.Sum(t => t.Length) + 2
+            : _coreClocks.Length + 2;
+        if (_hasUncoreClock)
+            coreTypeSensorIndex++;
+        if (_hasImc)
+            coreTypeSensorIndex += 4;
+        if (_hasOobmsmClocks || _hasOcMailboxClocks)
+            coreTypeSensorIndex += 2;
+
+        CpuCoreType[] coreTypes = Enumerable.Range(0, _coreCount).Select(GetCoreType).ToArray();
+        _coreTypeMaxClocks = CoreTypeClockSensor.Create(IsHybrid, this, settings,
+            _coreClocks.Select((sensor, i) => (coreTypes[i], (ISensor)sensor)),
+            false, ref coreTypeSensorIndex);
+        _coreTypeMaxEffectiveClocks = CoreTypeClockSensor.Create(IsHybrid, this, settings,
+            _threadEffectiveClocks.SelectMany((sensors, i) => sensors.Select(sensor => (coreTypes[i], (ISensor)sensor))),
+            true, ref coreTypeSensorIndex);
+
+        foreach (CoreTypeClockSensor aggregate in _coreTypeMaxClocks)
+            ActivateSensor(aggregate.Sensor);
+        foreach (CoreTypeClockSensor aggregate in _coreTypeMaxEffectiveClocks)
+            ActivateSensor(aggregate.Sensor);
+
         if (_microArchitecture is MicroArchitecture.Airmont or
             MicroArchitecture.AlderLake or
             MicroArchitecture.ArrowLake or
@@ -1083,6 +1110,8 @@ internal sealed class IntelCpu : GenericCpu
             }
 
             _maxClock.Value = _coreClocks.Max(clk => clk.Value);
+            foreach (CoreTypeClockSensor aggregate in _coreTypeMaxClocks)
+                aggregate.Update();
 
             if (newBusClock > 0)
             {
@@ -1339,6 +1368,7 @@ internal sealed class IntelCpu : GenericCpu
     {
         bool evaluate = SensorPolling.ShouldEvaluate(_sensorConfig, _coreEffectiveAvg);
         evaluate |= SensorPolling.ShouldEvaluate(_sensorConfig, _coreEffectiveMax);
+        evaluate |= SensorPolling.ShouldEvaluateAny(_sensorConfig, _coreTypeMaxEffectiveClocks.Select(aggregate => aggregate.Sensor));
 
         foreach (Sensor[] coreSensors in _threadEffectiveClocks)
             evaluate |= SensorPolling.ShouldEvaluateAny(_sensorConfig, coreSensors);
@@ -1371,6 +1401,8 @@ internal sealed class IntelCpu : GenericCpu
 
         _coreEffectiveAvg.Value = null;
         _coreEffectiveMax.Value = null;
+        foreach (CoreTypeClockSensor aggregate in _coreTypeMaxEffectiveClocks)
+            aggregate.Update();
     }
 
     private void UpdateEffectiveClocks()
@@ -1443,6 +1475,9 @@ internal sealed class IntelCpu : GenericCpu
             _coreEffectiveAvg.Value = null;
             _coreEffectiveMax.Value = null;
         }
+
+        foreach (CoreTypeClockSensor aggregate in _coreTypeMaxEffectiveClocks)
+            aggregate.Update();
     }
 
     [SuppressMessage("ReSharper", "IdentifierTypo")]

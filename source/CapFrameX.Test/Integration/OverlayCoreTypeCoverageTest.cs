@@ -43,7 +43,7 @@ namespace CapFrameX.Test.Integration
             {
                 var catalog = await Discover(cpu);
                 var families = catalog.Where(source => source.GroupKey != null).GroupBy(source => source.GroupKey).ToArray();
-                Assert.AreEqual(intel ? 4 : 2, families.Length,
+                Assert.AreEqual(intel ? 4 : model.IsHybrid ? 3 : 2, families.Length,
                     "Use the simulated driver's real family set; do not manufacture unsupported sensor families.");
                 foreach (var family in families)
                 {

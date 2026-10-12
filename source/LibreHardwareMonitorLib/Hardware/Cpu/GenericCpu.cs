@@ -81,6 +81,7 @@ public class GenericCpu : Hardware
         _coreCount = cpuId.Length;
         _threadCount = cpuId.Sum(x => x.Length);
         _isHybrid = CpuArchitecture.IsHybridDesign([.. cpuId.Select(core => core[0])]);
+        CcdCount = AmdCpuTopology.GetCcdCount(cpuId.SelectMany(core => core).Select(thread => thread.AmdTopology));
 
         // Check if processor has MSRs.
         HasModelSpecificRegisters = cpuId[0][0].Data.GetLength(0) > 1 && (cpuId[0][0].Data[1, 3] & 0x20) != 0;
@@ -359,6 +360,13 @@ public class GenericCpu : Hardware
     public int CoreCount => _coreCount;
 
     /// <summary>
+    /// Gets the number of AMD CCDs represented by the enumerated logical processors,
+    /// as reported by CPUID 0x80000026, or <c>null</c> if CCD/socket topology is unavailable
+    /// or inconsistent. Fully disabled CCDs are not included. No sensor fallback is used.
+    /// </summary>
+    public int? CcdCount { get; }
+
+    /// <summary>
     /// Gets whether this CPU has a hybrid architecture with different core types.
     /// </summary>
     public bool IsHybrid => _isHybrid;
@@ -418,6 +426,8 @@ public class GenericCpu : Hardware
         r.AppendFormat("Name: {0}{1}", _name, Environment.NewLine);
         r.AppendFormat("Number of Cores: {0}{1}", _coreCount, Environment.NewLine);
         r.AppendFormat("Threads per Core: {0}{1}", _cpuId[0].Length, Environment.NewLine);
+        if (_vendor == Vendor.AMD)
+            r.AppendFormat("Number of CCDs (CPUID): {0}{1}", CcdCount?.ToString(CultureInfo.InvariantCulture) ?? "Unknown", Environment.NewLine);
         r.AppendLine(string.Format(CultureInfo.InvariantCulture, "Timer Frequency: {0} MHz", Stopwatch.Frequency * 1e-6));
         r.AppendLine("Time Stamp Counter: " + (HasTimeStampCounter ? _isInvariantTimeStampCounter ? "Invariant" : "Not Invariant" : "None"));
         r.AppendLine(string.Format(CultureInfo.InvariantCulture, "Estimated Time Stamp Counter Frequency: {0} MHz", Math.Round(_estimatedTimeStampCounterFrequency * 100) * 0.01));

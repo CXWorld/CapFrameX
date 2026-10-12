@@ -81,6 +81,8 @@ internal sealed class Amd17Cpu : AmdCpu
             }
         }
 
+        _processor.InitializeCoreTypeClockSensors();
+
         Update();
     }
 
@@ -258,6 +260,8 @@ internal sealed class Amd17Cpu : AmdCpu
         private readonly Sensor _avgClockEffcetive;
         private readonly Sensor _maxClock;
         private readonly Sensor _maxEffectiveClock;
+        private CoreTypeClockSensor[] _coreTypeMaxClocks = [];
+        private CoreTypeClockSensor[] _coreTypeMaxEffectiveClocks = [];
 
         private readonly Sensor[] _ccdTemperatures;
         private readonly Sensor _coreTemperatureTctl;
@@ -330,10 +334,44 @@ internal sealed class Amd17Cpu : AmdCpu
 
         public List<NumaNode> Nodes { get; } = [];
 
+        public void InitializeCoreTypeClockSensors()
+        {
+            if (!_cpu.IsHybrid)
+                return;
+
+            // Core construction reorders the original CPUID arrays by AMD core/node ID.
+            // Match the actual CPUID entry so the type stays attached to the correct core.
+            Dictionary<CpuId, CpuCoreType> coreTypes = [];
+            for (int i = 0; i < _cpu._cpuId.Length; i++)
+                coreTypes.Add(_cpu._cpuId[i][0], _cpu.GetCoreType(i));
+
+            Core[] cores = Nodes.SelectMany(node => node.Cores).ToArray();
+            int sensorIndex = _cpu._sensorTypeIndex[SensorType.Clock];
+            _coreTypeMaxClocks = CoreTypeClockSensor.Create(
+                _cpu.IsHybrid,
+                _cpu,
+                _cpu._settings,
+                cores.Select(core => (coreTypes[core.Threads[0].Cpu], core.ClockSensor)),
+                false,
+                ref sensorIndex);
+            _coreTypeMaxEffectiveClocks = CoreTypeClockSensor.Create(
+                _cpu.IsHybrid,
+                _cpu,
+                _cpu._settings,
+                cores.SelectMany(core => core.EffectiveClockSensors.Select(sensor => (coreTypes[core.Threads[0].Cpu], sensor))),
+                true,
+                ref sensorIndex);
+            _cpu._sensorTypeIndex[SensorType.Clock] = sensorIndex;
+
+            foreach (CoreTypeClockSensor clock in _coreTypeMaxClocks.Concat(_coreTypeMaxEffectiveClocks))
+                _cpu.ActivateSensor(clock.Sensor);
+        }
+
         public bool ShouldEvaluateCoreClocks()
         {
             bool evaluate = SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _avgClock);
             evaluate |= SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _maxClock);
+            evaluate |= SensorPolling.ShouldEvaluateAny(_cpu._sensorConfig, _coreTypeMaxClocks.Select(clock => clock.Sensor));
 
             foreach (NumaNode node in Nodes)
             {
@@ -348,6 +386,7 @@ internal sealed class Amd17Cpu : AmdCpu
         {
             bool evaluate = SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _avgClockEffcetive);
             evaluate |= SensorPolling.ShouldEvaluate(_cpu._sensorConfig, _maxEffectiveClock);
+            evaluate |= SensorPolling.ShouldEvaluateAny(_cpu._sensorConfig, _coreTypeMaxEffectiveClocks.Select(clock => clock.Sensor));
 
             foreach (NumaNode node in Nodes)
             {
@@ -693,6 +732,9 @@ internal sealed class Amd17Cpu : AmdCpu
 
                 clock = Nodes.SelectMany(x => x.Cores).Max(c => c.CoreClock);
                 _maxClock.Value = (float)Math.Round(clock, 0);
+
+                foreach (CoreTypeClockSensor coreTypeClock in _coreTypeMaxClocks)
+                    coreTypeClock.Update();
             }
 
             if (updateEffectiveClocks)
@@ -708,6 +750,9 @@ internal sealed class Amd17Cpu : AmdCpu
                     _avgClockEffcetive.Value = null;
                     _maxEffectiveClock.Value = null;
                 }
+
+                foreach (CoreTypeClockSensor coreTypeClock in _coreTypeMaxEffectiveClocks)
+                    coreTypeClock.Update();
             }
         }
 
@@ -1152,11 +1197,17 @@ internal sealed class Amd17Cpu : AmdCpu
                     EffectiveClocks = [.. validEffectiveClocks];
                 }
             }
-            else if (updateEffectiveClocks)
+            else
             {
-                EffectiveClocks = [];
-                foreach (Sensor sensor in _clocksEffective)
-                    sensor.Value = null;
+                if (updateCoreClocks)
+                    _clock.Value = null;
+
+                if (updateEffectiveClocks)
+                {
+                    EffectiveClocks = [];
+                    foreach (Sensor sensor in _clocksEffective)
+                        sensor.Value = null;
+                }
             }
 
             if (!updateEffectiveClocks)

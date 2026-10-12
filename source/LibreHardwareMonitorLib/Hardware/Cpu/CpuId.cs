@@ -216,6 +216,9 @@ public class CpuId
               out _cpuidExtData[i, 0], out _cpuidExtData[i, 1],
               out _cpuidExtData[i, 2], out _cpuidExtData[i, 3]);
 
+        // CpuId.Get keeps this thread pinned throughout construction.
+        AmdTopology = AmdCpuTopology.Read(_vendor, CPUID_EXT + maxCpuidExt, OpCode.CpuId);
+
         StringBuilder nameBuilder = new StringBuilder();
         for (uint i = 2; i <= 4; i++)
         {
@@ -353,6 +356,8 @@ public class CpuId
     /// Gets the processor affinity for this logical processor.
     /// </summary>
     public GroupAffinity Affinity => _affinity;
+
+    internal AmdCpuTopology AmdTopology { get; }
 
     /// <summary>
     /// Gets the CPU vendor.
