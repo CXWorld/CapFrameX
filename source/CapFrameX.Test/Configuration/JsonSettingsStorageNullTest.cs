@@ -168,7 +168,7 @@ namespace CapFrameX.Test.Configuration
             Assert.AreEqual(OverlayDesignStarterCatalog.Profiles.Count + 1, classicDesigns.Profiles.Count, "Returning to Row overlay must retain the saved design and starter library.");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public async Task LegacyActiveProfileMigratesTheLastProfileAcrossARealReload(bool nativeRenderer)
