@@ -465,36 +465,29 @@ namespace CapFrameX.Data
 
         private ISession LoadSessionFromJSON(FileInfo fileInfo)
         {
-            try
+            using (var stream = new StreamReader(fileInfo.FullName))
             {
-                using (var stream = new StreamReader(fileInfo.FullName))
+                using (JsonReader jsonReader = new JsonTextReader(stream))
                 {
-                    using (JsonReader jsonReader = new JsonTextReader(stream))
+                    JsonSerializer serializer = new JsonSerializer();
+                    var session = serializer.Deserialize<Session.Classes.Session>(jsonReader);
+
+                    // Handle corrupt/incomplete JSON files (e.g., from disk full during write)
+                    if (session?.Runs == null)
                     {
-                        JsonSerializer serializer = new JsonSerializer();
-                        var session = serializer.Deserialize<Session.Classes.Session>(jsonReader);
-
-                        // Handle corrupt/incomplete JSON files (e.g., from disk full during write)
-                        if (session?.Runs == null)
-                        {
-                            _logger.LogWarning("Failed to load session from {path}: file is corrupt or incomplete", fileInfo.FullName);
-                            return null;
-                        }
-
-                        foreach (var sessionrun in session.Runs)
-                        {
-                            if (sessionrun.SensorData != null && sessionrun.SensorData2 == null)
-                            {
-                                SessionSensorDataConverter.ConvertToSensorData2(sessionrun);
-                            }
-                        }
-                        return session;
+                        _logger.LogWarning("Failed to load session from {path}: file is corrupt or incomplete", fileInfo.FullName);
+                        return null;
                     }
+
+                    foreach (var sessionrun in session.Runs)
+                    {
+                        if (sessionrun.SensorData != null && sessionrun.SensorData2 == null)
+                        {
+                            SessionSensorDataConverter.ConvertToSensorData2(sessionrun);
+                        }
+                    }
+                    return session;
                 }
-            }
-            catch (Exception ex)
-            {
-                throw;
             }
         }
 
