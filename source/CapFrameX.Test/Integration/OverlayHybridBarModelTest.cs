@@ -9,7 +9,7 @@ namespace CapFrameX.Test.Integration
     [TestClass]
     public class OverlayHybridBarModelTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(8, 16, 0, "E", 1, 8, "8,8,8")]
         [DataRow(6, 8, 2, "E", 1, 8, "6,8,2")]
         [DataRow(4, 8, 0, "D", 1, 4, "4,4,4")]
@@ -46,11 +46,11 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(8, layout.Columns, "Eight columns are the smallest choice that fits all three core classes in three rows.");
             CollectionAssert.AreEqual(new[] { 6, 8, 2 }, layout.RowCounts.ToArray());
             string before = document.ToJson();
-            Assert.ThrowsException<FormatException>(() => document.SetGroupBarRows(tile, 2));
+            Assert.ThrowsExactly<FormatException>(() => document.SetGroupBarRows(tile, 2));
             Assert.AreEqual(before, document.ToJson());
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("vertical")]
         [DataRow("horizontal")]
         public void ExplicitBarWidthWrapsWithinEachCoreClassWithoutMixingRows(string orientation)
@@ -69,7 +69,7 @@ namespace CapFrameX.Test.Integration
             AssertSeparateCoreClasses(layout);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("vertical", false)]
         [DataRow("horizontal", false)]
         [DataRow("vertical", true)]
@@ -126,7 +126,7 @@ namespace CapFrameX.Test.Integration
             AssertSeparateCoreClasses(layout);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void CopyAndJsonRoundTripKeepTopologyAndExplicitGroupingChoice(bool grouped)
@@ -166,7 +166,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(2, document.GetGroupBarLayout(tile).Rows);
             string before = document.ToJson();
 
-            Assert.ThrowsException<FormatException>(() => document.SetGroupByCoreType(tile, true));
+            Assert.ThrowsExactly<FormatException>(() => document.SetGroupByCoreType(tile, true));
 
             Assert.AreSame(tile, document.Tiles.Single());
             Assert.AreEqual(false, tile.GroupByCoreType);

@@ -9,7 +9,7 @@ namespace CapFrameX.Test.PresentMonInterface
     [TestClass]
     public class PresentMonServiceConfigurationTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public void ConfigParameterToArguments_DisablesInputTracking(bool redirected)
@@ -24,7 +24,7 @@ namespace CapFrameX.Test.PresentMonInterface
             StringAssert.Contains(configuration.ConfigParameterToArguments(), "--no_track_input");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public void ConfigParameterToArguments_WritesDisplayMetadata(bool redirected)

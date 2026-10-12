@@ -152,7 +152,7 @@ namespace CapFrameX.Webservice.Host
 			{
 				ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
 			};
-			fordwardedHeaderOptions.KnownNetworks.Clear();
+			fordwardedHeaderOptions.KnownIPNetworks.Clear();
 			fordwardedHeaderOptions.KnownProxies.Clear();
 			return fordwardedHeaderOptions;
 		}

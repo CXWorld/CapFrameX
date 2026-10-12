@@ -36,6 +36,11 @@ from `source\CapFrameX\bin\x64\<Configuration>\net10.0-windows` by the `<Files>`
 `Product.wxs`, whose `<Exclude>` entries replace the former `heat.exe` step and `filter.xslt`.
 The bundle stays a 32-bit Burn bundle (`InstallerPlatform=x86`), as WiX v3 bundles were; the chained
 MSI is x64. Its VC++ redistributables are remote payloads verified by their Authenticode signer.
+The bundle also builds `CapFrameXBootstrapper.BAFunctions` (native, always Win32, packages restored by
+`/restore` or `nuget restore`): a BAFunctions DLL for WixStdBA that plans a newer installed CapFrameX
+bundle as an upgrade instead of a downgrade. Without it Burn refuses to run an older setup
+(`0x80070666`) although the MSI allows downgrades, which also blocks the in-app rollback. Only setups
+that contain the DLL can downgrade; releases built before it still refuse.
 
 ### Run Tests
 Tests use MSTest framework:

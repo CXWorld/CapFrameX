@@ -26,7 +26,7 @@ namespace CapFrameX.Test.Integration
             "core-types-intel-desktop", "core-types-intel-mobile", "core-types-amd"
         };
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(CpuCoreType.Standard, null)]
         [DataRow(CpuCoreType.PerformanceCore, "P")]
         [DataRow(CpuCoreType.EfficiencyCore, "E")]
@@ -81,7 +81,7 @@ namespace CapFrameX.Test.Integration
             }, Enum.GetValues<CpuCoreType>(), "A new native core type needs end-to-end coverage before it can be considered supported.");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("standard", 16, "")]
         [DataRow("intel-desktop", 24, "P,E")]
         [DataRow("intel-mobile", 16, "P,E,LPE")]

@@ -3,22 +3,15 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
-    <RootNamespace>CapFrameX.MVVM</RootNamespace>
-    <AssemblyName>CapFrameX.MVVM</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Deterministic>true</Deterministic>
-    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <!-- MouseKeyHook ships .NET Framework assets only; the IL is compatible with modern .NET. -->
-    <NoWarn>$(NoWarn);NU1701</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MaterialDesignColors" />
     <PackageReference Include="MaterialDesignThemes" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
-    <PackageReference Include="MouseKeyHook" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.Reactive" />
   </ItemGroup>

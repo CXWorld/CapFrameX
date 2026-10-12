@@ -158,7 +158,7 @@ namespace CapFrameX.Configuration
             catch (Exception exc)
             {
                 var newException = new JsonSettingsStorageException($"Unable to load Configuration from path {_jsonFilePath}. Please delete and try again.", exc);
-                _logger.LogError(exc, newException.Message);
+                _logger.LogError(exc, "{Message}", newException.Message);
                 throw newException;
             }
         }
@@ -179,7 +179,8 @@ namespace CapFrameX.Configuration
 
                     if (string.IsNullOrWhiteSpace(fileContent))
                     {
-                        _logger.LogError("Error writing Configurationfile. Cannot create config from Dictionary", _configDictionary);
+                        _logger.LogError("Error writing configuration file {Path}. Serializing {EntryCount} settings produced no content.",
+                            _jsonFilePath, snapshot.Length);
                         return Task.FromResult(false);
                     }
                     else
@@ -191,7 +192,7 @@ namespace CapFrameX.Configuration
             }
             catch (Exception exc)
             {
-                _logger.LogError(exc, $"Unable to save Configuration to path {_jsonFilePath}");
+                _logger.LogError(exc, "Unable to save Configuration to path {Path}", _jsonFilePath);
                 throw;
             }
         }

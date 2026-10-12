@@ -11,7 +11,7 @@ namespace CapFrameX.Test.Integration
     [TestClass]
     public class OverlayHybridBarLayoutTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(8, 16, 0, "E", 8, 3)]
         [DataRow(6, 8, 2, "E", 8, 3)]
         [DataRow(4, 8, 0, "D", 4, 3)]
@@ -47,7 +47,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual("E C9", (string)Members(runtime)[16]["label"]);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("vertical", .5, false)]
         [DataRow("vertical", 1.0, false)]
         [DataRow("vertical", 2.0, false)]
@@ -70,7 +70,7 @@ namespace CapFrameX.Test.Integration
             AssertSeparatedRows(runtime, catalog, document.GetGroupBarLayout(Group(document)).Rows);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("vertical", .5)]
         [DataRow("vertical", 1.0)]
         [DataRow("vertical", 2.0)]
@@ -96,7 +96,7 @@ namespace CapFrameX.Test.Integration
                 Assert.AreEqual(tile.GroupBarWidth.Value * scale, (double)member["frameWidth"], .000001);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public void ManualFlatLayoutIsPreservedForBothSavedAndNewDimensions(bool explicitDimensions)

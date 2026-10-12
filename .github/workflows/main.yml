@@ -233,6 +233,19 @@ jobs:
         run: |
           msbuild source\CapFrameXInstaller\CapFrameXInstaller.wixproj /restore /p:SolutionDir="%GITHUB_WORKSPACE%\\" /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
 
+      - name: Test installer migrations
+        shell: pwsh
+        run: ./scripts/Test-InstallerMigration.ps1 -IncludeNegativeControl
+
+      - name: Upload installer migration diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: installer-migration-tests-${{ github.sha }}
+          path: temp/installer-migration-tests/
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Build Bootstrapper
         shell: cmd
         run: |

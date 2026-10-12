@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <!-- Earlier bundles installed the x64 application under Program Files (x86). MSI removes
+         its own files during the upgrade, but manual layer DLL backups can keep these folders
+         alive. Use the known legacy location even when a previous migration already updated
+         InstallDir. Never recursively remove the application folder or unrelated user files. -->
+    <StandardDirectory Id="ProgramFilesFolder">
+      <Directory Id="LEGACYINSTALLFOLDER" Name="CapFrameX">
+        <Directory Id="LEGACYVULKANFOLDER" Name="vulkan">
+          <Directory Id="LEGACYVULKANX86FOLDER" Name="x86" />
+        </Directory>
+      </Directory>
+    </StandardDirectory>
+
+    <Component Id="LegacyVulkanCleanup" Directory="INSTALLFOLDER"
+               Guid="34D8F573-1CF9-4C60-B8D0-84D21F7905F7" Bitness="always64"
+               Condition="NOT (INSTALLFOLDER ~= LEGACYINSTALLFOLDER)">
+      <RegistryValue Root="HKLM" Key="Software\CapFrameX" Name="LegacyVulkanCleanup"
+                     Type="integer" Value="1" KeyPath="yes" />
+      <RemoveFile Id="RemoveLegacyVulkanBackups" Directory="LEGACYVULKANFOLDER"
+                  Name="cfx_osd_vklayer.dll*.bak" On="install" />
+      <RemoveFile Id="RemoveLegacyVulkanX86Backups" Directory="LEGACYVULKANX86FOLDER"
+                  Name="cfx_osd_vklayer.dll*.bak" On="install" />
+      <RemoveFolder Id="RemoveLegacyVulkanX86Folder" Directory="LEGACYVULKANX86FOLDER" On="install" />
+      <RemoveFolder Id="RemoveLegacyVulkanFolder" Directory="LEGACYVULKANFOLDER" On="install" />
+      <RemoveFolder Id="RemoveLegacyInstallFolder" Directory="LEGACYINSTALLFOLDER" On="install" />
+    </Component>
+  </Fragment>
+</Wix>

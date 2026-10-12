@@ -3,14 +3,11 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
-    <RootNamespace>CapFrameX.ViewModel</RootNamespace>
-    <AssemblyName>CapFrameX.ViewModel</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Deterministic>true</Deterministic>
-    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <!-- MouseKeyHook ships .NET Framework assets only; the IL is compatible with modern .NET. -->
+    <!-- ParallelExtensionsExtras ships .NET Framework assets only; the IL is compatible with modern .NET.
+         NuGet carries this suppression to the projects that consume CapFrameX.ViewModel. -->
     <NoWarn>$(NoWarn);NU1701</NoWarn>
   </PropertyGroup>
 
@@ -29,7 +26,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
-    <PackageReference Include="MouseKeyHook" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="OxyPlot.Core" />
     <PackageReference Include="ParallelExtensionsExtras" />

@@ -270,7 +270,7 @@ namespace CapFrameX.Test.Integration
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(1, 2)]
         [DataRow(int.MaxValue, int.MinValue)]
         [DataRow(-1, 1)]

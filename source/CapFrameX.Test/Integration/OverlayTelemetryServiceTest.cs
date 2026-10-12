@@ -207,7 +207,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(0, active);
             second.Dispose();
             Assert.AreEqual(0, active);
-            Assert.ThrowsException<ObjectDisposedException>(() => fixture.Service.AcquirePreview());
+            Assert.ThrowsExactly<ObjectDisposedException>(() => fixture.Service.AcquirePreview());
         }
 
         [TestMethod]
@@ -415,7 +415,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual("CPU core VID", sources.First(s => s.SensorType == "Voltage").GroupName);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("Core #1 P", "Clock", "P", 1, null)]
         [DataRow("Core #2 P Thread #2", "Load", "P", 2, 2)]
         [DataRow("Core #9 E (Effective)", "Clock", "E", 9, null)]
@@ -442,7 +442,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(coreIndex * 1024 + threadIndex.GetValueOrDefault(), source.GroupOrder);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("CPU Total", "Cpu", "Load")]
         [DataRow("CPU Effective", "Cpu", "Clock")]
         [DataRow("Core Average", "Cpu", "Temperature")]

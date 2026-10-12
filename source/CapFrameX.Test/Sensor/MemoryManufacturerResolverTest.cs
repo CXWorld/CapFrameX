@@ -6,7 +6,7 @@ namespace CapFrameX.Test.Sensor
     [TestClass]
     public class MemoryManufacturerResolverTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("G Skill Intl", "G.SKILL")]
         [DataRow("G.Skill", "G.SKILL")]
         [DataRow("GSkill", "G.SKILL")]
@@ -19,7 +19,7 @@ namespace CapFrameX.Test.Sensor
             Assert.AreEqual(expected, MemoryManufacturerResolver.Normalize(raw));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null)]
         [DataRow("")]
         [DataRow("   ")]

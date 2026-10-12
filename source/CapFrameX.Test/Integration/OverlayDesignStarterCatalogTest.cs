@@ -99,7 +99,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(deletedBytes, File.ReadAllText(LibraryPath), "Deleted version-three starters must not be installed again.");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("core-types-overview")]
         [DataRow("core-types-compact")]
         [DataRow("core-types-thermal")]

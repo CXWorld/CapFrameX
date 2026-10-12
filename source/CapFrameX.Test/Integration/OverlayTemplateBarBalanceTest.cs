@@ -10,7 +10,7 @@ namespace CapFrameX.Test.Integration
     [TestClass]
     public class OverlayTemplateBarBalanceTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(8, 4, 2)]
         [DataRow(16, 8, 2)]
         [DataRow(24, 12, 2)]
@@ -29,7 +29,7 @@ namespace CapFrameX.Test.Integration
             AssertBalancedNativeGroup(result, "cpu0/cpu-effective-clocks/", count, columns);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(8)]
         [DataRow(16)]
         [DataRow(24)]
@@ -64,7 +64,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(checkedGroups >= 17, "Both the template gallery and shipped Saved tile profiles must be covered.");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(.5, 208)]
         [DataRow(1.0, 208)]
         [DataRow(2.0, 208)]
@@ -96,7 +96,7 @@ namespace CapFrameX.Test.Integration
             AssertBalancedNativeGroup(result, "cpu0/cpu-loads/", 128, layout.Columns);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(7)]
         [DataRow(17)]
         [DataRow(31)]
@@ -111,7 +111,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(count, members.Length);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("vertical", 100.0, 18.0)]
         [DataRow("horizontal", 100.0, 18.0)]
         public void ExplicitManualDimensionsKeepTheirIntentionalRaggedRows(string orientation, double width, double height)

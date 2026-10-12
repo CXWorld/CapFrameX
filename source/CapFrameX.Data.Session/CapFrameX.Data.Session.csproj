@@ -5,14 +5,6 @@
     <Platforms>AnyCPU;x64;x86</Platforms>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutputPath>bin\x64\Debug\</OutputPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>

@@ -94,7 +94,7 @@ namespace CapFrameX.Test.Integration
         [TestMethod]
         public void Prune_RejectsMissingLivenessProbe()
         {
-            Assert.ThrowsException<ArgumentNullException>(
+            Assert.ThrowsExactly<ArgumentNullException>(
                 () => VulkanLayerModuleProbe.Prune(null));
         }
     }

@@ -47,7 +47,7 @@ namespace CapFrameX.Test.Integration
             if (Directory.Exists(_folder)) Directory.Delete(_folder, true);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void DeletingTheActiveProfileRestoresRowsAfterCommitWithoutChangingVisibility(bool visible)
@@ -140,7 +140,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(1, Store().Profiles.Count);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void AWriterLockFailurePreservesBothFilesAndTheActiveScene(bool deleteActive)
@@ -207,7 +207,7 @@ namespace CapFrameX.Test.Integration
             int notifications = 0;
             _service.Changed += (_, _) => notifications++;
 
-            Assert.ThrowsException<TException>(() => _service.Delete(profileId));
+            Assert.ThrowsExactly<TException>(() => _service.Delete(profileId));
 
             Assert.AreSame(current, _service.CurrentDesign);
             Assert.AreSame(profiles, _service.Profiles);

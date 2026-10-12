@@ -17,7 +17,7 @@ namespace CapFrameX.Test.Integration
     [DoNotParallelize]
     public class OverlayDesignerInspectorLayoutTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("de-DE", "0,5", 0.5)]
         [DataRow("de-DE", "0.5", 0.5)]
         [DataRow("de-DE", "0.001", 0.001)]
@@ -114,7 +114,7 @@ namespace CapFrameX.Test.Integration
             }
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(BaseTheme.Dark, 1080, 560)]
         [DataRow(BaseTheme.Dark, 1280, 820)]
         [DataRow(BaseTheme.Light, 1080, 560)]

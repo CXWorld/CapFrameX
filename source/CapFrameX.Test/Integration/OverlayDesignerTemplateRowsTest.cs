@@ -16,7 +16,7 @@ namespace CapFrameX.Test.Integration
     [DoNotParallelize]
     public class OverlayDesignerTemplateRowsTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(8)]
         [DataRow(16)]
         [DataRow(24)]

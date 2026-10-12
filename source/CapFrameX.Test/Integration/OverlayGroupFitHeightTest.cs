@@ -15,7 +15,7 @@ namespace CapFrameX.Test.Integration
     {
         private const double ContentFrameHeight = 125.2;
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("metric", false, true, true)]
         [DataRow("horizontal", false, true, true)]
         [DataRow("vertical", false, true, true)]
@@ -63,7 +63,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(host.FitButton.IsVisible);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(8.0)]
         [DataRow(16.0)]
         [DataRow(48.0)]
@@ -178,7 +178,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(document.TileFrame(container).Bottom < document.TileFrame(neighbor).Top);
             Assert.IsNotNull(document.ToJson(), "Exact nested bounds must remain serializable.");
             group.FrameHeight += .01;
-            Assert.ThrowsException<FormatException>(() => document.ToJson(),
+            Assert.ThrowsExactly<FormatException>(() => document.ToJson(),
                 "Tolerating floating-point noise must not allow a child to escape its container.");
         }
 

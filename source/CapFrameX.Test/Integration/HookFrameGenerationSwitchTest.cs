@@ -23,7 +23,7 @@ namespace CapFrameX.Test.Integration
         private const NativeHookCompatibilityFlags GenericWithoutFidelityFx = Generic |
             NativeHookCompatibilityFlags.DisableFidelityFxSwapchainLifecycleHooks;
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(true)]
         [DataRow(false)]
         public void DlssToFsrAndBack_AfterLearning_RecoversLiveWithoutGameRestart(

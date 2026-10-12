@@ -16,7 +16,7 @@ namespace CapFrameX.Test.Integration
     [DoNotParallelize]
     public class OverlayDesignerGroupBarLayoutTest
     {
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("horizontal")]
         [DataRow("vertical")]
         public void BarWidthCommitsOnEnterWrapsAndUndoesAsOneEdit(string orientation)
@@ -53,7 +53,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(2, host.Rows.SelectedItem);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("horizontal")]
         [DataRow("vertical")]
         public void RowsChoiceUpdatesWidthAndShowsOnlyAchievablePacking(string orientation)
@@ -72,7 +72,7 @@ namespace CapFrameX.Test.Integration
                 double.Parse(host.Field("GroupBarWidthField").Text), .001);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("horizontal")]
         [DataRow("vertical")]
         public void TileWidthFitsEveryBarWithoutChangingRowsAndTileHeightResizesEveryTrack(string orientation)
@@ -101,7 +101,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(height + 40, host.Editor.SelectedElement.FrameHeight.Value, .001);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("horizontal", 0.5, false)]
         [DataRow("horizontal", 2.0, false)]
         [DataRow("horizontal", 0.5, true)]
@@ -149,7 +149,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsFalse(((Button)host.Editor.FindName("UndoButton")).IsEnabled);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("horizontal")]
         [DataRow("vertical")]
         public void LegacyGroupWidthResizePreservesExistingPackingAndActivatesSynchronizedDimensions(string orientation)
@@ -170,7 +170,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(host.Layout.Rows, host.Rows.SelectedItem);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("horizontal")]
         [DataRow("vertical")]
         public void CombinedResizeFitsWidthAndHeightAgainstThePreservedRows(string orientation)
@@ -191,7 +191,7 @@ namespace CapFrameX.Test.Integration
             AssertFillsWidth(host);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("horizontal")]
         [DataRow("vertical")]
         public void ExtremelyNarrowTileReducesColumnsOnlyWhenOnePixelBarsNoLongerFit(string orientation)
@@ -242,7 +242,7 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(document.ToJson(), OsdDesignDocument.FromJson(document.ToJson()).ToJson(), "The narrowest supported tile must remain valid and serializable.");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("horizontal")]
         [DataRow("vertical")]
         public void HeightOnlyResizeRetainsManuallyChosenBarWidthAndTrailingSpace(string orientation)

@@ -6,7 +6,6 @@
     <UseWPF>true</UseWPF>
     <Platform>x64</Platform>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

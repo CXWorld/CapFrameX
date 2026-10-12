@@ -6,7 +6,7 @@ namespace CapFrameX.Test.Updater
 	[TestClass]
 	public class PackageIntegrityTest
 	{
-		[DataTestMethod]
+		[TestMethod]
 		[DataRow("/passive /norestart LAUNCHAPP=1", DisplayName = "published release arguments")]
 		[DataRow("/QN  /NoRestart\tlaunchapp=0", DisplayName = "case, repeated spaces and tabs")]
 		[DataRow("/quiet /qb", DisplayName = "other UI levels")]
@@ -19,7 +19,7 @@ namespace CapFrameX.Test.Updater
 			Assert.IsNull(rejectedArgument);
 		}
 
-		[DataTestMethod]
+		[TestMethod]
 		[DataRow(@"/passive TRANSFORMS=\\attacker\share\x.mst", @"TRANSFORMS=\\attacker\share\x.mst", DisplayName = "foreign transform")]
 		[DataRow(@"/l*v C:\Windows\System32\evil.dll", "/l*v", DisplayName = "elevated log file")]
 		[DataRow("/passive REBOOT=Force", "REBOOT=Force", DisplayName = "unknown property")]

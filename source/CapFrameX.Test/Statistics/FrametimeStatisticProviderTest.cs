@@ -112,7 +112,7 @@ namespace CapFrameX.Test.Statistics
             var frametimes = new List<double> { 10, 20 };
             var fps = new List<double> { 100 };
 
-            Assert.ThrowsException<InvalidDataException>(
+            Assert.ThrowsExactly<InvalidDataException>(
                 () => _provider.GetFpsAdaptiveStandardDeviation(frametimes, fps, 500));
         }
 

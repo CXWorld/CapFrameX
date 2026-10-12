@@ -19,7 +19,7 @@ namespace CapFrameX.Test.Integration
     {
         public TestContext TestContext { get; set; }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, 32, 0.5, 0.0)]
         [DataRow(false, 32, 1.0, 0.0)]
         [DataRow(false, 128, 2.0, 0.0)]
@@ -35,7 +35,7 @@ namespace CapFrameX.Test.Integration
             VerifyNativePixels(vertical, count, scale, resizedWidth, false);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false, 0.5)]
         [DataRow(false, 2.0)]
         [DataRow(true, 0.5)]

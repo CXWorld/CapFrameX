@@ -9,6 +9,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Reactive.Linq;
 using System.Security.Cryptography;
@@ -263,6 +265,8 @@ namespace CapFrameX.Data
         private static readonly string _tokenEndpoint = ConfigurationManager.AppSettings["OAuthTokenEndpoint"];
         private static readonly string _userInfoEndpoint = ConfigurationManager.AppSettings["OAuthUserinfoEndpoint"];
 
+        private static readonly HttpClient _httpClient = new HttpClient();
+
         private OAuthRequest()
         {
         }
@@ -348,20 +352,12 @@ namespace CapFrameX.Data
 
         private static string RandomDataBase64Url(int length)
         {
-            using (var rng = new RNGCryptoServiceProvider())
-            {
-                var bytes = new byte[length];
-                rng.GetBytes(bytes);
-                return Base64UrlEncodeNoPadding(bytes);
-            }
+            return Base64UrlEncodeNoPadding(RandomNumberGenerator.GetBytes(length));
         }
 
         private static byte[] Sha256(string text)
         {
-            using (var sha256 = new SHA256Managed())
-            {
-                return sha256.ComputeHash(Encoding.ASCII.GetBytes(text));
-            }
+            return SHA256.HashData(Encoding.ASCII.GetBytes(text));
         }
 
         private static string Base64UrlEncodeNoPadding(byte[] buffer)
@@ -377,48 +373,40 @@ namespace CapFrameX.Data
 
         private static async Task<OAuthToken> TokenRequest(string tokenRequestBody, string[] scopes)
         {
-            var request = (HttpWebRequest)WebRequest.Create(_tokenEndpoint);
-            request.Method = "POST";
-            request.ContentType = "application/x-www-form-urlencoded";
-            byte[] bytes = Encoding.ASCII.GetBytes(tokenRequestBody);
-            using (var requestStream = request.GetRequestStream())
-            {
-                requestStream.Write(bytes, 0, bytes.Length);
-            }
+            // Same wire format as the former HttpWebRequest: ASCII body, plain form content type.
+            var content = new ByteArrayContent(Encoding.ASCII.GetBytes(tokenRequestBody));
+            content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
 
-            var response = await request.GetResponseAsync();
-            using (var responseStream = response.GetResponseStream())
+            using (var response = await _httpClient.PostAsync(_tokenEndpoint, content))
             {
-                using (StreamReader sr = new StreamReader(responseStream))
-                {
-                    var token = JsonConvert.DeserializeObject<OAuthToken>(sr.ReadToEnd());
-                    token.ExpirationDate = DateTime.Now + new TimeSpan(0, 0, token.ExpiresIn);
-                    var user = GetUserInfo(token.AccessToken);
-                    token.Name = user.Name;
-                    token.Picture = user.Picture;
-                    token.Email = user.Email;
-                    token.Locale = user.Locale;
-                    token.FamilyName = user.FamilyName;
-                    token.GivenName = user.GivenName;
-                    token.Id = user.Id;
-                    token.Profile = user.Profile;
-                    token.Scopes = scopes;
-                    return token;
-                }
+                // HttpWebRequest threw on non-success status codes; keep that for the callers.
+                response.EnsureSuccessStatusCode();
+
+                var token = JsonConvert.DeserializeObject<OAuthToken>(await response.Content.ReadAsStringAsync());
+                token.ExpirationDate = DateTime.Now + new TimeSpan(0, 0, token.ExpiresIn);
+                var user = await GetUserInfo(token.AccessToken);
+                token.Name = user.Name;
+                token.Picture = user.Picture;
+                token.Email = user.Email;
+                token.Locale = user.Locale;
+                token.FamilyName = user.FamilyName;
+                token.GivenName = user.GivenName;
+                token.Id = user.Id;
+                token.Profile = user.Profile;
+                token.Scopes = scopes;
+                return token;
             }
         }
 
-        private static UserInfo GetUserInfo(string accessToken)
+        private static async Task<UserInfo> GetUserInfo(string accessToken)
         {
-            var request = (HttpWebRequest)WebRequest.Create(_userInfoEndpoint);
-            request.Method = "GET";
-            request.Headers.Add(string.Format("Authorization: Bearer {0}", accessToken));
-            var response = request.GetResponse();
-            using (var responseStream = response.GetResponseStream())
+            using (var request = new HttpRequestMessage(HttpMethod.Get, _userInfoEndpoint))
             {
-                using (var reader = new StreamReader(responseStream))
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+                using (var response = await _httpClient.SendAsync(request))
                 {
-                    return JsonConvert.DeserializeObject<UserInfo>(reader.ReadToEnd());
+                    response.EnsureSuccessStatusCode();
+                    return JsonConvert.DeserializeObject<UserInfo>(await response.Content.ReadAsStringAsync());
                 }
             }
         }
