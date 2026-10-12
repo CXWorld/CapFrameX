@@ -67,5 +67,10 @@ namespace CapFrameX.EventAggregation.Messages
         public class ThemeChanged { }
 
         public class OverlayConfigChanged { }
+
+        public class OpenOverlayDesigner
+        {
+            public string ProfileId { get; set; }
+        }
     }
 }

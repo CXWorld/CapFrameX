@@ -81,11 +81,32 @@ namespace CapFrameX.Sensor
 
         // Written from the UI thread, read from the sensor update loop.
         private volatile bool _evaluateAllSensors;
+        private int _allSensorsLeaseCount;
 
         public bool EvaluateAllSensors
         {
-            get => _evaluateAllSensors;
+            get => _evaluateAllSensors || Volatile.Read(ref _allSensorsLeaseCount) > 0;
             set => _evaluateAllSensors = value;
+        }
+
+        public IDisposable AcquireAllSensors()
+        {
+            Interlocked.Increment(ref _allSensorsLeaseCount);
+            return new AllSensorsLease(this);
+        }
+
+        private sealed class AllSensorsLease : IDisposable
+        {
+            private SensorConfig _owner;
+
+            public AllSensorsLease(SensorConfig owner) => _owner = owner;
+
+            public void Dispose()
+            {
+                var owner = Interlocked.Exchange(ref _owner, null);
+                if (owner != null)
+                    Interlocked.Decrement(ref owner._allSensorsLeaseCount);
+            }
         }
 
         public int SensorLoggingRefreshPeriod { get; set; }
@@ -192,7 +213,7 @@ namespace CapFrameX.Sensor
             // A saved logging selection describes what a capture should contain; it must not
             // keep vendor APIs, SMU/PMC counters and storage SMART queries active between
             // captures. The active-sensors websocket intentionally uses that same selection.
-            return _evaluateAllSensors
+            return EvaluateAllSensors
                 || _wsSensorsEnabled
                 || ((_isSensorLoggingActive || _wsActiveSensorsEnabled) && IsSelectedForLogging(identifier))
                 || IsSelectedForOverlay(identifier);

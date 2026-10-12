@@ -468,5 +468,13 @@ That's it! All `*.json` files in the `Localization` folder are automatically emb
 # Build settings
 * Solution Platform x64
 
+When a sibling `CapFrameX.OSD` checkout is present, builds automatically use its Interop and Controls projects. These optional projects are not listed in the public solution. Before the first Visual Studio build (or after deleting their `obj` folders), run this from the repository root in a Visual Studio Developer PowerShell:
+
+```powershell
+msbuild CapFrameX.sln /t:Restore /p:Configuration=Release /p:Platform=x64 /p:RestorePackagesConfig=true
+```
+
+This generates the NuGet project information that Visual Studio needs for those references and resolves [NU1105](https://learn.microsoft.com/en-us/nuget/reference/errors-and-warnings/nu1105). Reload the solution if Visual Studio still displays the previous restore error. Clones without the OSD checkout use the assemblies in `external/CapFrameX.OSD-prebuilt`.
+
 # Dev roadmap
 * CapFrameX 2.0 with service-client architecture

@@ -39,6 +39,7 @@ using System;
 using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
@@ -59,6 +60,8 @@ namespace CapFrameX
         private OSD.Integration.HookLearnedProfileStore _hookLearnedProfileStore;
         private OSD.Integration.HookProfileReportService _hookProfileReports;
         private OSD.Integration.HookOverlayStatusService _hookOverlayStatusService;
+        private OSD.Integration.OverlayDesignService _overlayDesignService;
+        private OSD.Integration.OverlayDesignRuntimePublisher _overlayDesignRuntime;
 
         // The existing composition root uses DryIoc-specific registration APIs. PrismApplication
         // exposes the container through Prism's abstraction, so unwrap it in one place.
@@ -165,6 +168,12 @@ namespace CapFrameX
                 // selected in-game renderer cannot safely become operational (including D3D9).
                 using (StartupPerformanceLogger.Measure("OSD overlay bridge initialization"))
                 {
+                    _overlayDesignRuntime = new OSD.Integration.OverlayDesignRuntimePublisher(
+                        _overlayDesignService,
+                        Container.Resolve<OSD.Integration.IOverlayTelemetryService>(), config,
+                        rtssService.ProcessIdStream, rtssService.ProcessCountStream,
+                        _hookOverlayManager.HookFreeFallbackStream);
+                    Exit += (_, _) => _overlayDesignRuntime.Dispose();
                     _osdOverlayBridge = new OSD.Integration.OsdOverlayBridge(
                         osdOverlayService,
                         config, // IAppConfiguration (resolved above) — gates OSD vs RTSS
@@ -181,7 +190,8 @@ namespace CapFrameX
                             PresentMonCaptureService.SwapChainAddress_INDEX,
                         frameTypeColumnIndex:
                             PresentMonCaptureService.FrameType_INDEX,
-                        processCountStream: rtssService.ProcessCountStream);
+                        processCountStream: rtssService.ProcessCountStream,
+                        designRuntime: _overlayDesignRuntime);
                 }
 
                 // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries
@@ -249,6 +259,57 @@ namespace CapFrameX
         {
             // InitializeShell already applies the persisted minimized/tray state. Prism's default
             // implementation calls Show() and would reveal a window that was deliberately hidden.
+            if (Array.Exists(Environment.GetCommandLineArgs(), argument =>
+                string.Equals(argument, "--overlay-designer", StringComparison.OrdinalIgnoreCase)))
+            {
+                Dispatcher.BeginInvoke(new Action(() => OpenOverlayDesigner()),
+                    System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            }
+        }
+
+        private async void OpenOverlayDesigner(string profileId = null)
+        {
+            var existing = Windows.OfType<View.OverlayDesignerWindow>().FirstOrDefault();
+            if (existing != null)
+            {
+                await existing.OpenProfileAsync(profileId);
+                return;
+            }
+            var capture = Container.Resolve<ICaptureService>();
+            var processes = Container.Resolve<IRTSSService>();
+            var window = new View.OverlayDesignerWindow(
+                Container.Resolve<OSD.Integration.IOverlayTelemetryService>(),
+                OSD.Integration.OverlayPreviewFrameFeed.Observe(capture.FrameDataStream,
+                    processes.ProcessIdStream, PresentMonCaptureService.ProcessID_INDEX,
+                    PresentMonCaptureService.MsBetweenPresents_INDEX,
+                    PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
+                    () => capture.CPUStartQPCTimeInMs_Index),
+                Container.Resolve<IPathService>().ConfigFolder, _overlayDesignService,
+                new OSD.Integration.OverlayClassicPreviewFeed(Container.Resolve<IOverlayEntryProvider>(),
+                    Container.Resolve<IOverlayService>(), Container.Resolve<IAppConfiguration>()),
+                OpenClassicOverlayProfile)
+            {
+                Owner = MainWindow
+            };
+            await window.OpenProfileAsync(profileId);
+        }
+
+        private void OpenClassicOverlayProfile()
+        {
+            var regions = Container.Resolve<IRegionManager>();
+            var colorbar = regions.Regions["ColorbarRegion"].Views.OfType<FrameworkElement>()
+                .Select(view => view.DataContext).OfType<ColorbarViewModel>().FirstOrDefault();
+            if (colorbar != null) colorbar.OverlayIsChecked = true;
+            else regions.RequestNavigate("DataRegion", "OverlayView");
+            foreach (var view in regions.Regions["DataRegion"].ActiveViews.OfType<View.OverlayView>())
+                view.ShowClassicProfile();
+            // Owned windows stay above their owner. Minimize the designer while editing rows;
+            // its working design remains open and can be restored with Open designer.
+            foreach (var designer in Windows.OfType<View.OverlayDesignerWindow>())
+                designer.WindowState = WindowState.Minimized;
+            MainWindow.Show();
+            if (MainWindow.WindowState == WindowState.Minimized) MainWindow.WindowState = WindowState.Normal;
+            MainWindow.Activate();
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
@@ -299,6 +360,17 @@ namespace CapFrameX
                     _hookLearnedProfileStore =
                         OSD.Integration.HookLearnedProfileStore.Create(pathService.ConfigFolder);
                     Container.RegisterInstance<IHookLearnedProfileService>(_hookLearnedProfileStore);
+                    _overlayDesignService = new OSD.Integration.OverlayDesignService(
+                        pathService.ConfigFolder, appConfiguration, () =>
+                        {
+                            // Resolve lazily: the designer is registered before the shared
+                            // row feed. Both renderers and all visibility toggles follow it.
+                            var overlay = Container.Resolve<IOverlayService>();
+                            appConfiguration.IsOverlayActive = true;
+                            overlay.IsOverlayActiveStream.OnNext(true);
+                        });
+                    Container.RegisterInstance<IOverlayDesignService>(_overlayDesignService);
+                    Exit += (_, _) => _overlayDesignService.Dispose();
                 }
 
                 using (StartupPerformanceLogger.Measure("Prism and core service registrations"))
@@ -315,6 +387,8 @@ namespace CapFrameX
                     Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
                     Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
                     Container.Register<ISensorService, SensorService>(Reuse.Singleton);
+                    Container.Register<OSD.Integration.IOverlayTelemetryService,
+                        OSD.Integration.OverlayTelemetryService>(Reuse.Singleton);
                 }
 
                 using (StartupPerformanceLogger.Measure("Sensor and overlay configuration registration"))
@@ -398,6 +472,8 @@ namespace CapFrameX
 
                     using (StartupPerformanceLogger.Measure("Application event subscriptions"))
                     {
+                        Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<ViewMessages.OpenOverlayDesigner>>()
+                            .Subscribe(request => OpenOverlayDesigner(request.ProfileId), ThreadOption.UIThread);
                         Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>()
                             .Subscribe(async _ =>
                             {

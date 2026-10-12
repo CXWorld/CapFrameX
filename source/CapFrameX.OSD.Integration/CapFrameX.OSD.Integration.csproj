@@ -8,11 +8,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- CapFrameX.OSD lives in a private repo, consumed as an optional submodule.
-         With the submodule checked out we build the neutral native bridge from source;
-         otherwise we fall back to the prebuilt binaries in external\CapFrameX.OSD-prebuilt. -->
-    <CfxOsdSubmoduleDir>$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD\</CfxOsdSubmoduleDir>
-    <CfxOsdFromSource Condition="'$(CfxOsdFromSource)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj')">true</CfxOsdFromSource>
+    <!-- Directory.Build.props selects the optional OSD checkout. Build its neutral native
+         bridge from source when enabled; otherwise use external\CapFrameX.OSD-prebuilt. -->
     <!-- Preserve the explicit x64 mapping on the optional project reference. Visual Studio
          otherwise removes the platform for projects that are not listed in the solution. -->
     <ShouldUnsetParentConfigurationAndPlatform Condition="'$(CfxOsdFromSource)' == 'true' And '$(ShouldUnsetParentConfigurationAndPlatform)' == ''">false</ShouldUnsetParentConfigurationAndPlatform>
@@ -21,9 +18,11 @@
   <ItemGroup>
     <!-- the CapFrameX overlay contracts this project adapts -->
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj" />
+    <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="StarterDesigns\*.json" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
     <None Remove="HookCompatibilityProfiles.xml" />
     <EmbeddedResource Include="HookCompatibilityProfiles.xml"
                       LogicalName="CapFrameX.OSD.Integration.HookCompatibilityProfiles.xml" />
@@ -34,10 +33,12 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(CfxOsdFromSource)' == 'true'">
-    <ProjectReference Include="$(CfxOsdSubmoduleDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj">
-      <!-- The optional submodule project is not listed in CapFrameX.sln, so Visual Studio
+    <ProjectReference Include="$(_CfxOsdSourceDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj">
+      <!-- The optional OSD project is not listed in CapFrameX.sln, so Visual Studio
            cannot apply a solution platform mapping to this x64-only reference. -->
       <SetPlatform>Platform=x64</SetPlatform>
+      <CfxOptionalOsd>true</CfxOptionalOsd>
+      <AdditionalProperties>ShouldUnsetParentConfigurationAndPlatform=false</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>
 
@@ -65,10 +66,11 @@
        app output — NOT next to the exe. HookOverlayManager injects a per-version COPY of
        this file (under LocalAppData), so games lock the copy, never this staged source.
        Keeping it in a subfolder also means a game that (legacy) locked the old top-level
-       bin\cfx_osd_hook.dll never blocks this build. Prefer the submodule's hook_poc build
-       output; fall back to the prebuilt native binary. -->
+       bin\cfx_osd_hook.dll never blocks this build. Prefer the selected source checkout's
+       hook_poc output only when source builds are enabled; otherwise use the prebuilt binary.
+       Explicit per-file overrides remain authoritative for custom development payloads. -->
   <PropertyGroup>
-    <CfxOsdHookDllPath Condition="'$(CfxOsdHookDllPath)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\hook_poc\build\bin\RelWithDebInfo\cfx_osd_hook.dll')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\hook_poc\build\bin\RelWithDebInfo\cfx_osd_hook.dll</CfxOsdHookDllPath>
+    <CfxOsdHookDllPath Condition="'$(CfxOsdHookDllPath)' == '' And '$(CfxOsdFromSource)' == 'true' And Exists('$(_CfxOsdSourceDir)CapFrameX.OSD\hook_poc\build\bin\RelWithDebInfo\cfx_osd_hook.dll')">$(_CfxOsdSourceDir)CapFrameX.OSD\hook_poc\build\bin\RelWithDebInfo\cfx_osd_hook.dll</CfxOsdHookDllPath>
     <CfxOsdHookDllPath Condition="'$(CfxOsdHookDllPath)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\cfx_osd_hook.dll')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\cfx_osd_hook.dll</CfxOsdHookDllPath>
   </PropertyGroup>
   <ItemGroup Condition="'$(CfxOsdHookDllPath)' != ''">
@@ -80,9 +82,9 @@
 
   <!-- x86 hook for 32-bit (WOW64) games. HookInjector resolves the target's 32-bit LoadLibraryW
        from the x64 app, so only the hook DLL is staged into hook\x86\. Same
-       submodule-then-prebuilt fallback as the x64 hook. -->
+       source-then-prebuilt fallback as the x64 hook. -->
   <PropertyGroup>
-    <CfxOsdHookDllX86Path Condition="'$(CfxOsdHookDllX86Path)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\hook_poc\build-x86\bin\RelWithDebInfo\cfx_osd_hook.dll')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\hook_poc\build-x86\bin\RelWithDebInfo\cfx_osd_hook.dll</CfxOsdHookDllX86Path>
+    <CfxOsdHookDllX86Path Condition="'$(CfxOsdHookDllX86Path)' == '' And '$(CfxOsdFromSource)' == 'true' And Exists('$(_CfxOsdSourceDir)CapFrameX.OSD\hook_poc\build-x86\bin\RelWithDebInfo\cfx_osd_hook.dll')">$(_CfxOsdSourceDir)CapFrameX.OSD\hook_poc\build-x86\bin\RelWithDebInfo\cfx_osd_hook.dll</CfxOsdHookDllX86Path>
     <CfxOsdHookDllX86Path Condition="'$(CfxOsdHookDllX86Path)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\x86\cfx_osd_hook.dll')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\x86\cfx_osd_hook.dll</CfxOsdHookDllX86Path>
   </PropertyGroup>
   <ItemGroup Condition="'$(CfxOsdHookDllX86Path)' != ''">
@@ -95,7 +97,7 @@
   <!-- MinHook is linked statically into both DXGI hook DLLs. Ship its BSD license once beside
        the hook payload for both source and prebuilt builds. -->
   <PropertyGroup>
-    <CfxOsdMinHookLicensePath Condition="'$(CfxOsdMinHookLicensePath)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\third_party\minhook\LICENSE.txt')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\third_party\minhook\LICENSE.txt</CfxOsdMinHookLicensePath>
+    <CfxOsdMinHookLicensePath Condition="'$(CfxOsdMinHookLicensePath)' == '' And '$(CfxOsdFromSource)' == 'true' And Exists('$(_CfxOsdSourceDir)CapFrameX.OSD\third_party\minhook\LICENSE.txt')">$(_CfxOsdSourceDir)CapFrameX.OSD\third_party\minhook\LICENSE.txt</CfxOsdMinHookLicensePath>
     <CfxOsdMinHookLicensePath Condition="'$(CfxOsdMinHookLicensePath)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\MinHook.LICENSE.txt')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\MinHook.LICENSE.txt</CfxOsdMinHookLicensePath>
   </PropertyGroup>
   <ItemGroup Condition="'$(CfxOsdMinHookLicensePath)' != ''">
@@ -110,15 +112,15 @@
        correct one, because the loader identifies layers by NAME. Keep every DLL beside its
        manifest: library_path is relative, which is why both manifests can be identical files. -->
   <PropertyGroup>
-    <CfxOsdVulkanDllPath Condition="'$(CfxOsdVulkanDllPath)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\build\bin\RelWithDebInfo\cfx_osd_vklayer.dll')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\build\bin\RelWithDebInfo\cfx_osd_vklayer.dll</CfxOsdVulkanDllPath>
+    <CfxOsdVulkanDllPath Condition="'$(CfxOsdVulkanDllPath)' == '' And '$(CfxOsdFromSource)' == 'true' And Exists('$(_CfxOsdSourceDir)CapFrameX.OSD\vk_layer\build\bin\RelWithDebInfo\cfx_osd_vklayer.dll')">$(_CfxOsdSourceDir)CapFrameX.OSD\vk_layer\build\bin\RelWithDebInfo\cfx_osd_vklayer.dll</CfxOsdVulkanDllPath>
     <CfxOsdVulkanDllPath Condition="'$(CfxOsdVulkanDllPath)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\cfx_osd_vklayer.dll')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\cfx_osd_vklayer.dll</CfxOsdVulkanDllPath>
-    <CfxOsdVulkanManifestPath Condition="'$(CfxOsdVulkanManifestPath)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\cfx_osd_vklayer.json')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\cfx_osd_vklayer.json</CfxOsdVulkanManifestPath>
+    <CfxOsdVulkanManifestPath Condition="'$(CfxOsdVulkanManifestPath)' == '' And '$(CfxOsdFromSource)' == 'true' And Exists('$(_CfxOsdSourceDir)CapFrameX.OSD\vk_layer\cfx_osd_vklayer.json')">$(_CfxOsdSourceDir)CapFrameX.OSD\vk_layer\cfx_osd_vklayer.json</CfxOsdVulkanManifestPath>
     <CfxOsdVulkanManifestPath Condition="'$(CfxOsdVulkanManifestPath)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\cfx_osd_vklayer_v1.json')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\cfx_osd_vklayer_v1.json</CfxOsdVulkanManifestPath>
-    <CfxOsdVulkanDllPathX86 Condition="'$(CfxOsdVulkanDllPathX86)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\build-x86\bin\RelWithDebInfo\cfx_osd_vklayer.dll')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\build-x86\bin\RelWithDebInfo\cfx_osd_vklayer.dll</CfxOsdVulkanDllPathX86>
+    <CfxOsdVulkanDllPathX86 Condition="'$(CfxOsdVulkanDllPathX86)' == '' And '$(CfxOsdFromSource)' == 'true' And Exists('$(_CfxOsdSourceDir)CapFrameX.OSD\vk_layer\build-x86\bin\RelWithDebInfo\cfx_osd_vklayer.dll')">$(_CfxOsdSourceDir)CapFrameX.OSD\vk_layer\build-x86\bin\RelWithDebInfo\cfx_osd_vklayer.dll</CfxOsdVulkanDllPathX86>
     <CfxOsdVulkanDllPathX86 Condition="'$(CfxOsdVulkanDllPathX86)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\x86\cfx_osd_vklayer.dll')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\x86\cfx_osd_vklayer.dll</CfxOsdVulkanDllPathX86>
     <!-- Byte-identical to the x64 manifest, but a separate source file: MSBuild deduplicates
          Content items by Include, so one file cannot be staged to two link targets. -->
-    <CfxOsdVulkanManifestPathX86 Condition="'$(CfxOsdVulkanManifestPathX86)' == '' And Exists('$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\build-x86\bin\RelWithDebInfo\cfx_osd_vklayer.json')">$(CfxOsdSubmoduleDir)CapFrameX.OSD\vk_layer\build-x86\bin\RelWithDebInfo\cfx_osd_vklayer.json</CfxOsdVulkanManifestPathX86>
+    <CfxOsdVulkanManifestPathX86 Condition="'$(CfxOsdVulkanManifestPathX86)' == '' And '$(CfxOsdFromSource)' == 'true' And Exists('$(_CfxOsdSourceDir)CapFrameX.OSD\vk_layer\build-x86\bin\RelWithDebInfo\cfx_osd_vklayer.json')">$(_CfxOsdSourceDir)CapFrameX.OSD\vk_layer\build-x86\bin\RelWithDebInfo\cfx_osd_vklayer.json</CfxOsdVulkanManifestPathX86>
     <CfxOsdVulkanManifestPathX86 Condition="'$(CfxOsdVulkanManifestPathX86)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\x86\cfx_osd_vklayer_v1.json')">$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\native\vk\x86\cfx_osd_vklayer_v1.json</CfxOsdVulkanManifestPathX86>
   </PropertyGroup>
   <!-- PreserveNewest, not Always: unlike the hook — which games load as a content-hashed copy

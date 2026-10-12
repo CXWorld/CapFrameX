@@ -1,0 +1,261 @@
+{
+  "version": 1,
+  "name": "Memory Watch",
+  "anchor": "top_left",
+  "marginX": 24,
+  "marginY": 24,
+  "editor": {
+    "format": "cfx-grid",
+    "version": 1,
+    "scale": 1,
+    "width": 392,
+    "gap": 7,
+    "padding": 13,
+    "radius": 6,
+    "canvas": true,
+    "canvasHeight": 424,
+    "gridSize": 8,
+    "showGrid": true,
+    "snapToGrid": true
+  },
+  "theme": {
+    "panel": "#132823E8",
+    "accent": "#63DECBFF",
+    "text": "#F2F4F8FF",
+    "subtext": "#F2F4F8FF",
+    "fontFamily": "Segoe UI",
+    "fontSize": 14,
+    "titleSize": 12,
+    "pad": 13,
+    "gap": 7,
+    "radius": 6
+  },
+  "root": {
+    "type": "panel",
+    "layout": "canvas",
+    "background": false,
+    "padding": 0,
+    "columns": 1,
+    "width": 392,
+    "gap": 7,
+    "children": [
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 13,
+        "radius": 6,
+        "color": "#132823E8",
+        "children": [
+          {
+            "type": "text",
+            "text": "MEMORY WATCH",
+            "size": 16,
+            "weight": "semibold",
+            "color": "#63DECBFF",
+            "editor": {
+              "x": 0,
+              "y": 0,
+              "frameWidth": 390,
+              "frameHeight": 47.281,
+              "kind": "text",
+              "label": "Heading",
+              "key": "fps",
+              "unit": "",
+              "text": "MEMORY WATCH",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 16,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 0,
+        "frameWidth": 390,
+        "frameHeight": 47.281,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 13,
+        "radius": 6,
+        "color": "#132823E8",
+        "children": [
+          {
+            "type": "bar",
+            "key": "ramUsed",
+            "label": "RAM / 32 GB reference",
+            "unit": "GB",
+            "min": 0,
+            "max": 32,
+            "width": 364,
+            "height": 8,
+            "digits": 1,
+            "showValue": true,
+            "editor": {
+              "x": 0,
+              "y": 54.281,
+              "frameWidth": 390,
+              "frameHeight": 56.2,
+              "kind": "bar",
+              "label": "RAM / 32 GB reference",
+              "key": "ramUsed",
+              "unit": "GB",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 1,
+              "valueSize": 28,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 32
+            }
+          }
+        ],
+        "x": 0,
+        "y": 54.281,
+        "frameWidth": 390,
+        "frameHeight": 56.2,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 13,
+        "radius": 6,
+        "color": "#132823E8",
+        "children": [
+          {
+            "type": "bar",
+            "key": "vramUsed",
+            "label": "VRAM / 24 GB reference",
+            "unit": "GB",
+            "min": 0,
+            "max": 24,
+            "width": 364,
+            "height": 8,
+            "digits": 1,
+            "showValue": true,
+            "editor": {
+              "x": 0,
+              "y": 117.481,
+              "frameWidth": 390,
+              "frameHeight": 56.2,
+              "kind": "bar",
+              "label": "VRAM / 24 GB reference",
+              "key": "vramUsed",
+              "unit": "GB",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 1,
+              "valueSize": 28,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 24
+            }
+          }
+        ],
+        "x": 0,
+        "y": 117.481,
+        "frameWidth": 390,
+        "frameHeight": 56.2,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 13,
+        "radius": 6,
+        "color": "#132823E8",
+        "children": [
+          {
+            "type": "metric",
+            "key": "frametime",
+            "label": "Frametime",
+            "unit": "ms",
+            "format": "%.1f",
+            "valueSize": 26,
+            "size": 13,
+            "unitSize": 13,
+            "labelPosition": "left",
+            "width": 364,
+            "editor": {
+              "x": 0,
+              "y": 180.681,
+              "frameWidth": 390,
+              "frameHeight": 60.582,
+              "kind": "metric",
+              "label": "Frametime",
+              "key": "frametime",
+              "unit": "ms",
+              "text": "CapFrameX",
+              "labelPosition": "left",
+              "columnSpan": 1,
+              "digits": 1,
+              "valueSize": 26,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 180.681,
+        "frameWidth": 390,
+        "frameHeight": 60.582,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 13,
+        "radius": 6,
+        "color": "#132823E8",
+        "children": [
+          {
+            "type": "chart",
+            "title": "Frame time",
+            "series": "frametimes",
+            "width": 364,
+            "height": 110,
+            "unit": "ms",
+            "editor": {
+              "x": 0,
+              "y": 248.263,
+              "frameWidth": 390,
+              "frameHeight": 136,
+              "kind": "chart",
+              "label": "Frame time",
+              "key": "frametimes",
+              "unit": "ms",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 28,
+              "height": 110,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 248.263,
+        "frameWidth": 390,
+        "frameHeight": 136,
+        "clip": true
+      }
+    ],
+    "height": 424
+  }
+}

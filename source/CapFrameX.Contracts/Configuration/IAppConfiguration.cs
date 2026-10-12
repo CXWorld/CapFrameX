@@ -228,6 +228,12 @@ namespace CapFrameX.Contracts.Configuration
 		/// </summary>
 		int OsdZoom { get; set; }
 
+		/// <summary>Saved designer profile used by the CapFrameX renderers; empty retains the classic overlay.</summary>
+		string ActiveOverlayDesignProfileId { get; set; }
+
+        /// <summary>Last successfully selected tile profile, retained while Row overlay or RTSS is active.</summary>
+        string LastOverlayDesignProfileId { get; set; }
+
 		/// <summary>
 		/// Corner the CapFrameX overlay is anchored to, as <c>cfx_osd_anchor</c>:
 		/// 0 = top left, 1 = top right, 2 = bottom left, 3 = bottom right, 4 = top center.

@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "name": "Hybrid Compact",
+  "anchor": "top_left",
+  "marginX": 24,
+  "marginY": 24,
+  "editor": {
+    "format": "cfx-grid",
+    "version": 1,
+    "scale": 1,
+    "width": 480,
+    "gap": 4,
+    "padding": 8,
+    "radius": 6,
+    "canvas": true,
+    "canvasHeight": 320,
+    "gridSize": 8,
+    "showGrid": true,
+    "snapToGrid": true
+  },
+  "theme": {
+    "panel": "#11151BC8",
+    "accent": "#0271F9FF",
+    "text": "#F2F4F8FF",
+    "subtext": "#F2F4F8FF",
+    "fontFamily": "Segoe UI",
+    "fontSize": 14,
+    "titleSize": 12,
+    "pad": 8,
+    "gap": 4,
+    "radius": 6
+  },
+  "root": {
+    "type": "panel",
+    "layout": "canvas",
+    "background": false,
+    "padding": 0,
+    "columns": 1,
+    "width": 480,
+    "gap": 4,
+    "children": [
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 8,
+        "radius": 6,
+        "color": "#11151BC8",
+        "children": [
+          {
+            "type": "metric",
+            "key": "fps",
+            "label": "FPS",
+            "unit": "FPS",
+            "format": "%.0f",
+            "valueSize": 40,
+            "size": 13,
+            "unitSize": 13,
+            "labelPosition": "left",
+            "width": 464,
+            "editor": {
+              "x": 0,
+              "y": 0,
+              "frameWidth": 480,
+              "frameHeight": 69.203,
+              "kind": "metric",
+              "label": "FPS",
+              "key": "fps",
+              "unit": "FPS",
+              "text": "CapFrameX",
+              "labelPosition": "left",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 40,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 0,
+        "frameWidth": 480,
+        "frameHeight": 69.203,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 8,
+        "radius": 6,
+        "color": "#11151BC8",
+        "children": [
+          {
+            "type": "classicRows",
+            "width": 464,
+            "height": 128,
+            "rowScale": 1,
+            "editor": {
+              "x": 0,
+              "y": 73.203,
+              "frameWidth": 480,
+              "frameHeight": 144,
+              "kind": "classicRows",
+              "label": "Classic rows",
+              "key": null,
+              "unit": "",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 28,
+              "height": 128,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 73.203,
+        "frameWidth": 480,
+        "frameHeight": 144,
+        "clip": true
+      }
+    ],
+    "height": 320
+  }
+}

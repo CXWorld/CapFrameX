@@ -276,3 +276,6 @@ crash-report/
 /memory-dumps/
 /pmcreader-plugin/Zen5Log.txt
 /temp/
+
+# Native overlay design-test preview output
+/design-preview.bmp

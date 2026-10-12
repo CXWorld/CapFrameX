@@ -1,0 +1,263 @@
+{
+  "version": 1,
+  "name": "GPU Dashboard",
+  "anchor": "top_left",
+  "marginX": 24,
+  "marginY": 24,
+  "editor": {
+    "format": "cfx-grid",
+    "version": 1,
+    "scale": 1,
+    "width": 512,
+    "gap": 7,
+    "padding": 12,
+    "radius": 6,
+    "canvas": true,
+    "canvasHeight": 432,
+    "gridSize": 8,
+    "showGrid": true,
+    "snapToGrid": true
+  },
+  "theme": {
+    "panel": "#1B251BED",
+    "accent": "#88DC62FF",
+    "text": "#F2F4F8FF",
+    "subtext": "#F2F4F8FF",
+    "fontFamily": "Segoe UI",
+    "fontSize": 14,
+    "titleSize": 12,
+    "pad": 12,
+    "gap": 7,
+    "radius": 6
+  },
+  "root": {
+    "type": "panel",
+    "layout": "canvas",
+    "background": false,
+    "padding": 0,
+    "columns": 2,
+    "width": 512,
+    "gap": 7,
+    "children": [
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 2,
+        "padding": 12,
+        "radius": 6,
+        "color": "#1B251BED",
+        "children": [
+          {
+            "type": "text",
+            "text": "GPU DASHBOARD",
+            "size": 16,
+            "weight": "semibold",
+            "color": "#88DC62FF",
+            "editor": {
+              "x": 0,
+              "y": 0,
+              "frameWidth": 510,
+              "frameHeight": 45.281,
+              "kind": "text",
+              "label": "Heading",
+              "key": "fps",
+              "unit": "",
+              "text": "GPU DASHBOARD",
+              "labelPosition": "top",
+              "columnSpan": 2,
+              "digits": 0,
+              "valueSize": 16,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 0,
+        "frameWidth": 510,
+        "frameHeight": 45.281,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 2,
+        "padding": 12,
+        "radius": 6,
+        "color": "#1B251BED",
+        "children": [
+          {
+            "type": "gauge",
+            "key": "gpuLoad",
+            "label": "GPU utilization",
+            "unit": "%",
+            "diameter": 150,
+            "min": 0,
+            "max": 100,
+            "digits": 0,
+            "editor": {
+              "x": 0,
+              "y": 52.281,
+              "frameWidth": 510,
+              "frameHeight": 192,
+              "kind": "gauge",
+              "label": "GPU utilization",
+              "key": "gpuLoad",
+              "unit": "%",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 2,
+              "digits": 0,
+              "valueSize": 28,
+              "height": 150,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 52.281,
+        "frameWidth": 510,
+        "frameHeight": 192,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 12,
+        "radius": 6,
+        "color": "#1B251BED",
+        "children": [
+          {
+            "type": "metric",
+            "key": "gpuTemp",
+            "label": "Core temperature",
+            "unit": "\u00B0C",
+            "format": "%.0f",
+            "valueSize": 28,
+            "size": 13,
+            "unitSize": 13,
+            "labelPosition": "top",
+            "width": 227.5,
+            "editor": {
+              "x": 0,
+              "y": 251.281,
+              "frameWidth": 251.5,
+              "frameHeight": 81.533,
+              "kind": "metric",
+              "label": "Core temperature",
+              "key": "gpuTemp",
+              "unit": "\u00B0C",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 28,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 251.281,
+        "frameWidth": 251.5,
+        "frameHeight": 81.533,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 12,
+        "radius": 6,
+        "color": "#1B251BED",
+        "children": [
+          {
+            "type": "metric",
+            "key": "gpuPower",
+            "label": "Board power",
+            "unit": "W",
+            "format": "%.0f",
+            "valueSize": 28,
+            "size": 13,
+            "unitSize": 13,
+            "labelPosition": "top",
+            "width": 227.5,
+            "editor": {
+              "x": 258.5,
+              "y": 251.281,
+              "frameWidth": 251.5,
+              "frameHeight": 81.533,
+              "kind": "metric",
+              "label": "Board power",
+              "key": "gpuPower",
+              "unit": "W",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 28,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 258.5,
+        "y": 251.281,
+        "frameWidth": 251.5,
+        "frameHeight": 81.533,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 2,
+        "padding": 12,
+        "radius": 6,
+        "color": "#1B251BED",
+        "children": [
+          {
+            "type": "bar",
+            "key": "vramUsed",
+            "label": "Video memory / 24 GB",
+            "unit": "GB",
+            "min": 0,
+            "max": 24,
+            "width": 486,
+            "height": 8,
+            "digits": 1,
+            "showValue": true,
+            "editor": {
+              "x": 0,
+              "y": 339.814,
+              "frameWidth": 510,
+              "frameHeight": 54.2,
+              "kind": "bar",
+              "label": "Video memory / 24 GB",
+              "key": "vramUsed",
+              "unit": "GB",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 2,
+              "digits": 1,
+              "valueSize": 28,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 24
+            }
+          }
+        ],
+        "x": 0,
+        "y": 339.814,
+        "frameWidth": 510,
+        "frameHeight": 54.2,
+        "clip": true
+      }
+    ],
+    "height": 432
+  }
+}

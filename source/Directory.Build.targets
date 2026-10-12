@@ -1,0 +1,30 @@
+<Project>
+
+  <!-- The private OSD projects cannot be listed in the public solution because they are
+       optional. Visual Studio schedules only solution projects and resolves other project
+       references with GetTargetPath, which leaves a fresh configuration without its DLLs.
+       Build only the explicitly marked OSD references before their outputs are resolved. -->
+  <ItemGroup Condition="'$(CfxOsdFromSource)' == 'true'">
+    <_CfxOptionalOsdProject Include="@(ProjectReference->WithMetadataValue('CfxOptionalOsd', 'true'))" />
+  </ItemGroup>
+  <Target Name="BuildOptionalOsdReferencesForVisualStudio"
+          BeforeTargets="ResolveProjectReferences"
+          Condition="'@(_CfxOptionalOsdProject)' != '' And '$(BuildingInsideVisualStudio)' == 'true' And '$(DesignTimeBuild)' != 'true'">
+    <!-- Use an ordinary recursive project build for these standalone dependencies. Removing
+         the solution mapping prevents it from clearing the x64 platform on Controls' own
+         Interop reference. Identical properties let MSBuild reuse shared dependency builds. -->
+    <MSBuild Projects="@(_CfxOptionalOsdProject)"
+             Targets="Build"
+             Properties="Configuration=$(Configuration);Platform=x64;BuildingInsideVisualStudio=false;BuildProjectReferences=true;ShouldUnsetParentConfigurationAndPlatform=false"
+             RemoveProperties="CurrentSolutionConfigurationContents;BuildingSolutionFile"
+             BuildInParallel="$(BuildInParallel)" />
+  </Target>
+
+  <!-- The IDE's fast up-to-date check must also notice changes in projects it does not load;
+       otherwise an edit to the editor could skip the target above entirely. -->
+  <ItemGroup Condition="'@(_CfxOptionalOsdProject)' != ''">
+    <UpToDateCheckInput Include="$(_CfxOsdSourceDir)CapFrameX.OSD.Interop\**\*.cs;$(_CfxOsdSourceDir)CapFrameX.OSD.Interop\*.csproj;$(_CfxOsdSourceDir)CapFrameX.OSD.Controls\**\*.cs;$(_CfxOsdSourceDir)CapFrameX.OSD.Controls\**\*.xaml;$(_CfxOsdSourceDir)CapFrameX.OSD.Controls\*.csproj"
+                       Exclude="$(_CfxOsdSourceDir)**\bin\**;$(_CfxOsdSourceDir)**\obj\**" />
+  </ItemGroup>
+
+</Project>

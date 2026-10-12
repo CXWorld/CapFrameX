@@ -1,0 +1,57 @@
+<UserControl x:Class="CapFrameX.View.Controls.OverlayDesignerControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:osd="clr-namespace:CapFrameX.OSD.Controls;assembly=CapFrameX.OSD.Controls"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
+             Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+             Loaded="OnLoaded" Unloaded="OnUnloaded" IsVisibleChanged="OnIsVisibleChanged">
+    <materialDesign:DialogHost x:Name="ProfileDialogHost" CloseOnClickAway="False">
+    <DockPanel Margin="12">
+        <Border DockPanel.Dock="Top" Margin="0,0,0,10" Padding="12,8" CornerRadius="6"
+                Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+            <StackPanel>
+                <WrapPanel x:Name="ProfileToolbar" VerticalAlignment="Center" IsEnabled="False">
+                    <TextBlock Text="Tile profile" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0" />
+                    <ComboBox x:Name="ProfileSelector" Width="220" MaxDropDownHeight="320"
+                              DisplayMemberPath="Name" SelectedValuePath="Id" Margin="0,0,12,0"
+                              ToolTip="Saved tile profiles. Your editor selection is restored next time."
+                              SelectionChanged="OnProfileSelectionChanged" />
+                    <Button Content="New" Click="OnNewProfile" Padding="10,4" Margin="0,0,6,0" />
+                    <Button x:Name="DuplicateProfileButton" Content="Duplicate" Click="OnDuplicateProfile" Padding="10,4" Margin="0,0,6,0" />
+                    <Button Content="Rename" Click="OnRenameProfile" Padding="10,4" Margin="0,0,6,0" />
+                    <Button x:Name="DeleteProfileButton" Content="Delete" Click="OnDeleteProfile" Padding="10,4" Margin="0,0,14,0" />
+                    <Button x:Name="SaveProfileButton" Content="Save" Click="OnSaveProfile" Padding="14,4" Margin="0,0,6,0" ToolTip="Save this design (Ctrl+S)" />
+                    <Button x:Name="UseDesignButton" Content="Use tile overlay" Click="OnUseDesign" Padding="14,4" Margin="0,0,12,0"
+                            Visibility="Collapsed" ToolTip="Show this saved tile profile with the selected CapFrameX renderer." />
+                    <Button Content="Import…" Click="OnImportProfile" Padding="10,4" Margin="0,0,6,0" ToolTip="Import a CapFrameX design as a new profile" />
+                    <Button x:Name="ExportProfileButton" Content="Export…" Click="OnExportProfile" Padding="10,4" ToolTip="Export the current design as JSON" />
+                </WrapPanel>
+                <TextBlock x:Name="ProfileStatus" Text="Loading saved tile profiles…" Margin="0,6,0,0" FontSize="11" TextWrapping="Wrap"
+                           Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
+                <TextBlock x:Name="ProfileError" Margin="0,6,0,0" FontSize="12" TextWrapping="Wrap" Visibility="Collapsed"
+                           Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+            </StackPanel>
+        </Border>
+        <Grid DockPanel.Dock="Bottom" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock x:Name="SourceStatus" Text="Choose a preset, then select a tile to edit its source and appearance."
+                           Margin="0,5,12,0" TextWrapping="Wrap" VerticalAlignment="Center"
+                           Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
+            </StackPanel>
+            <Button x:Name="RefreshSourcesButton" Grid.Column="1" Content="Refresh sources"
+                    VerticalAlignment="Center" Click="OnRefreshSources" Padding="12,6"
+                    ToolTip="Discover all available CapFrameX hardware sensors again." />
+        </Grid>
+        <osd:OsdEditorControl x:Name="Editor" LivePreviewChanged="OnLivePreviewChanged"
+                              SurfaceBrush="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
+                              AccentBrush="{DynamicResource MaterialDesign.Brush.Primary}"
+                              Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
+                              Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" />
+    </DockPanel>
+    </materialDesign:DialogHost>
+</UserControl>
