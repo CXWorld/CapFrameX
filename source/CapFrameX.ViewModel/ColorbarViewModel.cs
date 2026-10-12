@@ -886,12 +886,6 @@ namespace CapFrameX.ViewModel
             CurrentPageName = "Report";
         }
 
-        private void OnSynchronizationIsCheckedChanged()
-        {
-            _regionManager.RequestNavigate("DataRegion", "SynchronizationView");
-            CurrentPageName = "Synchronization";
-        }
-
         private void OnCloudIsCheckedChanged()
         {
             _regionManager.RequestNavigate("DataRegion", "CloudView");
