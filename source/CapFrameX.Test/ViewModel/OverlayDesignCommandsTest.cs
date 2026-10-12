@@ -6,6 +6,8 @@ using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Data;
 using System.Windows.Markup;
 using System.Windows.Threading;
 using System.Xml.Linq;
@@ -48,10 +50,347 @@ namespace CapFrameX.Test.ViewModel
         }
 
         [TestMethod]
+        public void ProductionProfileListSelectsPassivelyAndShowButtonAppliesItsCurrentTarget()
+        {
+            var designs = new DesignService();
+            designs.Activate("first");
+            var model = Create(designs, Configuration());
+            var controls = CreateProfileControls(model);
+            Assert.AreSame(designs.Profiles[0], controls.Profiles.SelectedItem);
+            Assert.AreEqual(1, designs.ActivationCalls);
+
+            controls.Profiles.SetCurrentValue(Selector.SelectedItemProperty, designs.Profiles[1]);
+            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
+
+            Assert.AreEqual("first", designs.ActiveProfileId, "Selecting a list item must remain passive.");
+            Assert.AreEqual(1, designs.ActivationCalls);
+            Assert.AreSame(designs.Profiles[1], controls.Show.CommandParameter);
+            Assert.IsTrue(controls.Show.IsEnabled);
+            controls.Show.Command.Execute(controls.Show.CommandParameter);
+            Assert.AreEqual("second", designs.ActiveProfileId);
+            Assert.AreEqual(2, designs.ActivationCalls);
+
+            Assert.IsTrue(controls.Show.IsEnabled, "The active profile may be explicitly shown again.");
+            controls.Show.Command.Execute(controls.Show.CommandParameter);
+            Assert.AreEqual(3, designs.ActivationCalls);
+
+            controls.Profiles.SetCurrentValue(Selector.SelectedItemProperty, designs.Profiles[0]);
+            Assert.AreSame(designs.Profiles[0], controls.Show.CommandParameter);
+            controls.Show.Command.Execute(controls.Show.CommandParameter);
+            Assert.AreEqual("first", designs.ActiveProfileId, "The button must use the current list selection.");
+            Assert.AreEqual(4, designs.ActivationCalls);
+            controls.View.DataContext = null;
+        }
+
+        [TestMethod]
+        public void ProfileListBrowsingRefreshAndContextTargetsDoNotActivateProfiles()
+        {
+            var designs = new DesignService();
+            designs.Activate("first");
+            var events = new EventAggregator();
+            ViewMessages.OpenOverlayDesigner opened = null;
+            events.GetEvent<PubSubEvent<ViewMessages.OpenOverlayDesigner>>().Subscribe(message => opened = message);
+            var model = Create(designs, Configuration(), events);
+            var controls = CreateProfileControls(model);
+
+            controls.Profiles.SetCurrentValue(Selector.SelectedItemProperty, designs.Profiles[1]);
+            model.EditSavedDesignCommand.Execute(designs.Profiles[1]);
+            Assert.AreEqual("second", opened.ProfileId);
+            model.DeleteSavedDesignCommand.Execute(designs.Profiles[1]);
+            Assert.IsTrue(model.IsDeleteDesignDialogOpen);
+            model.CancelDeleteDesignCommand.Execute();
+
+            designs.Profiles = new[]
+            {
+                new OverlayDesignInfo("first", "Renamed first design"),
+                new OverlayDesignInfo("second", "Renamed second design")
+            };
+            model.RefreshDesignsCommand.Execute();
+            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
+
+            Assert.AreEqual("second", model.SelectedDesign.Id, "Refreshing must retain the browsed selection.");
+            Assert.AreSame(designs.Profiles[1], controls.Profiles.SelectedItem);
+            Assert.AreSame(designs.Profiles[1], controls.Show.CommandParameter);
+            Assert.AreEqual("first", designs.ActiveProfileId);
+            Assert.AreEqual(1, designs.ActivationCalls, "Browsing, context targets and library refresh must never apply a profile.");
+            controls.View.DataContext = null;
+        }
+
+        [TestMethod]
+        public void ShowSelectedProfileButtonRejectsMissingUnavailableAndModalTargets()
+        {
+            var designs = new DesignService();
+            designs.Activate("first");
+            var model = Create(designs, Configuration());
+            var controls = CreateProfileControls(model);
+            void AssertBlocked()
+            {
+                Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
+                Assert.IsFalse(controls.Show.IsEnabled);
+                Assert.IsFalse(controls.Show.Command.CanExecute(controls.Show.CommandParameter));
+                controls.Show.Command.Execute(controls.Show.CommandParameter);
+                Assert.AreEqual(1, designs.ActivationCalls);
+                Assert.AreEqual("first", designs.ActiveProfileId);
+            }
+
+            controls.Profiles.SetCurrentValue(Selector.SelectedItemProperty, null);
+            Assert.IsNull(controls.Show.CommandParameter);
+            AssertBlocked();
+
+            var stale = new OverlayDesignInfo("removed", "Removed design");
+            Assert.IsFalse(controls.Show.Command.CanExecute(stale));
+            controls.Show.Command.Execute(stale);
+            Assert.AreEqual(1, designs.ActivationCalls);
+
+            controls.Profiles.SetCurrentValue(Selector.SelectedItemProperty, designs.Profiles[1]);
+            designs.CanActivate = false;
+            designs.RefreshProfiles();
+            AssertBlocked();
+
+            designs.CanActivate = true;
+            designs.RefreshProfiles();
+            Assert.IsTrue(controls.Show.IsEnabled);
+            model.OverlayModeRtss = true;
+            AssertBlocked();
+
+            model.OverlayModeHook = true;
+            Assert.IsTrue(controls.Show.IsEnabled, "Returning to a compatible renderer must enable the button again.");
+            model.DeleteSavedDesignCommand.Execute(designs.Profiles[1]);
+            AssertBlocked();
+            Assert.IsTrue(model.IsDeleteDesignDialogOpen);
+            model.CancelDeleteDesignCommand.Execute();
+            Assert.IsTrue(controls.Show.IsEnabled);
+            controls.View.DataContext = null;
+        }
+
+        [TestMethod]
+        public void FailedShowSelectedProfileKeepsTheActiveProfileAndAllowsRetryingTheSelection()
+        {
+            var designs = new DesignService();
+            designs.Activate("first");
+            var model = Create(designs, Configuration());
+            var controls = CreateProfileControls(model);
+            designs.ActivationError = new IOException("Profile library is locked");
+
+            controls.Profiles.SetCurrentValue(Selector.SelectedItemProperty, designs.Profiles[1]);
+            controls.Show.Command.Execute(controls.Show.CommandParameter);
+            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
+
+            Assert.AreEqual("first", designs.ActiveProfileId);
+            Assert.AreSame(designs.Profiles[1], controls.Profiles.SelectedItem);
+            Assert.AreSame(designs.Profiles[1], controls.Show.CommandParameter);
+            Assert.AreEqual(2, designs.ActivationCalls);
+            StringAssert.Contains(model.DesignStatus, "Profile library is locked");
+            Assert.IsTrue(controls.Show.IsEnabled);
+
+            designs.ActivationError = null;
+            controls.Show.Command.Execute(controls.Show.CommandParameter);
+            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
+            Assert.AreEqual("second", designs.ActiveProfileId);
+            Assert.AreSame(designs.Profiles[1], controls.Profiles.SelectedItem);
+            Assert.AreEqual(3, designs.ActivationCalls);
+            Assert.AreEqual(designs.Status, model.DesignStatus);
+            controls.View.DataContext = null;
+        }
+
+        [TestMethod]
+        public void ModeToggleUsesTheRememberedProfileDespiteBrowsingAndKeepsTheRenderer()
+        {
+            var designs = new DesignService();
+            var configuration = Configuration();
+            configuration.Object.LastOverlayDesignProfileId = "second";
+            var model = Create(designs, configuration);
+            Assert.AreSame(designs.Profiles[1], model.SelectedDesign);
+            Assert.IsFalse(model.IsTileOverlayEnabled);
+            Assert.AreEqual(0, designs.ActivationCalls);
+            model.SelectedDesign = designs.Profiles[0];
+
+            model.IsTileOverlayEnabled = true;
+
+            Assert.IsTrue(model.IsTileOverlayEnabled);
+            Assert.AreEqual("second", designs.ActiveProfileId);
+            Assert.AreEqual(1, model.SelectedOverlayTabIndex);
+            Assert.IsTrue(model.IsTileOverlayTabVisible);
+            Assert.IsTrue(configuration.Object.EnableHookOverlay);
+            Assert.IsFalse(configuration.Object.EnableHookFreeOverlay);
+            Assert.IsFalse(configuration.Object.IsOverlayActive);
+
+            model.SelectedDesign = designs.Profiles[0];
+            model.IsTileOverlayEnabled = true;
+            Assert.AreEqual("second", designs.ActiveProfileId,
+                "Writing the existing mode must not activate a profile that is only being browsed.");
+
+            model.IsTileOverlayEnabled = false;
+            Assert.IsFalse(model.IsTileOverlayEnabled);
+            Assert.IsFalse(model.IsTileOverlayTabVisible);
+            Assert.AreEqual("first", model.SelectedDesign.Id);
+            Assert.AreEqual(2, model.SavedDesigns.Count);
+            Assert.AreEqual(0, model.SelectedOverlayTabIndex);
+
+            model.IsTileOverlayEnabled = true;
+            Assert.AreEqual("second", designs.ActiveProfileId, "Returning to tile mode must reuse the remembered profile.");
+            Assert.AreSame(designs.Profiles[1], model.SelectedDesign);
+            Assert.AreEqual(2, designs.ActivationCalls);
+        }
+
+        [TestMethod]
+        public void MissingRememberedProfileFallsBackToTheFirstAvailableProfile()
+        {
+            var designs = new DesignService();
+            var configuration = Configuration();
+            configuration.Object.LastOverlayDesignProfileId = "removed";
+            var model = Create(designs, configuration);
+
+            Assert.AreSame(designs.Profiles[0], model.SelectedDesign);
+            Assert.AreEqual(0, designs.ActivationCalls, "Restoring the initial selection must not enable tile mode.");
+            model.SelectedDesign = designs.Profiles[1];
+            model.IsTileOverlayEnabled = true;
+            Assert.AreEqual("first", designs.ActiveProfileId);
+            Assert.AreSame(designs.Profiles[0], model.SelectedDesign);
+            Assert.AreEqual(1, designs.ActivationCalls);
+        }
+
+        [TestMethod]
+        public void MissingActiveProfileDoesNotActivateTheRememberedProfileUntilTileModeIsReenabled()
+        {
+            var designs = new DesignService();
+            designs.Activate("unavailable");
+            var configuration = Configuration();
+            configuration.Object.LastOverlayDesignProfileId = "second";
+            var model = Create(designs, configuration);
+
+            Assert.IsTrue(model.HasActiveDesign);
+            Assert.AreEqual("unavailable", designs.ActiveProfileId);
+            model.SelectedDesign = designs.Profiles[0];
+            model.RefreshDesignsCommand.Execute();
+            model.IsTileOverlayEnabled = true;
+            Assert.AreEqual("unavailable", designs.ActiveProfileId, "Refreshing and browsing must not silently replace the active profile.");
+            Assert.AreEqual(1, designs.ActivationCalls);
+
+            model.IsTileOverlayEnabled = false;
+            Assert.AreEqual(1, designs.ActivationCalls);
+            model.IsTileOverlayEnabled = true;
+            Assert.AreEqual("second", designs.ActiveProfileId);
+            Assert.AreSame(designs.Profiles[1], model.SelectedDesign);
+            Assert.AreEqual(2, designs.ActivationCalls);
+        }
+
+        [TestMethod]
+        public void InitiallyActiveTileDesignSelectsItsVisibleEditor()
+        {
+            var designs = new DesignService();
+            designs.Activate("second");
+            var configuration = Configuration();
+            configuration.Object.LastOverlayDesignProfileId = "first";
+            var model = Create(designs, configuration);
+
+            Assert.IsTrue(model.IsTileOverlayEnabled);
+            Assert.IsTrue(model.IsTileOverlayTabVisible);
+            Assert.AreEqual(1, model.SelectedOverlayTabIndex);
+            Assert.AreEqual("second", model.SelectedDesign.Id);
+            Assert.AreEqual("second", designs.ActiveProfileId);
+        }
+
+        [TestMethod]
+        public void ModeToggleCanReturnToRowsWhenTileActivationBecomesUnavailable()
+        {
+            var designs = new DesignService();
+            var model = Create(designs, Configuration());
+            model.SelectedDesign = null;
+            Assert.IsTrue(model.CanToggleOverlayMode, "Tile mode can use its initial profile without a passive list selection.");
+            model.SelectedDesign = designs.Profiles[0];
+            Assert.IsTrue(model.CanToggleOverlayMode);
+            model.IsTileOverlayEnabled = true;
+
+            designs.CanActivate = false;
+            designs.RefreshProfiles();
+            model.OverlayModeRtss = true;
+            Assert.IsFalse(model.CanUseDesign);
+            Assert.IsTrue(model.CanToggleOverlayMode);
+
+            model.IsTileOverlayEnabled = false;
+            Assert.IsFalse(model.IsTileOverlayEnabled);
+            Assert.IsFalse(model.CanToggleOverlayMode);
+            Assert.IsTrue(model.OverlayModeRtss);
+        }
+
+        [TestMethod]
+        public void ModeToggleCannotChangeTheOverlayDuringDeletionConfirmation()
+        {
+            var designs = new DesignService();
+            var model = Create(designs, Configuration());
+            model.SelectedOverlayTabIndex = 1;
+            model.IsTileOverlayEnabled = true;
+            model.DeleteSavedDesignCommand.Execute(designs.Profiles[1]);
+
+            Assert.IsFalse(model.CanToggleOverlayMode);
+            model.IsTileOverlayEnabled = false;
+            Assert.AreEqual("first", designs.ActiveProfileId);
+            Assert.IsTrue(model.IsDeleteDesignDialogOpen);
+            model.CancelDeleteDesignCommand.Execute();
+            Assert.IsTrue(model.CanToggleOverlayMode);
+        }
+
+        [TestMethod]
+        public void FailedModeToggleRestoresTheActualStateThroughATwoWayWpfBinding()
+        {
+            var designs = new DesignService { RefuseActivation = true };
+            var model = Create(designs, Configuration());
+            var toggle = new ToggleButton();
+            toggle.SetBinding(ToggleButton.IsCheckedProperty, new Binding(nameof(model.IsTileOverlayEnabled))
+            {
+                Source = model,
+                Mode = BindingMode.TwoWay,
+                UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged
+            });
+            Assert.AreEqual(false, toggle.IsChecked);
+
+            toggle.SetCurrentValue(ToggleButton.IsCheckedProperty, true);
+            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
+
+            Assert.IsFalse(model.IsTileOverlayEnabled);
+            Assert.AreEqual(false, toggle.IsChecked, "A failed activation must not leave the UI in tile mode.");
+            StringAssert.Contains(model.DesignStatus, "Unavailable design");
+            Assert.IsTrue(model.ShowDesignRecoveryActions);
+
+            designs.RefuseActivation = false;
+            toggle.SetCurrentValue(ToggleButton.IsCheckedProperty, true);
+            Assert.IsTrue(model.IsTileOverlayEnabled);
+            Assert.AreEqual(true, toggle.IsChecked);
+            Assert.IsFalse(model.ShowDesignRecoveryActions);
+            designs.Deactivate();
+            Assert.AreEqual(false, toggle.IsChecked, "Service changes must also refresh the global toggle.");
+            BindingOperations.ClearAllBindings(toggle);
+        }
+
+        [TestMethod]
+        public void ModeTogglePropertiesRefreshForSelectionServiceRendererAndDialogChanges()
+        {
+            var designs = new DesignService();
+            var model = Create(designs, Configuration());
+            var properties = new HashSet<string>();
+            model.PropertyChanged += (_, args) => properties.Add(args.PropertyName);
+            void AssertNotifications(Action change)
+            {
+                properties.Clear();
+                change();
+                Assert.IsTrue(properties.Contains(nameof(model.IsTileOverlayEnabled)));
+                Assert.IsTrue(properties.Contains(nameof(model.CanToggleOverlayMode)));
+            }
+
+            AssertNotifications(() => model.SelectedDesign = designs.Profiles[1]);
+            AssertNotifications(() => designs.Activate("first"));
+            AssertNotifications(() => model.OverlayModeHookFree = true);
+            AssertNotifications(() => model.DeleteSavedDesignCommand.Execute(designs.Profiles[1]));
+            AssertNotifications(() => model.CancelDeleteDesignCommand.Execute());
+        }
+
+        [TestMethod]
         public void RefreshAfterDeletedSelectionSelectsAnExistingDesign()
         {
             var designs = new DesignService();
             var model = Create(designs, Configuration());
+            Assert.IsFalse(model.ShowDesignRecoveryActions);
             model.SelectedDesign = designs.Profiles[1];
             designs.Profiles = new[] { designs.Profiles[0] };
             model.RefreshDesignsCommand.Execute();
@@ -60,6 +399,13 @@ namespace CapFrameX.Test.ViewModel
             model.RefreshDesignsCommand.Execute();
             Assert.IsNull(model.SelectedDesign);
             Assert.IsFalse(model.UseDesignCommand.CanExecute());
+            Assert.IsFalse(model.CanToggleOverlayMode);
+            Assert.IsTrue(model.ShowDesignRecoveryActions, "An empty library must leave a visible way to create or reload profiles.");
+
+            designs.Profiles = new[] { new OverlayDesignInfo("restored", "Restored design") };
+            model.RefreshDesignsCommand.Execute();
+            Assert.AreEqual("restored", model.SelectedDesign.Id);
+            Assert.IsFalse(model.ShowDesignRecoveryActions);
         }
 
         [TestMethod]
@@ -70,6 +416,9 @@ namespace CapFrameX.Test.ViewModel
             model.UseDesignCommand.Execute();
             Assert.IsFalse(model.HasActiveDesign);
             StringAssert.Contains(model.DesignStatus, "Unavailable design");
+            Assert.IsTrue(model.ShowDesignRecoveryActions, "A broken profile must not make the editor inaccessible.");
+            model.OverlayModeRtss = true;
+            Assert.IsFalse(model.ShowDesignRecoveryActions, "RTSS cannot use tile designs.");
         }
 
         [TestMethod]
@@ -85,6 +434,7 @@ namespace CapFrameX.Test.ViewModel
             Assert.AreEqual("first", designs.ActiveProfileId);
             Assert.AreEqual("second", model.SelectedDesign.Id);
             StringAssert.Contains(model.DesignStatus, "newer version");
+            Assert.IsFalse(model.ShowDesignRecoveryActions, "The active tile editor already provides the recovery actions.");
         }
 
         [TestMethod]
@@ -132,18 +482,19 @@ namespace CapFrameX.Test.ViewModel
         }
 
         [TestMethod]
-        public void RtssHidesTheTileTabAndReturnsItsSelectionToTheRowEditor()
+        public void RtssHidesTheTileEditorUntilACompatibleRendererIsSelected()
         {
             var designs = new DesignService();
             var configuration = Configuration();
             var model = Create(designs, configuration);
-            model.SelectedOverlayTabIndex = 1;
+            model.IsTileOverlayEnabled = true;
             Assert.IsTrue(model.IsTileOverlayAvailable);
             model.OverlayModeHookFree = true;
             Assert.AreEqual(1, model.SelectedOverlayTabIndex);
 
             model.OverlayModeRtss = true;
             Assert.IsFalse(model.IsTileOverlayAvailable);
+            Assert.IsFalse(model.IsTileOverlayTabVisible);
             Assert.AreEqual(0, model.SelectedOverlayTabIndex);
             model.SelectedOverlayTabIndex = 1;
             Assert.AreEqual(0, model.SelectedOverlayTabIndex, "A hidden tab cannot be selected programmatically.");
@@ -151,15 +502,19 @@ namespace CapFrameX.Test.ViewModel
 
             model.OverlayModeHook = true;
             Assert.IsTrue(model.IsTileOverlayAvailable);
-            Assert.AreEqual(0, model.SelectedOverlayTabIndex, "Returning to a native renderer must leave the row editor selected.");
-            Assert.IsNull(designs.ActiveProfileId);
+            Assert.IsTrue(model.IsTileOverlayTabVisible);
+            Assert.AreEqual(1, model.SelectedOverlayTabIndex,
+                "This service retains its active design across renderer changes, so its tile editor must return.");
+            Assert.AreEqual("first", designs.ActiveProfileId);
+            model.SelectedOverlayTabIndex = 0;
+            Assert.AreEqual(1, model.SelectedOverlayTabIndex, "The hidden row editor cannot be selected either.");
             model.SelectedOverlayTabIndex = 2;
             model.OverlayModeRtss = true;
             Assert.AreEqual(2, model.SelectedOverlayTabIndex, "The always-visible OSD options must remain selected.");
         }
 
         [TestMethod]
-        public void ProductionTabBindingsCollapseTileContentAndKeepRtssInTheRowOptions()
+        public void ProductionTabBindingsFollowTheActiveModeAndPreserveTheOptionsSelection()
         {
             XNamespace wpf = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
             XNamespace xaml = "http://schemas.microsoft.com/winfx/2006/xaml";
@@ -167,6 +522,7 @@ namespace CapFrameX.Test.ViewModel
             while (root != null && !File.Exists(Path.Combine(root.FullName, "CapFrameX.sln"))) root = root.Parent;
             Assert.IsNotNull(root);
             var document = XDocument.Load(Path.Combine(root.FullName, "source", "CapFrameX.View", "OverlayView.xaml"));
+            XNamespace mvvm = document.Root.GetNamespaceOfPrefix("mvvm");
             var source = document.Descendants(wpf + "TabControl")
                 .Single(element => (string)element.Attribute(xaml + "Name") == "OverlayTabs");
             var sourceTile = source.Elements(wpf + "TabItem")
@@ -182,9 +538,11 @@ namespace CapFrameX.Test.ViewModel
             // unrelated app services and hundreds of entry-editor controls in OverlayView.
             var fragment = new XElement(wpf + "TabControl", new XAttribute("xmlns", wpf.NamespaceName),
                 new XAttribute(XNamespace.Xmlns + "x", xaml.NamespaceName),
+                new XAttribute(XNamespace.Xmlns + "mvvm", mvvm.NamespaceName),
                 new XAttribute("SelectedIndex", source.Attribute("SelectedIndex").Value),
-                new XElement(wpf + "TabControl.Resources", new XElement(wpf + "BooleanToVisibilityConverter",
-                    new XAttribute(xaml + "Key", "TrueToVisibleConverter"))));
+                new XElement(wpf + "TabControl.Resources", document.Descendants(mvvm + "BoolToVisibilityConverter")
+                    .Where(element => (string)element.Attribute(xaml + "Key") == "TrueToVisibleConverter"
+                        || (string)element.Attribute(xaml + "Key") == "FalseToVisibleConverter")));
             foreach (var sourceTab in source.Elements(wpf + "TabItem"))
             {
                 var tab = new XElement(wpf + "TabItem", new XAttribute("Header", sourceTab.Attribute("Header").Value
@@ -195,28 +553,69 @@ namespace CapFrameX.Test.ViewModel
                 fragment.Add(tab);
             }
             var tabs = (TabControl)XamlReader.Parse(fragment.ToString());
-            var model = Create(new DesignService(), Configuration());
+            var designs = new DesignService();
+            var model = Create(designs, Configuration());
             tabs.DataContext = model;
             tabs.Measure(new Size(640, 180));
             tabs.Arrange(new Rect(0, 0, 640, 180));
             tabs.UpdateLayout();
             var rowTab = (TabItem)tabs.Items[0];
             var tileTab = (TabItem)tabs.Items[1];
-            Assert.AreEqual(Visibility.Visible, tileTab.Visibility);
-            tabs.SelectedItem = tileTab;
-            Assert.AreEqual(1, model.SelectedOverlayTabIndex);
+            var optionsTab = (TabItem)tabs.Items[2];
+            void AssertTabs(bool tileVisible, TabItem selected)
+            {
+                Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
+                tabs.UpdateLayout();
+                Assert.AreEqual(tileVisible ? Visibility.Collapsed : Visibility.Visible, rowTab.Visibility);
+                Assert.AreEqual(tileVisible ? Visibility.Visible : Visibility.Collapsed, tileTab.Visibility);
+                Assert.AreEqual(Visibility.Visible, optionsTab.Visibility);
+                Assert.AreSame(selected, tabs.SelectedItem);
+                Assert.AreEqual(tabs.Items.IndexOf(selected), model.SelectedOverlayTabIndex);
+            }
+
+            AssertTabs(false, rowTab);
+            model.SelectedOverlayTabIndex = 1;
+            AssertTabs(false, rowTab);
+
+            designs.RefuseActivation = true;
+            model.IsTileOverlayEnabled = true;
+            AssertTabs(false, rowTab);
+            StringAssert.Contains(model.DesignStatus, "Unavailable design");
+
+            designs.RefuseActivation = false;
+            model.IsTileOverlayEnabled = true;
+            AssertTabs(true, tileTab);
+            model.SelectedOverlayTabIndex = 0;
+            AssertTabs(true, tileTab);
+
+            tabs.SelectedItem = optionsTab;
+            model.IsTileOverlayEnabled = false;
+            AssertTabs(false, optionsTab);
+            model.IsTileOverlayEnabled = true;
+            AssertTabs(true, optionsTab);
+
+            model.SelectedOverlayTabIndex = 1;
+            designs.Deactivate();
+            AssertTabs(false, rowTab);
+            designs.Activate("second");
+            AssertTabs(true, tileTab);
 
             model.OverlayModeRtss = true;
-            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
-            Assert.AreEqual(Visibility.Collapsed, tileTab.Visibility);
-            Assert.AreSame(rowTab, tabs.SelectedItem);
-            Assert.IsFalse(tileTab.IsSelected);
-
+            AssertTabs(false, rowTab);
             model.OverlayModeHookFree = true;
-            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
-            Assert.AreEqual(Visibility.Visible, tileTab.Visibility);
-            Assert.AreSame(rowTab, tabs.SelectedItem);
+            AssertTabs(true, tileTab);
+
+            model.OverlayModeRtss = true;
+            designs.Deactivate();
+            model.OverlayModeHookFree = true;
+            AssertTabs(false, rowTab);
             Assert.IsFalse(model.HasActiveDesign);
+
+            tabs.SelectedItem = optionsTab;
+            model.OverlayModeRtss = true;
+            AssertTabs(false, optionsTab);
+            model.OverlayModeHookFree = true;
+            AssertTabs(false, optionsTab);
             tabs.DataContext = null;
         }
 
@@ -316,7 +715,7 @@ namespace CapFrameX.Test.ViewModel
         {
             var designs = new DesignService();
             var model = Create(designs, Configuration());
-            model.SelectedOverlayTabIndex = 1;
+            model.IsTileOverlayEnabled = true;
             model.DeleteSavedDesignCommand.Execute(designs.Profiles[1]);
             model.OverlayModeRtss = true;
             Assert.IsFalse(model.IsDeleteDesignDialogOpen);
@@ -326,6 +725,33 @@ namespace CapFrameX.Test.ViewModel
             Assert.IsFalse(model.IsDeleteDesignDialogOpen);
             model.ConfirmDeleteDesignCommand.Execute();
             Assert.AreEqual(0, designs.DeletedIds.Count);
+        }
+
+        private static (StackPanel View, ListBox Profiles, Button Show) CreateProfileControls(OverlayViewModel model)
+        {
+            XNamespace wpf = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+            XNamespace xaml = "http://schemas.microsoft.com/winfx/2006/xaml";
+            var root = new DirectoryInfo(AppContext.BaseDirectory);
+            while (root != null && !File.Exists(Path.Combine(root.FullName, "CapFrameX.sln"))) root = root.Parent;
+            Assert.IsNotNull(root);
+            var document = XDocument.Load(Path.Combine(root.FullName, "source", "CapFrameX.View", "OverlayView.xaml"));
+            var sourceList = document.Descendants(wpf + "ListBox")
+                .Single(element => (string)element.Attribute(xaml + "Name") == "SavedTileProfiles");
+            var sourceButton = document.Descendants(wpf + "Button")
+                .Single(element => (string)element.Attribute(xaml + "Name") == "ShowSelectedTileProfileButton");
+            var fragment = new XElement(wpf + "StackPanel", new XAttribute("xmlns", wpf.NamespaceName),
+                new XElement(wpf + "Button", new XAttribute(sourceButton.Attribute("Command")),
+                    new XAttribute(sourceButton.Attribute("CommandParameter"))),
+                new XElement(wpf + "ListBox", new XAttribute(sourceList.Attribute("ItemsSource")),
+                    new XAttribute(sourceList.Attribute("SelectedItem")), new XAttribute(sourceList.Attribute("DisplayMemberPath"))));
+            var view = (StackPanel)XamlReader.Parse(fragment.ToString());
+            view.DataContext = model;
+            // Complete item, selection and command bindings before simulating user input.
+            view.Measure(new Size(440, 240));
+            view.Arrange(new Rect(0, 0, 440, 240));
+            view.UpdateLayout();
+            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
+            return (view, (ListBox)view.Children[1], (Button)view.Children[0]);
         }
 
         private static Mock<IAppConfiguration> Configuration()
@@ -362,11 +788,13 @@ namespace CapFrameX.Test.ViewModel
             public bool RefuseActivation { get; set; }
             public Exception ActivationError { get; set; }
             public Exception DeleteError { get; set; }
+            public int ActivationCalls { get; private set; }
             public List<string> DeletedIds { get; } = new List<string>();
             public event EventHandler Changed;
             public void RefreshProfiles() => Changed?.Invoke(this, EventArgs.Empty);
             public void Activate(string profileId)
             {
+                ActivationCalls++;
                 if (ActivationError != null) throw ActivationError;
                 if (RefuseActivation)
                     throw new InvalidOperationException("Unavailable design");

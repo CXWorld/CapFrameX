@@ -99,12 +99,121 @@
 				<Setter Property="Foreground" Value="{DynamicResource Cx.Brush.OutlinedAction.Foreground}"/>
 				<Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Primary}"/>
 			</Style>
+            <Style x:Key="OverlayToolbarLabel" TargetType="{x:Type TextBlock}">
+                <Setter Property="Height" Value="18" />
+                <Setter Property="Margin" Value="0,0,0,6" />
+                <Setter Property="FontSize" Value="12" />
+                <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
+            </Style>
 		</ResourceDictionary>
 	</UserControl.Resources>
-	<!--The content of both tabs starts at the left edge of the tab headers.-->
+	<!--Overlay output is independent of the editor tab that is currently selected.-->
 	<Grid>
-		<TabControl x:Name="OverlayTabs" SelectedIndex="{Binding SelectedOverlayTabIndex, Mode=TwoWay}" Margin="10" Background="{DynamicResource MaterialDesign.Brush.Card.Background}" BorderThickness="0" FocusVisualStyle="{x:Null}">
-			<TabItem x:Name="RowOverlayTab" Header="{loc:Tr OverlayView_OverlayItems}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Border x:Name="OverlayModeBar" Style="{StaticResource SectionCard}" Margin="10,10,10,0" Padding="18,14,18,12"
+                KeyboardNavigation.TabNavigation="Local"
+                IsEnabled="{Binding IsDeleteDesignDialogOpen, Converter={StaticResource InvertBoolConverter}}">
+            <StackPanel>
+                <!--Each group uses the same label and control rows. Groups wrap as a unit when
+                    the record list leaves less room; the preview action stays at the right edge.-->
+                <DockPanel LastChildFill="True">
+                    <Button x:Name="GlobalOverlayPreviewButton" DockPanel.Dock="Right" Height="36" TabIndex="3"
+                            Padding="16,0" Margin="0,24,0,8" VerticalAlignment="Top"
+                            Style="{StaticResource OverlayTemplateOutlinedButton}" Command="{Binding LaunchOverlayPreviewAppCommand}"
+                            ToolTip="{loc:Tr OverlayView_LaunchPreviewApp}">
+                        <StackPanel Orientation="Horizontal">
+                            <materialDesign:PackIcon Kind="Play" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0" />
+                            <TextBlock Text="{loc:Tr OverlayView_Preview}" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+                    <WrapPanel>
+                        <StackPanel Margin="0,0,32,8">
+                            <TextBlock Text="{loc:Tr OverlayView_OverlayMode}" Style="{StaticResource OverlayToolbarLabel}" />
+                            <StackPanel Orientation="Horizontal" Height="36">
+                                <TextBlock Text="{loc:Tr OverlayView_OverlayItems}" VerticalAlignment="Center"
+                                           FontSize="14" FontWeight="SemiBold" ToolTip="{loc:Tr OverlayDesigns_Classic}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsTileOverlayEnabled}" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                                <ToggleButton x:Name="OverlayModeToggle" Margin="12,0" VerticalAlignment="Center" TabIndex="0"
+                                              IsChecked="{Binding IsTileOverlayEnabled, Mode=TwoWay}"
+                                              IsEnabled="{Binding CanToggleOverlayMode}"
+                                              AutomationProperties.Name="{loc:Tr OverlayView_OverlayMode}"
+                                              ToolTip="{loc:Tr OverlayDesigns_RendererHint}" ToolTipService.ShowOnDisabled="True" />
+                                <TextBlock Text="{loc:Tr OverlayDesigns_Tab}" VerticalAlignment="Center" FontSize="14" FontWeight="SemiBold">
+                                    <TextBlock.Style>
+                                        <Style TargetType="{x:Type TextBlock}">
+                                            <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsTileOverlayEnabled}" Value="True">
+                                                    <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Foreground}" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel MinWidth="120" Margin="0,0,32,8">
+                            <TextBlock Text="{loc:Tr OverlayDesigns_Visible}" Style="{StaticResource OverlayToolbarLabel}" />
+                            <StackPanel Orientation="Horizontal" Height="36">
+                                <ToggleButton x:Name="GlobalOverlayVisibilityToggle" IsChecked="{Binding IsOverlayActive, Mode=TwoWay}" TabIndex="1"
+                                              VerticalAlignment="Center" Margin="0,0,10,0"
+                                              AutomationProperties.Name="{loc:Tr OverlayView_ToggleOverlay}"
+                                              ToolTip="{loc:Tr OverlayView_ShowOrHideTheOverlay}" />
+                                <TextBlock Text="{loc:Tr StateView_On}" VerticalAlignment="Center" FontSize="14"
+                                           Visibility="{Binding IsOverlayActive, Converter={StaticResource TrueToVisibleConverter}}" />
+                                <TextBlock Text="{loc:Tr StateView_Off}" VerticalAlignment="Center" FontSize="14"
+                                           Visibility="{Binding IsOverlayActive, Converter={StaticResource FalseToVisibleConverter}}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,24,8">
+                            <TextBlock Text="{loc:Tr OverlayView_Hotkey}" Style="{StaticResource OverlayToolbarLabel}" />
+                            <TextBox x:Name="GlobalOverlayHotkey" Width="160" Height="36" Padding="12,0" VerticalContentAlignment="Center" TabIndex="2"
+                                     Style="{StaticResource MaterialDesignOutlinedTextBox}" FontSize="14"
+                                     IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
+                                     PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
+                                     AutomationProperties.Name="{loc:Tr OverlayView_OverlayHotkey}"
+                                     ToolTip="{loc:Tr OverlayView_HotkeyPressBackspaceDeleteOrEsc}">
+                                <Binding Path="OverlayHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="{x:Static validation:HotkeyValidationRule.UnsetText}">
+                                    <Binding.ValidationRules>
+                                        <validation:HotkeyValidationRule ValidatesOnTargetUpdated="True" />
+                                    </Binding.ValidationRules>
+                                </Binding>
+                            </TextBox>
+                        </StackPanel>
+                    </WrapPanel>
+                </DockPanel>
+                <Border BorderThickness="0,1,0,0" BorderBrush="{DynamicResource MaterialDesignDivider}" Padding="0,8,0,0">
+                    <DockPanel>
+                        <!--Keep profile repair reachable if tile mode cannot be entered. Its editor tab is hidden. -->
+                        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Margin="16,0,0,0"
+                                    Visibility="{Binding ShowDesignRecoveryActions, Converter={StaticResource TrueToVisibleConverter}}">
+                            <Button Content="{loc:Tr OverlayDesigns_Open}" Command="{Binding OpenDesignerCommand}"
+                                    Style="{StaticResource MaterialDesignFlatButton}" Height="28" Padding="10,0" FontSize="12" />
+                            <Button Content="{loc:Tr OverlayDesigns_Refresh}" Command="{Binding RefreshDesignsCommand}"
+                                    Style="{StaticResource MaterialDesignFlatButton}" Height="28" Padding="10,0" FontSize="12" Margin="4,0,0,0" />
+                        </StackPanel>
+                        <TextBlock Text="{Binding DesignStatus}" TextWrapping="Wrap" FontSize="11" VerticalAlignment="Center"
+                                   Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
+                    </DockPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+		<TabControl x:Name="OverlayTabs" Grid.Row="1" SelectedIndex="{Binding SelectedOverlayTabIndex, Mode=TwoWay}" Margin="10" Background="{DynamicResource MaterialDesign.Brush.Card.Background}" BorderThickness="0" FocusVisualStyle="{x:Null}">
+			<TabItem x:Name="RowOverlayTab" Header="{loc:Tr OverlayView_OverlayItems}"
+                     Visibility="{Binding IsTileOverlayTabVisible, Converter={StaticResource FalseToVisibleConverter}}">
 				<!--Narrower than the column MinWidths together (a wide record list on the smallest window), the
 				    page scrolls sideways instead of cutting the settings off. MinWidth below is their sum.-->
 				<ScrollViewer x:Name="OverlayItemsScrollViewer" Margin="{StaticResource CxTabContentMargin}"
@@ -578,7 +687,6 @@
 		<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
 			<Grid>
 				<Grid.RowDefinitions>
-					<RowDefinition Height="55"></RowDefinition>
 					<RowDefinition Height="120"></RowDefinition>
 					<RowDefinition Height="200"></RowDefinition>
 					<RowDefinition Height="320"></RowDefinition>
@@ -591,27 +699,8 @@
 					<ColumnDefinition Width="*"/>
 				</Grid.ColumnDefinitions>
 				<!--<TextBlock Grid.Row="0" Grid.ColumnSpan="2"  VerticalAlignment="Center" HorizontalAlignment="Center" FontSize="18" Text="{Binding SelectedOverlayItemName}"/>-->
-				<!-- Overlay switch: its own card above the template, the first thing in the column. Same
-					 binding as the switch in OSD options, the status bar toggle and the overlay hotkey. -->
-				<!-- 10 below: the template card starts at its row edge, so this margin alone is the gap
-					 that two 5 px card margins make everywhere else. -->
-				<Border Grid.Row="0" Grid.ColumnSpan="2" Margin="5 0 5 10" Style="{StaticResource SectionCard}"
-						ToolTip="{loc:Tr OverlayView_ShowOrHideTheOverlay}">
-					<DockPanel Margin="10 0 12 0" VerticalAlignment="Center">
-						<ToggleButton DockPanel.Dock="Right" VerticalAlignment="Center"
-									  IsChecked="{Binding IsOverlayActive, Mode=TwoWay}"/>
-						<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-							<TextBlock Text="Overlay" FontSize="16" VerticalAlignment="Center"/>
-							<TextBlock Margin="12 0 0 0" FontSize="12" VerticalAlignment="Center"
-									   Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}">
-								<Run Text="{loc:Tr OverlayView_Hotkey}"/>
-								<Run Text="{Binding OverlayHotkeyString, Mode=OneWay}"/>
-							</TextBlock>
-						</StackPanel>
-					</DockPanel>
-				</Border>
 				<!-- Overlay Template Picker -->
-				<Border Grid.Row="1" Grid.ColumnSpan="2" Margin="5 0 5 5" Style="{StaticResource SectionCard}">
+				<Border Grid.Row="0" Grid.ColumnSpan="2" Margin="5 0 5 5" Style="{StaticResource SectionCard}">
 					<Grid Margin="5 0 5 0">
 						<Grid.RowDefinitions>
 							<RowDefinition Height="55"/>
@@ -633,18 +722,7 @@
 								</ComboBox.ItemTemplate>
 							</ComboBox>
 						</StackPanel>
-						<UniformGrid Grid.Row="1" Columns="3" VerticalAlignment="Center">
-							<Button Height="28" Margin="5 0 5 0"
-								Style="{StaticResource OverlayTemplateOutlinedButton}"
-								Command="{Binding LaunchOverlayPreviewAppCommand}"
-								ToolTip="{loc:Tr OverlayView_LaunchPreviewApp}">
-								<StackPanel Orientation="Horizontal">
-									<materialDesign:PackIcon Kind="Play" VerticalAlignment="Center" Margin="0 0 5 0"
-										Foreground="{DynamicResource Cx.Brush.OutlinedAction.Foreground}"/>
-									<TextBlock Text="{loc:Tr OverlayView_Preview}" VerticalAlignment="Center"
-										Foreground="{DynamicResource Cx.Brush.OutlinedAction.Foreground}"/>
-								</StackPanel>
-							</Button>
+						<UniformGrid Grid.Row="1" Columns="2" VerticalAlignment="Center">
 							<Button Height="28" Margin="5 0 5 0"
 								Style="{StaticResource OverlayTemplateOutlinedButton}"
 								Command="{Binding RevertOverlayTemplateCommand}"
@@ -669,7 +747,7 @@
 						</UniformGrid>
 					</Grid>
 				</Border>
-				<Border Grid.Row="2" Grid.Column="0" Margin="5" Style="{StaticResource SectionCard}">
+				<Border Grid.Row="1" Grid.Column="0" Margin="5" Style="{StaticResource SectionCard}">
 					<StackPanel Margin="5" IsEnabled="{Binding OverlayItemsOptionsEnabled}">
 						<Grid>
 							<Grid.RowDefinitions>
@@ -831,7 +909,7 @@
 					</StackPanel>
 				</Border>
 				<!-- Format options -->
-				<Border Grid.Row="2" Grid.Column="1" Margin="5" Style="{StaticResource SectionCard}">
+				<Border Grid.Row="1" Grid.Column="1" Margin="5" Style="{StaticResource SectionCard}">
 					<StackPanel Margin="5" IsEnabled="{Binding OverlayItemsOptionsEnabled}">
 						<Grid>
 							<Grid.RowDefinitions>
@@ -874,7 +952,7 @@
 						</Grid>
 					</StackPanel>
 				</Border>
-				<Border Grid.Row="3" Grid.Column="0" Margin="5" Padding="4" Style="{StaticResource SectionCard}">
+				<Border Grid.Row="2" Grid.Column="0" Margin="5" Padding="4" Style="{StaticResource SectionCard}">
 					<DataGrid x:Name="SeparatorDataGrid" FontSize="11"
 						SelectedIndex="{Binding Path=OverlaySubModelGroupSeparating.SelectedOverlayGroupIndex}" 
 						ItemsSource="{Binding Path=OverlaySubModelGroupSeparating.OverlayGroupNameSeparatorEntries}"
@@ -962,7 +1040,7 @@
 						</DataGrid.Columns>
 					</DataGrid>
 				</Border>
-				<Border Grid.Row="3" Grid.Column="1" Margin="5" Style="{StaticResource SectionCard}">
+				<Border Grid.Row="2" Grid.Column="1" Margin="5" Style="{StaticResource SectionCard}">
 					<Grid>
 						<Grid.RowDefinitions>
 							<RowDefinition Height="Auto" MinHeight="30"></RowDefinition>
@@ -1029,7 +1107,7 @@
 					</Grid>
 				</Border>
 				<!--Removed Affinity Controller Feature-->
-				<Grid Grid.Row="3" Grid.ColumnSpan="2" VerticalAlignment="Top" Height="105" Visibility="Collapsed">
+				<Grid Grid.Row="2" Grid.ColumnSpan="2" VerticalAlignment="Top" Height="105" Visibility="Collapsed">
 					<Border Margin="5" Background="Transparent" BorderThickness="0.3" BorderBrush="{DynamicResource MaterialDesign.Brush.Foreground}">
 						<Grid>
 							<TextBlock Margin="0 10 0 0" HorizontalAlignment="Center" Text="{loc:Tr OverlayView_HardwareController}" FontSize="16"/>
@@ -1070,7 +1148,7 @@
 				</ScrollViewer>
 			</TabItem>
             <TabItem x:Name="TileOverlayTab" Header="{loc:Tr OverlayDesigns_Tab}"
-                     Visibility="{Binding IsTileOverlayAvailable, Converter={StaticResource TrueToVisibleConverter}}">
+                     Visibility="{Binding IsTileOverlayTabVisible, Converter={StaticResource TrueToVisibleConverter}}">
                 <materialDesign:DialogHost x:Name="TileProfileDialogHost" IsOpen="{Binding IsDeleteDesignDialogOpen, Mode=TwoWay}"
                                            CloseOnClickAway="False" PreviewKeyDown="OnTileProfileDialogPreviewKeyDown">
                     <materialDesign:DialogHost.DialogContent>
@@ -1093,13 +1171,19 @@
                                 <TextBlock Text="{loc:Tr OverlayDesigns_Title}" Style="{StaticResource OsdOptionsSectionHeader}" />
                                 <TextBlock Text="{loc:Tr OverlayDesigns_Description}" TextWrapping="Wrap" Margin="0,4,0,16" />
                                 <WrapPanel>
-                                    <Button Content="{loc:Tr OverlayDesigns_Open}" Command="{Binding OpenDesignerCommand}" Padding="18,8" Margin="0,0,12,8" />
+                                    <Button x:Name="ShowSelectedTileProfileButton"
+                                            Content="{loc:Tr OverlayDesigns_Show}" Command="{Binding ShowSavedDesignCommand}"
+                                            CommandParameter="{Binding SelectedDesign}" Height="32" Padding="14,4" Margin="0,0,8,8"
+                                            ToolTip="{loc:Tr OverlayDesigns_RendererHint}" ToolTipService.ShowOnDisabled="True" />
+                                    <Button Content="{loc:Tr OverlayDesigns_Edit}" Command="{Binding EditSavedDesignCommand}"
+                                            CommandParameter="{Binding SelectedDesign}" Style="{StaticResource OverlayTemplateOutlinedButton}"
+                                            Height="32" Padding="14,4" Margin="0,0,16,8" />
                                     <Button Content="{loc:Tr OverlayDesigns_Refresh}" Command="{Binding RefreshDesignsCommand}"
-                                            Style="{StaticResource OverlayTemplateOutlinedButton}" Padding="16,8" Margin="0,0,0,8" />
+                                            Style="{StaticResource OverlayTemplateOutlinedButton}" Height="32" Padding="14,4" Margin="0,0,0,8" />
                                 </WrapPanel>
                                 <TextBlock Text="{loc:Tr OverlayDesigns_Empty}" Margin="0,4,0,12" TextWrapping="Wrap"
                                            Visibility="{Binding HasSavedDesigns, Converter={StaticResource FalseToVisibleConverter}}" />
-                                <TextBlock Text="{loc:Tr OverlayDesigns_Saved}" Margin="0,12,0,8" FontWeight="SemiBold" />
+                                <TextBlock Text="{loc:Tr OverlayDesigns_Saved}" FontWeight="SemiBold" Margin="0,12,0,8" />
                                 <ListBox x:Name="SavedTileProfiles" ItemsSource="{Binding SavedDesigns}" SelectedItem="{Binding SelectedDesign}"
                                          DisplayMemberPath="Name" MinHeight="140" MaxHeight="300" MinWidth="420"
                                          ScrollViewer.VerticalScrollBarVisibility="Auto">
@@ -1142,13 +1226,6 @@
                                         </Style>
                                     </ListBox.ItemContainerStyle>
                                 </ListBox>
-                                <WrapPanel Margin="0,16,0,0">
-                                    <Button Content="{loc:Tr OverlayDesigns_Use}" Command="{Binding UseDesignCommand}" Padding="16,8" Margin="0,0,12,8"
-                                            ToolTip="{loc:Tr OverlayDesigns_RendererHint}" ToolTipService.ShowOnDisabled="True" />
-                                    <Button Content="{loc:Tr OverlayDesigns_Classic}" Command="{Binding UseClassicOverlayCommand}"
-                                            Style="{StaticResource OverlayTemplateOutlinedButton}" Padding="16,8" Margin="0,0,0,8" />
-                                </WrapPanel>
-                                <TextBlock Text="{Binding DesignStatus}" TextWrapping="Wrap" Margin="0,8,0,0" />
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource OsdOptionsCard}" Margin="0,12,0,0">
@@ -1156,10 +1233,9 @@
                                 <TextBlock Text="{loc:Tr OverlayDesigns_Output}" Style="{StaticResource OsdOptionsSectionHeader}" />
                                 <TextBlock Text="{loc:Tr OverlayDesigns_OutputHelp}" TextWrapping="Wrap" Margin="0,4,0,12" />
                                 <WrapPanel>
-                                    <RadioButton Content="{loc:Tr OverlayDesigns_InGame}" IsChecked="{Binding OverlayModeHook}" GroupName="DesignRenderer" Margin="0,0,24,12" />
-                                    <RadioButton Content="{loc:Tr OverlayDesigns_HookFree}" IsChecked="{Binding OverlayModeHookFree}" GroupName="DesignRenderer" Margin="0,0,0,12" />
+                                    <RadioButton Content="{loc:Tr OverlayDesigns_InGame}" IsChecked="{Binding OverlayModeHook}" GroupName="DesignRenderer" Margin="0,0,24,0" />
+                                    <RadioButton Content="{loc:Tr OverlayDesigns_HookFree}" IsChecked="{Binding OverlayModeHookFree}" GroupName="DesignRenderer" />
                                 </WrapPanel>
-                                <CheckBox Content="{loc:Tr OverlayDesigns_Visible}" IsChecked="{Binding IsOverlayActive}" />
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -1446,23 +1522,6 @@
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
 											   Text="{loc:Tr OverlayView_ConfigureOverlayControlsAndData}"/>
 									<Separator Margin="0 10 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
-
-									<DockPanel Margin="0 5">
-										<TextBox DockPanel.Dock="Right" Width="160" Height="42"
-												 materialDesign:HintAssist.Hint="{loc:Tr OverlayView_ToggleOverlay}"
-												 materialDesign:HintAssist.HintOpacity=".8"
-												 Style="{DynamicResource CxFloatingHintTextBox}" FontSize="14"
-												 IsReadOnly="True" IsReadOnlyCaretVisible="False" IsUndoEnabled="False"
-												 PreviewKeyDown="OverlayHotkeyTextBox_PreviewKeyDown"
-												 ToolTip="{loc:Tr OverlayView_HotkeyPressBackspaceDeleteOrEsc}">
-											<Binding Path="OverlayHotkey" ElementName="OverlayViewControl" Mode="OneWay" TargetNullValue="{x:Static validation:HotkeyValidationRule.UnsetText}">
-												<Binding.ValidationRules>
-													<validation:HotkeyValidationRule ValidatesOnTargetUpdated="True"/>
-												</Binding.ValidationRules>
-											</Binding>
-										</TextBox>
-										<TextBlock Margin="0 0 12 0" VerticalAlignment="Center" Text="{loc:Tr OverlayView_OverlayHotkey}"/>
-									</DockPanel>
 
 									<DockPanel Margin="0 5">
 										<TextBox DockPanel.Dock="Right" Width="160" Height="42"

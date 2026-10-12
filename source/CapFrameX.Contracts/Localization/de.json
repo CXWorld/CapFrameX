@@ -10,6 +10,7 @@
   "name": "Deutsch",
   "culture": "de-DE",
   "strings": {
+    "OverlayView_OverlayMode": "Overlay-Modus",
     "OverlayDesigns_Tab": "Tile-Overlay",
     "OverlayDesigns_Title": "Tile-Overlay",
     "OverlayDesigns_Description": "Telemetrie-Tiles und ein verknüpftes Zeilen-Overlay auf einem einstellbaren Raster anordnen und mit dem CapFrameX-Renderer ansehen.",
@@ -25,7 +26,6 @@
     "OverlayDesigns_DeleteActiveNote": "Das Overlay wechselt zurück zum Zeilen-Overlay.",
     "OverlayDesigns_Cancel": "Abbrechen",
     "OverlayDesigns_KeepOneProfile": "Behalte mindestens ein gespeichertes Tile-Profil.",
-    "OverlayDesigns_Use": "Ausgewähltes Tile-Overlay verwenden",
     "OverlayDesigns_Classic": "Zeilen-Overlay verwenden",
     "OverlayDesigns_Output": "Tile-Overlay-Ausgabe",
     "OverlayDesigns_OutputHelp": "In-game und Hook-free unterstützen Zeilen- und Tile-Overlays. Wähle oben ein gespeichertes Tile-Profil aus, um es zu verwenden.",

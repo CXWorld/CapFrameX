@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
+using System.Windows.Threading;
 using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.EventAggregation.Messages;
@@ -23,14 +24,44 @@ namespace CapFrameX.ViewModel
         public string DesignStatus => _designActionError ?? _designService?.Status ?? string.Empty;
         public bool HasActiveDesign => _designService?.IsEnabled == true;
         public bool IsTileOverlayAvailable => !OverlayModeRtss;
+        public bool IsTileOverlayTabVisible => IsTileOverlayAvailable && IsTileOverlayEnabled;
         public bool CanUseDesign => IsTileOverlayAvailable && _designService?.CanActivate == true;
         public bool HasSavedDesigns => SavedDesigns.Count > 0;
+        public bool ShowDesignRecoveryActions => IsTileOverlayAvailable && !HasActiveDesign
+            && (!HasSavedDesigns || !string.IsNullOrEmpty(_designActionError));
+        public bool CanToggleOverlayMode => !IsDeleteDesignDialogOpen
+            && (HasActiveDesign || (CanUseDesign && PreferredTileOverlayProfile != null));
+        public bool IsTileOverlayEnabled
+        {
+            get => HasActiveDesign;
+            set
+            {
+                if (value != HasActiveDesign && CanToggleOverlayMode)
+                {
+                    if (value)
+                    {
+                        SelectedDesign = PreferredTileOverlayProfile;
+                        UseDesignCommand.Execute();
+                    }
+                    else UseClassicOverlayCommand.Execute();
+                }
+
+                if (value != HasActiveDesign)
+                {
+                    // WPF ignores source notifications while writing a TwoWay binding.
+                    // Re-read the actual service state after a rejected or failed change.
+                    var dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+                    _ = dispatcher.BeginInvoke(DispatcherPriority.DataBind,
+                        new Action(() => RaisePropertyChanged(nameof(IsTileOverlayEnabled))));
+                }
+            }
+        }
         public int SelectedOverlayTabIndex
         {
             get => _selectedOverlayTabIndex;
             set
             {
-                int selected = value == 1 && !IsTileOverlayAvailable ? 0 : value;
+                int selected = value == 0 || value == 1 ? (IsTileOverlayTabVisible ? 1 : 0) : value;
                 if (!SetProperty(ref _selectedOverlayTabIndex, selected) && selected != value)
                     RaisePropertyChanged();
                 if (selected != 1) IsDeleteDesignDialogOpen = false;
@@ -42,9 +73,18 @@ namespace CapFrameX.ViewModel
             set
             {
                 if (SetProperty(ref _selectedDesign, value))
+                {
                     UseDesignCommand?.RaiseCanExecuteChanged();
+                    RaiseOverlayModeToggleProperties();
+                }
             }
         }
+
+        // Returning to Tile mode restores the last runtime choice independently of list browsing.
+        private OverlayDesignInfo PreferredTileOverlayProfile => HasActiveDesign
+            ? SavedDesigns.FirstOrDefault(profile => profile.Id == _designService.ActiveProfileId)
+            : SavedDesigns.FirstOrDefault(profile => profile.Id == _appConfiguration.LastOverlayDesignProfileId)
+                ?? SavedDesigns.FirstOrDefault();
 
         public DelegateCommand OpenDesignerCommand { get; private set; }
         public DelegateCommand UseDesignCommand { get; private set; }
@@ -65,6 +105,7 @@ namespace CapFrameX.ViewModel
                 if (!value) _pendingDesignDeletion = null;
                 RaisePropertyChanged(nameof(DeleteDesignMessage));
                 RaisePropertyChanged(nameof(IsDeletingActiveDesign));
+                RaiseOverlayModeToggleProperties();
                 UpdateSavedDesignCommands();
             }
         }
@@ -142,6 +183,7 @@ namespace CapFrameX.ViewModel
             RaisePropertyChanged(nameof(SavedDesigns));
             SelectedDesign = SavedDesigns.FirstOrDefault(profile => profile.Id == previous)
                 ?? SavedDesigns.FirstOrDefault(profile => profile.Id == _designService?.ActiveProfileId)
+                ?? SavedDesigns.FirstOrDefault(profile => profile.Id == _appConfiguration.LastOverlayDesignProfileId)
                 ?? SavedDesigns.FirstOrDefault();
             RaisePropertyChanged(nameof(DesignStatus));
             RaisePropertyChanged(nameof(IsOverlayActive));
@@ -152,7 +194,6 @@ namespace CapFrameX.ViewModel
             UseDesignCommand?.RaiseCanExecuteChanged();
             UseClassicOverlayCommand?.RaiseCanExecuteChanged();
             RaisePropertyChanged(nameof(IsDeletingActiveDesign));
-            UpdateSavedDesignCommands();
         }
 
         private OverlayDesignInfo FindSavedDesign(OverlayDesignInfo profile) => profile == null ? null
@@ -168,12 +209,22 @@ namespace CapFrameX.ViewModel
 
         private void UpdateTileOverlayAvailability()
         {
-            // Select the visible row editor before the tile tab collapses. Returning to a
-            // native renderer makes the tab available without switching content or selection.
-            if (!IsTileOverlayAvailable && SelectedOverlayTabIndex == 1)
-                SelectedOverlayTabIndex = 0;
-            if (!IsTileOverlayAvailable) IsDeleteDesignDialogOpen = false;
+            // Follow the active mode before hiding its old editor. General OSD options
+            // remain selected when a mode or renderer changes in the background.
+            if (SelectedOverlayTabIndex == 0 || SelectedOverlayTabIndex == 1)
+                SelectedOverlayTabIndex = IsTileOverlayTabVisible ? 1 : 0;
+            if (!IsTileOverlayTabVisible) IsDeleteDesignDialogOpen = false;
             RaisePropertyChanged(nameof(IsTileOverlayAvailable));
+            RaisePropertyChanged(nameof(IsTileOverlayTabVisible));
+            RaisePropertyChanged(nameof(ShowDesignRecoveryActions));
+            RaiseOverlayModeToggleProperties();
+            UpdateSavedDesignCommands();
+        }
+
+        private void RaiseOverlayModeToggleProperties()
+        {
+            RaisePropertyChanged(nameof(IsTileOverlayEnabled));
+            RaisePropertyChanged(nameof(CanToggleOverlayMode));
         }
 
         private void RefreshDesigns()

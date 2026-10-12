@@ -52,6 +52,7 @@ namespace CapFrameX.OSD.Integration
         {
             lock (_gate)
             {
+                string configuredProfileId = _configuration.ActiveOverlayDesignProfileId;
                 // Enforce the renderer gate before opening the library: even unreadable or newer
                 // files must not keep a previous design alive after switching to RTSS.
                 if (!CanActivate) ClearActiveDesign();
@@ -68,6 +69,12 @@ namespace CapFrameX.OSD.Integration
                         && _current != null && _current.ProfileId == selected;
                     if (!retainValidated)
                         _current = active == null ? null : OverlayRuntimeDesign.Parse(active.Id, active.Name, active.DesignJson);
+                    if (_current != null)
+                        RememberProfile(_current.ProfileId);
+                    else if (string.IsNullOrEmpty(_configuration.LastOverlayDesignProfileId)
+                        && store.Profiles.Any(profile => profile.Id == configuredProfileId))
+                        // Preserve an older installation's selection even if RTSS cleared its active ID.
+                        RememberProfile(configuredProfileId);
                     if (active == null && !string.IsNullOrEmpty(selected) && !retainValidated)
                     {
                         SetActiveProfileId(null);
@@ -107,6 +114,7 @@ namespace CapFrameX.OSD.Integration
                 var design = OverlayRuntimeDesign.Parse(profile.Id, profile.Name, profile.DesignJson);
                 SetActiveProfileId(profile.Id);
                 _current = design;
+                RememberProfile(profile.Id);
                 _profiles = Array.AsReadOnly(store.Profiles.Select(item => new OverlayDesignInfo(item.Id, item.Name)).ToArray());
                 _status = CurrentModeStatus();
                 if (store.RecoveryWarning != null) _status += " · " + store.RecoveryWarning;
@@ -169,6 +177,12 @@ namespace CapFrameX.OSD.Integration
             _updatingConfiguration = true;
             try { _configuration.ActiveOverlayDesignProfileId = profileId; }
             finally { _updatingConfiguration = false; }
+        }
+
+        private void RememberProfile(string profileId)
+        {
+            if (_configuration.LastOverlayDesignProfileId != profileId)
+                _configuration.LastOverlayDesignProfileId = profileId;
         }
 
         private void ClearActiveDesign()

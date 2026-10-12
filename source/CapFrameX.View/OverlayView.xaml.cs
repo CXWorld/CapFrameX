@@ -21,7 +21,15 @@ namespace CapFrameX.View
 	/// </summary>
 	public partial class OverlayView : UserControl
 	{
-        public void ShowClassicProfile() => OverlayTabs.SelectedItem = RowOverlayTab;
+        public void ShowClassicProfile()
+        {
+            if (DataContext is OverlayViewModel model)
+            {
+                model.CancelDeleteDesignCommand.Execute();
+                model.IsTileOverlayEnabled = false;
+                model.SelectedOverlayTabIndex = 0;
+            }
+        }
 
         private void OnSavedTileProfileRightButtonDown(object sender, MouseButtonEventArgs e)
         {

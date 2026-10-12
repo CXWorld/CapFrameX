@@ -2,6 +2,7 @@
   "name": "Русский",
   "culture": "ru-RU",
   "strings": {
+    "OverlayView_OverlayMode": "Режим оверлея",
     "OverlayDesigns_Tab": "Плиточный оверлей",
     "OverlayDesigns_Title": "Плиточный оверлей",
     "OverlayDesigns_Description": "Размещайте плитки телеметрии и связанный строчный оверлей на настраиваемой сетке и просматривайте результат в рендерере CapFrameX.",
@@ -17,7 +18,6 @@
     "OverlayDesigns_DeleteActiveNote": "Оверлей вернётся в строчный режим.",
     "OverlayDesigns_Cancel": "Отмена",
     "OverlayDesigns_KeepOneProfile": "Оставьте хотя бы один сохранённый профиль плиток.",
-    "OverlayDesigns_Use": "Использовать выбранный плиточный оверлей",
     "OverlayDesigns_Classic": "Использовать строчный оверлей",
     "OverlayDesigns_Output": "Вывод плиточного оверлея",
     "OverlayDesigns_OutputHelp": "In-game и Hook-free поддерживают строчные и плиточные оверлеи. Выберите сохранённый профиль плиток выше, чтобы использовать его.",

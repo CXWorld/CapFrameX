@@ -10,6 +10,7 @@
   "name": "Español",
   "culture": "es-ES",
   "strings": {
+    "OverlayView_OverlayMode": "Modo de overlay",
     "OverlayDesigns_Tab": "Overlay de mosaicos",
     "OverlayDesigns_Title": "Overlay de mosaicos",
     "OverlayDesigns_Description": "Organiza los mosaicos de telemetría y un overlay de filas vinculado en una cuadrícula configurable y previsualízalos con el renderizador de CapFrameX.",
@@ -25,7 +26,6 @@
     "OverlayDesigns_DeleteActiveNote": "El overlay volverá al modo de filas.",
     "OverlayDesigns_Cancel": "Cancelar",
     "OverlayDesigns_KeepOneProfile": "Conserva al menos un perfil de mosaicos guardado.",
-    "OverlayDesigns_Use": "Usar overlay de mosaicos seleccionado",
     "OverlayDesigns_Classic": "Usar overlay de filas",
     "OverlayDesigns_Output": "Salida del overlay de mosaicos",
     "OverlayDesigns_OutputHelp": "In-game y Hook-free admiten overlays de filas y de mosaicos. Selecciona un perfil de mosaicos guardado arriba para usarlo.",

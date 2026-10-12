@@ -104,11 +104,13 @@ namespace CapFrameX.Test.Configuration
         [TestMethod]
         public async Task ConfigurationKeepsMissingDefaultsSeparateFromExplicitNullAndEmptyValues()
         {
-            File.WriteAllText(SettingsPath, "{\"ActiveOverlayDesignProfileId\":null,\"OverlayHotKey\":\"\"}");
+            File.WriteAllText(SettingsPath, "{\"ActiveOverlayDesignProfileId\":null,\"LastOverlayDesignProfileId\":null,\"OverlayHotKey\":\"\"}");
             var configuration = CreateConfiguration(out var storage);
 
             Assert.IsNull(configuration.ActiveOverlayDesignProfileId);
             Assert.IsNull(configuration.ActiveOverlayDesignProfileId);
+            Assert.IsNull(configuration.LastOverlayDesignProfileId);
+            Assert.IsNull(configuration.LastOverlayDesignProfileId);
             Assert.AreEqual(string.Empty, configuration.OverlayHotKey, "An explicitly disabled hotkey must not regain its default.");
             Assert.IsTrue(storage.WaitForPendingSaveAsync().IsCompleted);
             Assert.AreEqual("F11", configuration.CaptureHotKey);
@@ -117,6 +119,7 @@ namespace CapFrameX.Test.Configuration
 
             var saved = JObject.Parse(File.ReadAllText(SettingsPath));
             Assert.AreEqual(JTokenType.Null, saved[nameof(IAppConfiguration.ActiveOverlayDesignProfileId)].Type);
+            Assert.AreEqual(JTokenType.Null, saved[nameof(IAppConfiguration.LastOverlayDesignProfileId)].Type);
             Assert.AreEqual(string.Empty, (string)saved[nameof(IAppConfiguration.OverlayHotKey)]);
             Assert.AreEqual("F11", (string)saved[nameof(IAppConfiguration.CaptureHotKey)]);
             Assert.AreEqual(100, (int)saved[nameof(IAppConfiguration.MovingAverageWindowSize)]);
@@ -130,32 +133,72 @@ namespace CapFrameX.Test.Configuration
             // previously dereferenced that null even without restarting the application.
             Assert.IsNull(configuration.ActiveOverlayDesignProfileId);
             Assert.IsNull(configuration.ActiveOverlayDesignProfileId);
+            Assert.IsNull(configuration.LastOverlayDesignProfileId);
+            Assert.IsNull(configuration.LastOverlayDesignProfileId);
             var profiles = new OverlayDesignProfileStore(_folder, json => JObject.Parse(json).ToString(Formatting.None));
             var profile = profiles.Create("Test design", "{\"version\":1,\"root\":{\"type\":\"panel\",\"children\":[{\"type\":\"metric\",\"key\":\"fps\"}]}}");
-            var designs = new OverlayDesignService(_folder, configuration);
+            using var designs = new OverlayDesignService(_folder, configuration);
             Assert.IsFalse(designs.IsEnabled);
             designs.Activate(profile.Id);
             Assert.AreEqual(profile.Id, configuration.ActiveOverlayDesignProfileId);
+            Assert.AreEqual(profile.Id, configuration.LastOverlayDesignProfileId);
             Assert.IsTrue(designs.IsEnabled);
             await WaitForSave(storage);
 
             var restartedConfiguration = CreateConfiguration(out var restartedStorage);
-            var restartedDesigns = new OverlayDesignService(_folder, restartedConfiguration);
+            using var restartedDesigns = new OverlayDesignService(_folder, restartedConfiguration);
             Assert.AreEqual(profile.Id, restartedDesigns.ActiveProfileId);
+            Assert.AreEqual(profile.Id, restartedConfiguration.LastOverlayDesignProfileId);
             restartedDesigns.Deactivate();
             Assert.IsNull(restartedConfiguration.ActiveOverlayDesignProfileId);
+            Assert.AreEqual(profile.Id, restartedConfiguration.LastOverlayDesignProfileId);
             Assert.IsFalse(restartedDesigns.IsEnabled);
             await WaitForSave(restartedStorage);
             Task saved = restartedStorage.WaitForPendingSaveAsync();
             restartedDesigns.Deactivate();
             Assert.AreSame(saved, restartedStorage.WaitForPendingSaveAsync());
             Assert.AreEqual(JTokenType.Null, JObject.Parse(File.ReadAllText(SettingsPath))[nameof(IAppConfiguration.ActiveOverlayDesignProfileId)].Type);
+            Assert.AreEqual(profile.Id, (string)JObject.Parse(File.ReadAllText(SettingsPath))[nameof(IAppConfiguration.LastOverlayDesignProfileId)]);
 
             var classicConfiguration = CreateConfiguration(out _);
             Assert.IsNull(classicConfiguration.ActiveOverlayDesignProfileId);
-            var classicDesigns = new OverlayDesignService(_folder, classicConfiguration);
+            Assert.AreEqual(profile.Id, classicConfiguration.LastOverlayDesignProfileId);
+            using var classicDesigns = new OverlayDesignService(_folder, classicConfiguration);
             Assert.IsFalse(classicDesigns.IsEnabled);
             Assert.AreEqual(OverlayDesignStarterCatalog.Profiles.Count + 1, classicDesigns.Profiles.Count, "Returning to Row overlay must retain the saved design and starter library.");
+        }
+
+        [DataTestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public async Task LegacyActiveProfileMigratesTheLastProfileAcrossARealReload(bool nativeRenderer)
+        {
+            var profiles = new OverlayDesignProfileStore(_folder, OverlayRuntimeDesign.Canonicalize);
+            var profile = profiles.Create("Legacy design", "{\"version\":1,\"root\":{\"type\":\"panel\",\"children\":[{\"type\":\"metric\",\"key\":\"fps\"}]}}");
+            File.WriteAllText(SettingsPath, new JObject
+            {
+                [nameof(IAppConfiguration.ActiveOverlayDesignProfileId)] = profile.Id,
+                [nameof(IAppConfiguration.EnableHookOverlay)] = nativeRenderer,
+                [nameof(IAppConfiguration.EnableHookFreeOverlay)] = false,
+                [nameof(IAppConfiguration.IsOverlayActive)] = false
+            }.ToString());
+
+            var configuration = CreateConfiguration(out var storage);
+            using (var designs = new OverlayDesignService(_folder, configuration))
+            {
+                Assert.AreEqual(profile.Id, configuration.LastOverlayDesignProfileId);
+                Assert.AreEqual(nativeRenderer ? profile.Id : null, designs.ActiveProfileId);
+                Assert.AreEqual(nativeRenderer, designs.IsEnabled);
+                Assert.IsFalse(configuration.IsOverlayActive, "Migrating the remembered profile must not show the overlay.");
+            }
+            await WaitForSave(storage);
+
+            var restartedConfiguration = CreateConfiguration(out _);
+            using var restartedDesigns = new OverlayDesignService(_folder, restartedConfiguration);
+            Assert.AreEqual(profile.Id, restartedConfiguration.LastOverlayDesignProfileId);
+            Assert.AreEqual(nativeRenderer ? profile.Id : null, restartedConfiguration.ActiveOverlayDesignProfileId);
+            Assert.AreEqual(nativeRenderer, restartedDesigns.IsEnabled);
+            Assert.IsFalse(restartedConfiguration.IsOverlayActive);
         }
 
         private JsonSettingsStorage CreateStorage()

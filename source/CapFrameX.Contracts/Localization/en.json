@@ -10,6 +10,7 @@
   "name": "English",
   "culture": "en-US",
   "strings": {
+    "OverlayView_OverlayMode": "Overlay mode",
     "OverlayDesigns_Tab": "Tile overlay",
     "OverlayDesigns_Title": "Tile overlay",
     "OverlayDesigns_Description": "Arrange telemetry tiles and a linked row overlay on a configurable grid, then preview them with the CapFrameX renderer.",
@@ -25,7 +26,6 @@
     "OverlayDesigns_DeleteActiveNote": "The overlay will return to Row overlay.",
     "OverlayDesigns_Cancel": "Cancel",
     "OverlayDesigns_KeepOneProfile": "Keep at least one saved tile profile.",
-    "OverlayDesigns_Use": "Use selected tile overlay",
     "OverlayDesigns_Classic": "Use row overlay",
     "OverlayDesigns_Output": "Tile overlay output",
     "OverlayDesigns_OutputHelp": "In-game and Hook-free support both row overlays and tile overlays. Choose a saved tile profile above to use it.",

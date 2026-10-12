@@ -23,6 +23,7 @@ namespace CapFrameX.Test.Integration
     [DoNotParallelize]
     public class OverlayDesignRendererCompatibilityTest
     {
+        private readonly List<JsonSettingsStorage> _jsonStorages = new List<JsonSettingsStorage>();
         private string _folder;
         private CapFrameXConfiguration _configuration;
         private OverlayDesignProfileStore _store;
@@ -46,6 +47,7 @@ namespace CapFrameX.Test.Integration
         [TestCleanup]
         public void Cleanup()
         {
+            foreach (var storage in _jsonStorages) WaitForSave(storage);
             if (Directory.Exists(_folder)) Directory.Delete(_folder, true);
         }
 
@@ -57,8 +59,23 @@ namespace CapFrameX.Test.Integration
             string saved = File.ReadAllText(LibraryPath);
             using var service = Service();
             AssertClassicRtss(service);
+            Assert.AreEqual(_profileId, _configuration.LastOverlayDesignProfileId);
             Assert.AreEqual(saved, File.ReadAllText(LibraryPath));
             Assert.AreEqual(_profileId, _store.ActiveProfileId, "The editor selection must survive disabling runtime design mode.");
+        }
+
+        [TestMethod]
+        public void StartingWithRtssKeepsAnExistingLastProfileInsteadOfReplacingItWithLegacyActive()
+        {
+            string rememberedId = _store.Create("Remembered profile", _store.Get(_profileId).DesignJson).Id;
+            _configuration.LastOverlayDesignProfileId = rememberedId;
+            _configuration.ActiveOverlayDesignProfileId = _profileId;
+            _configuration.EnableHookOverlay = false;
+
+            using var service = Service();
+
+            AssertClassicRtss(service);
+            Assert.AreEqual(rememberedId, _configuration.LastOverlayDesignProfileId);
         }
 
         [TestMethod]
@@ -82,6 +99,7 @@ namespace CapFrameX.Test.Integration
             string saved = File.ReadAllText(LibraryPath);
             model.OverlayModeRtss = true;
             AssertClassicRtss(service);
+            Assert.AreEqual(_profileId, _configuration.LastOverlayDesignProfileId);
             Assert.IsFalse(model.HasActiveDesign);
             Assert.IsFalse(model.UseDesignCommand.CanExecute());
             Assert.AreEqual(saved, File.ReadAllText(LibraryPath));
@@ -90,6 +108,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(service.CanActivate);
             Assert.IsFalse(service.IsEnabled);
             Assert.IsNull(_configuration.ActiveOverlayDesignProfileId);
+            Assert.AreEqual(_profileId, _configuration.LastOverlayDesignProfileId);
             StringAssert.Contains(service.Status, "Row overlay");
             StringAssert.Contains(service.Status, "Hook-free");
             Assert.IsTrue(model.UseDesignCommand.CanExecute());
@@ -191,6 +210,97 @@ namespace CapFrameX.Test.Integration
             Assert.ThrowsException<KeyNotFoundException>(() => service.Activate(Guid.NewGuid().ToString("N")));
             Assert.IsFalse(_configuration.IsOverlayActive);
             Assert.AreEqual(_profileId, service.ActiveProfileId);
+            Assert.AreEqual(_profileId, _configuration.LastOverlayDesignProfileId);
+        }
+
+        [TestMethod]
+        public void ShowingASelectedListProfileAndRowModeSurviveJsonReloadsWithoutShowingTheHiddenOverlay()
+        {
+            string secondId = _store.Create("Second profile", _store.Get(_profileId).DesignJson).Id;
+            _configuration = CreateJsonConfiguration(out var storage);
+            _configuration.EnableHookOverlay = true;
+            _configuration.EnableHookFreeOverlay = false;
+            using (var service = Service())
+            {
+                var model = CreateModel(service);
+                service.Activate(_profileId);
+                model.SelectedDesign = service.Profiles.Single(profile => profile.Id == secondId);
+                Assert.AreEqual(_profileId, service.ActiveProfileId, "Selecting a list item must leave the live profile unchanged.");
+                model.ShowSavedDesignCommand.Execute(model.SelectedDesign);
+                Assert.AreEqual(secondId, service.ActiveProfileId);
+                Assert.AreEqual(secondId, _configuration.LastOverlayDesignProfileId);
+                _configuration.IsOverlayActive = false;
+                WaitForSave(storage);
+            }
+
+            _configuration = CreateJsonConfiguration(out storage);
+            using (var restarted = Service())
+            {
+                var model = CreateModel(restarted, selectTestProfile: false);
+                Assert.AreEqual(secondId, restarted.ActiveProfileId);
+                Assert.AreEqual(secondId, model.SelectedDesign.Id);
+                Assert.IsTrue(model.IsTileOverlayEnabled);
+                Assert.IsFalse(_configuration.IsOverlayActive, "Restoring Tile mode must preserve the saved visibility.");
+
+                model.IsTileOverlayEnabled = false;
+                Assert.IsNull(_configuration.ActiveOverlayDesignProfileId);
+                Assert.AreEqual(secondId, _configuration.LastOverlayDesignProfileId);
+                Assert.AreEqual(secondId, model.SelectedDesign.Id);
+                WaitForSave(storage);
+            }
+
+            _configuration = CreateJsonConfiguration(out storage);
+            using (var rows = Service())
+            {
+                var model = CreateModel(rows, selectTestProfile: false);
+                Assert.IsFalse(rows.IsEnabled, "A remembered profile must not activate Tile mode on a Row-mode restart.");
+                Assert.IsFalse(model.IsTileOverlayEnabled);
+                Assert.IsFalse(_configuration.IsOverlayActive);
+                Assert.AreEqual(secondId, model.SelectedDesign.Id);
+                model.SelectedDesign = rows.Profiles.Single(profile => profile.Id == _profileId);
+                model.RefreshDesignsCommand.Execute();
+                Assert.AreEqual(_profileId, model.SelectedDesign.Id);
+                Assert.AreEqual(secondId, _configuration.LastOverlayDesignProfileId);
+                Assert.IsFalse(rows.IsEnabled, "Browsing and refreshing must keep Row mode active.");
+
+                model.IsTileOverlayEnabled = true;
+
+                Assert.AreEqual(secondId, rows.ActiveProfileId, "The mode toggle must use the remembered profile despite passive browsing.");
+                Assert.AreEqual(secondId, _configuration.LastOverlayDesignProfileId);
+                Assert.IsTrue(_configuration.IsOverlayActive, "Explicitly returning to Tile mode must show the overlay.");
+                WaitForSave(storage);
+            }
+        }
+
+        [TestMethod]
+        public void DeletedRememberedProfileFallsBackAfterJsonReloadWithoutActivatingUntilToggled()
+        {
+            _configuration = CreateJsonConfiguration(out var storage);
+            _configuration.EnableHookOverlay = true;
+            _configuration.EnableHookFreeOverlay = false;
+            using (var service = Service())
+            {
+                service.Activate(_profileId);
+                service.Deactivate();
+                service.Delete(_profileId);
+                _configuration.IsOverlayActive = false;
+                WaitForSave(storage);
+            }
+
+            _configuration = CreateJsonConfiguration(out storage);
+            using var restarted = Service();
+            var model = CreateModel(restarted, selectTestProfile: false);
+            string fallbackId = restarted.Profiles.First().Id;
+            Assert.IsFalse(restarted.IsEnabled);
+            Assert.IsFalse(_configuration.IsOverlayActive);
+            Assert.AreEqual(fallbackId, model.SelectedDesign.Id);
+            model.SelectedDesign = restarted.Profiles.Last();
+
+            model.IsTileOverlayEnabled = true;
+
+            Assert.AreEqual(fallbackId, restarted.ActiveProfileId);
+            Assert.AreEqual(fallbackId, _configuration.LastOverlayDesignProfileId);
+            WaitForSave(storage);
         }
 
         [TestMethod]
@@ -246,7 +356,19 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(_configuration.IsOverlayActive);
         }
 
-        private OverlayViewModel CreateModel(IOverlayDesignService designs)
+        private CapFrameXConfiguration CreateJsonConfiguration(out JsonSettingsStorage storage)
+        {
+            var paths = new Mock<IPathService>();
+            paths.SetupGet(path => path.ConfigFolder).Returns(_folder);
+            storage = new JsonSettingsStorage(NullLogger<JsonSettingsStorage>.Instance, paths.Object);
+            _jsonStorages.Add(storage);
+            return new CapFrameXConfiguration(NullLogger<CapFrameXConfiguration>.Instance, storage);
+        }
+
+        private static void WaitForSave(JsonSettingsStorage storage)
+            => storage.WaitForPendingSaveAsync().WaitAsync(TimeSpan.FromSeconds(10)).GetAwaiter().GetResult();
+
+        private OverlayViewModel CreateModel(IOverlayDesignService designs, bool selectTestProfile = true)
         {
             var provider = new Mock<IOverlayEntryProvider>();
             provider.Setup(p => p.GetOverlayEntries(false)).ReturnsAsync(Array.Empty<IOverlayEntry>());
@@ -255,7 +377,8 @@ namespace CapFrameX.Test.Integration
                 Mock.Of<IPathService>(), Mock.Of<ISensorService>(), Mock.Of<IRTSSService>(),
                 Mock.Of<IThreadAffinityController>(), Mock.Of<IOnlineMetricService>(),
                 new OverlayTemplateService(Mock.Of<ISensorService>()), null, null, designs);
-            model.SelectedDesign = designs.Profiles.Single(profile => profile.Id == _profileId);
+            if (selectTestProfile)
+                model.SelectedDesign = designs.Profiles.Single(profile => profile.Id == _profileId);
             return model;
         }
 
