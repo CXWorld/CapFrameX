@@ -168,10 +168,11 @@ namespace CapFrameX.Test.Integration
         public void EditableFontPickerDefersTypedTextAndCommitsOnEnter()
         {
             using var host = new EditorHost();
-            ((Expander)host.Editor.FindName("TypographyExpander")).IsExpanded = true;
+            var typography = (Expander)host.Editor.FindName("TypographyExpander");
+            typography.IsExpanded = true;
             Settle(450);
             host.Window.UpdateLayout();
-            var font = LogicalDescendants<ComboBox>(host.Inspector).Single(combo =>
+            var font = LogicalDescendants<ComboBox>(typography).Single(combo =>
                 combo.GetBindingExpression(ComboBox.TextProperty)?.ParentBinding.Path?.Path == "SelectedTile.Family");
             font.ApplyTemplate();
             var input = (TextBox)font.Template.FindName("PART_EditableTextBox", font);

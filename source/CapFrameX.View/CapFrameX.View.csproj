@@ -44,6 +44,11 @@
     <ProjectReference Include="..\CapFrameX.ViewModel\CapFrameX.ViewModel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- The prebuilt editor also needs its managed SVG-import dependencies at runtime. -->
+    <PackageReference Include="SharpVectors.Wpf" />
+  </ItemGroup>
+
   <!-- The reusable editor is owned by the optional OSD repository. Public builds use the
        same prebuilt fallback as the native renderer and its interop assembly. -->
   <PropertyGroup>

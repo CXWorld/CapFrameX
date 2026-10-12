@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="45" height="40" viewBox="0 0 45 40">
+<title>Ryzen tier 5 lettering — reference adaptation</title>
+<desc>CapFrameX vector adaptation of the user-supplied Ryzen 5 9600X badge reference. Original AMD and Ryzen logo path geometry is reused where present. Housing and model/tier lettering are reference-based drawings, not an unmodified AMD download. See ../../SOURCES.md.</desc>
+<defs>
+  <linearGradient id="body-metal" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#202223"/>
+    <stop offset=".27" stop-color="#454647"/>
+    <stop offset=".62" stop-color="#5d5e5e"/>
+    <stop offset="1" stop-color="#292b2c"/>
+  </linearGradient>
+  <linearGradient id="body-crosslight" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#000000" stop-opacity=".24"/>
+    <stop offset=".08" stop-color="#ffffff" stop-opacity=".04"/>
+    <stop offset=".62" stop-color="#ffffff" stop-opacity=".03"/>
+    <stop offset=".94" stop-color="#000000" stop-opacity=".08"/>
+    <stop offset="1" stop-color="#000000" stop-opacity=".28"/>
+  </linearGradient>
+  <linearGradient id="body-edge" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#171818"/>
+    <stop offset=".48" stop-color="#626363"/>
+    <stop offset="1" stop-color="#303232"/>
+  </linearGradient>
+  <linearGradient id="orange-wedge" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#b95108"/>
+    <stop offset=".15" stop-color="#e5670b"/>
+    <stop offset="1" stop-color="#f47b17"/>
+  </linearGradient>
+  <linearGradient id="orange-line" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#ed7f2a"/>
+    <stop offset=".46" stop-color="#ef7d25"/>
+    <stop offset="1" stop-color="#e97116"/>
+  </linearGradient>
+  <linearGradient id="center-metal" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#b7b8b8"/>
+    <stop offset=".52" stop-color="#c0c1c0"/>
+    <stop offset="1" stop-color="#acafae"/>
+  </linearGradient>
+  <linearGradient id="brand-silver" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f0f0ef"/>
+    <stop offset=".5" stop-color="#d7d8d6"/>
+    <stop offset="1" stop-color="#bdbfbd"/>
+  </linearGradient>
+  <linearGradient id="lower-silver" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#e3e3e0"/>
+    <stop offset="1" stop-color="#a9acaa"/>
+  </linearGradient>
+  <clipPath id="outer-clip"><rect x="1" y="1" width="318" height="318" rx="29"/></clipPath>
+  <clipPath id="track-clip"><path d="M 0 0 L 87 82 H 241 V 239 L 320 318 V 320 H 139 L 219 239 H 82 V 102 L 0 185 V 163 L 73 90 L 0 18 Z"/></clipPath>
+</defs>
+<g fill="#ec7719"><path d="M 0 0 H 45 V 8 H 9 V 17 H 35 Q 45 17 45 26 V 31 Q 45 40 35 40 H 0 V 32 H 34 Q 36 32 36 30 V 27 Q 36 25 34 25 H 0 Z"/></g>
+</svg>

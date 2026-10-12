@@ -12,6 +12,136 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Committed hardware graphics snapshot (2026-10-12)
+
+The managed and native payloads below correspond to OSD source commit
+`465ccccada514ed4450e05a52b52aee9f024bcb4`. Their component hashes are recorded in
+the feature entries below. The application now packages 28 graphics (26 SVGs and
+two PNGs), including the additional Ryzen 7 9800X3D model, tier and complete badge.
+Five portable examples in `overlay-templates` cover both Ryzen badges, REDLINE
+(Ryzen 7 9800X3D/Radeon), APEX (RTX 5090/Ryzen 7 9800X3D), and FUSION
+(RTX 5090/Core Ultra 9 285K). FUSION uses the original NVIDIA, GeForce RTX and Intel
+Core Ultra 9 vector assets and aligns both right-hand header captions.
+
+Final verification: the prebuilt-only Release application/test build succeeds,
+all 138 selected editor, native-layout, localization and CPU-sensor regression
+cases pass, all 28 graphics import through the editor, and all five example
+profiles pass editor roundtrip and runtime validation. The normal source-project
+restore graph was restored after checking the prebuilt build.
+
+### Modular Ryzen hardware badge (2026-10-12)
+
+The Controls DLL was rebuilt in `Release|x64` for .NET 10 from the sibling OSD
+working tree at `265b991480f92fb4d18368d6540c70f54e896632` plus the pending editor
+changes. The new Ryzen badge palette item inserts a standard container with three
+independently replaceable image layers: the branded frame, vertical 9600X model
+mark and orange Ryzen 5 tier mark. Its portable PNGs are embedded at twice the
+default tile size (640x640, 80x310 and 90x80), with no external image dependencies.
+The model and tier marks are graphic layers rather than live text fields.
+
+Six SVG assets, including modular components and a complete badge, are available
+through the existing graphics folder, bringing the bundled collection to 23 SVGs and
+two PNGs. `overlay-templates/AMD-Ryzen-5-9600X-Badge.json` provides a ready-to-import
+example. Provenance and the reference-inspired adaptations are documented beside
+the graphics.
+
+Verification: Release Controls and prebuilt application/test builds pass. All ten
+badge integration cases pass, covering portable serialization/native loading,
+Undo/Redo, the four-node tile budget, narrow and short canvases, nested containers,
+independent copies, moving and resizing. The 49 existing selected editor/import/
+localization regressions also pass. All 25 graphics import through the editor;
+the composed badge was visually checked with the native renderer. Source, external,
+Release app and test Controls DLLs match by SHA-256. No native or Interop refresh
+is required for this palette preset.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `B019052FB031703057BEF21D0950F2B846ED23A46A8C8CD1AC6837DB38F0E987` |
+
+### Bundled hardware graphics and SVG import (2026-10-12)
+
+The Controls DLL was rebuilt in `Release|x64` for .NET 10 from the sibling OSD
+working tree at `265b991480f92fb4d18368d6540c70f54e896632` plus the pending editor
+changes. Image import and file drop now accept self-contained static SVGs. The
+import dialog starts in `Resources\OverlayGraphics` beside the application, with
+the application directory as fallback. The main app packages 17 SVGs and two
+original PNGs, including manufacturer/product logos and transparent variants;
+their provenance and third-party notices travel with the files. Two additional
+Radeon color variants use AMD red `#ED1C24`: red on transparent and white on red.
+Their original path geometry is retained, and the adaptations are documented.
+
+SVGs are rendered with SharpVectors.Wpf 1.8.6 and embedded as PNG using the existing
+1024-pixel / 128-KiB budget. The SVG viewport preserves physical units, aspect ratio
+and transparent margins. DTDs, scripts, external resources and recursive references
+are rejected before rendering. Existing PNG/JPEG imports keep their behavior.
+`CapFrameX.View` carries the managed package dependency for prebuilt-only builds;
+central package management pins its version. No native or Interop refresh is needed.
+
+Verification: the Release Controls build and prebuilt-only Release application/test
+build pass, together with all 49 selected editor/import/localization regressions.
+The 19 import cases cover portable embedding, transparency, physical units,
+gradients, local references, Undo, rejected inputs and raster compatibility. All 19
+bundled graphics import through the actual editor and were visually inspected on
+light/dark backgrounds. The two physical-unit regressions fail before the viewport
+fix. Runtime resources, the dialog start folder and managed dependency copies are
+checked; source, external, app and test Controls DLLs match by SHA-256.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `F2134F60228BB42672CF428ACF84F21AA6BF2A89309808E154B53B301C380EBC` |
+
+### Native icon centering (2026-10-12)
+
+All five native DLLs were rebuilt in `RelWithDebInfo` with VS 2026/v145 from the
+sibling OSD working tree at `265b991480f92fb4d18368d6540c70f54e896632` plus the
+pending icon-centering fix. A vertical panel containing one icon now gives it the
+entire padded interior. Icons center their visible DirectWrite glyph bounds using
+cached overhang offsets; the clipping rectangle stays fixed. Ordinary text keeps
+its existing alignment. Existing profile JSON needs no migration.
+
+Verification: all 35 selected managed icon-editor, icon-pixel and group-bar-pixel
+tests pass against the staged core. The ten new icon-pixel cases cover two preset
+glyphs, padding, rectangular frames, nested containers and scales 0.5/1/2,
+including 72-pixel glyphs at scale 2. Eight cases fail with the previous core;
+all ten pass with the new core, with at most 0.5 pixel of measured center error.
+Fresh native `design`, `row_alignment` and the standalone CPU raster tests also
+pass. Source build outputs, external payloads and Release app copies match by
+SHA-256. The managed payload remains the preset-only editor below. Installed
+Vulkan registration and installed layer files were not changed by this staging.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `053F75691C6083FB5A29D2B07E1FC47AAA3F13708492383DC5C72CF27AA6CC5F` |
+| native\cfx_osd_hook.dll | `89BCBE5E73AE886A24202A970D928B5201D7979525C386B172FD1AAF2E70C068` |
+| native\x86\cfx_osd_hook.dll | `036F438C4CF13A90763E556BCC46D23542E08C78F4E651F233E548A3F432B371` |
+| native\vk\cfx_osd_vklayer.dll | `248CB776107CFCCCD3781207CBDFE9BDABB3F71DD996FA091716A46D9DBF3AED` |
+| native\vk\x86\cfx_osd_vklayer.dll | `5D82C539697E8A619804CE9C6FA7BEEBCAF36113ADE0881454D6C899159EEFF3` |
+
+### Icon sizing and preset-only symbol selection (2026-10-12)
+
+The Controls DLL was rebuilt in `Release|x64` for .NET 10 from the sibling
+`CapFrameX.OSD` working tree at `265b991480f92fb4d18368d6540c70f54e896632`
+plus the pending icon-editor fix. Icons now expose a size slider; canvas handles
+and frame fields resize the glyph together with its frame. Slider changes respect
+parent bounds and minimum dimensions, and each resize remains one undo operation.
+Icons are selected exclusively from the existing symbol dropdown; the custom
+glyph field and free icon-font picker are removed. All five embedded editor
+catalogs and the English/Korean review copies include the size label and remove
+the obsolete custom-symbol labels.
+
+Verification: the Release Controls and prebuilt-only test builds pass, as do all
+30 selected icon, localization and text-commit regression cases. The 11 icon cases
+cover resizing at both canvas scales, padding, nested boundaries, undo, locking
+and correct font/serialization when selecting a preset. An offscreen WPF rendering
+confirms the simplified inspector and correct Network glyph (`U+E968`) in the
+symbol dropdown and native preview. The external, app and test Controls DLLs
+match by SHA-256.
+Interop and all five native DLLs retain the previous payload below.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `847F24980453E02C697A7F7AA25327A3180BFBE73AFAFA51B6ED5951A3EDE03D` |
+
 ### Full rebuild with Vulkan Auto SR lifetime fix (2026-10-12)
 
 All seven bundled DLLs were refreshed from the sibling `CapFrameX.OSD` source tree
@@ -35,7 +165,7 @@ path. The seven external DLLs match the tested build outputs by SHA-256. Both
 Vulkan manifests match the source manifest and each other; the English/Korean
 review catalogs match their source files.
 
-| Current component | SHA-256 |
+| Component at this rebuild | SHA-256 |
 | --- | --- |
 | native\cfx_osd_core.dll | `E051DD649C0669AB541341BA6B7E2084A6D15F2CEF24EB3C41BA24B4275117E2` |
 | native\cfx_osd_hook.dll | `03E6EC5AA40A758C9BB6FAE30E9ABAB4D8596F195DAADC4C557454F9D773E077` |
