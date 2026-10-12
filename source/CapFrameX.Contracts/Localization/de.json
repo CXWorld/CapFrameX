@@ -1188,7 +1188,6 @@
     "OverlayView_ShowOrHideTheSelected": "Blendet den ausgewählten Overlay-Renderer ein oder aus.",
     "OverlayView_SmoothNumericValues": "Zahlenwerte glätten",
     "OverlayView_SortEntriesByType": "Einträge nach Typ sortieren",
-    "OverlayView_SpecialCXOverlayItemsCapture": "Spezielle CX-Overlay-Einträge:\n\n\nStatus des Aufnahmedienstes:\n\nAktueller Zustand des Aufnahmedienstes (Prozess gefunden, mehrere Prozesse gefunden, Benchmark läuft...)\n\n\nAufnahme-Timer:\n\nRestzeit der laufenden Aufnahme (feste Dauer) oder bisherige Aufnahmedauer (unbegrenzt)\n\n\nDurchlaufhistorie:\n\nZeigt die Daten vorheriger Durchläufe und aggregierte Ergebnisse (Einstellungen auf der Aufnahmeseite)\n\n\nEchtzeit-FPS-Metriken:\n\nGemittelte Werte für Durchschnitts- und Perzentil-FPS\n\n\nStuttering-Zeit:\n\nZeitanteil der Frames über der Stuttering-Schwelle\n\n\nAnwendungslatenz:\n\nGemittelter, geschätzter Input-Lag\n\n\nPMD-Leistung:\n\nLeistungswerte für die Verwendung mit dem Tool Powenetics v2",
     "OverlayView_StandardValueColor": "Standardfarbe des Werts:",
     "OverlayView_SwitchConfig": "Konfiguration wechseln",
     "OverlayView_SystemInfos": "Systeminfos",

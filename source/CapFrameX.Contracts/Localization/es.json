@@ -1187,7 +1187,6 @@
     "OverlayView_ShowOrHideTheSelected": "Muestra u oculta el renderizador de overlay seleccionado.",
     "OverlayView_SmoothNumericValues": "Suavizar valores numéricos",
     "OverlayView_SortEntriesByType": "Ordenar las entradas por tipo",
-    "OverlayView_SpecialCXOverlayItemsCapture": "Elementos especiales del overlay de CX:\n\n\nEstado del servicio de captura:\n\nEstado actual del servicio de captura (proceso encontrado, varios procesos encontrados, benchmark en curso...)\n\n\nTemporizador de captura:\n\nTiempo restante de la captura activa (duración definida) o tiempo de captura actual (ilimitado)\n\n\nHistorial de pasadas:\n\nMuestra los datos de las pasadas anteriores y los resultados agregados (configuración en la página de captura)\n\n\nMétricas de FPS en tiempo real:\n\nValores promediados de FPS promedio y percentiles\n\n\nTiempo de stuttering:\n\nPorcentaje de tiempo de los fotogramas por encima del umbral de stuttering\n\n\nLatencia de la aplicación:\n\nInput lag aproximado promediado\n\n\nPotencias PMD:\n\nValores de potencia para usar con la herramienta Powenetics v2",
     "OverlayView_StandardValueColor": "Color del valor:",
     "OverlayView_SwitchConfig": "Cambiar de config.",
     "OverlayView_SystemInfos": "Información del sistema",

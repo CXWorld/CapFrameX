@@ -1188,7 +1188,6 @@
     "OverlayView_ShowOrHideTheSelected": "Show or hide the selected overlay renderer.",
     "OverlayView_SmoothNumericValues": "Smooth numeric values",
     "OverlayView_SortEntriesByType": "Sort entries by type",
-    "OverlayView_SpecialCXOverlayItemsCapture": "Special CX Overlay items:\n\n\nCapture service status:\n\nCurrent state of capture service(process found, multiple processes found, running benchmark...)\n\n\nCapture timer:\n\nRemaining time for currently active capture(time set) or current capture time(unlimited)\n\n\nRun history:\n\nDisplays the data of previous runs and aggregated results(settings on capture page)\n\n\nReal-time FPS metrics:\n\nAveraged values for average and percentiles FPS\n\n\nStuttering Time:\n\nTime percentage of frames above the stuttering threshold\n\n\nApplication Latency:\n\nAveraged approximated input lag\n\n\nPMD Powers:\n\nPower values for use with Powenetics v2 tool",
     "OverlayView_StandardValueColor": "Standard value color:",
     "OverlayView_SwitchConfig": "Switch config",
     "OverlayView_SystemInfos": "System Infos",
