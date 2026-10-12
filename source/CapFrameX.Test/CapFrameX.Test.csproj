@@ -21,11 +21,6 @@
     <PackageReference Include="System.Reactive" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Not part of the build before the SDK-style migration; kept in the tree for reference. -->
-    <Compile Remove="PresentMonInterface\SystemInfoTest.cs" />
-  </ItemGroup>
-
   <PropertyGroup>
     <ShouldUnsetParentConfigurationAndPlatform Condition="'$(CfxOsdFromSource)' == 'true' And '$(ShouldUnsetParentConfigurationAndPlatform)' == ''">false</ShouldUnsetParentConfigurationAndPlatform>
   </PropertyGroup>

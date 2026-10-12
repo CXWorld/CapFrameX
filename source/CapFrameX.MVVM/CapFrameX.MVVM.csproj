@@ -11,8 +11,6 @@
   <ItemGroup>
     <PackageReference Include="MaterialDesignColors" />
     <PackageReference Include="MaterialDesignThemes" />
-    <PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" />
-    <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="System.Reactive" />
   </ItemGroup>
 

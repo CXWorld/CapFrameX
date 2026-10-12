@@ -18,7 +18,6 @@
     <UserControl.Resources>
         <ResourceDictionary>
             <CollectionViewSource x:Key="RecordInfoListKey" Source="{Binding RecordInfoList}" Filter="RecordInfoListOnFilter"/>
-            <mvvm:AddValueConverter x:Key="AddValueConverterExpander" Offset="-70"/>
             <mvvm:BoolToVisibilityConverter x:Key="FalseToVisibleConverter" FalseValue="Visible" TrueValue="Collapsed"/>
             <mvvm:InvertBoolConverter x:Key="InvertBoolConverter"/>
             <mvvm:PathLeafConverter x:Key="PathLeafConverter"/>

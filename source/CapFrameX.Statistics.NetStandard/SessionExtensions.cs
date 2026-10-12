@@ -114,18 +114,6 @@ namespace CapFrameX.Statistics.NetStandard
                 frametimeStatisticProvider, eRemoveOutlierMethod, IsValidActiveTimeValue);
 		}
 
-        public static IList<double> GetCpuActiveTimeTimeWindow(this ISession session, double startTime, double endTime,
-            IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
-        {
-            var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
-            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
-
-            var cpuActiveTimes = session.Runs.SelectMany(r => r.CaptureData.CpuActive).ToArray();
-
-            return FilterDataWithinTimeWindow(frameStartTimes, cpuActiveTimes, startTime, endTime,
-                frametimeStatisticProvider, eRemoveOutlierMethod, IsValidActiveTimeValue);
-        }
-
         public static IList<double> GetAnimationErrorTimeWindow(this ISession session, double startTime, double endTime)
         {
             var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();

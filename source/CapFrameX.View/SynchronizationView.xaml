@@ -26,11 +26,7 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.PopupBox.xaml" />
                 <ResourceDictionary Source="Styles/CxTabHeaders.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <mvvm:ZoomingModeConverter x:Key="ZoomingModeConverter"></mvvm:ZoomingModeConverter>
             <mvvm:BoolToVisibilityConverter x:Key="TrueToCollapsedConverter" TrueValue="Collapsed" FalseValue="Visible"/>
-            <Style x:Key="CleanSeparator" TargetType="lvc:Separator">
-                <Setter Property="IsEnabled" Value="False"></Setter>
-            </Style>
             <Style TargetType="{x:Type TabControl}" BasedOn="{StaticResource CxTabControl}" />
             <Style TargetType="{x:Type TabItem}" BasedOn="{StaticResource CxTabHeaderItem}" />
         </ResourceDictionary>

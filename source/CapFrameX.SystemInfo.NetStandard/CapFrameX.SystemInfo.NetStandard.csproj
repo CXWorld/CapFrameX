@@ -14,7 +14,6 @@
     <PackageReference Include="Mixaill.HwInfo.D3D" />
     <PackageReference Include="Mixaill.HwInfo.SetupApi" />
     <PackageReference Include="Mixaill.HwInfo.Vulkan" />
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" />
     <PackageReference Include="System.Management" />
   </ItemGroup>
 

@@ -25,22 +25,5 @@ namespace CapFrameX.MVVM.Converter
         {
             return string.Empty;
         }
-
-        private string GetEnumShortDescription(Enum enumObj)
-        {
-            FieldInfo fieldInfo = enumObj.GetType().GetField(enumObj.ToString());
-
-            object[] attribArray = fieldInfo.GetCustomAttributes(false);
-
-            if (attribArray.Length == 0)
-            {
-                return enumObj.ToString();
-            }
-            else
-            {
-                var attrib = attribArray[1] as ShortDescriptionAttribute;
-                return attrib.Description;
-            }
-        }
     }
 }

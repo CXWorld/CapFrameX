@@ -10,12 +10,9 @@
   <ItemGroup>
     <PackageReference Include="DryIoc.dll" />
     <PackageReference Include="EmbedIO" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Serilog" />
     <PackageReference Include="System.Reactive" />
-    <PackageReference Include="Unosquare.Swan.Lite" />
   </ItemGroup>
 
   <ItemGroup>

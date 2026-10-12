@@ -13,8 +13,6 @@
     <PackageReference Include="System.ServiceProcess.ServiceController" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="OxyPlot.Core" />
-    <PackageReference Include="OxyPlot.Wpf" />
-    <PackageReference Include="OxyPlot.Wpf.Shared" />
     <PackageReference Include="Prism.Core" />
     <PackageReference Include="SerialPortStream" />
     <PackageReference Include="System.Reactive" />
