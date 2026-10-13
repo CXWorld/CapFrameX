@@ -211,6 +211,9 @@ internal static class ADLX
         public int LuidHighPart;
 
         public uint LuidValid;
+
+        // Total VRAM in MB; zero when unavailable.
+        public uint TotalVramMB;
     }
 
     [DllImport(DllName, CallingConvention = CallingConvention.Cdecl, EntryPoint = "IntializeAdlx")]

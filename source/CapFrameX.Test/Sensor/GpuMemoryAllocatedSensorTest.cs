@@ -219,11 +219,12 @@ namespace CapFrameX.Test.Sensor
         [TestMethod]
         public void AdlxDeviceInfo_ManagedLayoutMatchesNativeAbi()
         {
-            Assert.AreEqual(596, Marshal.SizeOf<ADLX.AdlxDeviceInfo>());
+            Assert.AreEqual(600, Marshal.SizeOf<ADLX.AdlxDeviceInfo>());
             Assert.AreEqual(328, Marshal.OffsetOf<ADLX.AdlxDeviceInfo>(nameof(ADLX.AdlxDeviceInfo.PnpString)).ToInt32());
             Assert.AreEqual(584, Marshal.OffsetOf<ADLX.AdlxDeviceInfo>(nameof(ADLX.AdlxDeviceInfo.LuidLowPart)).ToInt32());
             Assert.AreEqual(588, Marshal.OffsetOf<ADLX.AdlxDeviceInfo>(nameof(ADLX.AdlxDeviceInfo.LuidHighPart)).ToInt32());
             Assert.AreEqual(592, Marshal.OffsetOf<ADLX.AdlxDeviceInfo>(nameof(ADLX.AdlxDeviceInfo.LuidValid)).ToInt32());
+            Assert.AreEqual(596, Marshal.OffsetOf<ADLX.AdlxDeviceInfo>(nameof(ADLX.AdlxDeviceInfo.TotalVramMB)).ToInt32());
         }
 
         [TestMethod]
