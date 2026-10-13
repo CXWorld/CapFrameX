@@ -91,6 +91,13 @@ namespace CapFrameX.OSD.Integration
                     var profiles = _profiles.ToList();
                     foreach (var starter in starters)
                     {
+                        int existingIndex = profiles.FindIndex(profile => profile.Id == starter.Id);
+                        if (existingIndex >= 0 && starter.CanUpdate(profiles[existingIndex]))
+                        {
+                            profiles[existingIndex] = new OverlayDesignProfile(starter.Id, starter.Name,
+                                WithName(starter.DesignJson, starter.Name), DateTime.UtcNow);
+                            continue;
+                        }
                         // A catalog upgrade adds its new designs only. Older starters may have
                         // been deliberately deleted or renamed; their absence is authoritative.
                         if (starter.IntroducedInVersion <= _starterCatalogVersion) continue;

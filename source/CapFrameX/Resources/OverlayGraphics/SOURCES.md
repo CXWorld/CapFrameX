@@ -53,7 +53,7 @@ The SVG rendering library's BSD-3-Clause license is included separately in
 The files in `AMD/Ryzen-Badge/` are CapFrameX vector adaptations of the
 Ryzen 5 9600X badge image supplied by the user on 2026-10-12. They are not
 unmodified manufacturer downloads. The metallic housing, orange tracks,
-diagonal hatching, inset panel, highlights and model/tier lettering were drawn
+diagonal hatching, inset panel and model/tier lettering were drawn
 as vector geometry from that reference. The orange and silver tones were
 matched visually to the reference; they do not claim to define AMD brand colors.
 
@@ -67,6 +67,10 @@ All badge files are genuine SVGs without raster images, external resources,
 font references, text elements or SVG filters. Gradients and individually
 drawn diagonal lines provide the surface details. Rounded corners retain
 transparency outside the badge.
+
+The horizontal highlight above the Ryzen wordmark was removed from the housing,
+template and both complete badges on 2026-10-12. The embedded palette and profile
+PNGs are regenerated from the same corrected SVG geometry.
 
 | File in `AMD/Ryzen-Badge/` | Contents and canvas |
 | --- | --- |

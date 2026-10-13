@@ -8,6 +8,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using CapFrameX.OSD.Controls;
 using CapFrameX.OSD.Interop;
+using CapFrameX.OSD.Integration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 
@@ -17,6 +18,43 @@ namespace CapFrameX.Test.Integration
     [DoNotParallelize]
     public class OverlayHardwareBadgeTest
     {
+        [TestMethod]
+        [DataRow("palette")]
+        [DataRow("AMD-Ryzen-Radeon-REDLINE")]
+        [DataRow("AMD-Ryzen-5-9600X-Badge")]
+        [DataRow("AMD-Ryzen-7-9800X3D-Badge")]
+        public void RyzenBadgeRetainsItsDarkHousingAboveTheWordmark(string presetId)
+        {
+            string image;
+            if (presetId == "palette")
+            {
+                using var host = new EditorHost();
+                image = host.AddBadge().Children[0].DataUri;
+            }
+            else
+            {
+                var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
+                var document = OsdDesignDocument.FromJson(starter.DesignJson);
+                image = document.EnumerateTiles().First(tile => tile.Kind == "image").DataUri;
+            }
+            using var input = new MemoryStream(Convert.FromBase64String(image.Substring(image.IndexOf(',') + 1)));
+            var decoder = BitmapDecoder.Create(input, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+            var bitmap = new FormatConvertedBitmap(decoder.Frames[0], PixelFormats.Bgra32, null, 0);
+            int stride = bitmap.PixelWidth * 4;
+            var pixels = new byte[stride * bitmap.PixelHeight];
+            bitmap.CopyPixels(pixels, stride, 0);
+            // The old highlight filled the strip at y=20 above RYZEN with near-white pixels.
+            // Sample the housing away from the orange track and the wordmark itself.
+            int y = bitmap.PixelHeight * 20 / 320;
+            for (int x = bitmap.PixelWidth * 100 / 320; x < bitmap.PixelWidth * 260 / 320; x++)
+            {
+                int offset = y * stride + x * 4;
+                Assert.IsTrue(pixels[offset + 3] > 250, "The badge housing must remain opaque.");
+                Assert.IsTrue(pixels[offset] < 120 && pixels[offset + 1] < 120 && pixels[offset + 2] < 120,
+                    "The bright horizontal strip above RYZEN must not return.");
+            }
+        }
+
         [TestMethod]
         public void PaletteBadgeAddsACompleteContainerWithoutChangingExistingTiles()
         {

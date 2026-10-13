@@ -48,16 +48,68 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void VersionTwoUpgradeAddsExactlyThreeCoreTypeProfilesAndPreservesTheExistingLibrary()
+        [DataRow("original")]
+        [DataRow("edited")]
+        [DataRow("renamed")]
+        [DataRow("deleted")]
+        [DataRow("same-name")]
+        public void CatalogCorrectionUpdatesOnlyTheKnownOriginalAndPreservesSelection(string state)
         {
-            var catalog = OverlayDesignStarterCatalog.Profiles;
-            var newStarters = catalog.Where(profile => profile.IntroducedInVersion == 3).ToArray();
-            CollectionAssert.AreEquivalent(new[] { "core-types-overview", "core-types-compact", "core-types-thermal" },
+            string originalJson = Design("minimal", 400);
+            var original = new OverlayDesignStarterProfile("revision-fixture", originalJson, 4);
+            var corrected = new OverlayDesignStarterProfile("revision-fixture", Design("minimal", 480), 4,
+                OverlayDesignStarterProfile.ComputeDesignHash(originalJson));
+            var store = Open();
+            var custom = store.Create("My custom design", Design("benchmark", 640));
+            Assert.IsTrue(store.EnsureStarterProfiles(new[] { original }, 4));
+            store.SetActive(original.Id);
+            if (state == "edited") store.Save(original.Id, Design("minimal", 420));
+            if (state == "renamed") store.Rename(original.Id, "My renamed design");
+            if (state == "deleted" || state == "same-name")
+            {
+                store.Delete(original.Id);
+                store.SetActive(custom.Id);
+            }
+            if (state == "same-name") store.Create(original.Name, originalJson);
+            var before = store.Profiles.ToArray();
+            string selected = store.ActiveProfileId;
+
+            var upgraded = Open();
+            Assert.IsTrue(upgraded.EnsureStarterProfiles(new[] { corrected }, 5));
+            Assert.AreEqual(before.Length, upgraded.Profiles.Count);
+            Assert.AreEqual(selected, upgraded.ActiveProfileId);
+            foreach (var profile in before)
+            {
+                Assert.AreEqual(profile.Name, upgraded.Get(profile.Id).Name);
+                Assert.AreEqual(state == "original" && profile.Id == original.Id ? corrected.DesignJson : profile.DesignJson,
+                    upgraded.Get(profile.Id).DesignJson);
+            }
+            Assert.AreEqual(5, (int)JObject.Parse(File.ReadAllText(LibraryPath))["StarterCatalogVersion"]);
+            string updatedBytes = File.ReadAllText(LibraryPath);
+            Assert.IsTrue(Open().EnsureStarterProfiles(new[] { corrected }, 5));
+            Assert.AreEqual(updatedBytes, File.ReadAllText(LibraryPath));
+        }
+
+        [TestMethod]
+        [DataRow(2, 3)]
+        [DataRow(3, 4)]
+        public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
+        {
+            var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
+            var newStarters = catalog.Where(profile => profile.IntroducedInVersion == targetVersion).ToArray();
+            string[] expectedIds = targetVersion == 3
+                ? new[] { "core-types-overview", "core-types-compact", "core-types-thermal" }
+                : new[] { "RTX-5090-9800X3D-APEX", "AMD-Ryzen-Radeon-REDLINE", "RTX-5090-Core-Ultra-285K-FUSION",
+                    "AMD-Ryzen-5-9600X-Badge", "AMD-Ryzen-7-9800X3D-Badge" };
+            CollectionAssert.AreEquivalent(expectedIds,
                 newStarters.Select(profile => profile.PresetId).ToArray());
-            Assert.AreEqual(3, OverlayDesignStarterCatalog.Version);
+
+            bool EnsureProfiles(OverlayDesignProfileStore library) => targetVersion == OverlayDesignStarterCatalog.Version
+                ? OverlayDesignStarterCatalog.EnsureProfiles(library)
+                : library.EnsureStarterProfiles(catalog, targetVersion);
 
             var store = Open();
-            Assert.IsTrue(store.EnsureStarterProfiles(catalog.Where(profile => profile.IntroducedInVersion <= 2).ToArray(), 2));
+            Assert.IsTrue(store.EnsureStarterProfiles(catalog.Where(profile => profile.IntroducedInVersion <= previousVersion).ToArray(), previousVersion));
             var deleted = catalog.Where(profile => profile.PresetId == "compact" || profile.PresetId == "turquoise-compact").ToArray();
             foreach (var starter in deleted) store.Delete(starter.Id);
             var edited = catalog.Single(profile => profile.PresetId == "benchmark");
@@ -66,11 +118,11 @@ namespace CapFrameX.Test.Integration
             store.Create("My custom capture", Design("minimal", 520));
             store.SetActive(edited.Id);
             var beforeUpgrade = store.Profiles.ToArray();
-            Assert.AreEqual(2, (int)JObject.Parse(File.ReadAllText(LibraryPath))["StarterCatalogVersion"]);
+            Assert.AreEqual(previousVersion, (int)JObject.Parse(File.ReadAllText(LibraryPath))["StarterCatalogVersion"]);
 
             var upgraded = Open();
-            Assert.IsTrue(OverlayDesignStarterCatalog.EnsureProfiles(upgraded));
-            Assert.AreEqual(beforeUpgrade.Length + 3, upgraded.Profiles.Count);
+            Assert.IsTrue(EnsureProfiles(upgraded));
+            Assert.AreEqual(beforeUpgrade.Length + expectedIds.Length, upgraded.Profiles.Count);
             CollectionAssert.AreEquivalent(newStarters.Select(profile => profile.Id).ToArray(),
                 upgraded.Profiles.Where(profile => beforeUpgrade.All(previous => previous.Id != profile.Id))
                     .Select(profile => profile.Id).ToArray());
@@ -82,21 +134,48 @@ namespace CapFrameX.Test.Integration
             Assert.IsFalse(upgraded.Profiles.Any(profile => deleted.Any(starter => starter.Id == profile.Id)),
                 "Deleted designs from catalog versions one and two must remain deleted.");
             Assert.AreEqual(edited.Id, upgraded.ActiveProfileId);
-            Assert.AreEqual(3, (int)JObject.Parse(File.ReadAllText(LibraryPath))["StarterCatalogVersion"]);
+            Assert.AreEqual(targetVersion, (int)JObject.Parse(File.ReadAllText(LibraryPath))["StarterCatalogVersion"]);
 
             string upgradedBytes = File.ReadAllText(LibraryPath);
-            Assert.IsTrue(OverlayDesignStarterCatalog.EnsureProfiles(upgraded));
-            Assert.IsTrue(OverlayDesignStarterCatalog.EnsureProfiles(Open()));
+            Assert.IsTrue(EnsureProfiles(upgraded));
+            Assert.IsTrue(EnsureProfiles(Open()));
             Assert.AreEqual(upgradedBytes, File.ReadAllText(LibraryPath), "Repeated upgrades must not rewrite or duplicate profiles.");
 
             foreach (var starter in newStarters) upgraded.Delete(starter.Id);
             string deletedBytes = File.ReadAllText(LibraryPath);
             var reopened = Open();
-            Assert.IsTrue(OverlayDesignStarterCatalog.EnsureProfiles(reopened));
+            Assert.IsTrue(EnsureProfiles(reopened));
             Assert.AreEqual(beforeUpgrade.Length, reopened.Profiles.Count);
             Assert.IsFalse(reopened.Profiles.Any(profile => newStarters.Concat(deleted).Any(starter => starter.Id == profile.Id)));
             Assert.AreEqual(edited.Id, reopened.ActiveProfileId);
-            Assert.AreEqual(deletedBytes, File.ReadAllText(LibraryPath), "Deleted version-three starters must not be installed again.");
+            Assert.AreEqual(deletedBytes, File.ReadAllText(LibraryPath), "Deleted starters must not be installed again.");
+        }
+
+        [TestMethod]
+        [DataRow("RTX-5090-9800X3D-APEX", "APEX - RTX 5090 + 9800X3D", false)]
+        [DataRow("AMD-Ryzen-Radeon-REDLINE", "REDLINE - Ryzen 7 9800X3D + Radeon", true)]
+        [DataRow("RTX-5090-Core-Ultra-285K-FUSION", "FUSION - RTX 5090 + Core Ultra 9 285K", true)]
+        [DataRow("AMD-Ryzen-5-9600X-Badge", "AMD Ryzen 5 9600X Badge", true)]
+        [DataRow("AMD-Ryzen-7-9800X3D-Badge", "AMD Ryzen 7 9800X3D Badge", true)]
+        public void HardwareStarterCanBeEditedAndRenderedWithItsEmbeddedGraphics(string presetId, string name, bool hasImages)
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
+            Assert.AreEqual(4, starter.IntroducedInVersion);
+            Assert.AreEqual(name, starter.Name);
+            var document = OsdDesignDocument.FromJson(starter.DesignJson);
+            Assert.IsTrue(document.IsCanvas);
+            Assert.AreEqual(name, document.Name);
+            var original = OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson);
+            var runtime = OverlayRuntimeDesign.Parse(starter.Id, starter.Name, document.ToJson());
+            CollectionAssert.AreEqual(original.MetricKeys.ToArray(), runtime.MetricKeys.ToArray());
+            string[] Images(string json) => JObject.Parse(json).Descendants().OfType<JProperty>()
+                .Where(property => property.Name == "dataUri").Select(property => (string)property.Value).ToArray();
+            // Compare renderer scenes: editor metadata contains additional copies of each image.
+            // APEX uses text and vector elements, while the other hardware profiles embed PNGs.
+            var images = Images(original.TemplateJson);
+            Assert.AreEqual(hasImages, images.Length > 0);
+            Assert.IsTrue(images.All(uri => uri.StartsWith("data:image/png;base64,", StringComparison.Ordinal)));
+            CollectionAssert.AreEqual(images, Images(runtime.TemplateJson), "Editing and rendering must retain every embedded image.");
         }
 
         [TestMethod]

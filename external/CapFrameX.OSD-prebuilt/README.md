@@ -12,6 +12,31 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Ryzen badge highlight correction (2026-10-12)
+
+The Controls DLL was rebuilt in `Release|x64` from the sibling OSD checkout at
+`465ccccada514ed4450e05a52b52aee9f024bcb4` with its embedded
+`Resources/HardwareBadges/Ryzen-Badge-Template.png` regenerated from the corrected
+SVG. The three horizontal highlight paths above the Ryzen wordmark were removed
+from the shared frame and complete badge SVGs. The palette badge, both portable
+badge profiles and REDLINE now use the corrected graphic. REDLINE also aligns
+AMD and PERFORMANCE at the same right edge.
+
+Catalog version 5 updates the three affected saved starters only when their
+name, ID and complete content fingerprint match the original version-4 export.
+Edited, renamed and deleted profiles remain authoritative.
+
+Verification: the Debug x64 application/test build succeeds in an isolated output
+directory; all 125 focused profile, editor, badge and native-layout cases pass.
+The three actual version-4 exports migrate to the corrected designs without
+changing selection or profile count. The native-renderer preview is recorded in
+`images/1.9.2/overlay-redline.png`.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `BD01AF782642F14E08D810D96EE6E6812C0ECE231F1DF42B5D7CB933E498C051` |
+| Embedded Ryzen-Badge-Template.png | `00123D9394D2EF3F401E5970D971F51927793D85C82700BF626207EE9AA5B2D1` |
+
 ### Committed hardware graphics snapshot (2026-10-12)
 
 The managed and native payloads below correspond to OSD source commit
