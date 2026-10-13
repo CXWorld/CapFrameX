@@ -54,7 +54,7 @@
 					</Grid.ColumnDefinitions>
 					<!--Style="{StaticResource MaterialDesignOutlinedTextBox}"-->
 					<ScrollViewer Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="5 0 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-						<StackPanel>
+						<StackPanel x:Name="PoweneticsMetricsPanel">
 							<GroupBox Header="{loc:Tr PmdView_GPUTotalPower}" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<materialDesign:PackIcon Foreground="Red" HorizontalAlignment="Right" Margin="0 -55 6 0" Visibility="{Binding PoweneticsViewModel.PmdMetrics.GpuPowerIncomplete, Converter={StaticResource TrueToVisibleConverter}}" 
@@ -217,7 +217,10 @@
 							</controls:PlotViewCustomZoom>
 						</Grid>
 					</Grid>
-					<Button Grid.Row="2" Margin="0 0 0 2" Width="190" Height="40" Command="{Binding PoweneticsViewModel.ResetPmdMetricsCommand}"
+					<!--As wide as the metric boxes above, which give up the scroll bar's width while it shows,
+					    and as tall as the status card beside it.-->
+					<Button Grid.Row="2" Margin="5 0 0 2" HorizontalAlignment="Left" Width="{Binding ActualWidth, ElementName=PoweneticsMetricsPanel}" Height="Auto"
+						Command="{Binding PoweneticsViewModel.ResetPmdMetricsCommand}"
 						Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
 						<Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="16">
 							<TextBlock Text="{loc:Tr PmdView_ResetPMDMetrics}"/>
@@ -238,8 +241,10 @@
 							</ToggleButton>
 
 							<TextBlock Text="{loc:Tr PmdView_COMPort}" FontSize="14" VerticalAlignment="Center" Margin="30 0 0 0"/>
-							<ComboBox Margin="10 0 0 0" Padding="0" VerticalAlignment="Center" FontSize="14" Style="{StaticResource CxComboBox}"
-								materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="80" Height="40" materialDesign:HintAssist.HintOpacity=".8"
+							<!--Natural height, so the text sits on the labels' line; the 1px top margin balances
+							    the underline below the text.-->
+							<ComboBox Margin="10 1 0 0" Padding="0" VerticalAlignment="Center" FontSize="14" Style="{StaticResource CxComboBox}"
+								materialDesign:HintAssist.IsFloating="True" MaxDropDownHeight="150" Width="80" materialDesign:HintAssist.HintOpacity=".8"
 								ItemsSource="{Binding PoweneticsViewModel.ComPortsItemsSource}" SelectedItem="{Binding PoweneticsViewModel.SelectedComPort}" IsEnabled="{Binding PoweneticsViewModel.IsComPortEnabled}"
 								ToolTipService.ShowDuration="25000">
 								<ComboBox.ToolTip>
@@ -350,7 +355,7 @@
 					</Grid.ColumnDefinitions>
 					<!--Style="{StaticResource MaterialDesignOutlinedTextBox}"-->
 					<ScrollViewer Grid.Row="0" Grid.RowSpan="2" Grid.Column="0" Margin="5 0 5 5" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-						<StackPanel>
+						<StackPanel x:Name="BenchlabMetricsPanel">
 							<GroupBox Header="{loc:Tr PmdView_GPUPower}" FontSize="17" Style="{StaticResource PmdMetricGroupBox}">
 								<StackPanel Orientation="Vertical" Margin="0 -0 0 -0">
 									<StackPanel Orientation="Horizontal">
@@ -469,9 +474,11 @@
 							</controls:PlotViewCustomZoom>
 						</Grid>
 					</Grid>
-					<Button Grid.Row="2" Margin="0 0 0 2" Width="190" Height="40" Command="{Binding BenchlabViewModel.ResetPmdMetricsCommand}"
+					<!--Sized like the Powenetics button.-->
+					<Button Grid.Row="2" Margin="5 0 0 2" HorizontalAlignment="Left" Width="{Binding ActualWidth, ElementName=BenchlabMetricsPanel}" Height="Auto"
+						Command="{Binding BenchlabViewModel.ResetPmdMetricsCommand}"
 						Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
-							<Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="16">
+						<Viewbox Stretch="Uniform" StretchDirection="DownOnly" MaxHeight="16">
 							<TextBlock Text="{loc:Tr PmdView_ResetPMDMetrics2}"/>
 						</Viewbox>
 					</Button>
