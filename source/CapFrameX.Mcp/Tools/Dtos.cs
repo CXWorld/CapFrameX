@@ -340,6 +340,9 @@ namespace CapFrameX.Mcp.Tools
         [JsonProperty("marginX")] public int MarginX { get; set; }
         [JsonProperty("marginY")] public int MarginY { get; set; }
         [JsonProperty("zoom")] public int Zoom { get; set; }
+        [JsonProperty("pixelOrbitEnabled")] public bool PixelOrbitEnabled { get; set; }
+        [JsonProperty("pixelOrbitIntervalSeconds")] public int PixelOrbitIntervalSeconds { get; set; }
+        [JsonProperty("pixelOrbitRadius")] public int PixelOrbitRadius { get; set; }
         [JsonProperty("useValueSmoothing")] public bool UseValueSmoothing { get; set; }
         [JsonProperty("overlayHotkey")] public string OverlayHotkey { get; set; }
         [JsonProperty("overlayConfigHotkey")] public string OverlayConfigHotkey { get; set; }

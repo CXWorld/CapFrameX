@@ -1368,6 +1368,38 @@
 										</StackPanel>
 									</Grid>
 
+									<DockPanel Margin="0 12 0 0">
+										<CheckBox DockPanel.Dock="Right" Margin="12 0 5 0" VerticalAlignment="Center"
+												  IsChecked="{Binding OsdPixelOrbitEnabled, Mode=TwoWay}"
+												  Style="{StaticResource MaterialDesignCheckBox}"/>
+										<StackPanel>
+											<TextBlock FontWeight="SemiBold" Text="{loc:Tr OverlayView_PixelOrbit}"/>
+											<TextBlock Style="{StaticResource OsdOptionsDescription}"
+													   Text="{loc:Tr OverlayView_PixelOrbitDescription}"/>
+										</StackPanel>
+									</DockPanel>
+
+									<Grid Margin="0 8 0 0"
+										  Visibility="{Binding OsdPixelOrbitEnabled, Converter={StaticResource TrueToVisibleConverter}}">
+										<Grid.ColumnDefinitions>
+											<ColumnDefinition Width="*"/>
+											<ColumnDefinition Width="Auto"/>
+										</Grid.ColumnDefinitions>
+										<TextBlock VerticalAlignment="Center" TextWrapping="Wrap"
+												   Text="{loc:Tr OverlayView_PixelOrbitIntervalAndRange}"/>
+										<StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12 0 0 0">
+											<!-- LostFocus: the interval has a lower bound, clamping each keystroke would fight typing. -->
+											<TextBox Width="50" Height="28" HorizontalContentAlignment="Center"
+													 Text="{Binding OsdPixelOrbitInterval, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+													 PreviewTextInput="IntegerNumberValidationTextBox"/>
+											<TextBlock Margin="6 0 0 0" VerticalAlignment="Center" Text="s"/>
+											<TextBox Width="45" Height="28" Margin="12 0 0 0" HorizontalContentAlignment="Center"
+													 Text="{Binding OsdPixelOrbitRadius, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
+													 PreviewTextInput="IntegerNumberValidationTextBox"/>
+											<TextBlock Margin="6 0 0 0" VerticalAlignment="Center" Text="px"/>
+										</StackPanel>
+									</Grid>
+
 									<TextBlock Margin="0 8 0 0" FontWeight="SemiBold" Text="{loc:Tr OverlayView_OverlaySize}"/>
 									<TextBlock Style="{StaticResource OsdOptionsDescription}"
 											   Text="{loc:Tr OverlayView_ScalesTextSpacingAndGraphs}"/>

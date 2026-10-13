@@ -18,6 +18,7 @@ namespace CapFrameX.OSD.Integration
     {
         private readonly IOverlayService _overlayService;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly OverlayPixelOrbitResolver _pixelOrbit;
         private readonly IDisposable _entriesSub;
         private readonly IDisposable _enabledSub;
         private readonly IDisposable _activeSub;
@@ -35,11 +36,12 @@ namespace CapFrameX.OSD.Integration
         private string _lastPolicyReason;
 
         public HookMetricsPublisher(IOverlayService overlayService, IAppConfiguration appConfiguration,
-            IObservable<int> processIdStream)
+            IObservable<int> processIdStream, OverlayPixelOrbitResolver pixelOrbit = null)
         {
             _overlayService = overlayService ?? throw new ArgumentNullException(nameof(overlayService));
             _appConfiguration = appConfiguration ?? throw new ArgumentNullException(nameof(appConfiguration));
             if (processIdStream == null) throw new ArgumentNullException(nameof(processIdStream));
+            _pixelOrbit = pixelOrbit;
 
             _enabled = appConfiguration.EnableHookOverlay;
             _overlayActive = appConfiguration.IsOverlayActive;
@@ -123,8 +125,14 @@ namespace CapFrameX.OSD.Integration
         }
 
         private void PublishPlacement(bool force = false)
-            => _placement?.Publish(_appConfiguration.OsdAnchor,
-                _appConfiguration.OsdMarginX, _appConfiguration.OsdMarginY, force);
+        {
+            int marginX = _appConfiguration.OsdMarginX;
+            int marginY = _appConfiguration.OsdMarginY;
+            // Every OSD tick republishes, so an orbit step reaches the hook within one period.
+            if (_pixelOrbit != null)
+                (marginX, marginY) = _pixelOrbit.Apply(marginX, marginY);
+            _placement?.Publish(_appConfiguration.OsdAnchor, marginX, marginY, force);
+        }
 
         private int EffectiveTargetPidLocked()
             => _enabled && _overlayActive && _targetAllowed && _selectedPid > 0 ? _selectedPid : 0;

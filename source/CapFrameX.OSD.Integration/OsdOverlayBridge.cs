@@ -88,6 +88,7 @@ namespace CapFrameX.OSD.Integration
         // Last placement forwarded; -1 forces the first push after a (re)start.
         private int _lastAnchor = -1, _lastMonitor = -1, _lastMarginX = -1, _lastMarginY = -1;
         private readonly object _positionLock = new object();
+        private readonly OverlayPixelOrbitResolver _pixelOrbit;
 
         public OsdOverlayBridge(IOverlayService overlayService,
                                 IAppConfiguration appConfiguration,
@@ -102,7 +103,8 @@ namespace CapFrameX.OSD.Integration
                                 int swapChainColumnIndex = -1,
                                 int frameTypeColumnIndex = -1,
                                 IObservable<int> processCountStream = null,
-                                OverlayDesignRuntimePublisher designRuntime = null)
+                                OverlayDesignRuntimePublisher designRuntime = null,
+                                OverlayPixelOrbitResolver pixelOrbit = null)
         {
             if (overlayService == null) throw new ArgumentNullException(nameof(overlayService));
             if (appConfiguration == null) throw new ArgumentNullException(nameof(appConfiguration));
@@ -114,6 +116,7 @@ namespace CapFrameX.OSD.Integration
             _overlayService = overlayService;
             _appConfiguration = appConfiguration;
             _designRuntime = designRuntime;
+            _pixelOrbit = pixelOrbit;
             // Seeded from the configuration so the very first frame is already placed correctly;
             // OnEntries keeps it in sync from there.
             _osd = new OsdHost((OsdAnchor)appConfiguration.OsdAnchor,
@@ -437,6 +440,10 @@ namespace CapFrameX.OSD.Integration
                 _appConfiguration.HookFreeDisplayDeviceName);
             int marginX = _appConfiguration.OsdMarginX;
             int marginY = _appConfiguration.OsdMarginY;
+            // A pixel orbit step is a single window move per interval, never an animation:
+            // continuously moving overlay windows cost the game's lows.
+            if (_pixelOrbit != null)
+                (marginX, marginY) = _pixelOrbit.Apply(marginX, marginY);
 
             lock (_positionLock)
             {

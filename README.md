@@ -89,6 +89,14 @@ Choose a renderer under **Overlay → OSD options**. The following describes 1.9
 
 Configure individual entries, colors, groups, and three profiles in **Overlay items**. OSD options include opacity, zoom, placement, a position hotkey, and PresentMon replay buffering. Existing renderer selections are preserved. If v1.9.0 migrated your in-game selection to hook-free, you can select in-game again since 1.9.1.
 
+### OLED pixel orbit
+
+Static overlay text can burn into OLED panels. With **OLED pixel orbit** in **Overlay → OSD options**, CapFrameX moves its overlay by one pixel per interval within the chosen range (default: every 180 s, up to 6 px). The overlay never moves closer to the screen edge than the configured margins. Each step is a single move, not an animation. The option applies to the CapFrameX in-game and hook-free renderers; RTSS is not affected.
+
+A tile design can carry its own orbit: in the designer, enable it under **Layout → OLED pixel orbit**. It then applies whenever that design is active, even with the global option switched off, and its interval and range take precedence.
+
+[`overlay-templates/OLED-Minimal.json`](overlay-templates/OLED-Minimal.json) is a ready-made OLED design that you can add in the designer with **Import…**. It shows FPS, 1% low and frame time in dimmed colors, plus a frame-time line, without panels, frames, labels or images, and it has the orbit enabled.
+
 ### Custom in-game compatibility profiles
 
 At startup, CapFrameX merges hook compatibility profiles in this order:

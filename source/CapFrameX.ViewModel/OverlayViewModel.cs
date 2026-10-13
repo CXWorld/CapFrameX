@@ -573,6 +573,37 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        // OLED pixel orbit for every design; a design can still request its own orbit.
+        public bool OsdPixelOrbitEnabled
+        {
+            get { return _appConfiguration.OsdPixelOrbitEnabled; }
+            set
+            {
+                _appConfiguration.OsdPixelOrbitEnabled = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int OsdPixelOrbitInterval
+        {
+            get { return _appConfiguration.OsdPixelOrbitInterval; }
+            set
+            {
+                _appConfiguration.OsdPixelOrbitInterval = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int OsdPixelOrbitRadius
+        {
+            get { return _appConfiguration.OsdPixelOrbitRadius; }
+            set
+            {
+                _appConfiguration.OsdPixelOrbitRadius = value;
+                RaisePropertyChanged();
+            }
+        }
+
         // Controls the renderer-side smoothing of numeric values for BOTH CapFrameX renderers.
         // Off displays the latest published value directly; RTSS is unaffected.
         public bool UseOsdValueSmoothing

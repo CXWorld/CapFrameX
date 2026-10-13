@@ -62,6 +62,7 @@ namespace CapFrameX
         private OSD.Integration.HookOverlayStatusService _hookOverlayStatusService;
         private OSD.Integration.OverlayDesignService _overlayDesignService;
         private OSD.Integration.OverlayDesignRuntimePublisher _overlayDesignRuntime;
+        private OSD.Integration.OverlayPixelOrbitResolver _pixelOrbit;
 
         // The existing composition root uses DryIoc-specific registration APIs. PrismApplication
         // exposes the container through Prism's abstraction, so unwrap it in one place.
@@ -174,6 +175,9 @@ namespace CapFrameX
                         rtssService.ProcessIdStream, rtssService.ProcessCountStream,
                         _hookOverlayManager.HookFreeFallbackStream);
                     Exit += (_, _) => _overlayDesignRuntime.Dispose();
+                    // One resolver for both placement paths: hook-free window and hook channel.
+                    _pixelOrbit = new OSD.Integration.OverlayPixelOrbitResolver(
+                        config, () => _overlayDesignService?.CurrentDesign);
                     _osdOverlayBridge = new OSD.Integration.OsdOverlayBridge(
                         osdOverlayService,
                         config, // IAppConfiguration (resolved above) — gates OSD vs RTSS
@@ -191,7 +195,8 @@ namespace CapFrameX
                         frameTypeColumnIndex:
                             PresentMonCaptureService.FrameType_INDEX,
                         processCountStream: rtssService.ProcessCountStream,
-                        designRuntime: _overlayDesignRuntime);
+                        designRuntime: _overlayDesignRuntime,
+                        pixelOrbit: _pixelOrbit);
                 }
 
                 // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries
@@ -202,7 +207,8 @@ namespace CapFrameX
                     _hookMetricsPublisher = new OSD.Integration.HookMetricsPublisher(
                         osdOverlayService,
                         config,
-                        rtssService.ProcessIdStream);
+                        rtssService.ProcessIdStream,
+                        _pixelOrbit);
                 }
 
                 // Optional PresentMon graph source for the hook: stream the SAME per-frame frametime +

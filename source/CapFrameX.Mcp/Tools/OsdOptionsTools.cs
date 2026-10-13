@@ -65,6 +65,9 @@ namespace CapFrameX.Mcp.Tools
             [Description("Horizontal distance from the anchor in pixels, 0..2000.")] int? marginX = null,
             [Description("Vertical distance from the anchor in pixels, 0..2000.")] int? marginY = null,
             [Description("CapFrameX renderer size in percent, 50..200.")] int? zoom = null,
+            [Description("OLED pixel orbit: move the CapFrameX renderer by one pixel per interval for every design. A design can request its own orbit regardless.")] bool? pixelOrbitEnabled = null,
+            [Description("Seconds between two pixel orbit steps, 10..3600.")] int? pixelOrbitIntervalSeconds = null,
+            [Description("Largest pixel orbit offset from the configured margins in pixels, 1..32.")] int? pixelOrbitRadius = null,
             [Description("Smooth numeric values between OSD data updates.")] bool? useValueSmoothing = null,
             [Description("Global overlay toggle hotkey, for example Alt+O. Use an empty string to disable; omit to keep the current value.")] string overlayHotkey = null,
             [Description("Global overlay-configuration switch hotkey, for example Alt+C. Use an empty string to disable; omit to keep the current value.")] string overlayConfigHotkey = null,
@@ -77,6 +80,7 @@ namespace CapFrameX.Mcp.Tools
                 hideOverlay, hookOverlayUsePresentMonFrametimes, replayBufferSizeMs, hookFreeRefreshRate,
                 osdCustomPosition, osdPositionX,
                 osdPositionY, backgroundOpacity, anchor, marginX, marginY, zoom,
+                pixelOrbitEnabled, pixelOrbitIntervalSeconds, pixelOrbitRadius,
                 useValueSmoothing, overlayHotkey, overlayConfigHotkey, overlayPositionHotkey, resetMetricsHotkey,
                 refreshPeriodMs, metricIntervalSeconds))
             {
@@ -91,6 +95,10 @@ namespace CapFrameX.Mcp.Tools
             ValidateRange(marginX, 0, 2000, nameof(marginX));
             ValidateRange(marginY, 0, 2000, nameof(marginY));
             ValidateRange(zoom, 50, 200, nameof(zoom));
+            ValidateRange(pixelOrbitIntervalSeconds, OsdPixelOrbit.MinimumIntervalSeconds,
+                OsdPixelOrbit.MaximumIntervalSeconds, nameof(pixelOrbitIntervalSeconds));
+            ValidateRange(pixelOrbitRadius, OsdPixelOrbit.MinimumRadius, OsdPixelOrbit.MaximumRadius,
+                nameof(pixelOrbitRadius));
             ValidatePositive(refreshPeriodMs, nameof(refreshPeriodMs));
             ValidatePositive(metricIntervalSeconds, nameof(metricIntervalSeconds));
             ValidateHotkey(overlayHotkey, nameof(overlayHotkey));
@@ -156,6 +164,12 @@ namespace CapFrameX.Mcp.Tools
                 () => _config.OsdMarginY, value => _config.OsdMarginY = value, changed);
             ApplyIfChanged(nameof(IAppConfiguration.OsdZoom), zoom,
                 () => _config.OsdZoom, value => _config.OsdZoom = value, changed);
+            ApplyIfChanged(nameof(IAppConfiguration.OsdPixelOrbitEnabled), pixelOrbitEnabled,
+                () => _config.OsdPixelOrbitEnabled, value => _config.OsdPixelOrbitEnabled = value, changed);
+            ApplyIfChanged(nameof(IAppConfiguration.OsdPixelOrbitInterval), pixelOrbitIntervalSeconds,
+                () => _config.OsdPixelOrbitInterval, value => _config.OsdPixelOrbitInterval = value, changed);
+            ApplyIfChanged(nameof(IAppConfiguration.OsdPixelOrbitRadius), pixelOrbitRadius,
+                () => _config.OsdPixelOrbitRadius, value => _config.OsdPixelOrbitRadius = value, changed);
             ApplyIfChanged(nameof(IAppConfiguration.UseOsdValueSmoothing), useValueSmoothing,
                 () => _config.UseOsdValueSmoothing, value => _config.UseOsdValueSmoothing = value, changed);
 
@@ -229,6 +243,9 @@ namespace CapFrameX.Mcp.Tools
                 MarginX = _config.OsdMarginX,
                 MarginY = _config.OsdMarginY,
                 Zoom = _config.OsdZoom,
+                PixelOrbitEnabled = _config.OsdPixelOrbitEnabled,
+                PixelOrbitIntervalSeconds = _config.OsdPixelOrbitInterval,
+                PixelOrbitRadius = _config.OsdPixelOrbitRadius,
                 UseValueSmoothing = _config.UseOsdValueSmoothing,
                 OverlayHotkey = _config.OverlayHotKey,
                 OverlayConfigHotkey = _config.OverlayConfigHotKey,

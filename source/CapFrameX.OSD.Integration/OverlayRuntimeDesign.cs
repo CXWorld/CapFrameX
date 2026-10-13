@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Localization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,6 +20,8 @@ namespace CapFrameX.OSD.Integration
         public bool NeedsFrametimes { get; private set; }
         public bool NeedsDisplayTimes { get; private set; }
         public bool HasClassicRows { get; private set; }
+        /// <summary>OLED pixel orbit requested by the design itself; null when it has none.</summary>
+        public OverlayPixelShift? PixelShift { get; private set; }
         internal string AuthoringJson { get; private set; }
 
         public static OverlayRuntimeDesign Parse(string profileId, string name, string json)
@@ -67,9 +70,12 @@ namespace CapFrameX.OSD.Integration
                     throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ChildrenArray"), message => new InvalidDataException(message));
             }
             Inspect((JObject)document["root"], 0);
+            var pixelShift = ReadPixelShift(document["pixelShift"]);
             string authoringJson = document.ToString(Formatting.None);
             foreach (var metadata in document.Descendants().OfType<JProperty>().Where(property => property.Name == "editor").ToArray())
                 metadata.Remove();
+            // The host applies the orbit through the placement; the renderers never see it.
+            document.Remove("pixelShift");
             return new OverlayRuntimeDesign
             {
                 ProfileId = profileId,
@@ -79,8 +85,23 @@ namespace CapFrameX.OSD.Integration
                 MetricKeys = Array.AsReadOnly(keys.OrderBy(key => key, StringComparer.Ordinal).ToArray()),
                 NeedsFrametimes = frame,
                 NeedsDisplayTimes = display,
-                HasClassicRows = classicRows
+                HasClassicRows = classicRows,
+                PixelShift = pixelShift
             };
+        }
+
+        /// <summary>
+        /// The design's own OLED pixel orbit request, or null. The editor validates the exact
+        /// ranges; at runtime an out-of-range value is clamped rather than rejecting the scene.
+        /// </summary>
+        private static OverlayPixelShift? ReadPixelShift(JToken token)
+        {
+            if (token is not JObject shift) return null;
+            static int Read(JToken value, int fallback)
+                => value?.Type == JTokenType.Integer ? (int)Math.Max(int.MinValue, Math.Min(int.MaxValue, (long)value)) : fallback;
+            return new OverlayPixelShift(
+                OsdPixelOrbit.ClampInterval(Read(shift["intervalSeconds"], OsdPixelOrbit.DefaultIntervalSeconds)),
+                OsdPixelOrbit.ClampRadius(Read(shift["radius"], OsdPixelOrbit.DefaultRadius)));
         }
 
         internal static string Canonicalize(string json) => ParseDocument(json).ToString(Formatting.None);

@@ -875,6 +875,24 @@ namespace CapFrameX.Configuration
             set => Set(Math.Max(0, Math.Min(2000, value)));
         }
 
+        public bool OsdPixelOrbitEnabled
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public int OsdPixelOrbitInterval
+        {
+            get => Get<int>(OsdPixelOrbit.DefaultIntervalSeconds);
+            set => Set(OsdPixelOrbit.ClampInterval(value));
+        }
+
+        public int OsdPixelOrbitRadius
+        {
+            get => Get<int>(OsdPixelOrbit.DefaultRadius);
+            set => Set(OsdPixelOrbit.ClampRadius(value));
+        }
+
         public bool UseOsdValueSmoothing
         {
             get => Get<bool>(true);

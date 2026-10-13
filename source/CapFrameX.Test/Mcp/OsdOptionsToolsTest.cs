@@ -121,6 +121,9 @@ namespace CapFrameX.Test.Mcp
                 marginX: 40,
                 marginY: 50,
                 zoom: 130,
+                pixelOrbitEnabled: true,
+                pixelOrbitIntervalSeconds: 240,
+                pixelOrbitRadius: 4,
                 useValueSmoothing: false,
                 overlayPositionHotkey: "Control+P",
                 refreshPeriodMs: 750,
@@ -141,6 +144,12 @@ namespace CapFrameX.Test.Mcp
             Assert.AreEqual(40, config.Object.OsdMarginX);
             Assert.AreEqual(50, config.Object.OsdMarginY);
             Assert.AreEqual(130, config.Object.OsdZoom);
+            Assert.IsTrue(config.Object.OsdPixelOrbitEnabled);
+            Assert.AreEqual(240, config.Object.OsdPixelOrbitInterval);
+            Assert.AreEqual(4, config.Object.OsdPixelOrbitRadius);
+            Assert.IsTrue(result.Options.PixelOrbitEnabled);
+            Assert.AreEqual(240, result.Options.PixelOrbitIntervalSeconds);
+            Assert.AreEqual(4, result.Options.PixelOrbitRadius);
             Assert.IsFalse(config.Object.UseOsdValueSmoothing);
             Assert.AreEqual("Control+P", config.Object.OverlayPositionHotkey);
             Assert.AreEqual(750, config.Object.OSDRefreshPeriod);
@@ -214,6 +223,10 @@ namespace CapFrameX.Test.Mcp
                 tool.SetOsdOptions(autoDisableOverlay: false, zoom: 201));
             Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
                 tool.SetOsdOptions(autoDisableOverlay: false, replayBufferSizeMs: 499));
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
+                tool.SetOsdOptions(autoDisableOverlay: false, pixelOrbitIntervalSeconds: 9));
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
+                tool.SetOsdOptions(autoDisableOverlay: false, pixelOrbitRadius: 33));
             Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
                 tool.SetOsdOptions(autoDisableOverlay: false, hookFreeRefreshRate: 3));
             Assert.ThrowsExactly<ArgumentException>(() =>

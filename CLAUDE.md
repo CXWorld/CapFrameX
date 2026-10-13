@@ -158,6 +158,23 @@ sensor poller treats it like an active overlay, so the hardware values in the AP
 The renderers follow `IsOverlayActive` alone. "Hide OSD on RTSS" (`HideOverlay`) is unrelated:
 it keeps the overlay *on* and only suppresses the RTSS output.
 
+### OLED pixel orbit
+
+`OsdPixelOrbit` (`CapFrameX.Contracts/Configuration`) moves the CapFrameX renderers by one pixel per
+interval along a serpentine walk over a (radius + 1)² square. Offsets are never negative, so the
+configured margins stay the minimum distance to the screen edge. A design requests the orbit with a
+top-level `pixelShift` object (`intervalSeconds` 10..3600, `radius` 1..32). The OSD editor
+round-trips and edits it (Layout tab). `OverlayRuntimeDesign` reads it into `PixelShift` and removes
+it from `TemplateJson`, so the renderers never see it. The global `OsdPixelOrbit*` options cover every
+other design and the classic rows. The active design's request wins (`OverlayPixelOrbitResolver`).
+
+Both placement paths add the offset on every OSD tick: `HookMetricsPublisher` for the hook and Vulkan
+layer placement channel, `OsdOverlayBridge` for the hook-free window. Both publish only on change, so
+a step is one move per interval, never an animation. Both read `Environment.TickCount64`, so they always
+agree on the position. RTSS is not affected. The editor's import is a strict round trip: a Controls
+build without this change rejects any design that contains `pixelShift`, so the prebuilt Controls DLL
+must include it. Example design: `overlay-templates/OLED-Minimal.json`.
+
 ### Hook-free stall diagnostics
 
 Chart pauses/hitches in the hook-free overlay have three unrelated possible causes — the render

@@ -12,6 +12,23 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### OLED pixel orbit (2026-10-12)
+
+The Controls DLL was rebuilt in `Release|x64` from OSD commit
+`fbf561f419be8d8ded443c66b68fd5b381c64a82`, which follows the Ryzen badge PNG from the
+entry below with the pixel orbit editor change. `OsdDesignDocument` round-trips an optional
+top-level `pixelShift` object (`intervalSeconds` 10..3600, `radius` 1..32), validates it and exports it
+only when enabled, so designs without an orbit keep their exact exports. The Layout tab edits it. Five
+`Editor_PixelShift*` strings were added in all five languages; the en/ko copies in `Localization/` are
+updated. Interop and native payloads are unchanged.
+
+Verification: with this DLL, the generator reproduces `overlay-templates/OLED-Minimal.json` byte for
+byte, reopens it through `OsdDesignDocument.FromJson` and renders it through the native preview.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `CE1910C85157713B5B09185652DCBB0DECA06BE25949D742776906FDBF596F9A` |
+
 ### Ryzen badge highlight correction (2026-10-12)
 
 The Controls DLL was rebuilt in `Release|x64` from the sibling OSD checkout at

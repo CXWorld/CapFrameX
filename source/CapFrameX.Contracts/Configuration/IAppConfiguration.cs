@@ -249,6 +249,19 @@ namespace CapFrameX.Contracts.Configuration
 		int OsdMarginY { get; set; }
 
 		/// <summary>
+		/// OLED pixel orbit for every overlay design and the classic rows: the CapFrameX
+		/// renderers move by one pixel per interval within the radius (see <see cref="OsdPixelOrbit"/>).
+		/// A design that requests its own orbit applies it even while this is off.
+		/// </summary>
+		bool OsdPixelOrbitEnabled { get; set; }
+
+		/// <summary>Seconds between two pixel orbit steps (10..3600).</summary>
+		int OsdPixelOrbitInterval { get; set; }
+
+		/// <summary>Largest pixel orbit offset from the configured margins in px (1..32).</summary>
+		int OsdPixelOrbitRadius { get; set; }
+
+		/// <summary>
 		/// Smooth numeric values between OSD data updates. When disabled, the CapFrameX
 		/// renderers display each newly published value immediately without generated
 		/// intermediate values. Enabled by default for backward compatibility.
