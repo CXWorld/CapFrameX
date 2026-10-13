@@ -380,9 +380,13 @@ namespace CapFrameX.PMD
             _ePS12VModelMaxYValueBuffer.Clear();
             _pciExpressModelMaxYValueBuffer.Clear();
 
-            AxisDefinitions["Y_Axis_GPU_W"].Maximum = 300;
+            // The draw methods also cap AbsoluteMaximum at the rolling peak; without lifting it here
+            // the reset Maximum would stay clamped to the previous session's peak.
+            AxisDefinitions["Y_Axis_GPU_W"].Maximum = DefaultGpuPowerAxisMaximum;
+            AxisDefinitions["Y_Axis_GPU_W"].AbsoluteMaximum = double.MaxValue;
 
-            AxisDefinitions["Y_Axis_CPU_W"].Maximum = 150;
+            AxisDefinitions["Y_Axis_CPU_W"].Maximum = DefaultCpuPowerAxisMaximum;
+            AxisDefinitions["Y_Axis_CPU_W"].AbsoluteMaximum = double.MaxValue;
 
             Eps12VModel.Series.Clear();
             Eps12VModel.ResetAllAxes();
