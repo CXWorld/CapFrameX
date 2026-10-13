@@ -94,14 +94,18 @@ namespace CapFrameX.Test.Integration
         [TestMethod]
         [DataRow(2, 3)]
         [DataRow(3, 4)]
+        [DataRow(5, 6)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
             var newStarters = catalog.Where(profile => profile.IntroducedInVersion == targetVersion).ToArray();
-            string[] expectedIds = targetVersion == 3
-                ? new[] { "core-types-overview", "core-types-compact", "core-types-thermal" }
-                : new[] { "RTX-5090-9800X3D-APEX", "AMD-Ryzen-Radeon-REDLINE", "RTX-5090-Core-Ultra-285K-FUSION",
-                    "AMD-Ryzen-5-9600X-Badge", "AMD-Ryzen-7-9800X3D-Badge" };
+            string[] expectedIds = targetVersion switch
+            {
+                3 => new[] { "core-types-overview", "core-types-compact", "core-types-thermal" },
+                4 => new[] { "RTX-5090-9800X3D-APEX", "AMD-Ryzen-Radeon-REDLINE", "RTX-5090-Core-Ultra-285K-FUSION",
+                    "AMD-Ryzen-5-9600X-Badge", "AMD-Ryzen-7-9800X3D-Badge" },
+                _ => new[] { "Panther-Lake-Arc-Aurora", "OLED-Minimal" }
+            };
             CollectionAssert.AreEquivalent(expectedIds,
                 newStarters.Select(profile => profile.PresetId).ToArray());
 
@@ -153,15 +157,17 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        [DataRow("RTX-5090-9800X3D-APEX", "APEX - RTX 5090 + 9800X3D", false)]
-        [DataRow("AMD-Ryzen-Radeon-REDLINE", "REDLINE - Ryzen 7 9800X3D + Radeon", true)]
-        [DataRow("RTX-5090-Core-Ultra-285K-FUSION", "FUSION - RTX 5090 + Core Ultra 9 285K", true)]
-        [DataRow("AMD-Ryzen-5-9600X-Badge", "AMD Ryzen 5 9600X Badge", true)]
-        [DataRow("AMD-Ryzen-7-9800X3D-Badge", "AMD Ryzen 7 9800X3D Badge", true)]
-        public void HardwareStarterCanBeEditedAndRenderedWithItsEmbeddedGraphics(string presetId, string name, bool hasImages)
+        [DataRow("RTX-5090-9800X3D-APEX", "APEX - RTX 5090 + 9800X3D", false, 4)]
+        [DataRow("AMD-Ryzen-Radeon-REDLINE", "REDLINE - Ryzen 7 9800X3D + Radeon", true, 4)]
+        [DataRow("RTX-5090-Core-Ultra-285K-FUSION", "FUSION - RTX 5090 + Core Ultra 9 285K", true, 4)]
+        [DataRow("AMD-Ryzen-5-9600X-Badge", "AMD Ryzen 5 9600X Badge", true, 4)]
+        [DataRow("AMD-Ryzen-7-9800X3D-Badge", "AMD Ryzen 7 9800X3D Badge", true, 4)]
+        [DataRow("Panther-Lake-Arc-Aurora", "Panther Lake - Arc Aurora", false, 6)]
+        [DataRow("OLED-Minimal", "OLED Minimal", false, 6)]
+        public void HardwareStarterCanBeEditedAndRenderedWithItsEmbeddedGraphics(string presetId, string name, bool hasImages, int introducedInVersion)
         {
             var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
-            Assert.AreEqual(4, starter.IntroducedInVersion);
+            Assert.AreEqual(introducedInVersion, starter.IntroducedInVersion);
             Assert.AreEqual(name, starter.Name);
             var document = OsdDesignDocument.FromJson(starter.DesignJson);
             Assert.IsTrue(document.IsCanvas);
@@ -169,10 +175,12 @@ namespace CapFrameX.Test.Integration
             var original = OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson);
             var runtime = OverlayRuntimeDesign.Parse(starter.Id, starter.Name, document.ToJson());
             CollectionAssert.AreEqual(original.MetricKeys.ToArray(), runtime.MetricKeys.ToArray());
+            Assert.AreEqual(original.PixelShift, runtime.PixelShift, "Editing must retain the design's pixel orbit request.");
             string[] Images(string json) => JObject.Parse(json).Descendants().OfType<JProperty>()
                 .Where(property => property.Name == "dataUri").Select(property => (string)property.Value).ToArray();
             // Compare renderer scenes: editor metadata contains additional copies of each image.
-            // APEX uses text and vector elements, while the other hardware profiles embed PNGs.
+            // APEX, Panther Lake and OLED Minimal use text and vector elements only, while the
+            // other hardware profiles embed PNGs.
             var images = Images(original.TemplateJson);
             Assert.AreEqual(hasImages, images.Length > 0);
             Assert.IsTrue(images.All(uri => uri.StartsWith("data:image/png;base64,", StringComparison.Ordinal)));

@@ -78,7 +78,9 @@ namespace CapFrameX.OSD.Integration
                 (Id: "AMD-Ryzen-Radeon-REDLINE", Version: 4),
                 (Id: "RTX-5090-Core-Ultra-285K-FUSION", Version: 4),
                 (Id: "AMD-Ryzen-5-9600X-Badge", Version: 4),
-                (Id: "AMD-Ryzen-7-9800X3D-Badge", Version: 4)
+                (Id: "AMD-Ryzen-7-9800X3D-Badge", Version: 4),
+                (Id: "Panther-Lake-Arc-Aurora", Version: 6),
+                (Id: "OLED-Minimal", Version: 6)
             }.Select(entry =>
             {
                 using var stream = assembly.GetManifestResourceStream("CapFrameX.OSD.Integration.StarterDesigns." + entry.Id + ".json")
