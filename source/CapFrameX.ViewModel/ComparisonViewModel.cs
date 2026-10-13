@@ -2445,6 +2445,10 @@ namespace CapFrameX.ViewModel
                 .Subscribe(msg =>
                 {
                     InitializePlotModels();
+                    // The new models are empty, and UpdateCharts only fills a dirty one. Without the
+                    // flags a chart that was already drawn stays empty until something unrelated
+                    // marks it dirty; the inactive tabs keep the flags until they are shown.
+                    SetChartUpdateFlags();
                     UpdateChartsSafely();
                 });
         }
