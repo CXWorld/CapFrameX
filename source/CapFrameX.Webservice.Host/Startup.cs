@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using AutoMapper;
 using CapFrameX.Webservice.Data.Commands;
 using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
@@ -22,8 +21,6 @@ using Serilog;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using CapFrameX.Webservice.Data.Providers;
-
-using CapFrameX.Webservice.Data.Mappings;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Microsoft.AspNetCore.Diagnostics;
@@ -55,7 +52,6 @@ namespace CapFrameX.Webservice.Host
 				typeof(GetSessionCollectionByIdQuery).GetTypeInfo().Assembly, // Register Queries
 				typeof(UploadSessionsCommand).GetTypeInfo().Assembly // Register Commands
 			);
-			services.AddAutoMapper(_ => { }, typeof(SessionCollectionProfile).Assembly);
 
 			services.Configure<SmtpOptions>(Configuration.GetSection("SmtpOptions"));
 

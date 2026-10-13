@@ -1,5 +1,5 @@
-﻿using AutoMapper;
-using CapFrameX.Webservice.Data.DTO;
+﻿using CapFrameX.Webservice.Data.DTO;
+using CapFrameX.Webservice.Data.Mappings;
 using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
 using MediatR;
@@ -14,17 +14,15 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 	public class GetProcessListHandler : IRequestHandler<GetProcessListQuery, ProcessListDataDTO[]>
 	{
 		private readonly IProcessListService _squidexService;
-		private readonly IMapper _mapper;
 
-		public GetProcessListHandler(IProcessListService squidexService, IMapper mapper)
+		public GetProcessListHandler(IProcessListService squidexService)
 		{
 			_squidexService = squidexService;
-			_mapper = mapper;
 		}
 		public async Task<ProcessListDataDTO[]> Handle(GetProcessListQuery request, CancellationToken cancellationToken)
 		{
 			var result = await _squidexService.GetProcessList();
-			return _mapper.Map<ProcessListDataDTO[]>(result);
+			return result.ToProcessListDataDtos();
 		}
 	}
 }

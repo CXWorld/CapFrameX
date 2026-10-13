@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using CapFrameX.Webservice.Data.DTO;
+﻿using CapFrameX.Webservice.Data.DTO;
 using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
 using MediatR;
@@ -15,12 +14,10 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 	public class SearchSessionsHandler : IRequestHandler<SearchSessionsQuery, SqSessionData[]>
 	{
 		private readonly ISessionService _squidexService;
-		private readonly IMapper _mapper;
 
-		public SearchSessionsHandler(ISessionService squidexService, IMapper mapper)
+		public SearchSessionsHandler(ISessionService squidexService)
 		{
 			_squidexService = squidexService;
-			_mapper = mapper;
 		}
 		public async Task<SqSessionData[]> Handle(SearchSessionsQuery request, CancellationToken cancellationToken)
 		{

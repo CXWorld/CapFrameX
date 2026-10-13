@@ -82,6 +82,7 @@
     <ProjectReference Include="..\CapFrameX.Statistics.PlotBuilder\CapFrameX.Statistics.PlotBuilder.csproj" />
     <ProjectReference Include="..\CapFrameX.Updater\CapFrameX.Updater.csproj" />
     <ProjectReference Include="..\CapFrameX.ViewModel\CapFrameX.ViewModel.csproj" />
+    <ProjectReference Include="..\CapFrameX.Webservice.Implementation\CapFrameX.Webservice.Implementation.csproj" />
   </ItemGroup>
 
 </Project>
