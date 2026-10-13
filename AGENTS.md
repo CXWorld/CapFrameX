@@ -44,8 +44,16 @@ See `.github/workflows/main.yml` for the CI build ordering and Visual Studio ver
 The in-game OSD reaches Vulkan titles through an implicit loader layer
 (`VK_LAYER_CAPFRAMEX_overlay`), staged as `vulkan\cfx_osd_vklayer.dll` (x64) and
 `vulkan\x86\cfx_osd_vklayer.dll`, each next to an identical manifest — `library_path` inside is
-relative, so only the folder decides which DLL is loaded. Two rules are load-bearing and both
-fail silently when broken:
+relative, so only the folder decides which DLL is loaded.
+
+The current installer defaults to `C:\Program Files\CapFrameX`. The installed layers are
+`C:\Program Files\CapFrameX\vulkan\cfx_osd_vklayer.dll` (x64) and
+`C:\Program Files\CapFrameX\vulkan\x86\cfx_osd_vklayer.dll` (x86), each beside
+`cfx_osd_vklayer_v1.json`. `Program Files (x86)\CapFrameX` is the legacy install location.
+Before updating a runtime layer, inspect both HKLM registry views: development registrations
+can point at build outputs instead. Updating those outputs does not update the installed DLLs.
+
+Two rules are load-bearing and both fail silently when broken:
 
 - **Register each bitness in its own registry view** — x64 in the 64-bit view, x86 in
   `WOW6432Node`. The loader identifies a layer by the NAME in its manifest, so a manifest

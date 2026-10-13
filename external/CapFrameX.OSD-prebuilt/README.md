@@ -1261,6 +1261,12 @@ separate probing review.
 Both manifests are byte-identical; only their folder decides which DLL the loader picks up,
 because `library_path` inside them is relative. Keep each DLL next to its manifest.
 
+The current installer defaults to `C:\Program Files\CapFrameX`. It installs
+`cfx_osd_vklayer.dll` and `cfx_osd_vklayer_v1.json` in
+`C:\Program Files\CapFrameX\vulkan` for x64 and
+`C:\Program Files\CapFrameX\vulkan\x86` for x86. Earlier installers used
+`C:\Program Files (x86)\CapFrameX`.
+
 The WiX installer registers each manifest in its **own** registry view under
 `HKLM\SOFTWARE\Khronos\Vulkan\ImplicitLayers` — the x64 one in the 64-bit view, the x86 one in
 WOW6432Node. That split is load-bearing, not cosmetic: the Vulkan loader identifies a layer by
@@ -1304,9 +1310,12 @@ hold the ctest executables and `cfx_inject.exe`. That injector was deliberately 
 is how it silently reappeared under `native/x86/` once already.
 
 For Vulkan runtime tests, also check the manifest paths registered in both HKLM registry views.
-The loader uses the DLL beside each registered manifest, which can still be the installed copy
-under `Program Files (x86)` even when CapFrameX runs from its build output. Updating this prebuilt
-folder and rebuilding the app does not update that installed copy. Use an updated installation
+The loader uses the DLL beside each registered manifest, even when CapFrameX runs from its
+build output. The default installed paths are `C:\Program Files\CapFrameX\vulkan` (x64) and
+`C:\Program Files\CapFrameX\vulkan\x86` (x86); older installations may still have registrations
+under `C:\Program Files (x86)\CapFrameX`. Development registrations can point at build outputs.
+Always use the registered paths to identify the active DLLs. Updating this prebuilt folder and
+rebuilding the app does not update the installed copies. Use an updated installation
 or run [`scripts/Register-DevelopmentVulkanLayer.ps1`](../../scripts/Register-DevelopmentVulkanLayer.ps1)
 from an elevated PowerShell for this checkout. It validates both architectures, backs up the
 CapFrameX registrations, disables older HKLM entries, and selects the matching development

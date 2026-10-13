@@ -59,7 +59,7 @@ starts, its dependency checker validates the expected .NET 10 Desktop Runtime an
 
 Installer and portable builds of **1.9.2.0-beta** include the in-game overlay again: keep the `hook` and `vulkan` folders, including their x86 subfolders, alongside the application. The `benchlab-service` folder contains the bundled service, which CapFrameX starts when needed; compatible separately installed services are also supported.
 
-The installer registers the Vulkan layers for x64 and x86 in their respective HKLM registry views. Portable extraction does not register them; Vulkan integration requires the matching layers to be registered separately.
+The current installer defaults to `C:\Program Files\CapFrameX`, with the x64 Vulkan layer and its manifest in `vulkan` and the x86 pair in `vulkan\x86` beneath that folder. It registers them in their respective HKLM registry views. Earlier installers used `C:\Program Files (x86)\CapFrameX`. Portable extraction does not register the layers; Vulkan integration requires the matching layers to be registered separately.
 
 The beta bundles **CX-PresentMon 2.6.1**, the CapFrameX-maintained build based on Intel PresentMon 2.6.0, with fixes for accumulating stale timing data and stalled output after frame-generation changes. All shipped Windows binaries must pass the [release signature checks](scripts/RELEASE_SIGNING.md).
 

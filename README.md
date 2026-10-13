@@ -6,6 +6,8 @@ Version **1.9.0** introduces a refreshed interface, a system information dashboa
 
 This branch contains **1.9.2.0-beta**, including critical capture stability fixes in CX-PresentMon 2.6.1 (based on Intel PresentMon 2.6.0). It enables the in-game overlay again, makes it the default renderer for new configurations, and includes the DirectX hook and Vulkan layer DLLs for both x64 and x86, plus the bundled BENCHLAB service, in installer and portable builds. Compatible separately installed BENCHLAB services remain supported. The installer registers each Vulkan layer in its matching HKLM registry view.
 
+The current installer defaults to `C:\Program Files\CapFrameX`. It installs the x64 Vulkan layer and its manifest in `C:\Program Files\CapFrameX\vulkan`, and the x86 pair in `C:\Program Files\CapFrameX\vulkan\x86`. Earlier installers used `C:\Program Files (x86)\CapFrameX`.
+
 # Remark in our own interest
 If you are a reviewer or a youtuber using CapFrameX to get your data, it would be nice to mention us and link to our software.
 If you want to use images of the CapFrameX analysis, you could use the built in screenshot function so that our logo and name gets added to the images.
