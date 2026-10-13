@@ -211,7 +211,6 @@ internal class MemoryGroup : IGroup, IHardwareChanged
         }
 
         _hardware = [.. _hardware, .. additions];
-        foreach (Hardware hardware in additions)
-            HardwareAdded?.Invoke(hardware);
+        additions.ForEach(hardware => HardwareAdded?.Invoke(hardware));
     }
 }
