@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using CapFrameX.Contracts.Sensor;
 using CapFrameX.OSD.Controls;
 using CapFrameX.OSD.Integration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -176,6 +177,33 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(hasImages, images.Length > 0);
             Assert.IsTrue(images.All(uri => uri.StartsWith("data:image/png;base64,", StringComparison.Ordinal)));
             CollectionAssert.AreEqual(images, Images(runtime.TemplateJson), "Editing and rendering must retain every embedded image.");
+        }
+
+        [TestMethod]
+        public void FusionStarterBreaksDownThe285KByCoreType()
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "RTX-5090-Core-Ultra-285K-FUSION");
+            var document = OsdDesignDocument.FromJson(starter.DesignJson);
+            string Key(string type, string name) => "sensor:" + Uri.EscapeDataString(
+                SensorIdentifierHelper.BuildStableIdentifier("Intel Core Ultra 9 285K", type, name));
+            // Arrow Lake enumerates its P-cores between the E-core clusters.
+            var coreTypes = new[]
+            {
+                (Label: "P-CORES", Type: "P", Cores: new[] { 1, 2, 11, 12, 13, 14, 23, 24 }),
+                (Label: "E-CORES", Type: "E", Cores: Enumerable.Range(3, 8).Concat(Enumerable.Range(15, 8)).ToArray())
+            };
+            foreach (var (label, type, cores) in coreTypes)
+            {
+                var group = document.Tiles.Single(tile => tile.Kind == "group" && tile.Label == label);
+                CollectionAssert.AreEqual(cores.Select(core => Key("Load", $"Core #{core} {type}")).ToArray(),
+                    group.GroupMembers.Select(member => member.Key).ToArray());
+                Assert.IsTrue(group.GroupMembers.All(member => member.IsEnabled && member.CoreType == type));
+                Assert.AreEqual(1, document.GetGroupBarLayout(group).Rows, label + " must remain a single row of bars.");
+            }
+
+            var keys = OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson).MetricKeys.ToArray();
+            CollectionAssert.IsSubsetOf(new[] { Key("Clock", "CPU P Max"), Key("Clock", "CPU E Max") }, keys);
+            CollectionAssert.DoesNotContain(keys, "cpuClock", "The core-type max clocks replace the combined CPU max clock.");
         }
 
         [TestMethod]

@@ -45,7 +45,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 5;
+        public const int Version = 6;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -85,10 +85,12 @@ namespace CapFrameX.OSD.Integration
                     ?? throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_StarterMissing", entry.Id), message => new InvalidOperationException(message));
                 using var reader = new StreamReader(stream, Encoding.UTF8);
                 // Exact fingerprints of the version-four exports before the REDLINE header
-                // and Ryzen badge corrections. Never replace a renamed or edited profile.
+                // and Ryzen badge corrections, and of the FUSION export (versions four and
+                // five) before its per-core-type rework. Never replace a renamed or edited profile.
                 string previousDesignHash = entry.Id switch
                 {
                     "AMD-Ryzen-Radeon-REDLINE" => "51A4346D1187B02E4FFE6DA2ECB56F28ACDBEED92F4FEE8B29B44C40BF2F5FBD",
+                    "RTX-5090-Core-Ultra-285K-FUSION" => "CD0BF73BAE3EDC41CDC305D6919B38580040DC3B160E6BE80088045F7E93BB21",
                     "AMD-Ryzen-5-9600X-Badge" => "09795802837F766CB0350464E82B878EA4A361141F8FEC6CDB9343A314446E40",
                     "AMD-Ryzen-7-9800X3D-Badge" => "2B9D493E89D1A3CAFAE4B4CED21BF25D85BF3025FDA82E96893A24BD09A204A0",
                     _ => null
