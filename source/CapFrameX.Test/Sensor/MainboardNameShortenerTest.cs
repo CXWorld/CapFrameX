@@ -88,26 +88,5 @@ namespace CapFrameX.Test.Sensor
             Assert.IsFalse(result.Contains(","));
             Assert.AreEqual("Some Odd Vendor Model X", result);
         }
-
-        [TestMethod]
-        [DataRow("ASUSTeK COMPUTER INC.", "ASUS")]
-        [DataRow("ASUS", "ASUS")]
-        [DataRow("Micro-Star International Co., Ltd.", "MSI")]
-        [DataRow("ASUSTEKX SOMETHING", "ASUSTEKX SOMETHING")]
-        public void ToBrand_MatchesOnWordBoundariesOnly(string manufacturer, string expected)
-        {
-            Assert.AreEqual(expected, MainboardNameShortener.ToBrand(manufacturer));
-        }
-
-        [TestMethod]
-        [DataRow("G Skill In", "G.SKILL")]
-        [DataRow("G Skill Intl", "G.SKILL")]
-        [DataRow("G.Skill", "G.SKILL")]
-        [DataRow("G-Skill", "G.SKILL")]
-        [DataRow("GSkill", "G.SKILL")]
-        public void ToBrand_MapsMemoryVendorSpellings(string manufacturer, string expected)
-        {
-            Assert.AreEqual(expected, MainboardNameShortener.ToBrand(manufacturer));
-        }
     }
 }

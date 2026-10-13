@@ -314,7 +314,7 @@ namespace CapFrameX.SystemInfo.NetStandard
         public string GetSystemRAMManufacturer()
         {
             var info = _staticHardwareInfo.Value;
-            return MemoryManufacturerResolver.Resolve(_sensorService.GetMemoryManufacturers(),
+            return ManufacturerBrandResolver.ResolveMemoryManufacturer(_sensorService.GetMemoryManufacturers(),
                 info.RamManufacturer, info.RamModuleCount);
         }
 
@@ -437,7 +437,7 @@ namespace CapFrameX.SystemInfo.NetStandard
                             product = managementBaseObject["Product"] as string;
 
                             if (MainboardBrand.Length == 0)
-                                MainboardBrand = MainboardNameShortener.ToBrand(manufacturer);
+                                MainboardBrand = ManufacturerBrandResolver.ToBrand(manufacturer);
                         }
                     }
                 }
@@ -537,7 +537,7 @@ namespace CapFrameX.SystemInfo.NetStandard
 
             private static void AddMemoryManufacturer(string rawManufacturer, List<string> manufacturers)
             {
-                var brand = MemoryManufacturerResolver.Normalize(rawManufacturer);
+                var brand = ManufacturerBrandResolver.ToMemoryBrand(rawManufacturer);
 
                 if (brand.Length > 0 && !manufacturers.Contains(brand))
                     manufacturers.Add(brand);
