@@ -26,7 +26,7 @@ Download **[CapFrameX v1.9.2 Beta](https://github.com/CXWorld/CapFrameX/releases
 
 > **PC Latency correction:** Disabling **PC Latency** in the settings does **not** fix the PresentMon tracking problem, contrary to our [earlier post on X](https://x.com/CapFrameX/status/2105998858019078230). Application-timing tracking remains active independently of this setting. This beta includes the fix in CX-PresentMon 2.6.1.
 
-> **Important for reviewers:** Do not use the **CapFrameX hook-free overlay** for benchmark measurements. Hiding it can cause frametime spikes, and some AMD and Intel driver versions can have problems with Windows Desktop Window Manager (DWM). Check the active renderer before measuring, including automatic fallback to hook-free. These limitations are separate from the PresentMon fixes in this beta.
+> **Important for reviewers:** Do not use the **CapFrameX hook-free overlay** for benchmark measurements. Hiding it can cause frametime spikes, and some AMD and Intel driver versions can have problems with Windows Desktop Window Manager (DWM). Check the active renderer before measuring. These limitations are separate from the PresentMon fixes in this beta.
 
 | Package | Use |
 | --- | --- |
@@ -83,7 +83,7 @@ Choose a renderer under **Overlay → OSD options**. The following describes 1.9
 
 | Renderer | Behavior |
 | --- | --- |
-| **CapFrameX in-game** | The default for new configurations in 1.9.2 Beta, with DirectX and Vulkan integration, game compatibility profiles, and hook-free fallback routing. Available again since v1.9.1. |
+| **CapFrameX in-game** | The default for new configurations in 1.9.2 Beta, with DirectX and Vulkan integration and game compatibility profiles. Available again since v1.9.1. |
 | **CapFrameX hook-free** | Built-in overlay without injecting into the game, with an output-display picker and chart refresh control. See the reviewer warning above before using it for measurements. |
 | **RTSS** | Uses [RivaTuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html), which must be installed separately. |
 
@@ -126,8 +126,8 @@ Restart CapFrameX and the affected game after editing. A malformed or unreadable
 
 The in-game overlay always learns which hook route works for each game; this cannot be switched off, and an older `HookOverlayAutoCompatibility` setting is ignored. When CapFrameX injects into a game, it starts with the matching compatibility profile, or with a route chosen from the modules the game has loaded, and moves on to the next route if the overlay does not work. The result is stored per game executable and set of loaded upscaling or frame-generation modules in `HookCompatibilityProfiles.learned.json`, in the same configuration folder as the user profiles. **Overlay → OSD options** shows the stored state for the selected game below **CapFrameX in-game**.
 
-- Some routes only take effect when the game starts. CapFrameX then uses the hook-free overlay for the rest of the session and starts the next launch on the new route.
-- If no route works, the hook-free overlay serves the session. The game is not excluded from the in-game overlay: the next game launch probes again.
+- Some routes only take effect when the game starts. The in-game overlay then stays off for the rest of the session, and the next launch starts on the new route.
+- If no route works, the session runs without an overlay. The game is not excluded from the in-game overlay: the next game launch probes again.
 - After an update that changes the in-game hook, CapFrameX verifies the stored route again.
 
 To discard everything CapFrameX has learned, close CapFrameX and delete `HookCompatibilityProfiles.learned.json`; the next start begins with an empty cache. Deleting the file while CapFrameX is running does not reset anything, because CapFrameX keeps the learned profiles in memory and writes them back with the next result.

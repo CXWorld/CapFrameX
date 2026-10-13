@@ -50,7 +50,7 @@ namespace CapFrameX.OSD.Integration
         private OverlayRuntimeDesign _boundSourceDesign, _boundDesign;
         private OverlayTelemetrySnapshot _latestTelemetry;
         private int _pid, _catalogGeneration;
-        private bool _active, _hookEnabled, _freeEnabled, _hasProcesses, _fallback, _disposed;
+        private bool _active, _hookEnabled, _freeEnabled, _hasProcesses, _disposed;
         private bool _channelFailureReported;
         private bool _telemetryFailureReported;
         private ulong _designRevision, _metricsRevision;
@@ -58,8 +58,8 @@ namespace CapFrameX.OSD.Integration
 
         public OverlayDesignRuntimePublisher(OverlayDesignService designs, IOverlayTelemetryService telemetry,
             IAppConfiguration configuration, IObservable<int> processIdStream,
-            IObservable<int> processCountStream = null, IObservable<bool> hookFreeFallbackStream = null)
-            : this(designs, telemetry, configuration, processIdStream, processCountStream, hookFreeFallbackStream,
+            IObservable<int> processCountStream = null)
+            : this(designs, telemetry, configuration, processIdStream, processCountStream,
                   pid => HookTargetPolicy.IsAllowed(pid, out _), () => HookDesignChannel.Create(),
                   Observable.Interval(TimeSpan.FromMilliseconds(500)))
         {
@@ -67,7 +67,7 @@ namespace CapFrameX.OSD.Integration
 
         internal OverlayDesignRuntimePublisher(OverlayDesignService designs, IOverlayTelemetryService telemetry,
             IAppConfiguration configuration, IObservable<int> processIdStream, IObservable<int> processCountStream,
-            IObservable<bool> hookFreeFallbackStream, Func<int, bool> targetAllowed,
+            Func<int, bool> targetAllowed,
             Func<IHookDesignChannel> createChannel, IObservable<long> heartbeat)
         {
             _designs = designs ?? throw new ArgumentNullException(nameof(designs));
@@ -97,8 +97,6 @@ namespace CapFrameX.OSD.Integration
             })));
             if (processCountStream != null)
                 _subscriptions.Add(processCountStream.Subscribe(count => Change(() => _hasProcesses = count > 0)));
-            if (hookFreeFallbackStream != null)
-                _subscriptions.Add(hookFreeFallbackStream.Subscribe(fallback => Change(() => _fallback = fallback)));
             _subscriptions.Add(configuration.OnValueChanged.Where(change => change.key == nameof(IAppConfiguration.IsOverlayActive)
                 || change.key == nameof(IAppConfiguration.EnableHookOverlay) || change.key == nameof(IAppConfiguration.EnableHookFreeOverlay))
                 .Subscribe(change => Change(() =>
@@ -149,7 +147,7 @@ namespace CapFrameX.OSD.Integration
                     // Hardware sampling belongs to the enabled tile overlay, not to the
                     // currently detected game. Loading screens can temporarily lose the PID
                     // or process count without making the machine's sensors unavailable.
-                    bool needsTelemetry = design != null && _active && (_hookEnabled || _freeEnabled || _fallback);
+                    bool needsTelemetry = design != null && _active && (_hookEnabled || _freeEnabled);
                     if (needsTelemetry)
                     {
                         if (_demand == null)

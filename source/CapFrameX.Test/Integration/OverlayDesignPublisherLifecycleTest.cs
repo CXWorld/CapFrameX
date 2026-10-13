@@ -330,7 +330,7 @@ namespace CapFrameX.Test.Integration
                 Service = new OverlayDesignService(_folder, _configuration.Object);
                 Service.Activate(profile);
                 Publisher = new OverlayDesignRuntimePublisher(Service, Telemetry, _configuration.Object, Pids,
-                    null, null, _ => true, () =>
+                    null, _ => true, () =>
                     {
                         var channel = new RecordingChannel();
                         Channels.Add(channel);

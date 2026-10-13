@@ -17,7 +17,7 @@ namespace CapFrameX.OSD.Integration
         InvalidateVerification,
         /// <summary>No stage left (or the failure is not a routing problem).</summary>
         GiveUp,
-        /// <summary>Hook-free fallback reason for the manager; null clears it.</summary>
+        /// <summary>Reason the in-game overlay stands down, for the manager; null clears it.</summary>
         SetFallback,
         SetPollInterval,
         LogVerdict

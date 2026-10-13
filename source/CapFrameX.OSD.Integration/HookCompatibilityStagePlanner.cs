@@ -63,7 +63,7 @@ namespace CapFrameX.OSD.Integration
                 {
                     case HookCompatibilityStageId.VulkanGraphics: name = "Vulkan graphics composite"; break;
                     case HookCompatibilityStageId.VulkanCompute: name = "Vulkan compute composite"; break;
-                    case HookCompatibilityStageId.VulkanSuspended: name = "Vulkan hook-free fallback"; break;
+                    case HookCompatibilityStageId.VulkanSuspended: name = "Vulkan layer suspended"; break;
                     case HookCompatibilityStageId.VendorAware: name = "vendor-aware"; break;
                     case HookCompatibilityStageId.VendorAwareXeFgQueue:
                         name = "vendor-aware + XeSS-FG native queue"; break;

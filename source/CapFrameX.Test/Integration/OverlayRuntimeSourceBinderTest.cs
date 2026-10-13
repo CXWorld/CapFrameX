@@ -281,7 +281,7 @@ namespace CapFrameX.Test.Integration
                 service.Activate(starter.Id);
                 var channel = new Channel();
                 using var publisher = new OverlayDesignRuntimePublisher(service, telemetry, configuration.Object, pids,
-                    null, null, _ => true, () => channel, ticks);
+                    null, _ => true, () => channel, ticks);
                 pids.OnNext(42);
                 Assert.AreEqual(1, telemetry.Leases);
                 Assert.IsTrue(publisher.Current.Design.MetricKeys.Contains("role:cpu-loads/1"));

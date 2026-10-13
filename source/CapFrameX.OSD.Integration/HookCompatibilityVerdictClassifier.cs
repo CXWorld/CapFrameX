@@ -135,7 +135,7 @@ namespace CapFrameX.OSD.Integration
             return HookCompatibilityVerdict.Pending;
         }
 
-        /// <summary>The wording the hook-free fallback carries for a failed stage.</summary>
+        /// <summary>The wording the in-game overlay status carries for a failed stage.</summary>
         internal static string DescribeVerdict(HookCompatibilityVerdict verdict,
             NativeHookStatusSnapshot snapshot, ulong lastNativeStatusTickMs)
         {

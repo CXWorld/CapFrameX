@@ -65,7 +65,7 @@ The beta bundles **CX-PresentMon 2.6.1**, the CapFrameX-maintained build based o
 
 **PC Latency correction:** Disabling PC Latency in the settings does not fix the PresentMon tracking problem, contrary to our [earlier post on X](https://x.com/CapFrameX/status/2105998858019078230). Application-timing tracking remains active independently of this setting; the fix is included in the bundled CX-PresentMon 2.6.1.
 
-**Reviewers:** Do not use the hook-free overlay for benchmark measurements. Hiding it can cause frametime spikes, and some AMD and Intel drivers can have DWM problems. Check the renderer actually in use, including automatic fallback to hook-free.
+**Reviewers:** Do not use the hook-free overlay for benchmark measurements. Hiding it can cause frametime spikes, and some AMD and Intel drivers can have DWM problems. Check the renderer actually in use.
 
 ## Updating to the revised v1.9.0 package
 

@@ -5,7 +5,6 @@ using System.Globalization;
 using System.IO;
 using System.Management;
 using System.Reactive.Linq;
-using System.Reactive.Subjects;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,8 +34,8 @@ namespace CapFrameX.OSD.Integration
         // proxy swapchain). Do not leave the OSD on Waiting forever in that state.
         internal const ulong HookFirstPresentTimeoutMs = 15000;
         // The injected hook reports Present activity long before it can draw. If it never gets
-        // past that stage the overlay would silently stay invisible forever, so bound it and let
-        // the hook-free renderer take over instead.
+        // past that stage the overlay would silently stay invisible forever, so bound it and
+        // report the in-game overlay as unavailable instead.
         internal const ulong HookRendererReadyTimeoutMs = 10000;
         // A game that switches its frame-generation setup at runtime rewrites which runtime owns
         // presentation, and that can invalidate a stage the probe already verified minutes ago.
@@ -79,8 +78,6 @@ namespace CapFrameX.OSD.Integration
         private readonly IDisposable _enabledSub;
         private readonly IDisposable _visibilitySub;
         private readonly IDisposable _runtimeSub;
-        private readonly BehaviorSubject<bool> _hookFreeFallbackStream =
-            new BehaviorSubject<bool>(false);
         private readonly HookVisibilityChannel _visibility;
         private readonly HookOverlayStatusService _statusService;
         private readonly Timer _statusTimer;
@@ -89,7 +86,7 @@ namespace CapFrameX.OSD.Integration
         private readonly string _dllPathX86;      // x86 hook DLL (32-bit targets)
         private readonly object _gate = new object();
         private readonly object _stateGate = new object();
-        private readonly object _fallbackGate = new object();
+        private readonly object _availabilityGate = new object();
         private readonly int _processIdColumnIndex;
         private readonly int _runtimeColumnIndex;
         private readonly HashSet<int> _injected = new HashSet<int>();
@@ -128,7 +125,7 @@ namespace CapFrameX.OSD.Integration
         private volatile bool _disposed;
         private bool _injectionInProgress;
         private bool _injectionSucceeded;
-        private bool _hookFreeFallbackActive;
+        private bool _inGameUnavailable;
         private ulong _injectionSucceededTickMs;
         private ulong _lastNativeStatusTickMs;
         private bool _foreignPresenterActive;
@@ -154,7 +151,7 @@ namespace CapFrameX.OSD.Integration
         private int _injectionStatusPid;
         private string _lastInjectionError;
         private string _nativeFallbackReason;
-        private string _hookFreeFallbackReason;
+        private string _inGameUnavailableReason;
         private string _targetBlockReason;
         private string _vulkanBlockReason;
         private string _foreignOverlayBlockReason;
@@ -240,14 +237,6 @@ namespace CapFrameX.OSD.Integration
             PublishStatus();
         }
 
-        /// <summary>
-        /// Becomes active while the in-game renderer is selected but native injection is blocked,
-        /// fails, does not complete its status handshake, or the presentation runtime is unsupported.
-        /// Consumers use this transient signal without changing the user's persisted selection.
-        /// </summary>
-        public IObservable<bool> HookFreeFallbackStream =>
-            _hookFreeFallbackStream.DistinctUntilChanged();
-
         private void OnEnabledChanged(bool enabled)
         {
             if (!enabled) ResetVulkanLearning();
@@ -271,7 +260,7 @@ namespace CapFrameX.OSD.Integration
                 StopProcessStartWatcher();
             }
             UpdateHookVisibility(); // disabling hides the resident hook immediately (no game restart)
-            UpdateHookFreeFallback();
+            UpdateInGameAvailability();
             if (_enabled && IsDxgiRuntime(_currentRuntime))
             {
                 int pid = _currentPid;
@@ -281,19 +270,20 @@ namespace CapFrameX.OSD.Integration
         }
 
         // The hook draws only while it is BOTH enabled and toggled on (ALT+O). Push that combined
-        // state to the in-game hook through the named visibility event.
+        // state to the in-game hook through the named visibility event. A hook that stood down
+        // stays hidden; nothing else takes its place.
         private void UpdateHookVisibility()
         {
             bool targetAllowed;
-            bool fallbackActive;
+            bool unavailable;
             lock (_stateGate)
             {
                 targetAllowed = _targetAllowed;
-                fallbackActive = _hookFreeFallbackActive;
+                unavailable = _inGameUnavailable;
             }
 
             _visibility.SetVisible(_enabled && _appConfiguration.IsOverlayActive &&
-                targetAllowed && !fallbackActive && IsDxgiRuntime(_currentRuntime));
+                targetAllowed && !unavailable && IsDxgiRuntime(_currentRuntime));
         }
 
         private void OnProcessId(int pid)
@@ -324,7 +314,7 @@ namespace CapFrameX.OSD.Integration
                 _probeRearmCount = 0;
                 _lastInjectionError = null;
                 _nativeFallbackReason = null;
-                _hookFreeFallbackReason = null;
+                _inGameUnavailableReason = null;
                 _targetBlockReason = null;
                 _vulkanBlockReason = null;
                 _foreignOverlayBlockReason = null;
@@ -380,7 +370,7 @@ namespace CapFrameX.OSD.Integration
             else if (!IsEarlyInjectionProcessName(processName))
                 StopEarlyInjectionProbe();
             UpdateHookVisibility();
-            UpdateHookFreeFallback();
+            UpdateInGameAvailability();
             if (pid > 0)
                 Log.Information("HookOverlay: target PID {pid} is '{process}'", pid, processName);
             PublishStatus();
@@ -408,7 +398,7 @@ namespace CapFrameX.OSD.Integration
             if (runtimeChanged)
             {
                 UpdateHookVisibility();
-                UpdateHookFreeFallback();
+                UpdateInGameAvailability();
                 RefreshTargetPolicy(pid);
             }
             if (IsDxgiRuntime(runtime))
@@ -432,13 +422,13 @@ namespace CapFrameX.OSD.Integration
         internal static bool IsVulkanRuntime(string runtime)
             => string.Equals(runtime, "Vulkan", StringComparison.OrdinalIgnoreCase);
 
-        internal static bool ShouldUseHookFreeFallback(bool hookEnabled, int processId,
+        internal static bool IsInGameUnavailable(bool hookEnabled, int processId,
             string runtime, string targetBlockReason = null, string nativeFallbackReason = null,
             bool targetProcessAlive = true)
-            => GetHookFreeFallbackReason(hookEnabled, processId, runtime,
+            => GetInGameUnavailableReason(hookEnabled, processId, runtime,
                 targetBlockReason, nativeFallbackReason, targetProcessAlive) != null;
 
-        internal static string GetHookFreeFallbackReason(bool hookEnabled, int processId,
+        internal static string GetInGameUnavailableReason(bool hookEnabled, int processId,
             string runtime, string targetBlockReason = null, string nativeFallbackReason = null,
             bool targetProcessAlive = true)
         {
@@ -458,17 +448,18 @@ namespace CapFrameX.OSD.Integration
                 : null;
         }
 
-        internal static HookOverlayStatus CreateHookFreeFallbackStatus(int processId,
-            string runtime, bool visible, string fallbackReason = null)
+        // The selected renderer is the only one that draws: an in-game overlay that cannot run
+        // leaves the game without an overlay instead of switching to the hook-free renderer.
+        internal static HookOverlayStatus CreateInGameUnavailableStatus(int processId,
+            string runtime, bool visible, string unavailableReason = null)
         {
-            string reason = string.IsNullOrWhiteSpace(fallbackReason)
+            string reason = string.IsNullOrWhiteSpace(unavailableReason)
                 ? "unsupported by the in-game renderer"
-                : fallbackReason;
+                : unavailableReason;
             return new HookOverlayStatus(
-                visible ? EHookOverlayStatus.Fallback : EHookOverlayStatus.Hidden,
+                visible ? EHookOverlayStatus.Unavailable : EHookOverlayStatus.Hidden,
                 processId, runtime,
-                $"PID {processId}, {runtime}: {reason}; " +
-                $"hook-free fallback is {(visible ? "active" : "hidden")}.");
+                $"PID {processId}, {runtime}: {reason}; the in-game overlay is unavailable.");
         }
 
         internal static bool HasHookStatusTimedOut(bool injectionSucceeded,
@@ -545,40 +536,36 @@ namespace CapFrameX.OSD.Integration
             return nowTickMs - initializingSinceTickMs >= HookRendererReadyTimeoutMs;
         }
 
-        private void UpdateHookFreeFallback()
+        private void UpdateInGameAvailability()
         {
-            lock (_fallbackGate)
+            lock (_availabilityGate)
             {
                 if (_disposed) return;
 
-                bool active;
+                bool unavailable;
                 int pid;
                 string runtime;
                 string reason;
-                bool activeChanged;
-                bool reasonChanged;
                 lock (_stateGate)
                 {
                     pid = _currentPid;
                     runtime = _currentRuntime;
-                    reason = GetHookFreeFallbackReason(_enabled, pid, runtime,
+                    reason = GetInGameUnavailableReason(_enabled, pid, runtime,
                         _targetBlockReason, _vulkanFallbackReason ?? _nativeFallbackReason,
                         targetProcessAlive: pid > 0 && IsProcessAlive(pid));
-                    active = reason != null;
-                    activeChanged = active != _hookFreeFallbackActive;
-                    reasonChanged = !string.Equals(reason, _hookFreeFallbackReason,
+                    unavailable = reason != null;
+                    bool reasonChanged = !string.Equals(reason, _inGameUnavailableReason,
                         StringComparison.Ordinal);
-                    if (!activeChanged && !reasonChanged) return;
-                    _hookFreeFallbackActive = active;
-                    _hookFreeFallbackReason = reason;
+                    if (unavailable == _inGameUnavailable && !reasonChanged) return;
+                    _inGameUnavailable = unavailable;
+                    _inGameUnavailableReason = reason;
                 }
 
                 Log.Information(
-                    "HookOverlay: hook-free fallback {state} for pid {pid} (runtime {runtime}, reason {reason})",
-                    active ? "enabled" : "disabled", pid,
+                    "HookOverlay: in-game overlay {state} for pid {pid} (runtime {runtime}, reason {reason})",
+                    unavailable ? "unavailable" : "available", pid,
                     string.IsNullOrWhiteSpace(runtime) ? "unknown" : runtime,
                     string.IsNullOrWhiteSpace(reason) ? "none" : reason);
-                if (activeChanged) _hookFreeFallbackStream.OnNext(active);
                 UpdateHookVisibility();
                 ReportHostState();
             }
@@ -593,8 +580,8 @@ namespace CapFrameX.OSD.Integration
             {
                 pid = _currentPid;
                 runtime = _currentRuntime;
-                reason = _hookFreeFallbackReason;
-                source = !_hookFreeFallbackActive ? "none" :
+                reason = _inGameUnavailableReason;
+                source = !_inGameUnavailable ? "none" :
                     !string.IsNullOrEmpty(_targetBlockReason) ? "target-policy" :
                     !string.IsNullOrEmpty(_vulkanFallbackReason) ? "vulkan" :
                     !string.IsNullOrEmpty(_nativeFallbackReason) ? "native" : "runtime";
@@ -628,8 +615,8 @@ namespace CapFrameX.OSD.Integration
             if (stage == null)
             {
                 // Every stage failed for this title on this hook build. Keep the reservation so
-                // the frame rows stop re-planning; the hook-free fallback serves the session and
-                // the status says how to probe again.
+                // the frame rows stop re-planning; the session runs without an overlay and the
+                // status says how to probe again.
                 SetExhaustedFallback(pid);
                 return;
             }
@@ -840,14 +827,14 @@ namespace CapFrameX.OSD.Integration
                 _nativeFallbackReason = reason;
             }
             Log.Warning(
-                "HookOverlay: in-game renderer unusable for pid {pid} ('{process}', {reason}); enabling hook-free fallback",
+                "HookOverlay: in-game renderer unusable for pid {pid} ('{process}', {reason}); the in-game overlay stays off",
                 pid, _currentProcessName ?? "unknown", reason);
-            UpdateHookFreeFallback();
+            UpdateInGameAvailability();
             PublishStatus();
         }
 
-        // The session decided; make it so. Runs outside _stateGate: store writes, the fallback
-        // stream and the status publication all take their own locks.
+        // The session decided; make it so. Runs outside _stateGate: store writes, the stand-down
+        // reason and the status publication all take their own locks.
         private void ExecuteProbeActions(int pid, HookCompatibilityProbeSession session,
             IReadOnlyList<HookProbeAction> actions)
         {
@@ -934,16 +921,16 @@ namespace CapFrameX.OSD.Integration
             if (!string.IsNullOrWhiteSpace(reason))
             {
                 Log.Warning(
-                    "HookOverlay: in-game renderer unusable for pid {pid} ('{process}', {reason}); enabling hook-free fallback",
+                    "HookOverlay: in-game renderer unusable for pid {pid} ('{process}', {reason}); the in-game overlay stays off",
                     pid, _currentProcessName ?? "unknown", reason);
             }
             else
             {
                 Log.Information(
-                    "HookOverlay: native status healthy for pid {pid}; clearing native-failure fallback",
+                    "HookOverlay: native status healthy for pid {pid}; the in-game overlay may draw again",
                     pid);
             }
-            UpdateHookFreeFallback();
+            UpdateInGameAvailability();
         }
 
         private void RecordStageOutcome(int pid, HookCompatibilityProbeSession session,
@@ -1744,7 +1731,7 @@ namespace CapFrameX.OSD.Integration
                     _nativeFallbackReason = $"in-game hook injection failed ({error})";
             }
             _profileReports?.Injection(pid, inProgress, succeeded, !string.IsNullOrWhiteSpace(error));
-            UpdateHookFreeFallback();
+            UpdateInGameAvailability();
             PublishStatus();
         }
 
@@ -1765,7 +1752,7 @@ namespace CapFrameX.OSD.Integration
                         (native.Flags & NativeHookStatusFlags.EarlyInjectionRequired) != 0;
                     // This is the hook's confirmed current presentation state, not a module or
                     // proxy-presence signal. Follow both transitions so turning FG off can leave
-                    // the hook-free fallback again; native-side confirmation prevents flapping.
+                    // the stand-down again; native-side confirmation prevents flapping.
                     _foreignPresenterActive = ResolveForeignPresenterActivity(
                         _foreignPresenterActive, hasNativeStatus,
                         (native.Flags & NativeHookStatusFlags.ForeignPresenter) != 0);
@@ -1793,7 +1780,7 @@ namespace CapFrameX.OSD.Integration
             if (legacyReason != null) SetNativeFallbackReason(pid, legacyReason);
             if (_profileReports?.IsEnabled == true)
                 _profileReports.Observe(pid, hasNativeStatus, native, nativeState, nowTickMs,
-                    _appConfiguration.IsOverlayActive, _hookFreeFallbackActive);
+                    _appConfiguration.IsOverlayActive, _inGameUnavailable);
             ReportHostState();
             ExecuteProbeActions(pid, session, actions);
         }
@@ -2202,7 +2189,7 @@ namespace CapFrameX.OSD.Integration
             }
 
             if (visibilityChanged) UpdateHookVisibility();
-            if (visibilityChanged || reasonChanged) UpdateHookFreeFallback();
+            if (visibilityChanged || reasonChanged) UpdateInGameAvailability();
             if (reasonChanged) PublishStatus();
             return allowed;
         }
@@ -2216,7 +2203,7 @@ namespace CapFrameX.OSD.Integration
                 int injectionPid;
                 string runtime;
                 string injectionError;
-                string hookFreeFallbackReason;
+                string inGameUnavailableReason;
                 string targetBlockReason;
                 string vulkanBlockReason;
                 string foreignOverlayBlockReason;
@@ -2224,7 +2211,7 @@ namespace CapFrameX.OSD.Integration
                 bool targetAllowed;
                 bool injectionInProgress;
                 bool injectionSucceeded;
-                bool hookFreeFallbackActive;
+                bool inGameUnavailable;
                 ulong injectionDelayUntilTickMs;
                 lock (_stateGate)
                 {
@@ -2234,8 +2221,8 @@ namespace CapFrameX.OSD.Integration
                     injectionPid = _injectionStatusPid;
                     injectionInProgress = _injectionInProgress;
                     injectionSucceeded = _injectionSucceeded;
-                    hookFreeFallbackActive = _hookFreeFallbackActive;
-                    hookFreeFallbackReason = _hookFreeFallbackReason;
+                    inGameUnavailable = _inGameUnavailable;
+                    inGameUnavailableReason = _inGameUnavailableReason;
                     injectionError = _lastInjectionError;
                     targetBlockReason = _targetBlockReason;
                     vulkanBlockReason = _vulkanBlockReason;
@@ -2278,8 +2265,8 @@ namespace CapFrameX.OSD.Integration
                     HookCompatibilityProbeSession session;
                     lock (_stateGate)
                     {
-                        hookFreeFallbackActive = _hookFreeFallbackActive;
-                        hookFreeFallbackReason = _hookFreeFallbackReason;
+                        inGameUnavailable = _inGameUnavailable;
+                        inGameUnavailableReason = _inGameUnavailableReason;
                         session = _probeSession != null && _probeSession.ProcessId == pid
                             ? _probeSession
                             : null;
@@ -2316,19 +2303,19 @@ namespace CapFrameX.OSD.Integration
                     {
                         ResetVulkanLearning();
                     }
-                    UpdateHookFreeFallback();
+                    UpdateInGameAvailability();
                     lock (_stateGate)
                     {
-                        hookFreeFallbackActive = _hookFreeFallbackActive;
-                        hookFreeFallbackReason = _hookFreeFallbackReason;
+                        inGameUnavailable = _inGameUnavailable;
+                        inGameUnavailableReason = _inGameUnavailableReason;
                     }
 
-                    if (hookFreeFallbackActive)
+                    if (inGameUnavailable)
                     {
                         bool visible = _appConfiguration.IsOverlayActive;
-                        status = CreateHookFreeFallbackStatus(pid, runtime, visible,
-                            hookFreeFallbackReason);
-                        // The fallback serves this session, but the state the user should act
+                        status = CreateInGameUnavailableStatus(pid, runtime, visible,
+                            inGameUnavailableReason);
+                        // Nothing draws this session, but the state the user should act
                         // on is "restart the game": the next launch starts on the next stage.
                         if (visible && session != null && session.RestartPending)
                             status = new HookOverlayStatus(EHookOverlayStatus.RestartPending,
@@ -2555,8 +2542,8 @@ namespace CapFrameX.OSD.Integration
             }
             catch (ArgumentException) { return false; } // no such process
             catch (InvalidOperationException) { return false; }
-            // A query failure is not proof that the target exited. Preserve the normal
-            // fallback behavior unless Windows conclusively reports that the PID is gone.
+            // A query failure is not proof that the target exited. Keep reporting the in-game
+            // overlay as unavailable unless Windows conclusively reports that the PID is gone.
             catch (System.ComponentModel.Win32Exception) { return true; }
             catch (NotSupportedException) { return true; }
         }
@@ -2602,13 +2589,10 @@ namespace CapFrameX.OSD.Integration
 
         public void Dispose()
         {
-            lock (_fallbackGate)
+            lock (_availabilityGate)
             {
                 if (_disposed) return;
                 _disposed = true;
-                _hookFreeFallbackStream.OnNext(false);
-                _hookFreeFallbackStream.OnCompleted();
-                _hookFreeFallbackStream.Dispose();
             }
             _statusTimer?.Dispose();
             _earlyInjectionTimer?.Dispose();

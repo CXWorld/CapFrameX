@@ -309,7 +309,7 @@ namespace CapFrameX.Test.Integration
             HookOverlayStatus status = HookOverlayStatusEvaluator.EvaluateVulkan(
                 42, "Vulkan", native, Now, overlayVisible: true);
 
-            Assert.AreEqual(EHookOverlayStatus.Fallback, status.State);
+            Assert.AreEqual(EHookOverlayStatus.Unavailable, status.State);
             StringAssert.Contains(status.Detail, "queue family");
         }
 
@@ -573,104 +573,104 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void ShouldUseHookFreeFallback_UsesFallbackForD3D9()
+        public void IsInGameUnavailable_ForD3D9()
         {
-            bool useFallback = HookOverlayManager.ShouldUseHookFreeFallback(
+            bool unavailable = HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "D3D9");
 
-            Assert.IsTrue(useFallback);
+            Assert.IsTrue(unavailable);
         }
 
         [TestMethod]
-        public void ShouldUseHookFreeFallback_DoesNotReplaceNativeRenderers()
+        public void IsInGameUnavailable_NotForNativeRenderers()
         {
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "DXGI"));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "D3D11"));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "D3D12"));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "Vulkan"));
         }
 
         [TestMethod]
-        public void ShouldUseHookFreeFallback_UsesFallbackForBlockedTarget()
+        public void IsInGameUnavailable_ForBlockedTarget()
         {
-            bool useFallback = HookOverlayManager.ShouldUseHookFreeFallback(
+            bool unavailable = HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "DXGI",
                 targetBlockReason: "process 'cs2' is on the in-game injection blacklist");
 
-            Assert.IsTrue(useFallback);
+            Assert.IsTrue(unavailable);
         }
 
         [TestMethod]
-        public void ShouldUseHookFreeFallback_UsesFallbackForNativeHookFailure()
+        public void IsInGameUnavailable_ForNativeHookFailure()
         {
-            bool useFallback = HookOverlayManager.ShouldUseHookFreeFallback(
+            bool unavailable = HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "D3D11",
                 nativeFallbackReason: "in-game hook injection failed");
 
-            Assert.IsTrue(useFallback);
+            Assert.IsTrue(unavailable);
         }
 
         [TestMethod]
-        public void ShouldUseHookFreeFallback_WaitsForEnabledHookAndValidTarget()
+        public void IsInGameUnavailable_WaitsForEnabledHookAndValidTarget()
         {
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: false, processId: 42, runtime: "D3D9"));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 0, runtime: "D3D9"));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: null));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "<error>"));
         }
 
         [TestMethod]
-        public void ShouldUseHookFreeFallback_DoesNotOutliveTargetProcess()
+        public void IsInGameUnavailable_DoesNotOutliveTargetProcess()
         {
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "DXGI",
                 targetBlockReason: "process identity check failed",
                 targetProcessAlive: false));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "D3D11",
                 nativeFallbackReason: "native hook status was unavailable",
                 targetProcessAlive: false));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "D3D9",
                 targetProcessAlive: false));
         }
 
         [TestMethod]
-        public void CreateHookFreeFallbackStatus_ReportsFallbackWhileVisible()
+        public void CreateInGameUnavailableStatus_ReportsUnavailableWhileVisible()
         {
-            HookOverlayStatus status = HookOverlayManager.CreateHookFreeFallbackStatus(
+            HookOverlayStatus status = HookOverlayManager.CreateInGameUnavailableStatus(
                 processId: 42, runtime: "D3D9", visible: true);
 
-            Assert.AreEqual(EHookOverlayStatus.Fallback, status.State);
-            StringAssert.Contains(status.Detail, "hook-free fallback is active");
+            Assert.AreEqual(EHookOverlayStatus.Unavailable, status.State);
+            StringAssert.Contains(status.Detail, "the in-game overlay is unavailable");
         }
 
         [TestMethod]
-        public void CreateHookFreeFallbackStatus_ReportsHiddenWhenOverlayIsOff()
+        public void CreateInGameUnavailableStatus_ReportsHiddenWhenOverlayIsOff()
         {
-            HookOverlayStatus status = HookOverlayManager.CreateHookFreeFallbackStatus(
+            HookOverlayStatus status = HookOverlayManager.CreateInGameUnavailableStatus(
                 processId: 42, runtime: "D3D9", visible: false);
 
             Assert.AreEqual(EHookOverlayStatus.Hidden, status.State);
-            StringAssert.Contains(status.Detail, "hook-free fallback is hidden");
+            StringAssert.Contains(status.Detail, "the in-game overlay is unavailable");
         }
 
         [TestMethod]
-        public void CreateHookFreeFallbackStatus_ReportsNativeFailureReason()
+        public void CreateInGameUnavailableStatus_ReportsNativeFailureReason()
         {
-            HookOverlayStatus status = HookOverlayManager.CreateHookFreeFallbackStatus(
+            HookOverlayStatus status = HookOverlayManager.CreateInGameUnavailableStatus(
                 processId: 42, runtime: "DXGI", visible: true,
-                fallbackReason: "native hook did not publish status within 3 seconds after injection");
+                unavailableReason: "native hook did not publish status within 3 seconds after injection");
 
-            Assert.AreEqual(EHookOverlayStatus.Fallback, status.State);
+            Assert.AreEqual(EHookOverlayStatus.Unavailable, status.State);
             StringAssert.Contains(status.Detail, "did not publish status within 3 seconds");
         }
 
@@ -702,12 +702,12 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted(
                 "AoE2DE_s.exe", out string aoeReason));
             StringAssert.Contains(aoeReason, "in-game injection blacklist");
-            Assert.IsTrue(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsTrue(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 4711, runtime: "DXGI",
                 targetBlockReason: aoeReason));
             Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted(
                 "AoMRT_s.exe", out string aomReason));
-            Assert.IsTrue(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsTrue(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 4712, runtime: "DXGI",
                 targetBlockReason: aomReason));
             Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted("CS2.exe", out string reason));

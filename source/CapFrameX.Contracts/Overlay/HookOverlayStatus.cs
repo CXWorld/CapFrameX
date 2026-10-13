@@ -23,8 +23,13 @@ namespace CapFrameX.Contracts.Overlay
         Idle,
         [Description("Error")]
         Error,
-        [Description("Fallback")]
-        Fallback,
+        /// <summary>
+        /// The in-game overlay is selected but cannot draw in this process (injection blocked or
+        /// failed, unsupported runtime, every compatibility stage failed). No other renderer
+        /// takes over. Detail carries the reason.
+        /// </summary>
+        [Description("Unavailable")]
+        Unavailable,
         /// <summary>
         /// Injection was deliberately not attempted and will not be retried for this process.
         /// Unlike <see cref="Waiting"/> this never resolves on its own — the game has to be
@@ -34,14 +39,14 @@ namespace CapFrameX.Contracts.Overlay
         Blocked,
         /// <summary>
         /// The hook is injected and CapFrameX is judging the current compatibility stage against
-        /// its time budget. Resolves into <see cref="Active"/>, <see cref="Fallback"/> or
+        /// its time budget. Resolves into <see cref="Active"/>, <see cref="Unavailable"/> or
         /// <see cref="RestartPending"/> within seconds.
         /// </summary>
         [Description("Probing")]
         Probing,
         /// <summary>
-        /// The current stage failed and the next one needs a fresh process. The hook-free
-        /// fallback serves this session; the next launch of the title starts on the next stage.
+        /// The current stage failed and the next one needs a fresh process. The in-game overlay
+        /// stays off for this session; the next launch of the title starts on the next stage.
         /// </summary>
         [Description("Restart game")]
         RestartPending
@@ -111,7 +116,7 @@ namespace CapFrameX.Contracts.Overlay
                 case EHookOverlayStatus.Injected: return "Injected";
                 case EHookOverlayStatus.Initializing: return "Initializing";
                 case EHookOverlayStatus.Active: return "Active";
-                case EHookOverlayStatus.Fallback: return "Fallback";
+                case EHookOverlayStatus.Unavailable: return "Unavailable";
                 case EHookOverlayStatus.Hidden: return "Hidden";
                 case EHookOverlayStatus.Idle: return "Idle";
                 case EHookOverlayStatus.Error: return "Error";

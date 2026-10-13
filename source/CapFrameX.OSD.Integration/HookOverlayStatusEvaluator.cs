@@ -300,8 +300,8 @@ namespace CapFrameX.OSD.Integration
             // which is what a title does when it moves between menu and gameplay.
             if (native.CompositeState == VulkanCompositeState.UnsupportedQueueFamily)
             {
-                return VulkanStatus(EHookOverlayStatus.Fallback, processId, runtime,
-                    $"{target}: the game presents from a queue family the Vulkan compositor cannot draw on; the hook-free overlay serves it.",
+                return VulkanStatus(EHookOverlayStatus.Unavailable, processId, runtime,
+                    $"{target}: the game presents from a queue family the Vulkan compositor cannot draw on; the in-game overlay is unavailable.",
                     heartbeatAge, resolution);
             }
 

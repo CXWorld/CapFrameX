@@ -91,7 +91,7 @@ namespace CapFrameX.ViewModel
 				switch (_hookOverlayStatus.State)
 				{
 					case EHookOverlayStatus.Active: return "LimeGreen";
-					case EHookOverlayStatus.Fallback: return "DarkOrange";
+					case EHookOverlayStatus.Unavailable: return "DarkOrange";
 					// Needs the user to act (restart the game), so it must not read as a
 					// transient "Waiting" orange, but it is not a malfunction either.
 					case EHookOverlayStatus.Blocked: return "Goldenrod";

@@ -210,7 +210,7 @@ The current installer defaults to `C:\Program Files\CapFrameX`: the x64 layer an
 
 Registration is bitness-scoped and this is load-bearing: the loader identifies a layer by the NAME in its manifest, so a manifest reachable by processes that cannot load its DLL **shadows** the correct registration and disables the layer for that bitness. `CapFrameXInstaller` therefore ships one component per bitness — `Bitness="always64"` for the 64-bit view, `Bitness="always32"` for `WOW6432Node`. The 32-bit one is anchored to `TARGETDIR`, not `INSTALLFOLDER`, because ICE80 rejects a 32-bit component in a directory below `ProgramFiles64Folder`.
 
-**Never register the layer in HKCU** (the OSD repo's `register_layer.cmd` uses HKLM only and purges HKCU leftovers). HKCU is user-controlled, so the loader ignores it for targets started elevated — e.g. a game launched from a Visual Studio that debugs the admin-only `CapFrameX.exe` — and it is not split by bitness, so it also triggers the shadowing above. Both failure modes are silent and look exactly like "this game has no Vulkan": `VulkanActivityProbe` finds no renderer-state mapping, `VulkanLayerModuleProbe` finds no layer module, and `HookOverlayManager` correctly concludes DXGI and injects the hook into a Vulkan title — where the in-game arbiter denies its renderer lease and the status parks on `Initializing` until the hook-free fallback takes over.
+**Never register the layer in HKCU** (the OSD repo's `register_layer.cmd` uses HKLM only and purges HKCU leftovers). HKCU is user-controlled, so the loader ignores it for targets started elevated — e.g. a game launched from a Visual Studio that debugs the admin-only `CapFrameX.exe` — and it is not split by bitness, so it also triggers the shadowing above. Both failure modes are silent and look exactly like "this game has no Vulkan": `VulkanActivityProbe` finds no renderer-state mapping, `VulkanLayerModuleProbe` finds no layer module, and `HookOverlayManager` correctly concludes DXGI and injects the hook into a Vulkan title — where the in-game arbiter denies its renderer lease and the status parks on `Initializing` until it turns `Unavailable`.
 
 ## In-game hook compatibility probing
 
@@ -237,7 +237,7 @@ settings are ignored. All of it is pure and unit-tested; the manager only execut
   a catalog entry is always stage 1 and the ladder continues after it. A learned stage (pending, verified,
   or from an older hook build) only starts at a route that ladder still contains (`CanReuseLearnedStage`),
   never before a catalog/user profile. A verified entry is the start stage; the rest of the ladder stays.
-  Exhaustion belongs to the observed run: the hook-free fallback serves it and the entry is marked
+  Exhaustion belongs to the observed run: it runs without an overlay and the entry is marked
   exhausted, but the next launch probes again. There is no reset in the UI: delete
   `HookCompatibilityProfiles.learned.json` while CapFrameX is closed (the store loads once and rewrites it).
 - **Verdicts** read status block V2 (`HookStatusProbe`: install phase + FidelityFX module/export detail,
@@ -250,7 +250,7 @@ settings are ignored. All of it is pure and unit-tested; the manager only execut
   present, releases its renderer and rebuilds on the new route. The two routing bits only ever turn *on* —
   they neutralize hooks that are already installed, which cannot be undone — so dropping one, early injection
   and the injection delay still need a fresh process: `ScheduleRestart` sets status `RestartPending`, the
-  hook-free fallback serves the session, the next stage is persisted as pending and applied on the next
+  session runs without an overlay, the next stage is persisted as pending and applied on the next
   launch. The session waits up to 3 s for the hook to echo the flags in `AppliedFlags` before it judges the
   new stage; no echo → restart.
 - **A frame-generation switch inside the running game** is the case the ladder alone cannot see: the probe

@@ -375,13 +375,13 @@ namespace CapFrameX.Test.Overlay
 
             Assert.AreEqual("Active", hookStatus.Value);
 
-            _statusStream.OnNext(new HookOverlayStatus(EHookOverlayStatus.Fallback, processId: 4711,
-                runtime: "Vulkan", detail: "hook-free overlay serves it"));
+            _statusStream.OnNext(new HookOverlayStatus(EHookOverlayStatus.Unavailable, processId: 4711,
+                runtime: "Vulkan", detail: "the in-game overlay is unavailable"));
 
             entries = await provider.GetOverlayEntries(updateFormats: false);
             hookStatus = entries.Single(entry => entry.Identifier == HookOverlayStatusIdentifier);
 
-            Assert.AreEqual("Fallback", hookStatus.Value,
+            Assert.AreEqual("Unavailable", hookStatus.Value,
                 "the entry has to follow later states, not just the first one");
         }
 

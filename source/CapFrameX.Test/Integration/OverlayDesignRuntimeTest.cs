@@ -444,17 +444,18 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void HookFreeFallbackKeepsSensorDemandAcrossProcessCountGapsWithoutAnInGameChannel()
+        public void HookFreeKeepsSensorDemandAcrossProcessCountGapsWithoutAnInGameChannel()
         {
             var service = ActiveService("cpuLoad", "fps", "processName", "pmdGpuPower", "cpuName");
             _configuration.Object.IsOverlayActive = true;
+            _configuration.Object.EnableHookOverlay = false;
+            _configuration.Object.EnableHookFreeOverlay = true;
             using var telemetry = new FakeTelemetry { Sources = HardwareAndProcessCatalog() };
             using var pids = new Subject<int>();
             using var ticks = new Subject<long>();
             using var counts = new BehaviorSubject<int>(0);
-            using var fallback = new BehaviorSubject<bool>(true);
             var channels = new List<FakeChannel>();
-            using var publisher = Publisher(service, telemetry, pids, ticks, channels, counts, fallback);
+            using var publisher = Publisher(service, telemetry, pids, ticks, channels, counts);
             Assert.AreEqual(1, telemetry.Leases);
             counts.OnNext(1);
             telemetry.Emit(new OverlayTelemetrySnapshot(DateTime.UtcNow,
@@ -621,7 +622,7 @@ namespace CapFrameX.Test.Integration
             using var pids = new Subject<int>();
             using var ticks = new Subject<long>();
             int attempts = 0;
-            using var publisher = new OverlayDesignRuntimePublisher(service, telemetry, _configuration.Object, pids, null, null,
+            using var publisher = new OverlayDesignRuntimePublisher(service, telemetry, _configuration.Object, pids, null,
                 _ => true, () => { attempts++; throw new IOException("Simulated denied channel"); }, ticks);
             pids.OnNext(42);
             Assert.AreEqual(1, attempts);
@@ -662,7 +663,7 @@ namespace CapFrameX.Test.Integration
             using var pids = new Subject<int>();
             using var ticks = new Subject<long>();
             int attempts = 0;
-            using var publisher = new OverlayDesignRuntimePublisher(service, telemetry, _configuration.Object, pids, null, null,
+            using var publisher = new OverlayDesignRuntimePublisher(service, telemetry, _configuration.Object, pids, null,
                 _ => true, () => ++attempts == 1 ? throw new IOException("Transient failure") : new FakeChannel(), ticks);
             pids.OnNext(42);
             StringAssert.Contains(service.Status, "Transient failure");
@@ -720,8 +721,8 @@ namespace CapFrameX.Test.Integration
 
         private OverlayDesignRuntimePublisher Publisher(OverlayDesignService service, FakeTelemetry telemetry,
             IObservable<int> pids, IObservable<long> ticks, List<FakeChannel> channels,
-            IObservable<int> counts = null, IObservable<bool> fallback = null, Func<int, bool> allowed = null)
-            => new OverlayDesignRuntimePublisher(service, telemetry, _configuration.Object, pids, counts, fallback,
+            IObservable<int> counts = null, Func<int, bool> allowed = null)
+            => new OverlayDesignRuntimePublisher(service, telemetry, _configuration.Object, pids, counts,
                 allowed ?? (_ => true), () => { var channel = new FakeChannel(); channels.Add(channel); return channel; }, ticks);
 
         private static string Scene(params string[] keys) => new JObject

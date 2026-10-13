@@ -147,8 +147,8 @@ namespace CapFrameX
                 // In-game hook overlay: inject cfx_osd_hook.dll into the game CapFrameX already
                 // detected. The PID flows through IRTSSService.ProcessIdStream (IProcessService),
                 // the same stream the overlay/capture pipeline uses — so we address the process
-                // directly, no manual injector. It also publishes the transient hook-free fallback
-                // state when injection is unsafe, fails its handshake, or the runtime is unsupported.
+                // directly, no manual injector. When injection is unsafe, fails its handshake, or the
+                // runtime is unsupported, its status reports the in-game overlay as unavailable.
                 using (StartupPerformanceLogger.Measure("Hook overlay manager initialization"))
                 {
                     _hookOverlayManager = new OSD.Integration.HookOverlayManager(
@@ -165,15 +165,14 @@ namespace CapFrameX
 
                 // CapFrameX.OSD: hook-free DWM/DirectComposition overlay. Scalars come from the
                 // same IOverlayEntry[] stream RTSS uses; per-present frametimes from the capture
-                // service. Besides the explicit hook-free mode, it takes over transiently when the
-                // selected in-game renderer cannot safely become operational (including D3D9).
+                // service. It runs only in the hook-free mode: an in-game overlay that cannot draw
+                // is never replaced by it, so the overlay shown is always the one selected.
                 using (StartupPerformanceLogger.Measure("OSD overlay bridge initialization"))
                 {
                     _overlayDesignRuntime = new OSD.Integration.OverlayDesignRuntimePublisher(
                         _overlayDesignService,
                         Container.Resolve<OSD.Integration.IOverlayTelemetryService>(), config,
-                        rtssService.ProcessIdStream, rtssService.ProcessCountStream,
-                        _hookOverlayManager.HookFreeFallbackStream);
+                        rtssService.ProcessIdStream, rtssService.ProcessCountStream);
                     Exit += (_, _) => _overlayDesignRuntime.Dispose();
                     // One resolver for both placement paths: hook-free window and hook channel.
                     _pixelOrbit = new OSD.Integration.OverlayPixelOrbitResolver(
@@ -186,7 +185,6 @@ namespace CapFrameX
                         PresentMonCaptureService.PresentRuntime_INDEX,
                         PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
                         () => osdCaptureService.CPUStartQPCTimeInMs_Index,
-                        hookFreeFallbackStream: _hookOverlayManager.HookFreeFallbackStream,
                         processIdStream: rtssService.ProcessIdStream,
                         processIdColumnIndex:
                             PresentMonCaptureService.ProcessID_INDEX,
