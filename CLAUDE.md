@@ -118,7 +118,7 @@ persistence layer was dropped.
 - DryIoc (IoC container)
 - MahApps.Metro + MaterialDesign (UI styling)
 - System.Reactive (Rx)
-- OxyPlot 2.1 NuGet packages (charting)
+- OxyPlot 2.2 NuGet packages (charting)
 - Serilog (logging)
 
 ### Build Output

@@ -43,8 +43,8 @@
     <PackageVersion Include="MSTest.TestFramework" Version="4.5.1" />
     <PackageVersion Include="NAudio" Version="2.2.1" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageVersion Include="OxyPlot.Core" Version="2.1.0" />
-    <PackageVersion Include="OxyPlot.Wpf" Version="2.1.0" />
+    <PackageVersion Include="OxyPlot.Core" Version="2.2.0" />
+    <PackageVersion Include="OxyPlot.Wpf" Version="2.2.0" />
     <PackageVersion Include="ParallelExtensionsExtras" Version="1.2.0" />
     <PackageVersion Include="Prism.Core" Version="9.0.537" />
     <PackageVersion Include="Prism.DryIoc" Version="9.0.537" />
