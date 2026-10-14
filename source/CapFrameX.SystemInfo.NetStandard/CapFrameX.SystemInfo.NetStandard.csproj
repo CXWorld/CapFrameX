@@ -14,6 +14,9 @@
     <PackageReference Include="Mixaill.HwInfo.D3D" />
     <PackageReference Include="Mixaill.HwInfo.SetupApi" />
     <PackageReference Include="Mixaill.HwInfo.Vulkan" />
+    <!-- Only for its JEP106 vendor table (ManufacturerMapping), which also names the vendors the
+         SPD path reads, so SMBIOS and SPD module IDs resolve to the same brands. -->
+    <PackageReference Include="RAMSPDToolkit-NDD" />
     <PackageReference Include="System.Management" />
   </ItemGroup>
 

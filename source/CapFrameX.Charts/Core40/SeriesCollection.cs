@@ -85,7 +85,10 @@ namespace LiveCharts
             {
                 foreach (var view in oldItems)
                 {
-                    view.Erase(true);
+                    // A series that never belonged to a chart has drawn nothing, and every Erase
+                    // dereferences the chart. View models fill collections no chart has bound yet.
+                    if (view.Model.Chart != null)
+                        view.Erase(true);
                 }
             }
            

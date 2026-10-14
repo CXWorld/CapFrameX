@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
+using RAMSPDToolkit.SPD.Mappings;
 
 namespace CapFrameX.SystemInfo.NetStandard
 {
@@ -40,6 +42,23 @@ namespace CapFrameX.SystemInfo.NetStandard
                 ("GSkill", "G.SKILL"),
                 ("Team Group", "Team Group"),
                 ("A-DATA", "ADATA"),
+                // JEP106 registers the company, not the brand on the box: legal names the
+                // boilerplate stripper cannot shorten, or vendors selling under another name.
+                // "Patriot Memory" only: JEP106 also lists the unrelated "Patriot Scientific".
+                ("Patriot Memory", "Patriot"),
+                ("Silicon Power", "Silicon Power"),
+                ("Mushkin", "Mushkin"),
+                ("Golden Empire", "GeIL"),
+                ("Essencore", "KLEVV"),
+                ("Transcend", "Transcend"),
+                ("Kingmax", "Kingmax"),
+                ("Lexar", "Lexar"),
+                ("Gloway", "Gloway"),
+                ("Biwin", "BIWIN"),
+                ("Galaxy Microsystems", "GALAX"),
+                ("Shenzhen Fanxiang", "Fanxiang"),
+                ("Shenzhen Longsys", "Longsys"),
+                ("Shenzhen Juhor", "JUHOR"),
                 ("Elitegroup", "ECS"),
                 ("ECS", "ECS"),
                 ("Colorful", "Colorful"),
@@ -126,6 +145,14 @@ namespace CapFrameX.SystemInfo.NetStandard
             };
 
         /// <summary>
+        /// G.Skill part numbers start with "F", the DDR generation and the data rate
+        /// ("F4-3000C15-16GVR", "F5-7800J3646H16G"). Distinct enough to name the vendor when the
+        /// BIOS reports the module manufacturer as "Unknown".
+        /// </summary>
+        private static readonly Regex GSkillPartNumber =
+            new Regex(@"^F[2-5]-\d{3}", RegexOptions.CultureInvariant);
+
+        /// <summary>
         /// Values boards and modules ship with when the vendor never filled the DMI fields in.
         /// Compared with dots removed, so "To be filled by O.E.M." and "To be filled by OEM" both
         /// land here.
@@ -196,6 +223,53 @@ namespace CapFrameX.SystemInfo.NetStandard
                 return string.Empty;
 
             return ToBrand(raw);
+        }
+
+        /// <summary>
+        /// Maps a memory module vendor like <see cref="ToMemoryBrand(string)"/>. When the vendor
+        /// field is unusable, falls back to the brand the part number identifies.
+        /// </summary>
+        public static string ToMemoryBrand(string rawManufacturer, string partNumber)
+        {
+            var brand = ToMemoryBrand(rawManufacturer);
+            if (brand.Length > 0)
+                return brand;
+
+            return GSkillPartNumber.IsMatch(partNumber?.Trim() ?? string.Empty) ? "G.SKILL" : string.Empty;
+        }
+
+        /// <summary>
+        /// Maps one memory module described by its SMBIOS record onto its brand. The module
+        /// manufacturer ID wins: it is the raw SPD value, while the string is the firmware's
+        /// interpretation of it, "Unknown" when its table lacks the vendor. The string comes next,
+        /// the part number last.
+        /// </summary>
+        public static string ToMemoryBrand(ushort moduleManufacturerId, string rawManufacturer, string partNumber)
+        {
+            var brand = FromJedecId(moduleManufacturerId);
+            return brand.Length > 0 ? brand : ToMemoryBrand(rawManufacturer, partNumber);
+        }
+
+        /// <summary>
+        /// Maps a JEDEC module manufacturer ID as SPD and SMBIOS store it - the number of
+        /// continuation codes in the low byte, the manufacturer code in the high byte - onto its
+        /// brand, using the JEP106 table the SPD path reads names from. Returns an empty string for
+        /// 0 (unknown) and for IDs the table does not contain.
+        /// </summary>
+        public static string FromJedecId(ushort moduleManufacturerId)
+        {
+            if (moduleManufacturerId == 0)
+                return string.Empty;
+
+            // Bit 7 of both bytes is odd parity. The table numbers banks from 1 and keys each code
+            // including its parity bit, exactly as SPD stores it.
+            var bank = (byte)((moduleManufacturerId & 0x7F) + 1);
+            var code = (byte)(moduleManufacturerId >> 8);
+
+            return ManufacturerMapping.ManufacturerBanks.TryGetValue(bank, out var codes)
+                && codes.TryGetValue(code, out var name)
+                ? ToBrand(name)
+                : string.Empty;
         }
 
         /// <summary>

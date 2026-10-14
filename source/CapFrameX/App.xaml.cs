@@ -499,9 +499,12 @@ namespace CapFrameX
             if (!_isSingleInstance || _skipShutdownSequence)
                 return;
 
-            // Note: the in-game hook disables itself when it sees CapFrameX exit (it holds a
-            // SYNCHRONIZE handle to this process, polled from its Present hook), so no
-            // explicit shutdown signal is needed here.
+            // The in-game hook disables itself when it sees CapFrameX exit (it holds a SYNCHRONIZE
+            // handle to this process, polled from its Present hook). Until then it draws whatever
+            // the feeds still offer, so withdraw the renderers before anything else: stopping
+            // PresentMon or the sensors can drop the tile design while the row feed stays valid,
+            // and the hook would show the row overlay until the process is gone.
+            ShutdownOverlayRenderers();
 
 #if DEBUG
             try

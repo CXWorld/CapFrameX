@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.OSD.Controls;
@@ -95,6 +96,7 @@ namespace CapFrameX.Test.Integration
         [DataRow(2, 3)]
         [DataRow(3, 4)]
         [DataRow(5, 6)]
+        [DataRow(6, 7)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -104,7 +106,8 @@ namespace CapFrameX.Test.Integration
                 3 => new[] { "core-types-overview", "core-types-compact", "core-types-thermal" },
                 4 => new[] { "RTX-5090-9800X3D-APEX", "AMD-Ryzen-Radeon-REDLINE", "RTX-5090-Core-Ultra-285K-FUSION",
                     "AMD-Ryzen-5-9600X-Badge", "AMD-Ryzen-7-9800X3D-Badge" },
-                _ => new[] { "Panther-Lake-Arc-Aurora", "OLED-Minimal" }
+                6 => new[] { "Panther-Lake-Arc-Aurora", "OLED-Minimal" },
+                _ => new[] { "NVIDIA-GeForce-RTX-GREENLINE", "ICELINE-Vertical" }
             };
             CollectionAssert.AreEquivalent(expectedIds,
                 newStarters.Select(profile => profile.PresetId).ToArray());
@@ -164,6 +167,8 @@ namespace CapFrameX.Test.Integration
         [DataRow("AMD-Ryzen-7-9800X3D-Badge", "AMD Ryzen 7 9800X3D Badge", true, 4)]
         [DataRow("Panther-Lake-Arc-Aurora", "Panther Lake - Arc Aurora", false, 6)]
         [DataRow("OLED-Minimal", "OLED Minimal", false, 6)]
+        [DataRow("NVIDIA-GeForce-RTX-GREENLINE", "GREENLINE - GeForce RTX", true, 7)]
+        [DataRow("ICELINE-Vertical", "ICELINE - Vertical", true, 7)]
         public void HardwareStarterCanBeEditedAndRenderedWithItsEmbeddedGraphics(string presetId, string name, bool hasImages, int introducedInVersion)
         {
             var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
@@ -212,6 +217,45 @@ namespace CapFrameX.Test.Integration
             var keys = OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson).MetricKeys.ToArray();
             CollectionAssert.IsSubsetOf(new[] { Key("Clock", "CPU P Max"), Key("Clock", "CPU E Max") }, keys);
             CollectionAssert.DoesNotContain(keys, "cpuClock", "The core-type max clocks replace the combined CPU max clock.");
+        }
+
+        [TestMethod]
+        [DataRow("NVIDIA-GeForce-RTX-GREENLINE", new[] { "gpuName" })]
+        [DataRow("ICELINE-Vertical", new[] { "gpuName", "cpuName" })]
+        public void GenericStarterNamesTheInstalledHardwareAndStaysPortable(string presetId, string[] nameKeys)
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
+            var document = OsdDesignDocument.FromJson(starter.DesignJson);
+            var tiles = document.EnumerateTiles().ToArray();
+            foreach (string key in nameKeys)
+                Assert.AreEqual(1, tiles.Count(tile => tile.Kind == "metric" && tile.Key == key), key + " must show the name the system reports.");
+            // The native metric draws text readouts in the theme text colour whatever their value
+            // colour, so each one declares that colour and the editor shows what is rendered.
+            foreach (var readout in tiles.Where(tile => tile.Kind == "metric" && new[] { "gpuName", "cpuName", "graphicsApi" }.Contains(tile.Key)))
+                Assert.AreEqual(document.TextColor, readout.ValueColor, readout.Key);
+            Assert.IsFalse(tiles.Any(tile => Regex.IsMatch(tile.Label + " " + tile.Text, @"\b(?:[RG]TX|RX)\s*\d{3,4}\b|\bi[3579]-\d{4}|\bRyzen\s+\d")),
+                "No tile may name a specific CPU or GPU model.");
+            var keys = OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson).MetricKeys;
+            Assert.IsFalse(keys.Any(key => key.StartsWith("sensor", StringComparison.Ordinal)),
+                "Semantic keys bind on any GPU and CPU; hardware sensor keys would tie the design to one system.");
+        }
+
+        [TestMethod]
+        [DataRow("NVIDIA-GeForce-RTX-GREENLINE")]
+        [DataRow("ICELINE-Vertical")]
+        public void GenericStarterKeepsItsFramerateReadoutsUnitlessWhenBound(string presetId)
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
+            var catalog = new[] { ("fpsCurrent", "Framerate"), ("fps1pctLow", "Online1PercentLow"), ("fps", "OnlineAverage") }
+                .Select(source => new OverlayTelemetrySource { Id = "metric/" + source.Item2, SemanticKey = source.Item1, Unit = "FPS" })
+                .ToArray();
+            var bound = OverlayRuntimeSourceBinder.Bind(OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson), catalog);
+            var readouts = JObject.Parse(bound.TemplateJson).Descendants().OfType<JObject>()
+                .Where(node => ((string)node["key"])?.StartsWith("metric/", StringComparison.Ordinal) == true).ToArray();
+            Assert.AreEqual(3, readouts.Length, "Every framerate readout must bind to its source.");
+            // Binding adopts the source unit unless a scale is set. The captions below the values
+            // already name them, and a bound "FPS" unit would crowd the large readout.
+            Assert.IsTrue(readouts.All(node => (string)node["unit"] == ""), string.Join(", ", readouts.Select(node => (string)node["unit"])));
         }
 
         [TestMethod]
