@@ -478,13 +478,13 @@ namespace CapFrameX.SystemInfo.NetStandard
             private void ReadMemory(ILogger logger)
             {
                 var moduleSetting = new Dictionary<long, int>();
-                var manufacturers = new List<string>();
+                var wmiModules = new List<(string Manufacturer, string PartNumber)>();
                 string speed = "unknown";
 
                 try
                 {
                     using (var searcher = new ManagementObjectSearcher(
-                        "select Capacity, ConfiguredClockSpeed, Manufacturer from Win32_PhysicalMemory"))
+                        "select Capacity, ConfiguredClockSpeed, Manufacturer, PartNumber from Win32_PhysicalMemory"))
                     {
                         foreach (ManagementBaseObject managementBaseObject in searcher.Get())
                         {
@@ -503,7 +503,8 @@ namespace CapFrameX.SystemInfo.NetStandard
                                     moduleSetting.Add(currentCapacity, 1);
                             }
 
-                            AddMemoryManufacturer(managementBaseObject["Manufacturer"] as string, manufacturers);
+                            wmiModules.Add((managementBaseObject["Manufacturer"] as string,
+                                managementBaseObject["PartNumber"] as string));
                         }
                     }
                 }
@@ -516,7 +517,7 @@ namespace CapFrameX.SystemInfo.NetStandard
                     moduleSetting.Add(0, 1);
                 }
 
-                RamManufacturer = string.Join(" / ", manufacturers);
+                RamManufacturer = string.Join(" / ", ReadMemoryBrands(logger, wmiModules));
 
                 if (!moduleSetting.Any())
                     moduleSetting.Add(0, 0);
@@ -535,12 +536,38 @@ namespace CapFrameX.SystemInfo.NetStandard
                 RamName = $"{wholeCapacity / ONE_GIB}GB ({infoString.Remove(infoString.Length - 1)}) {speed}MT/s";
             }
 
-            private static void AddMemoryManufacturer(string rawManufacturer, List<string> manufacturers)
+            // The raw SMBIOS records describe the same modules as Win32_PhysicalMemory, plus the
+            // module manufacturer ID copied from SPD. WMI only stands in when they cannot be read.
+            private static List<string> ReadMemoryBrands(ILogger logger,
+                List<(string Manufacturer, string PartNumber)> wmiModules)
             {
-                var brand = ManufacturerBrandResolver.ToMemoryBrand(rawManufacturer);
+                var devices = ReadSmbiosMemoryDevices(logger);
+                var brands = devices.Count > 0
+                    ? devices.Select(device => ManufacturerBrandResolver.ToMemoryBrand(
+                        device.ModuleManufacturerId, device.Manufacturer, device.PartNumber))
+                    : wmiModules.Select(module => ManufacturerBrandResolver.ToMemoryBrand(
+                        module.Manufacturer, module.PartNumber));
 
-                if (brand.Length > 0 && !manufacturers.Contains(brand))
-                    manufacturers.Add(brand);
+                return brands.Where(brand => brand.Length > 0).Distinct().ToList();
+            }
+
+            private static IReadOnlyList<SmbiosMemoryDevice> ReadSmbiosMemoryDevices(ILogger logger)
+            {
+                try
+                {
+                    using (var searcher = new ManagementObjectSearcher(
+                        @"root\WMI", "select SMBiosData from MSSmBios_RawSMBiosTables"))
+                    {
+                        foreach (ManagementBaseObject table in searcher.Get())
+                            return SmbiosMemoryDevice.Parse(table["SMBiosData"] as byte[]);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Error while reading the SMBIOS memory devices, falling back to WMI.");
+                }
+
+                return Array.Empty<SmbiosMemoryDevice>();
             }
 
             private void ReadProcessor(ILogger logger)
