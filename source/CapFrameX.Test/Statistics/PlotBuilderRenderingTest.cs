@@ -1,4 +1,5 @@
 using CapFrameX.Data.Session.Classes;
+using CapFrameX.Extensions.NetStandard;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Statistics.PlotBuilder;
@@ -53,6 +54,38 @@ namespace CapFrameX.Test.Statistics
 
             Assert.IsTrue(spikes >= regular - 0.5,
                 $"The axis title moved from x={regular} to x={spikes} for long tick labels.");
+        }
+
+        [TestMethod]
+        public void DistributionGraph_LongStall_StaysInTheSeriesButOutsideTheDefaultRange()
+        {
+            var frametimes = Enumerable.Repeat(10d, 10000).Append(22728.0369).ToArray();
+            var context = CreateContext(frametimes);
+            var builder = new FrametimeDistributionPlotBuilder(context.Options.Object, context.Provider);
+
+            builder.BuildPlotmodel(context.Session, context.PlotSettings.Object, 0, frametimes.Length,
+                ERemoveOutlierMethod.None);
+
+            var xAxis = builder.PlotModel.GetAxisOrDefault(EPlotAxis.XAXISFRAMETIMES.GetDescription(), null);
+            var yAxis = builder.PlotModel.GetAxisOrDefault(EPlotAxis.YAXISDISTRIBUTION.GetDescription(), null);
+            var series = GetSeries(builder, "Distribution");
+            Assert.AreEqual(2, series.Points.Count);
+            Assert.AreEqual(22728.1, series.Points[1].X, 1e-9);
+            Assert.AreEqual(9.1, xAxis.Minimum, 1e-9);
+            Assert.AreEqual(11.1, xAxis.Maximum, 1e-9);
+            Assert.AreEqual(series.Points[0].Y * 1.2, yAxis.Maximum, 1e-9);
+        }
+
+        [TestMethod]
+        public void DistributionGraph_WithoutValidFrames_StaysEmpty()
+        {
+            var context = CreateContext(0d, 0d, 0d);
+            var builder = new FrametimeDistributionPlotBuilder(context.Options.Object, context.Provider);
+
+            builder.BuildPlotmodel(context.Session, context.PlotSettings.Object, 0, 2,
+                ERemoveOutlierMethod.None);
+
+            Assert.AreEqual(0, builder.PlotModel.Series.Count);
         }
 
         private static PlotModel BuildFrametimeGraph(params double[] frametimes)

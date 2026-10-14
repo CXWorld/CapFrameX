@@ -1870,7 +1870,8 @@ namespace CapFrameX.ViewModel
 
             double xMin, xMax, yMin, yMax;
             if (xAxis == null || yAxis == null
-                || !TryGetSeriesBounds(ComparisonDistributionModel, out xMin, out xMax, out yMin, out yMax))
+                || !TryGetSeriesBounds(ComparisonDistributionModel, out xMin, out xMax, out yMin, out yMax,
+                    GetReadableDistributionMaximum(ComparisonDistributionModel)))
                 return;
 
             xAxis.Reset();
@@ -1899,8 +1900,23 @@ namespace CapFrameX.ViewModel
             ComparisonDistributionModel.InvalidatePlot(true);
         }
 
+        /// <summary>
+        /// Largest x value the distribution chart shows by default. Each record keeps its extreme
+        /// frames, such as long stalls, outside the default range (see
+        /// <see cref="FrametimeDistributionRange"/>); they stay in the series, so zooming out
+        /// still shows them.
+        /// </summary>
+        private static double GetReadableDistributionMaximum(PlotModel plotModel)
+            => plotModel.Series
+                .OfType<OxyPlot.Series.LineSeries>()
+                .Where(series => series.Points.Count > 0)
+                .Select(series => FrametimeDistributionRange.GetReadableMaximum(
+                    series.Points.Select(point => new Point(point.X, point.Y)).ToList()))
+                .DefaultIfEmpty(double.PositiveInfinity)
+                .Max();
+
         private static bool TryGetSeriesBounds(PlotModel plotModel, out double xMin, out double xMax,
-            out double yMin, out double yMax)
+            out double yMin, out double yMax, double xLimit = double.PositiveInfinity)
         {
             xMin = double.MaxValue;
             xMax = double.MinValue;
@@ -1913,7 +1929,8 @@ namespace CapFrameX.ViewModel
                 foreach (var point in series.Points)
                 {
                     if (double.IsNaN(point.X) || double.IsInfinity(point.X)
-                        || double.IsNaN(point.Y) || double.IsInfinity(point.Y))
+                        || double.IsNaN(point.Y) || double.IsInfinity(point.Y)
+                        || point.X > xLimit)
                     {
                         continue;
                     }

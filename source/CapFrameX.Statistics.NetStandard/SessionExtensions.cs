@@ -9,6 +9,11 @@ namespace CapFrameX.Statistics.NetStandard
 {
     public static class SessionExtensions
     {
+        /// <summary>
+        /// Width in milliseconds of a bin of the frametime and display time distributions.
+        /// </summary>
+        public const double DistributionBinWidth = 0.1;
+
 		private static IList<double> FilterDataWithinTimeWindow(IList<double> startTimes, IList<double> data,
             double startTime, double endTime, FrametimeStatisticProvider statisticProvider = null,
             ERemoveOutlierMethod removeOutlierMethod = ERemoveOutlierMethod.None,
@@ -709,7 +714,7 @@ namespace CapFrameX.Statistics.NetStandard
                 return new List<Point>();
 
             // Bin increments
-            const double increments = 0.1;
+            const double increments = DistributionBinWidth;
 
             // Sum per bin in one pass; bin k covers [k * increments, (k + 1) * increments).
             // Creating every bin up to the maximum and rescanning all values for each one
