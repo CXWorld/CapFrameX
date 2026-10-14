@@ -148,8 +148,9 @@
         <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\Xceed.Wpf.AvalonDock*" />
         <!-- The PMC reader is an optional plugin and must not be shipped with the core installer. -->
         <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\CapFrameX.PmcReader.Plugin.*" />
-        <!-- Satellite assemblies bring their own copy of app.config, which nothing reads. The
-             app's own CapFrameX.dll.config is added back below. -->
+        <!-- Only the executable's CapFrameX.dll.config is ever read (ConfigurationManager); the
+                     projects no longer have their own app.config. Kept as a safety net against a
+                                  package or project that brings one again. The app's config is added back below. -->
         <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\*.dll.config" />
         <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\*app.config" />
         <!-- Overlay entry configurations are not shipped with the installer. -->

@@ -1098,15 +1098,6 @@
     "InfoView_WindowsGameMode": "Modo de juego de Windows",
 
     // =========================================================================
-    // VOLTAGE MONITOR - Panther Lake voltage diagnostics tool
-    // =========================================================================
-    "MainWindow_Core": "Núcleo",
-    "MainWindow_PantherLakeVoltageCandidates": "Candidatos de voltaje de Panther Lake",
-    "MainWindow_PantherLakeVoltageMonitor": "Monitor de voltaje de Panther Lake",
-    "MainWindow_Polling1s": "Sondeo: 1 s",
-    "MainWindow_Raw0x019C": "Raw 0x019C",
-
-    // =========================================================================
     // MESSAGE DIALOGS - Shared close buttons
     // =========================================================================
     "MessageDialog_Close": "Cerrar",

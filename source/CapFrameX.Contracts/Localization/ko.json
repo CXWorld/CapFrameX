@@ -1098,15 +1098,6 @@
     "InfoView_WindowsGameMode": "Windows 게임 모드",
 
     // =========================================================================
-    // VOLTAGE MONITOR - Panther Lake voltage diagnostics tool
-    // =========================================================================
-    "MainWindow_Core": "코어",
-    "MainWindow_PantherLakeVoltageCandidates": "Panther Lake 전압 후보",
-    "MainWindow_PantherLakeVoltageMonitor": "Panther Lake 전압 모니터",
-    "MainWindow_Polling1s": "폴링: 1s",
-    "MainWindow_Raw0x019C": "원시 값 0x019C",
-
-    // =========================================================================
     // MESSAGE DIALOGS - Shared close buttons
     // =========================================================================
     "MessageDialog_Close": "닫기",
