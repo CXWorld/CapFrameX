@@ -12,6 +12,49 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Frame-generation telemetry after runtime reload (2026-10-14)
+
+All seven bundled DLLs were rebuilt from OSD commit
+`612161fe4a7ba4d81a9d0eb36cc90c8d1c5664aa`, which adds the telemetry unload fix
+(`hook_poc/src/frame_generation_telemetry.*`, `present_hook.cpp`, the telemetry test and the hook
+README) to `fbf561f`. The five native DLLs were clean-built with VS 2026/v145 in `RelWithDebInfo`; Interop and
+Controls were rebuilt in `Release|x64` for .NET 10 (SDK 10.0.401). Only the two hook DLLs contain
+source changes. The core, both Vulkan layers, Interop and Controls come from unchanged sources;
+their bytes still differ from the previous payloads.
+
+The hook's provider telemetry (Streamline resolver and lifecycle, the DLSS-G SetOptions/GetState
+feature functions, `ffxConfigure`, `xefgSwapChainSetEnabled`) used to be armed once per process.
+When a game or test unloaded a runtime and loaded it again, the install guards still saw the old
+originals, MinHook kept its entry for the old address, and the telemetry kept reporting the vanished
+provider: in a real FSR -> DLSS -> FSR run the last phase showed DLSS-FG. A reloaded
+`sl.interposer.dll` also made the hook call the Streamline resolver through a trampoline into the
+unloaded image. The DLL unload notification now removes every telemetry hook in the unloading
+image while it is still mapped and returns that provider to N/A, so the next load arms it afresh.
+The FidelityFX creation and swapchain-instance hooks still arm once per process.
+
+Verification: all 32 hook CTests pass on x64 and x86, including the extended
+`frame_generation_telemetry` case (install, unload and re-arm for all three providers; it fails on
+these defects with the fix stubbed out). All 10 Vulkan CTests pass per architecture. 15 of 16 core
+CTests pass; `chart_gpu_raster` fails on the hardware adapter ("retracing a line must not accumulate
+opacity", which expects a maximum alpha of exactly 128) while its WARP variant passes. The core
+sources are unchanged since `465cccc`, so that failure does not come from this rebuild. With this
+hook source and the real CapFrameX on an RTX 5090, the CapFrameX.Test FG switch suite logged the
+drops and re-arms; `dlss-fsr-resident` and `fsr-dlss` passed all three phases, and `dlss-fsr-late`
+stopped when Streamline's second initialization failed, which also happens without any hook. Both
+Vulkan manifests are unchanged. The seven external DLLs match the tested build outputs by SHA-256.
+
+| Component at this rebuild | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `06C9C932F52C2B53FF62ABD05FD4C68F9D4B398241610F13938294E68137D94A` |
+| native\cfx_osd_hook.dll | `2886D763C2C9C962DD547AA724C32972CE7E1EE241B92EEFACDB169D83EE4350` |
+| native\x86\cfx_osd_hook.dll | `E6D6B1FF244167C85A95FC731AD8D43E10BEC7889331F3EC58AA10E6B34292D3` |
+| native\vk\cfx_osd_vklayer.dll | `D5FB129C6D232355F8280D7FAE379AE6FAD56C6199AC0108FC3921828CA5A7BE` |
+| native\vk\x86\cfx_osd_vklayer.dll | `11F4A56E433020ED94610492F970475119972614A5C4F61E1E146486A5A70D27` |
+| net10.0-windows\CapFrameX.OSD.Interop.dll | `8153F08BB906CBB14EFAD8530DBAE78D5913A83851D79D2BC044A437EC1B5A43` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `E128D12BFE8B3A3E2FABAE6A007E6B948A60F87F3E16D58CD649CD4C72A761FC` |
+
+These are unsigned development binaries.
+
 ### OLED pixel orbit (2026-10-12)
 
 The Controls DLL was rebuilt in `Release|x64` from OSD commit
@@ -1225,12 +1268,15 @@ separate probing review.
 
 ### Current SHA-256
 
-- managed bridge SHA-256: `21541CEB337F4DCC3F05192D27029279BDFA0F19057EAC764EBBC071E6E8A17C`
-- core SHA-256: `62AA80B30A363C740EE8921F79620A07BF705AFF99AEB6B460E754BDB3F56FB3`
-- hook x64 SHA-256: `0EAA7B90A728379062A057B4828076D41DE1F7ADCAD604544E8EE5C431F12824`
-- hook x86 SHA-256: `E4C6D78144560351E65C327883B7F3686728BAC933AB43E8129973EED34C681E`
-- Vulkan x64 SHA-256: `B2934C46A4B69FEEFFCF3F0304136D6911E03EADB29E695E74C136656B5DBC1B`
-- Vulkan x86 SHA-256: `D09B67C8E2D560F5286F21A226AAFE2C5CB80E5403F5636FE54B70B9A1FA44AF`
+As of the frame-generation telemetry rebuild (2026-10-14):
+
+- managed bridge SHA-256: `8153F08BB906CBB14EFAD8530DBAE78D5913A83851D79D2BC044A437EC1B5A43`
+- editor controls SHA-256: `E128D12BFE8B3A3E2FABAE6A007E6B948A60F87F3E16D58CD649CD4C72A761FC`
+- core SHA-256: `06C9C932F52C2B53FF62ABD05FD4C68F9D4B398241610F13938294E68137D94A`
+- hook x64 SHA-256: `2886D763C2C9C962DD547AA724C32972CE7E1EE241B92EEFACDB169D83EE4350`
+- hook x86 SHA-256: `E6D6B1FF244167C85A95FC731AD8D43E10BEC7889331F3EC58AA10E6B34292D3`
+- Vulkan x64 SHA-256: `D5FB129C6D232355F8280D7FAE379AE6FAD56C6199AC0108FC3921828CA5A7BE`
+- Vulkan x86 SHA-256: `11F4A56E433020ED94610492F970475119972614A5C4F61E1E146486A5A70D27`
 
 ## Contents
 
@@ -1271,7 +1317,10 @@ separate probing review.
   Streamline late attach resolves the two documented DLSS-FG entry points and removes those hooks
   at the documented feature-unload boundary. Compatibility profiles can therefore disable every
   optional vendor factory, Present, Resize, or swapchain-lifecycle hook without suppressing
-  telemetry. V1 compatibility bits 0 and 4 are reserved and ignored: avoiding the shared Release
+  telemetry. When the loader unloads an image that holds any telemetry target, the unload
+  notification removes those hooks while the image is still mapped and returns that provider to
+  N/A, so a runtime loaded again is armed afresh; the FidelityFX creation and swapchain-instance
+  hooks still arm once per process. V1 compatibility bits 0 and 4 are reserved and ignored: avoiding the shared Release
   hook and intercepting generic DXGI factory lifecycle boundaries are now universal invariants,
   not per-title switches.
   The hook publishes status block **version 2** (`Local\CfxOsdHookStatusV1_<pid>`, 128 bytes; the
