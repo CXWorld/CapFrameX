@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CapFrameX.Test.Statistics
 {
@@ -79,6 +80,48 @@ namespace CapFrameX.Test.Statistics
             Assert.AreEqual(2, distribution.Count);
             Assert.AreEqual((5.01 + 5.09) / 40.1 * 100, distribution[0].Y, 0.000001);
             Assert.AreEqual(30 / 40.1 * 100, distribution[1].Y, 0.000001);
+        }
+
+        [TestMethod]
+        public void GetFrametimeDistributionPoints_BinsValuesByTheirLowerEdge()
+        {
+            var session = CreateSession(
+                new[] { 0d, 1d, 2d, 3d },
+                new[] { 0.3d, 5d, 5.09d, 5.1d });
+
+            var distribution = session.GetFrametimeDistributionPoints(0, 3, _options);
+
+            CollectionAssert.AreEqual(new[] { 0.4d, 5.1d, 5.2d },
+                distribution.Select(point => point.X).ToArray());
+            double total = 0.3 + 5 + 5.09 + 5.1;
+            Assert.AreEqual(0.3 / total * 100, distribution[0].Y, 0.000001);
+            Assert.AreEqual((5 + 5.09) / total * 100, distribution[1].Y, 0.000001);
+            Assert.AreEqual(5.1 / total * 100, distribution[2].Y, 0.000001);
+        }
+
+        [TestMethod]
+        public void GetFrametimeDistributionPoints_HandlesLongStallInLargeCapture()
+        {
+            // Shape of a Division 2 capture that froze the distribution chart:
+            // 227k frames with a single 22.7 s stall.
+            const int frameCount = 227000;
+            var times = Enumerable.Range(0, frameCount).Select(i => i * 0.01).ToArray();
+            var frametimes = Enumerable.Repeat(10d, frameCount).ToArray();
+            frametimes[frameCount / 2] = 22728.0369;
+            var session = CreateSession(times, frametimes);
+
+            var computation = Task.Run(() =>
+                session.GetFrametimeDistributionPoints(0, times[^1], _options));
+
+            Assert.IsTrue(computation.Wait(TimeSpan.FromSeconds(30)),
+                "The distribution must not scale with the largest frametime.");
+
+            var distribution = computation.Result;
+            CollectionAssert.AreEqual(new[] { 10.1d, 22728.1d },
+                distribution.Select(point => point.X).ToArray());
+            double total = (frameCount - 1) * 10d + 22728.0369;
+            Assert.AreEqual((frameCount - 1) * 10d / total * 100, distribution[0].Y, 0.000001);
+            Assert.AreEqual(22728.0369 / total * 100, distribution[1].Y, 0.000001);
         }
 
         [TestMethod]
