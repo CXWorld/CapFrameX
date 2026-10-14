@@ -241,6 +241,14 @@ namespace CapFrameX.Contracts.Configuration
 		/// </summary>
 		int OsdZoom { get; set; }
 
+		/// <summary>
+		/// Scales the CapFrameX overlay with the target's height relative to 1080 pixels, on top of
+		/// <see cref="OsdZoom"/>, and the anchor margins with it (default off: fixed pixel sizes).
+		/// The target is the game's back buffer for the in-game hook and the Vulkan layer, and the
+		/// monitor for the hook-free overlay. Does not affect RTSS.
+		/// </summary>
+		bool OsdScaleWithResolution { get; set; }
+
 		/// <summary>Saved designer profile used by the CapFrameX renderers; empty retains the classic overlay.</summary>
 		string ActiveOverlayDesignProfileId { get; set; }
 

@@ -158,6 +158,40 @@ namespace CapFrameX.OSD.Integration
                 Log.Information("HookOverlay: target PID {pid} passed the target policy", _selectedPid);
         }
 
+        /// <summary>
+        /// The metrics header flags for the current settings. Published with every snapshot, so a
+        /// changed option reaches the DXGI hook and the Vulkan layer within one publish period.
+        /// </summary>
+        internal static uint BuildHeaderFlags(IAppConfiguration configuration)
+        {
+            uint flags = configuration.HookOverlayUsePresentMonFrametimes
+                ? HookMetricsChannel.FlagPresentMonGraph : 0u;
+            if (!configuration.UseOsdValueSmoothing)
+                flags |= HookMetricsChannel.FlagDisableValueSmoothing;
+            // OSD background opacity (percent -> byte in bits 8..15).
+            uint alphaByte = (uint)Math.Round(
+                Math.Max(0, Math.Min(100, configuration.OsdBackgroundOpacity)) * 2.55);
+            flags |= HookMetricsChannel.FlagBackgroundAlpha
+                   | (alphaByte << HookMetricsChannel.BackgroundAlphaShift);
+            // Overlay zoom (percent -> bits 16..23).
+            uint zoomPercent = (uint)Math.Max(50, Math.Min(200, configuration.OsdZoom));
+            flags |= HookMetricsChannel.FlagZoom
+                   | (zoomPercent << HookMetricsChannel.ZoomShift);
+            // Resolution-relative sizing carries no value: the hook knows its back buffer.
+            if (configuration.OsdScaleWithResolution)
+                flags |= HookMetricsChannel.FlagResolutionScale;
+            // PresentMon replay baseline (500..10000 ms -> one byte in 50 ms units), carried in
+            // the shared metrics header without changing its wire layout.
+            int replayBufferMs = Math.Max(500,
+                Math.Min(10000, configuration.OsdReplayBufferSize));
+            uint replayBufferUnits = (uint)((replayBufferMs +
+                HookMetricsChannel.ReplayBufferUnitMs / 2) /
+                HookMetricsChannel.ReplayBufferUnitMs);
+            flags |= HookMetricsChannel.FlagReplayBuffer
+                   | (replayBufferUnits << HookMetricsChannel.ReplayBufferShift);
+            return flags;
+        }
+
         private void OnEntries()
         {
             try
@@ -181,32 +215,7 @@ namespace CapFrameX.OSD.Integration
                         _overlayService.RunHistory,
                         _overlayService.RunHistoryOutlierFlags,
                         _overlayService.RunHistoryAggregation);
-                    uint flags = _appConfiguration.HookOverlayUsePresentMonFrametimes
-                        ? HookMetricsChannel.FlagPresentMonGraph : 0u;
-                    if (!_appConfiguration.UseOsdValueSmoothing)
-                        flags |= HookMetricsChannel.FlagDisableValueSmoothing;
-                    // OSD background opacity (percent -> byte in bits 8..15). Published with every
-                    // snapshot so slider changes reach the hook within one publish period.
-                    uint alphaByte = (uint)Math.Round(
-                        Math.Max(0, Math.Min(100, _appConfiguration.OsdBackgroundOpacity)) * 2.55);
-                    flags |= HookMetricsChannel.FlagBackgroundAlpha
-                           | (alphaByte << HookMetricsChannel.BackgroundAlphaShift);
-                    // Overlay zoom (percent -> bits 16..23), same publish-every-snapshot rule as
-                    // the opacity so a slider move reaches the hook within one publish period.
-                    uint zoomPercent = (uint)Math.Max(50, Math.Min(200, _appConfiguration.OsdZoom));
-                    flags |= HookMetricsChannel.FlagZoom
-                           | (zoomPercent << HookMetricsChannel.ZoomShift);
-                    // PresentMon replay baseline (500..10000 ms -> one byte in 50 ms units).
-                    // This reaches both the DXGI hook and the Vulkan layer through the shared
-                    // metrics header without changing its wire layout.
-                    int replayBufferMs = Math.Max(500,
-                        Math.Min(10000, _appConfiguration.OsdReplayBufferSize));
-                    uint replayBufferUnits = (uint)((replayBufferMs +
-                        HookMetricsChannel.ReplayBufferUnitMs / 2) /
-                        HookMetricsChannel.ReplayBufferUnitMs);
-                    flags |= HookMetricsChannel.FlagReplayBuffer
-                           | (replayBufferUnits << HookMetricsChannel.ReplayBufferShift);
-                    _channel.Publish(list, flags, targetPid);
+                    _channel.Publish(list, BuildHeaderFlags(_appConfiguration), targetPid);
                     // Publishes only on change; the renderers re-place the panel on every write.
                     PublishPlacement();
                 }

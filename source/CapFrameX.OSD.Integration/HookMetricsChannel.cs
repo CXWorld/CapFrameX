@@ -55,6 +55,9 @@ namespace CapFrameX.OSD.Integration
         // bit4: bits 24..31 carry the PresentMon replay-buffer baseline in 50 ms units.
         // Absence preserves the old native core's 500 ms baseline.
         internal const uint FlagReplayBuffer = 16u;
+        // bit5: scale the panel and its margins with the back buffer's height over 1080 px
+        // (CFX_METRICS_FLAG_RESOLUTION_SCALE). Old hooks ignore it and keep fixed pixel sizes.
+        internal const uint FlagResolutionScale = 32u;
         internal const int BackgroundAlphaShift = 8;
         internal const int ZoomShift = 16;
         internal const int ReplayBufferShift = 24;

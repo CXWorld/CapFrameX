@@ -550,6 +550,18 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        // Size and margins of the CapFrameX renderers follow the game's height relative to 1080p,
+        // on top of the zoom above. RTSS is unaffected.
+        public bool OsdScaleWithResolution
+        {
+            get { return _appConfiguration.OsdScaleWithResolution; }
+            set
+            {
+                _appConfiguration.OsdScaleWithResolution = value;
+                RaisePropertyChanged();
+            }
+        }
+
         // Placement of the CapFrameX overlay: anchored corner + distance from it. Reaches all
         // three CapFrameX renderers; RTSS is positioned by its own settings.
         public int OsdAnchor

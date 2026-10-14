@@ -66,6 +66,7 @@ namespace CapFrameX.Mcp.Tools
             [Description("Horizontal distance from the anchor in pixels, 0..2000.")] int? marginX = null,
             [Description("Vertical distance from the anchor in pixels, 0..2000.")] int? marginY = null,
             [Description("CapFrameX renderer size in percent, 50..200.")] int? zoom = null,
+            [Description("Scale the CapFrameX renderer and its margins with the game's height relative to 1080 px, on top of zoom (the hook-free renderer follows its monitor).")] bool? scaleWithResolution = null,
             [Description("OLED pixel orbit: move the CapFrameX renderer by one pixel per interval for every design. A design can request its own orbit regardless.")] bool? pixelOrbitEnabled = null,
             [Description("Seconds between two pixel orbit steps, 10..3600.")] int? pixelOrbitIntervalSeconds = null,
             [Description("Largest pixel orbit offset from the configured margins in pixels, 1..32.")] int? pixelOrbitRadius = null,
@@ -80,7 +81,7 @@ namespace CapFrameX.Mcp.Tools
             if (!HasAnyUpdate(renderer, isOverlayActive, autoDisableOverlay, showSystemTimeSeconds,
                 hideOverlay, hookOverlayUsePresentMonFrametimes, replayBufferSizeMs, hookFreeRefreshRate,
                 osdCustomPosition, osdPositionX,
-                osdPositionY, backgroundOpacity, anchor, marginX, marginY, zoom,
+                osdPositionY, backgroundOpacity, anchor, marginX, marginY, zoom, scaleWithResolution,
                 pixelOrbitEnabled, pixelOrbitIntervalSeconds, pixelOrbitRadius,
                 useValueSmoothing, overlayHotkey, overlayConfigHotkey, overlayPositionHotkey, resetMetricsHotkey,
                 refreshPeriodMs, metricIntervalSeconds))
@@ -171,6 +172,8 @@ namespace CapFrameX.Mcp.Tools
                 () => _config.OsdMarginY, value => _config.OsdMarginY = value, changed);
             ApplyIfChanged(nameof(IAppConfiguration.OsdZoom), zoom,
                 () => _config.OsdZoom, value => _config.OsdZoom = value, changed);
+            ApplyIfChanged(nameof(IAppConfiguration.OsdScaleWithResolution), scaleWithResolution,
+                () => _config.OsdScaleWithResolution, value => _config.OsdScaleWithResolution = value, changed);
             ApplyIfChanged(nameof(IAppConfiguration.OsdPixelOrbitEnabled), pixelOrbitEnabled,
                 () => _config.OsdPixelOrbitEnabled, value => _config.OsdPixelOrbitEnabled = value, changed);
             ApplyIfChanged(nameof(IAppConfiguration.OsdPixelOrbitInterval), pixelOrbitIntervalSeconds,
@@ -250,6 +253,7 @@ namespace CapFrameX.Mcp.Tools
                 MarginX = _config.OsdMarginX,
                 MarginY = _config.OsdMarginY,
                 Zoom = _config.OsdZoom,
+                ScaleWithResolution = _config.OsdScaleWithResolution,
                 PixelOrbitEnabled = _config.OsdPixelOrbitEnabled,
                 PixelOrbitIntervalSeconds = _config.OsdPixelOrbitInterval,
                 PixelOrbitRadius = _config.OsdPixelOrbitRadius,

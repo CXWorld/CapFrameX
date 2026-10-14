@@ -850,6 +850,12 @@ namespace CapFrameX.Configuration
             set => Set(Math.Max(50, Math.Min(200, value)));
         }
 
+        public bool OsdScaleWithResolution
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
         public string ActiveOverlayDesignProfileId
         {
             get => Get<string>(null);

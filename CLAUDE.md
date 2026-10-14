@@ -193,6 +193,19 @@ agree on the position. RTSS is not affected. The editor's import is a strict rou
 build without this change rejects any design that contains `pixelShift`, so the prebuilt Controls DLL
 must include it. Example design: `overlay-templates/OLED-Minimal.json`.
 
+### Resolution-relative sizing
+
+`IAppConfiguration.OsdScaleWithResolution` ("Scale with resolution", Overlay tab, default off) makes
+the CapFrameX renderers keep a design's share of the screen: the native core builds the scene with
+`OsdZoom` × target height / 1080 and scales the anchor margins by the same factor (whole percent,
+0.5..3.0). Only the height counts; a wider aspect ratio just adds room beside the anchored panel. The
+target is the game's back buffer for the in-game hook and the Vulkan layer, and the monitor for the
+hook-free window. The hook and the layer receive the switch as metrics header bit5
+(`HookMetricsChannel.FlagResolutionScale`, composed in `HookMetricsPublisher.BuildHeaderFlags`) and
+measure the height themselves; `OsdOverlayBridge` passes `OsdHost.DesignReferenceHeight` through
+`OsdHost.SetReferenceHeight`, which survives a renderer restart. The pixel orbit offset is part of
+the margins, so its steps scale too. RTSS is not affected. Details: the OSD repo's CLAUDE.md.
+
 ### Hook-free stall diagnostics
 
 Chart pauses/hitches in the hook-free overlay have three unrelated possible causes — the render

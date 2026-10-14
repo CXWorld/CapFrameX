@@ -1122,6 +1122,8 @@
     "OverlayView_SaveSelectionToCurrentConfig": "Сохранить выбор в текущий конфиг",
     "OverlayView_SaveSelectionToOtherConfigs": "Сохранить выбор в другие конфигурации",
     "OverlayView_Saving": "Сохранение...",
+    "OverlayView_ScaleWithResolution": "Масштабировать по разрешению",
+    "OverlayView_ScaleWithResolutionDescription": "Сохраняет долю оверлея на экране: размер и отступы растут с разрешением игры относительно 1080p (вдвое при 2160p). Вывод без внедрения следует разрешению монитора; RTSS не затрагивается.",
     "OverlayView_ScalesTextSpacingAndGraphs": "Масштаб текста, интервалов и графиков вывода без внедрения. У RTSS свой масштаб.",
     "OverlayView_Search": "Поиск...",
     "OverlayView_SearchInDescriptionGroupName": "Поиск по описанию, группе и идентификатору",

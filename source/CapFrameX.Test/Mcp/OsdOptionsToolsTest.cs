@@ -122,6 +122,7 @@ namespace CapFrameX.Test.Mcp
                 marginX: 40,
                 marginY: 50,
                 zoom: 130,
+                scaleWithResolution: true,
                 pixelOrbitEnabled: true,
                 pixelOrbitIntervalSeconds: 240,
                 pixelOrbitRadius: 4,
@@ -145,6 +146,8 @@ namespace CapFrameX.Test.Mcp
             Assert.AreEqual(40, config.Object.OsdMarginX);
             Assert.AreEqual(50, config.Object.OsdMarginY);
             Assert.AreEqual(130, config.Object.OsdZoom);
+            Assert.IsTrue(config.Object.OsdScaleWithResolution);
+            Assert.IsTrue(result.Options.ScaleWithResolution);
             Assert.IsTrue(config.Object.OsdPixelOrbitEnabled);
             Assert.AreEqual(240, config.Object.OsdPixelOrbitInterval);
             Assert.AreEqual(4, config.Object.OsdPixelOrbitRadius);

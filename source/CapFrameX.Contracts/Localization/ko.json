@@ -1251,6 +1251,8 @@
     "OverlayView_SaveSelectionToCurrentConfig": "현재 설정에 선택 항목 저장",
     "OverlayView_SaveSelectionToOtherConfigs": "다른 설정에 선택 항목 저장",
     "OverlayView_Saving": "저장 중...",
+    "OverlayView_ScaleWithResolution": "해상도에 맞춰 크기 조정",
+    "OverlayView_ScaleWithResolutionDescription": "화면에서 오버레이가 차지하는 비율을 유지합니다. 크기와 여백이 1080p 대비 게임 해상도에 따라 커집니다(2160p에서 2배). 후킹 없는 렌더러는 모니터 해상도를 따르며 RTSS에는 영향을 주지 않습니다.",
     "OverlayView_ScalesTextSpacingAndGraphs": "후킹 없는 렌더러의 텍스트, 간격 및 그래프 크기를 조절합니다. RTSS는 자체 확대/축소 설정을 사용합니다.",
     "OverlayView_Search": "검색...",
     "OverlayView_SearchInDescriptionGroupName": "설명, 그룹 이름 및 식별자에서 검색",

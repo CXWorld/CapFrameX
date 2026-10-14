@@ -1252,6 +1252,8 @@
     "OverlayView_SaveSelectionToCurrentConfig": "Auswahl in der aktuellen Konfiguration speichern",
     "OverlayView_SaveSelectionToOtherConfigs": "Auswahl in anderen Konfigurationen speichern",
     "OverlayView_Saving": "Wird gespeichert...",
+    "OverlayView_ScaleWithResolution": "Mit Auflösung skalieren",
+    "OverlayView_ScaleWithResolutionDescription": "Behält den Anteil des Overlays am Bildschirm: Größe und Abstände wachsen mit der Auflösung des Spiels relativ zu 1080p (bei 2160p doppelt so groß). Ohne Hook zählt der Monitor; RTSS ist nicht betroffen.",
     "OverlayView_ScalesTextSpacingAndGraphs": "Skaliert Text, Abstände und Diagramme des Renderers ohne Hook; RTSS nutzt einen eigenen Zoom.",
     "OverlayView_Search": "Suchen...",
     "OverlayView_SearchInDescriptionGroupName": "Durchsucht Beschreibung, Gruppenname und Kennung",

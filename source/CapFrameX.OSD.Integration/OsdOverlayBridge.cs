@@ -42,6 +42,7 @@ namespace CapFrameX.OSD.Integration
         private readonly IDisposable _displaySub;
         private readonly IDisposable _backgroundOpacitySub;
         private readonly IDisposable _zoomSub;
+        private readonly IDisposable _resolutionScalingSub;
         private readonly OverlayDesignRuntimePublisher _designRuntime;
         private readonly IDisposable _designSub;
         private readonly object _designGate = new object();
@@ -140,6 +141,8 @@ namespace CapFrameX.OSD.Integration
             _osd.SetValueSmoothing(appConfiguration.UseOsdValueSmoothing);
             _osd.SetReplayBuffer(appConfiguration.OsdReplayBufferSize);
             _osd.SetHookFreeRefreshRate(appConfiguration.HookFreeRefreshRate);
+            // Retained by OsdHost while stopped, so unlike the zoom it needs no retry on data ticks.
+            _osd.SetReferenceHeight(ReferenceHeight(appConfiguration.OsdScaleWithResolution));
 
             // FrameDataStream contains rows for every ETW process. Capture the selected game's PID
             // before activating the feed so foreign desktop/process rows cannot alter its graph
@@ -181,6 +184,9 @@ namespace CapFrameX.OSD.Integration
             _zoomSub = appConfiguration.OnValueChanged
                 .Where(x => x.key == nameof(IAppConfiguration.OsdZoom))
                 .Subscribe(_ => ApplyZoom());
+            _resolutionScalingSub = appConfiguration.OnValueChanged
+                .Where(x => x.key == nameof(IAppConfiguration.OsdScaleWithResolution))
+                .Subscribe(x => _osd.SetReferenceHeight(ReferenceHeight((bool)x.value)));
             if (_designRuntime != null)
                 _designSub = _designRuntime.Snapshots.Subscribe(snapshot =>
                 {
@@ -482,6 +488,10 @@ namespace CapFrameX.OSD.Integration
             _lastZoom = zoom;
         }
 
+        // The hook-free window follows the height of the monitor it is pinned to.
+        private static int ReferenceHeight(bool scaleWithResolution)
+            => scaleWithResolution ? OsdHost.DesignReferenceHeight : 0;
+
         private void OnFrameRow(string[] row)
         {
             if (!_started || row == null || _ftIndex < 0 || row.Length <= _ftIndex) return;
@@ -600,6 +610,7 @@ namespace CapFrameX.OSD.Integration
             _displaySub?.Dispose();
             _backgroundOpacitySub?.Dispose();
             _zoomSub?.Dispose();
+            _resolutionScalingSub?.Dispose();
             _targetPidSub?.Dispose();
             _processCountSub?.Dispose();
             lock (_designGate) _osd?.Dispose();
