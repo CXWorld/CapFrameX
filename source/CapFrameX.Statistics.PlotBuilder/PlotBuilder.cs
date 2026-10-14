@@ -20,7 +20,10 @@ namespace CapFrameX.Statistics.PlotBuilder
 
         public PlotModel PlotModel { get; protected set; } = new PlotModel
         {
-            PlotMargins = new OxyThickness(50, 0, 50, 35),
+            // Left margin NaN = automatic, so OxyPlot makes room for long tick labels (e.g. 20000 ms
+            // spikes) instead of pushing the axis title out of the chart. The right side stays
+            // reserved for the percentage axes.
+            PlotMargins = new OxyThickness(double.NaN, 0, 50, 35),
             PlotAreaBorderColor = OxyColor.FromArgb(64, 204, 204, 204)
         };
 
