@@ -36,7 +36,8 @@ namespace CapFrameX.OSD.Integration
             _showOverlay = showOverlay ?? (() => _configuration.IsOverlayActive = true);
             RefreshProfiles();
             _configurationSubscription = configuration.OnValueChanged?
-                .Where(change => change.key == nameof(IAppConfiguration.EnableHookOverlay)
+                .Where(change => change.key == nameof(IAppConfiguration.OverlayRenderer)
+                    || change.key == nameof(IAppConfiguration.EnableHookOverlay)
                     || change.key == nameof(IAppConfiguration.EnableHookFreeOverlay)
                     || change.key == nameof(IAppConfiguration.ActiveOverlayDesignProfileId))
                 .Subscribe(change => OnConfigurationChanged(change.key));
@@ -169,7 +170,8 @@ namespace CapFrameX.OSD.Integration
         private string CurrentModeStatus()
         {
             string renderer = _configuration.EnableHookOverlay ? CxLang.T("OverlayDesignStatus_InGame")
-                : _configuration.EnableHookFreeOverlay ? CxLang.T("OverlayDesignStatus_HookFree") : "RTSS";
+                : _configuration.EnableHookFreeOverlay ? CxLang.T("OverlayDesignStatus_HookFree")
+                : _configuration.UsesRtss() ? "RTSS" : CxLang.T("OverlayDesignStatus_Off");
             return (_current == null ? CxLang.T("OverlayDesignStatus_Row") : CxLang.Format("OverlayDesignStatus_Tile", _current.Name)) + " · " + renderer;
         }
 

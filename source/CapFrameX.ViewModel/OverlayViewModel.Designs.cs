@@ -25,7 +25,7 @@ namespace CapFrameX.ViewModel
         public string DesignStatus => _designActionError == null ? _designService?.Status ?? string.Empty
             : OverlayDesignText.ExceptionMessage(_designActionError);
         public bool HasActiveDesign => _designService?.IsEnabled == true;
-        public bool IsTileOverlayAvailable => !OverlayModeRtss;
+        public bool IsTileOverlayAvailable => OverlayModeHook || OverlayModeHookFree;
         public bool IsTileOverlayTabVisible => IsTileOverlayAvailable && IsTileOverlayEnabled;
         public bool CanUseDesign => IsTileOverlayAvailable && _designService?.CanActivate == true;
         public bool HasSavedDesigns => SavedDesigns.Count > 0;

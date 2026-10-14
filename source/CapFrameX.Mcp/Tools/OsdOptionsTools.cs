@@ -49,7 +49,8 @@ namespace CapFrameX.Mcp.Tools
                 "All arguments are validated before any setting is written. Runtime services are notified so visibility, RTSS position, refresh " +
                 "periods, metric intervals, renderer selection, and hotkeys take effect in the running CapFrameX instance.")]
         public SetOsdOptionsResult SetOsdOptions(
-            [Description("Renderer: Rtss, InGame, or HookFree.")] OsdRendererMode? renderer = null,
+            [Description("Renderer: Rtss, InGame, HookFree, or Off. Off injects nothing, creates no overlay window and does not feed RTSS; " +
+                "captures, sensors and the remote OSD API keep working, and selecting it switches the OSD off.")] OsdRendererMode? renderer = null,
             [Description("Show or hide the selected OSD renderer.")] bool? isOverlayActive = null,
             [Description("Automatically hide the OSD while a capture is running.")] bool? autoDisableOverlay = null,
             [Description("Include seconds in the system-time OSD entry.")] bool? showSystemTimeSeconds = null,
@@ -107,15 +108,21 @@ namespace CapFrameX.Mcp.Tools
             ValidateHotkey(resetMetricsHotkey, nameof(resetMetricsHotkey));
 
             bool activeAfterUpdate = isOverlayActive ?? _config.IsOverlayActive;
-            bool rendererIsBeingActivated = isOverlayActive == true
-                || (renderer.HasValue && activeAfterUpdate);
             var rendererAfterUpdate = renderer ?? TryGetCurrentRenderer();
+            // Selecting Off switches a visible OSD off by itself; only an explicit activation fails.
+            bool rendererIsBeingActivated = isOverlayActive == true
+                || (renderer.HasValue && activeAfterUpdate && renderer.Value != OsdRendererMode.Off);
             if (rendererIsBeingActivated)
             {
                 if (!rendererAfterUpdate.HasValue)
                 {
                     throw new InvalidOperationException(
                         "The current renderer flags are inconsistent. Set renderer to Rtss, InGame, or HookFree before activating the OSD.");
+                }
+                if (rendererAfterUpdate.Value == OsdRendererMode.Off)
+                {
+                    throw new InvalidOperationException(
+                        "The renderer is Off. Select Rtss, InGame, or HookFree before activating the OSD.");
                 }
                 if (rendererAfterUpdate.Value == OsdRendererMode.Rtss && !_rtssService.IsRTSSInstalled())
                 {
@@ -264,34 +271,33 @@ namespace CapFrameX.Mcp.Tools
                 return OsdRendererMode.InGame;
             if (_config.EnableHookFreeOverlay)
                 return OsdRendererMode.HookFree;
-            return OsdRendererMode.Rtss;
+            return _config.OverlayRenderer == EOverlayRenderer.Off ? OsdRendererMode.Off : OsdRendererMode.Rtss;
         }
 
         private void ApplyRenderer(OsdRendererMode renderer, List<string> changed)
         {
+            EOverlayRenderer target;
             switch (renderer)
             {
-                case OsdRendererMode.InGame:
-                    ApplyIfChanged(nameof(IAppConfiguration.EnableHookOverlay), true,
-                        () => _config.EnableHookOverlay, value => _config.EnableHookOverlay = value, changed);
-                    ApplyIfChanged(nameof(IAppConfiguration.EnableHookFreeOverlay), false,
-                        () => _config.EnableHookFreeOverlay, value => _config.EnableHookFreeOverlay = value, changed);
-                    break;
-                case OsdRendererMode.HookFree:
-                    ApplyIfChanged(nameof(IAppConfiguration.EnableHookFreeOverlay), true,
-                        () => _config.EnableHookFreeOverlay, value => _config.EnableHookFreeOverlay = value, changed);
-                    ApplyIfChanged(nameof(IAppConfiguration.EnableHookOverlay), false,
-                        () => _config.EnableHookOverlay, value => _config.EnableHookOverlay = value, changed);
-                    break;
-                case OsdRendererMode.Rtss:
-                    ApplyIfChanged(nameof(IAppConfiguration.EnableHookOverlay), false,
-                        () => _config.EnableHookOverlay, value => _config.EnableHookOverlay = value, changed);
-                    ApplyIfChanged(nameof(IAppConfiguration.EnableHookFreeOverlay), false,
-                        () => _config.EnableHookFreeOverlay, value => _config.EnableHookFreeOverlay = value, changed);
-                    break;
+                case OsdRendererMode.InGame: target = EOverlayRenderer.InGame; break;
+                case OsdRendererMode.HookFree: target = EOverlayRenderer.HookFree; break;
+                case OsdRendererMode.Rtss: target = EOverlayRenderer.Rtss; break;
+                case OsdRendererMode.Off: target = EOverlayRenderer.Off; break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(renderer), renderer, "Unknown OSD renderer.");
             }
+
+            // The configuration mirrors the renderer onto both flags; report the flags that
+            // changed as well, as this tool did when it still wrote them one by one.
+            bool hookBefore = _config.EnableHookOverlay;
+            bool hookFreeBefore = _config.EnableHookFreeOverlay;
+            if (!ApplyIfChanged(nameof(IAppConfiguration.OverlayRenderer), (EOverlayRenderer?)target,
+                () => _config.OverlayRenderer, value => _config.OverlayRenderer = value, changed))
+                return;
+            if (_config.EnableHookOverlay != hookBefore)
+                changed.Add(nameof(IAppConfiguration.EnableHookOverlay));
+            if (_config.EnableHookFreeOverlay != hookFreeBefore)
+                changed.Add(nameof(IAppConfiguration.EnableHookFreeOverlay));
         }
 
         private static bool ApplyIfChanged<T>(string propertyName, T? requestedValue,

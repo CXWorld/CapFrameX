@@ -20,6 +20,7 @@ using CapFrameX.Overlay;
 using CapFrameX.PresentMonInterface;
 using CapFrameX.Sensor;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.Test.Mocks;
 using EmbedIO.WebSockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -136,6 +137,66 @@ namespace CapFrameX.Test.Overlay
             Assert.AreSame(entries, fixture.Service.CurrentOverlayEntries);
             CollectionAssert.AreEqual(new[] { "<APP>  144FPS 6.9ms 0.0ms" },
                 OSDController.GetEntries(fixture.Service, false));
+        }
+
+        // With the renderers off, nothing renders, but the remote API keeps its values: CapFrameX
+        // measures the frame scalars itself, as for its own renderers, and leaves RTSS alone.
+        [TestMethod]
+        public async Task RendererOff_ServesPresentMonScalarsToTheRemoteApiWithoutTouchingRtss()
+        {
+            using var fixture = new RefreshFixture(overlayActive: false, liveFrameMetrics: true,
+                renderer: EOverlayRenderer.Off);
+            fixture.Provider.Setup(provider => provider.GetOverlayEntries(true)).ReturnsAsync(FrameEntries());
+            var controller = new OSDController(fixture.Service, fixture.Demand);
+            await controller.GetOsd(showAll: true);
+            var ready = fixture.Service.OnDictionaryUpdated.Take(1).ToTask();
+            fixture.Start();
+            await ready.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.IsTrue(fixture.Frames.HasObservers);
+
+            fixture.Frames.OnNext(FrameRow(42, "8", "10", "DXGI"));
+            fixture.Frames.OnNext(FrameRow(42, "12", "20", "DXGI"));
+            var update = fixture.Service.OnDictionaryUpdated.Take(1).ToTask();
+            fixture.Service.RequestRefresh();
+            await update.WaitAsync(TimeSpan.FromSeconds(5));
+
+            CollectionAssert.AreEqual(new[] { "DXGI  100FPS 10.0ms 15.0ms" }, await controller.GetOsd(showAll: false));
+            Assert.IsFalse(fixture.Service.IsOverlayActive);
+            fixture.Rtss.Verify(service => service.SetOverlayEntries(It.IsAny<IOverlayEntry[]>()), Times.Never);
+            fixture.Rtss.Verify(service => service.CheckRTSSRunning(), Times.Never);
+            fixture.Rtss.Verify(service => service.OnOSDOn(), Times.Never);
+        }
+
+        [TestMethod]
+        public void RendererOff_DoesNotStartWithAnActiveOverlay()
+        {
+            using var fixture = new RefreshFixture(overlayActive: true, renderer: EOverlayRenderer.Off);
+
+            Assert.IsFalse(fixture.Configuration.Object.IsOverlayActive);
+            Assert.IsFalse(fixture.Service.IsOverlayActive);
+            Assert.AreEqual(EOverlayRenderer.Off, fixture.Configuration.Object.OverlayRenderer);
+        }
+
+        [TestMethod]
+        public async Task SwitchingTheRendererOff_SwitchesTheOverlayOffAndReleasesRtss()
+        {
+            using var fixture = new RefreshFixture(overlayActive: true, rtssRenderer: true);
+            var firstFeed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            fixture.Rtss.Setup(service => service.SetOverlayEntries(It.IsAny<IOverlayEntry[]>()))
+                .Callback(() => firstFeed.TrySetResult(true));
+            fixture.Provider.Setup(provider => provider.GetOverlayEntries(true))
+                .ReturnsAsync(CreateEntries("Overlay"));
+            fixture.Start();
+            await firstFeed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            var published = new List<bool>();
+            using var subscription = fixture.Service.IsOverlayActiveStream.Subscribe(published.Add);
+
+            fixture.Configuration.Object.OverlayRenderer = EOverlayRenderer.Off;
+            fixture.Changes.OnNext((nameof(IAppConfiguration.OverlayRenderer), EOverlayRenderer.Off));
+
+            Assert.IsFalse(fixture.Configuration.Object.IsOverlayActive);
+            Assert.IsFalse(published.Last(), "Every overlay toggle follows the stream.");
+            fixture.Rtss.Verify(service => service.ReleaseOSD(), Times.Once);
         }
 
         private static IOverlayEntry[] FrameEntries() => new IOverlayEntry[]
@@ -468,16 +529,21 @@ namespace CapFrameX.Test.Overlay
             public OverlayService Service { get; }
             public Subject<string[]> Frames { get; } = new Subject<string[]>();
             public BehaviorSubject<int> ProcessIds { get; } = new BehaviorSubject<int>(42);
+            // Configuration changes only arrive when a test pushes them.
+            public Subject<(string key, object value)> Changes { get; } = new Subject<(string key, object value)>();
 
-            public RefreshFixture(bool overlayActive = true, bool rtssRenderer = false, bool liveFrameMetrics = false)
+            public RefreshFixture(bool overlayActive = true, bool rtssRenderer = false, bool liveFrameMetrics = false,
+                EOverlayRenderer? renderer = null)
             {
+                var selected = renderer ?? (rtssRenderer ? EOverlayRenderer.Rtss : EOverlayRenderer.HookFree);
                 Configuration.SetupAllProperties();
-                Configuration.SetupGet(config => config.OnValueChanged)
-                    .Returns(Observable.Never<(string key, object value)>());
-                Configuration.Object.EnableHookFreeOverlay = !rtssRenderer;
+                Configuration.WireOverlayRenderer(selected);
+                Configuration.SetupGet(config => config.OnValueChanged).Returns(Changes);
                 Configuration.Object.IsOverlayActive = overlayActive;
                 Configuration.Object.SelectedHistoryRuns = 3;
-                Rtss.Setup(service => service.IsRTSSInstalled()).Returns(rtssRenderer);
+                // RTSS is installed unless the hook-free renderer is tested, so the Off tests
+                // prove that an installed RTSS stays untouched.
+                Rtss.Setup(service => service.IsRTSSInstalled()).Returns(selected != EOverlayRenderer.HookFree);
 
                 Demand = new RemoteOverlayDemand(DemandClock, RemoteOverlayDemand.DefaultRequestLease);
                 var sensors = new Mock<ISensorService>();
@@ -514,6 +580,7 @@ namespace CapFrameX.Test.Overlay
             public void Dispose()
             {
                 Service.ShutdownOverlayService();
+                Changes.Dispose();
                 OsdTicks.Dispose();
                 Snapshots.Dispose();
                 Frames.Dispose();

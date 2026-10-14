@@ -158,6 +158,24 @@ sensor poller treats it like an active overlay, so the hardware values in the AP
 The renderers follow `IsOverlayActive` alone. "Hide OSD on RTSS" (`HideOverlay`) is unrelated:
 it keeps the overlay *on* and only suppresses the RTSS output.
 
+### Overlay renderer selection
+
+`IAppConfiguration.OverlayRenderer` (`EOverlayRenderer`: `Rtss`, `InGame`, `HookFree`, `Off`) is the
+stored selection. `EnableHookOverlay` and `EnableHookFreeOverlay` are derived from it and stored as its
+mirror, so builds that only know the flags still read a usable choice; `Off` mirrors to the flags of
+RTSS. Writing a flag selects a renderer (`OverlayRendererSelection.WithHookOverlay` / `WithHookFreeOverlay`).
+A switch raises `OverlayRenderer` first and then each changed flag, all after the new selection is
+stored. At load, a stored renderer is kept unless a stored flag contradicts it: then an older build
+changed the selection (after a rollback), and the flags win.
+
+`Off` clears both flags, so `HookOverlayManager` (no process-start watcher, no early-injection probe,
+no injection), the metrics and design publishers (no shared memory, so the Vulkan layer stays passive)
+and `OsdOverlayBridge` stay idle. `OverlayService` neither initializes nor feeds RTSS, switches the
+overlay off on the switch to `Off`, and keeps `PresentMonOverlayMetrics` running for the remote API, as
+for the CapFrameX renderers. `OverlayActivation` refuses every activation and the toggles are disabled.
+Ask `UsesRtss()` whether RTSS renders, never "both flags false". Tests that mock `IAppConfiguration`
+and switch renderers call `WireOverlayRenderer` (`CapFrameX.Test/Mocks`) after `SetupAllProperties`.
+
 ### OLED pixel orbit
 
 `OsdPixelOrbit` (`CapFrameX.Contracts/Configuration`) moves the CapFrameX renderers by one pixel per

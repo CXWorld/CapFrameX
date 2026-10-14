@@ -403,8 +403,13 @@ namespace CapFrameX.OSD.Integration
             }
             if (IsDxgiRuntime(runtime))
             {
+                // Logged with any renderer: a support log must not read as an injection while the
+                // in-game overlay is not selected.
                 if (runtimeChanged)
-                    Log.Information("HookOverlay: target PID {pid} runtime {runtime} -> DXGI hook", pid, runtime);
+                    Log.Information(_enabled
+                        ? "HookOverlay: target PID {pid} runtime {runtime} -> DXGI hook"
+                        : "HookOverlay: target PID {pid} runtime {runtime} -> no injection, the in-game overlay is not selected",
+                        pid, runtime);
                 if (_enabled) TryInjectAsync(pid);
             }
             else if (runtimeChanged)

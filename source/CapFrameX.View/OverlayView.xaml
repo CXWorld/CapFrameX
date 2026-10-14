@@ -170,8 +170,10 @@
                             <StackPanel Orientation="Horizontal" Height="36">
                                 <ToggleButton x:Name="GlobalOverlayVisibilityToggle" IsChecked="{Binding IsOverlayActive, Mode=TwoWay}" TabIndex="1"
                                               VerticalAlignment="Center" Margin="0,0,10,0"
+                                              IsEnabled="{Binding CanSwitchOverlay}"
+                                              ToolTipService.ShowOnDisabled="True"
                                               AutomationProperties.Name="{loc:Tr OverlayView_ToggleOverlay}"
-                                              ToolTip="{loc:Tr OverlayView_ShowOrHideTheOverlay}" />
+                                              ToolTip="{Binding OverlayToggleToolTip}" />
                                 <TextBlock Text="{loc:Tr StateView_On}" VerticalAlignment="Center" FontSize="14"
                                            Visibility="{Binding IsOverlayActive, Converter={StaticResource TrueToVisibleConverter}}" />
                                 <TextBlock Text="{loc:Tr StateView_Off}" VerticalAlignment="Center" FontSize="14"
@@ -1258,7 +1260,9 @@
 									<DockPanel Margin="0 8">
 										<ToggleButton DockPanel.Dock="Right" Margin="12 0 0 0" VerticalAlignment="Center"
 													  IsChecked="{Binding IsOverlayActive, Mode=TwoWay}"
-/>
+													  IsEnabled="{Binding CanSwitchOverlay}"
+													  ToolTipService.ShowOnDisabled="True"
+													  ToolTip="{Binding OverlayToggleToolTip}"/>
 										<StackPanel>
 											<TextBlock FontWeight="SemiBold" Text="{loc:Tr OverlayView_OverlayActive}"/>
 											<TextBlock Style="{StaticResource OsdOptionsDescription}"
@@ -1526,6 +1530,15 @@
 														   Text="{loc:Tr OverlayView_MaximumVisibleChartUpdatesPer}"/>
 											</StackPanel>
 										</DockPanel>
+									</StackPanel>
+
+									<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
+									<StackPanel Margin="0 8 0 4">
+										<RadioButton GroupName="OverlayModeOff" Content="{loc:Tr OverlayView_RendererOff}"
+													 IsChecked="{Binding OverlayModeOff, Mode=TwoWay}"
+													 Style="{StaticResource MaterialDesignRadioButton}"/>
+										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}" TextWrapping="Wrap"
+												   Text="{loc:Tr OverlayView_RendererOffDescription}"/>
 									</StackPanel>
 
 									<Separator Margin="0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>

@@ -86,6 +86,12 @@ Choose a renderer under **Overlay → OSD options**. The following describes 1.9
 | **CapFrameX in-game** | The default for new configurations in 1.9.2 Beta, with DirectX and Vulkan integration and game compatibility profiles. Available again since v1.9.1. |
 | **CapFrameX hook-free** | Built-in overlay without injecting into the game, with an output-display picker and chart refresh control. See the reviewer warning above before using it for measurements. |
 | **RTSS** | Uses [RivaTuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html), which must be installed separately. |
+| **Off** | No overlay at all: CapFrameX injects nothing into games, creates no overlay window and does not feed RTSS. Captures, sensors and the remote API (`/api/osd`, `/ws/osd`) keep working. Use it for capture-only setups, or to rule out the overlay when a game misbehaves. |
+
+With **Off**, the overlay switches and the overlay hotkey have no effect. Two things stay outside its reach:
+
+- A game that already received the in-game overlay keeps it, hidden, until the game is restarted. Restart the game for a clean comparison.
+- The installer registers the Vulkan layer for all Vulkan games, so the Vulkan loader still loads it, but it stays passive while CapFrameX publishes no overlay data. To keep it out of Vulkan games entirely, set the environment variable `DISABLE_CAPFRAMEX_VULKAN_LAYER=1` before starting the game.
 
 Configure individual entries, colors, groups, and three profiles in **Overlay items**. OSD options include opacity, zoom, placement, a position hotkey, and PresentMon replay buffering. Existing renderer selections are preserved. If v1.9.0 migrated your in-game selection to hook-free, you can select in-game again since 1.9.1.
 
@@ -351,7 +357,7 @@ Contains the settings for the items displayed in the OSD as well as the settings
 Left side  
 Overlay items list where you can set the items you want to see in the OSD and change their order by drag and drop. Items with the same group name will be displayed within a single line.
 Three profiles to save different overlay configurations.
-The overlay hotkey shows or hides CapFrameX's OSD. With the RTSS renderer, it controls CapFrameX's entries without hiding entries provided by other applications.
+The overlay hotkey shows or hides CapFrameX's OSD. With the RTSS renderer, it controls CapFrameX's entries without hiding entries provided by other applications. With the renderer set to **Off**, it has no effect.
 
 Right side  
 Overlay items options  

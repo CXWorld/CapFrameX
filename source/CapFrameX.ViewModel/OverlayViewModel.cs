@@ -107,8 +107,17 @@ namespace CapFrameX.ViewModel
         }
 
         internal static bool CanSetOverlayActive(bool requestedActive, bool isRTSSInstalled,
-            bool enableHookFreeOverlay, bool enableHookOverlay)
-            => OverlayActivation.CanSet(requestedActive, isRTSSInstalled, enableHookFreeOverlay, enableHookOverlay);
+            EOverlayRenderer renderer)
+            => OverlayActivation.CanSet(requestedActive,
+                OverlayRendererSelection.CanShowOverlay(renderer, isRTSSInstalled));
+
+        // False while the renderer is set to Off: the overlay toggles are disabled then, and
+        // their tool tip says why.
+        public bool CanSwitchOverlay => !OverlayModeOff;
+
+        public string OverlayToggleToolTip => OverlayModeOff
+            ? CxLang.T("OverlayView_OverlayRendererIsOff")
+            : CxLang.T("OverlayView_ShowOrHideTheOverlay");
 
         //public bool ToggleGlobalRTSSOSD
         //{
@@ -616,22 +625,20 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        // Overlay renderer is a single choice of three mutually exclusive modes, surfaced as a
-        // radio group. They map onto the two underlying config flags so the existing gating in
-        // OverlayService / HookOverlayManager / OsdOverlayBridge keeps working unchanged:
-        //   RTSS      -> EnableHookOverlay=false, EnableHookFreeOverlay=false
-        //   In-game   -> EnableHookOverlay=true                                  (in-game hook)
-        //   Hook-free -> EnableHookOverlay=false, EnableHookFreeOverlay=true     (DWM, no injection)
+        // Overlay renderer is a single choice of four mutually exclusive modes, surfaced as a
+        // radio group over IAppConfiguration.OverlayRenderer. The configuration mirrors it onto
+        // the two renderer flags, so the gating in HookOverlayManager / OsdOverlayBridge keeps
+        // working unchanged; Off clears both flags like RTSS and additionally stops the RTSS feed.
         public bool OverlayModeRtss
         {
-            get { return !_appConfiguration.EnableHookOverlay && !_appConfiguration.EnableHookFreeOverlay; }
-            set { if (value) SetOverlayMode(hook: false, hookFree: false); }
+            get { return _appConfiguration.UsesRtss(); }
+            set { if (value) SetOverlayMode(EOverlayRenderer.Rtss); }
         }
 
         public bool OverlayModeHook
         {
             get { return _appConfiguration.EnableHookOverlay; }
-            set { if (value) SetOverlayMode(hook: true, hookFree: false); }
+            set { if (value) SetOverlayMode(EOverlayRenderer.InGame); }
         }
 
         public string InGameOverlayDescription => CxLang.T("OverlayViewModel_InjectedIntoTheGameFor");
@@ -639,7 +646,13 @@ namespace CapFrameX.ViewModel
         public bool OverlayModeHookFree
         {
             get { return !_appConfiguration.EnableHookOverlay && _appConfiguration.EnableHookFreeOverlay; }
-            set { if (value) SetOverlayMode(hook: false, hookFree: true); }
+            set { if (value) SetOverlayMode(EOverlayRenderer.HookFree); }
+        }
+
+        public bool OverlayModeOff
+        {
+            get { return _appConfiguration.OverlayRenderer == EOverlayRenderer.Off; }
+            set { if (value) SetOverlayMode(EOverlayRenderer.Off); }
         }
 
         public bool CanConfigureHookFreeOptions =>
@@ -649,32 +662,12 @@ namespace CapFrameX.ViewModel
         // output — a contradictory combination worth flagging in the UI next to the renderer choice.
         public bool ShowRtssHiddenHint => OverlayModeRtss && _appConfiguration.HideOverlay;
 
-        private void SetOverlayMode(bool hook, bool hookFree)
+        private void SetOverlayMode(EOverlayRenderer renderer)
         {
-            // Keep at least one hook path selected while moving between the two hook modes. The
-            // configuration raises OnValueChanged even when a value is assigned to itself, so only
-            // write real changes; otherwise one click can release or re-arm RTSS twice.
-            if (hook)
-            {
-                if (!_appConfiguration.EnableHookOverlay)
-                    _appConfiguration.EnableHookOverlay = true;
-                if (_appConfiguration.EnableHookFreeOverlay)
-                    _appConfiguration.EnableHookFreeOverlay = false;
-            }
-            else if (hookFree)
-            {
-                if (!_appConfiguration.EnableHookFreeOverlay)
-                    _appConfiguration.EnableHookFreeOverlay = true;
-                if (_appConfiguration.EnableHookOverlay)
-                    _appConfiguration.EnableHookOverlay = false;
-            }
-            else
-            {
-                if (_appConfiguration.EnableHookOverlay)
-                    _appConfiguration.EnableHookOverlay = false;
-                if (_appConfiguration.EnableHookFreeOverlay)
-                    _appConfiguration.EnableHookFreeOverlay = false;
-            }
+            // The configuration writes the renderer and both flags before it raises any change,
+            // so a switch releases or re-arms RTSS at most once.
+            if (_appConfiguration.OverlayRenderer != renderer)
+                _appConfiguration.OverlayRenderer = renderer;
 
             RaiseOverlayRendererProperties();
         }
@@ -685,6 +678,9 @@ namespace CapFrameX.ViewModel
             RaisePropertyChanged(nameof(OverlayModeRtss));
             RaisePropertyChanged(nameof(OverlayModeHook));
             RaisePropertyChanged(nameof(OverlayModeHookFree));
+            RaisePropertyChanged(nameof(OverlayModeOff));
+            RaisePropertyChanged(nameof(CanSwitchOverlay));
+            RaisePropertyChanged(nameof(OverlayToggleToolTip));
             RaisePropertyChanged(nameof(CanConfigureHookFreeOptions));
             RaisePropertyChanged(nameof(EnableHookOverlay));
             RaisePropertyChanged(nameof(EnableHookFreeOverlay));
@@ -893,7 +889,8 @@ namespace CapFrameX.ViewModel
             // The provider gates renderer-dependent items in place. A renderer change must not use
             // the profile-switch path: that reloads JSON and discards unsaved item edits.
             _appConfiguration.OnValueChanged
-                .Where(x => x.key == nameof(IAppConfiguration.EnableHookFreeOverlay)
+                .Where(x => x.key == nameof(IAppConfiguration.OverlayRenderer)
+                         || x.key == nameof(IAppConfiguration.EnableHookFreeOverlay)
                          || x.key == nameof(IAppConfiguration.EnableHookOverlay)
                          || x.key == nameof(IAppConfiguration.HookOverlayUsePresentMonFrametimes))
                 .Throttle(TimeSpan.FromMilliseconds(50))

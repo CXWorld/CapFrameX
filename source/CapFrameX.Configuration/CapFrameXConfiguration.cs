@@ -15,6 +15,9 @@ namespace CapFrameX.Configuration
     {
         private readonly ISettingsStorage _settingsStorage;
         private readonly ISubject<(string key, object value)> _onValueChanged = new Subject<(string key, object value)>();
+        private readonly object _overlayRendererLock = new object();
+        private volatile EOverlayRenderer _overlayRenderer;
+        private volatile bool _overlayRendererStored;
         public IObservable<(string key, object value)> OnValueChanged => _onValueChanged.AsObservable();
 
         // Directories
@@ -776,11 +779,16 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public EOverlayRenderer OverlayRenderer
+        {
+            get => ReadOverlayRenderer();
+            set => SelectOverlayRenderer(_ => value);
+        }
+
         public bool EnableHookFreeOverlay
         {
-            // Hook-free is only the default when the in-game overlay was switched off.
-            get => Get<bool>(!EnableHookOverlay);
-            set => Set(value);
+            get => OverlayRendererSelection.EnablesHookFreeOverlay(ReadOverlayRenderer());
+            set => SelectOverlayRenderer(current => OverlayRendererSelection.WithHookFreeOverlay(current, value));
         }
 
         public string HookFreeDisplayDeviceName
@@ -806,9 +814,8 @@ namespace CapFrameX.Configuration
 
         public bool EnableHookOverlay
         {
-            // The in-game overlay is the default renderer.
-            get => Get<bool>(true);
-            set => Set(value);
+            get => OverlayRendererSelection.EnablesHookOverlay(ReadOverlayRenderer());
+            set => SelectOverlayRenderer(current => OverlayRendererSelection.WithHookOverlay(current, value));
         }
 
         public bool HookOverlayUsePresentMonFrametimes
@@ -1124,6 +1131,97 @@ namespace CapFrameX.Configuration
             _onValueChanged.OnNext((key, value));
         }
 
+        // Overlay renderer: the renderer is stored together with both flag mirrors, and the
+        // changes are raised only once all three are written. Every subscriber therefore reads
+        // the final selection, whichever key it watches; the two flags used to be written one
+        // after the other and briefly selected both renderers or none.
+        private void SelectOverlayRenderer(Func<EOverlayRenderer, EOverlayRenderer> select)
+        {
+            EOverlayRenderer previous;
+            EOverlayRenderer next;
+            lock (_overlayRendererLock)
+            {
+                previous = _overlayRenderer;
+                next = select(previous);
+                if (!Enum.IsDefined(typeof(EOverlayRenderer), next))
+                    throw new ArgumentOutOfRangeException(nameof(OverlayRenderer), next, "Unknown overlay renderer.");
+                if (next == previous)
+                    return;
+
+                StoreOverlayRenderer(next);
+                _overlayRenderer = next;
+                _overlayRendererStored = true;
+            }
+
+            _onValueChanged.OnNext((nameof(OverlayRenderer), next));
+            bool hook = OverlayRendererSelection.EnablesHookOverlay(next);
+            if (hook != OverlayRendererSelection.EnablesHookOverlay(previous))
+                _onValueChanged.OnNext((nameof(EnableHookOverlay), hook));
+            bool hookFree = OverlayRendererSelection.EnablesHookFreeOverlay(next);
+            if (hookFree != OverlayRendererSelection.EnablesHookFreeOverlay(previous))
+                _onValueChanged.OnNext((nameof(EnableHookFreeOverlay), hookFree));
+        }
+
+        // Like every other setting, the loaded selection is written on its first read, not while
+        // loading: then a migrated or reconciled renderer reaches the file, and the flags with it.
+        private EOverlayRenderer ReadOverlayRenderer()
+        {
+            if (!_overlayRendererStored)
+            {
+                lock (_overlayRendererLock)
+                {
+                    if (!_overlayRendererStored)
+                    {
+                        StoreOverlayRenderer(_overlayRenderer);
+                        _overlayRendererStored = true;
+                    }
+                }
+            }
+
+            return _overlayRenderer;
+        }
+
+        private void StoreOverlayRenderer(EOverlayRenderer renderer)
+        {
+            _settingsStorage.SetValue(nameof(OverlayRenderer), renderer.ToString());
+            _settingsStorage.SetValue(nameof(EnableHookOverlay), OverlayRendererSelection.EnablesHookOverlay(renderer));
+            _settingsStorage.SetValue(nameof(EnableHookFreeOverlay), OverlayRendererSelection.EnablesHookFreeOverlay(renderer));
+        }
+
+        // Settings written before the renderer setting existed only hold the flags. A stored
+        // renderer is kept unless an older build changed the flags since (after a rollback).
+        private EOverlayRenderer LoadOverlayRenderer()
+        {
+            EOverlayRenderer? storedRenderer = null;
+            if (TryGetStoredValue(nameof(OverlayRenderer), out string text)
+                && Enum.TryParse(text, ignoreCase: true, out EOverlayRenderer parsed)
+                && Enum.IsDefined(typeof(EOverlayRenderer), parsed))
+                storedRenderer = parsed;
+
+            return OverlayRendererSelection.Reconcile(storedRenderer,
+                TryGetStoredValue(nameof(EnableHookOverlay), out bool hook) ? hook : (bool?)null,
+                TryGetStoredValue(nameof(EnableHookFreeOverlay), out bool hookFree) ? hookFree : (bool?)null);
+        }
+
+        private bool TryGetStoredValue<T>(string key, out T value)
+        {
+            try
+            {
+                value = _settingsStorage.GetValue<T>(key);
+                return true;
+            }
+            catch (KeyNotFoundException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+                // A hand-edited value of the wrong type counts as missing.
+            }
+
+            value = default;
+            return false;
+        }
+
         public CapFrameXConfiguration(ILogger<CapFrameXConfiguration> logger, ISettingsStorage settingsStorage)
         {
             _settingsStorage = settingsStorage;
@@ -1139,6 +1237,8 @@ namespace CapFrameX.Configuration
                     " and then restart CapFrameX.", "Error");
                 throw;
             }
+
+            _overlayRenderer = LoadOverlayRenderer();
         }
     }
 

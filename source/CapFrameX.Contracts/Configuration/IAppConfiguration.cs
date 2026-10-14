@@ -165,7 +165,18 @@ namespace CapFrameX.Contracts.Configuration
 		bool HideOverlay { get; set; }
 
 		/// <summary>
-		/// Use the hook-free DWM/DirectComposition overlay (CapFrameX.OSD).
+		/// The selected overlay renderer. <see cref="EnableHookOverlay"/> and
+		/// <see cref="EnableHookFreeOverlay"/> follow it and are stored as its mirror for builds
+		/// that only know the flags; see <see cref="OverlayRendererSelection"/>. A change raises
+		/// <see cref="OnValueChanged"/> for this key first and then for each flag that changed,
+		/// all after the new selection is in place.
+		/// </summary>
+		EOverlayRenderer OverlayRenderer { get; set; }
+
+		/// <summary>
+		/// Use the hook-free DWM/DirectComposition overlay (CapFrameX.OSD). True exactly while
+		/// <see cref="OverlayRenderer"/> is <see cref="EOverlayRenderer.HookFree"/>; writing it
+		/// selects a renderer through <see cref="OverlayRendererSelection.WithHookFreeOverlay"/>.
 		/// </summary>
 		bool EnableHookFreeOverlay { get; set; }
 
@@ -185,6 +196,8 @@ namespace CapFrameX.Contracts.Configuration
 		/// Inject the in-game hook overlay (cfx_osd_hook.dll) into the detected game process for smooth
 		/// in-swapchain graphs. The default renderer; injection targets the PID CapFrameX already
 		/// detected via <see cref="CapFrameX.Monitoring.Contracts.IProcessService.ProcessIdStream"/>.
+		/// True exactly while <see cref="OverlayRenderer"/> is <see cref="EOverlayRenderer.InGame"/>;
+		/// writing it selects a renderer through <see cref="OverlayRendererSelection.WithHookOverlay"/>.
 		/// </summary>
 		bool EnableHookOverlay { get; set; }
 

@@ -305,7 +305,8 @@ namespace CapFrameX.Mcp.Tools
     {
         Rtss,
         InGame,
-        HookFree
+        HookFree,
+        Off
     }
 
     public enum OsdAnchorPosition

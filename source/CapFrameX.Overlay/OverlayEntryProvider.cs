@@ -286,10 +286,10 @@ namespace CapFrameX.Overlay
                     ? _hookOverlayStatus : null;
                 values["Resolution"] = _appConfiguration.EnableHookOverlay
                     ? targetHook?.RenderResolution
-                    : !_appConfiguration.EnableHookFreeOverlay && _currentProcessId > 0
+                    : _appConfiguration.UsesRtss() && _currentProcessId > 0
                         ? _rTSSService.GetResolution(_currentProcessId) : null;
                 values["GraphicsAPI"] = _appConfiguration.EnableHookOverlay ? targetHook?.RenderApi
-                    : !_appConfiguration.EnableHookFreeOverlay && _currentProcessId > 0
+                    : _appConfiguration.UsesRtss() && _currentProcessId > 0
                         ? _rTSSService.GetApiInfo(_currentProcessId) : null;
                 foreach (var display in GetDetectedDisplays())
                     values[GetDisplayResolutionIdentifier(display.DeviceName)] = FormatDisplayResolution(display);
@@ -1488,7 +1488,7 @@ namespace CapFrameX.Overlay
             // CapFrameX renderers and the remote API receive their PresentMon scalars together
             // when OverlayService publishes the output snapshot. Only the RTSS renderer reads
             // its shared memory; an unrelated RTSS instance must not supply CX's values.
-            var currentFramerate = _appConfiguration.EnableHookFreeOverlay || _appConfiguration.EnableHookOverlay
+            var currentFramerate = !_appConfiguration.UsesRtss()
                 ? Tuple.Create(0.0, 0.0)
                 : _rTSSService.GetCurrentFramerate(_currentProcessId);
 
@@ -1708,8 +1708,9 @@ namespace CapFrameX.Overlay
             if (resolution != null && resolution.IsEntryEnabled && resolution.ShowOnOverlay)
             {
                 // The in-game renderer replaces this placeholder with the hooked swapchain's
-                // backbuffer extent. Querying RTSS here would publish a stale/unrelated value.
-                if (_appConfiguration.EnableHookOverlay)
+                // backbuffer extent. Querying RTSS here would publish a stale/unrelated value,
+                // and so would it with the renderers switched off.
+                if (!_appConfiguration.UsesRtss())
                 {
                     resolution.Value = "N/A";
                     return;

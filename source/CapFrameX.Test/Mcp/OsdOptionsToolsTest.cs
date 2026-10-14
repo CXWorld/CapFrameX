@@ -5,6 +5,7 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Mcp.Tools;
 using CapFrameX.Overlay;
 using CapFrameX.PresentMonInterface;
+using CapFrameX.Test.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -261,6 +262,46 @@ namespace CapFrameX.Test.Mcp
         }
 
         [TestMethod]
+        public void SetOsdOptions_CannotActivateTheOsdWithTheRendererOff()
+        {
+            var config = CreateConfiguration();
+            config.Object.OverlayRenderer = EOverlayRenderer.InGame;
+            config.Object.IsOverlayActive = false;
+            var rtss = new Mock<IRTSSService>();
+            rtss.Setup(service => service.IsRTSSInstalled()).Returns(true);
+            var tool = CreateOsdOptionsTool(config, rtss: rtss);
+
+            Assert.ThrowsExactly<InvalidOperationException>(() =>
+                tool.SetOsdOptions(renderer: OsdRendererMode.Off, isOverlayActive: true));
+
+            Assert.AreEqual(EOverlayRenderer.InGame, config.Object.OverlayRenderer);
+            Assert.IsFalse(config.Object.IsOverlayActive);
+        }
+
+        // Selecting Off while the OSD is visible is no activation: OverlayService hides the OSD.
+        [TestMethod]
+        public void SetOsdOptions_SelectsOffWhileTheOsdIsVisible()
+        {
+            var config = CreateConfiguration();
+            config.Object.OverlayRenderer = EOverlayRenderer.InGame;
+            config.Object.IsOverlayActive = true;
+            var tool = CreateOsdOptionsTool(config);
+
+            var result = tool.SetOsdOptions(renderer: OsdRendererMode.Off);
+
+            Assert.AreEqual(EOverlayRenderer.Off, config.Object.OverlayRenderer);
+            Assert.AreEqual("Off", result.Options.Renderer);
+            Assert.IsTrue(result.Options.RendererConfigurationValid);
+            Assert.IsFalse(result.Options.EnableHookOverlay);
+            Assert.IsFalse(result.Options.EnableHookFreeOverlay);
+            CollectionAssert.AreEqual(new[]
+            {
+                nameof(IAppConfiguration.OverlayRenderer),
+                nameof(IAppConfiguration.EnableHookOverlay),
+            }, result.ChangedProperties.ToArray());
+        }
+
+        [TestMethod]
         public void GetOverlayEntries_ReturnsAllLiveFieldsInCurrentOrder()
         {
             var first = CreateEntry("Frametime", "z", "Frame Time");
@@ -498,6 +539,7 @@ namespace CapFrameX.Test.Mcp
         {
             var config = new Mock<IAppConfiguration>();
             config.SetupAllProperties();
+            config.WireOverlayRenderer(EOverlayRenderer.Rtss);
             config.Object.OsdBackgroundOpacity = 97;
             config.Object.OsdReplayBufferSize = 750;
             config.Object.HookFreeRefreshRate = 1;

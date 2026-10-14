@@ -408,9 +408,13 @@ namespace CapFrameX.Data
 
             if (_appConfiguration.AutoDisableOverlay && OSDAutoDisabled)
             {
-                _appConfiguration.IsOverlayActive = true;
-                _overlayService.IsOverlayActiveStream.OnNext(true);
-                _rtssService.OnOSDOn();
+                // The renderer may have been switched off during the capture; then the overlay stays off.
+                if (_appConfiguration.OverlayRenderer != EOverlayRenderer.Off)
+                {
+                    _appConfiguration.IsOverlayActive = true;
+                    _overlayService.IsOverlayActiveStream.OnNext(true);
+                    _rtssService.OnOSDOn();
+                }
                 OSDAutoDisabled = false;
             }
 

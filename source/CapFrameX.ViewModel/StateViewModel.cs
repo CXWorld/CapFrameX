@@ -59,10 +59,18 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		/// <summary>
+		/// False while the overlay renderer is set to Off; the status bar toggle is disabled then.
+		/// </summary>
+		public bool CanSwitchOverlay => _appConfiguration.OverlayRenderer != EOverlayRenderer.Off;
+
 		public string OverlayToggleToolTip
 		{
 			get
 			{
+				if (!CanSwitchOverlay)
+					return CxLang.T("OverlayView_OverlayRendererIsOff");
+
 				string hotkey = _appConfiguration.OverlayHotKey;
 				return string.IsNullOrWhiteSpace(hotkey)
 					? CxLang.T("StateViewModel_SwitchTheOverlayOnOrOff")
@@ -190,8 +198,7 @@ namespace CapFrameX.ViewModel
 
 			IsCaptureModeActive = false;
 			ShowOverlayActive(_appConfiguration.IsOverlayActive &&
-				(rTSSService.IsRTSSInstalled() || _appConfiguration.EnableHookFreeOverlay ||
-				 _appConfiguration.EnableHookOverlay));
+				_appConfiguration.CanShowOverlay(rTSSService.IsRTSSInstalled()));
 			IsHookOverlayStatusVisible = _appConfiguration.EnableHookOverlay;
 			ApplyHookOverlayStatus(hookOverlayStatusService.Current);
 			Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
@@ -215,6 +222,19 @@ namespace CapFrameX.ViewModel
 			_appConfiguration.OnValueChanged
 				.Where(x => x.key == nameof(IAppConfiguration.OverlayHotKey))
 				.Subscribe(_ => RaisePropertyChanged(nameof(OverlayToggleToolTip)));
+
+			_appConfiguration.OnValueChanged
+				.Where(x => x.key == nameof(IAppConfiguration.OverlayRenderer))
+				.Subscribe(_ =>
+				{
+					Action apply = () =>
+					{
+						RaisePropertyChanged(nameof(CanSwitchOverlay));
+						RaisePropertyChanged(nameof(OverlayToggleToolTip));
+					};
+					if (uiDispatcher.CheckAccess()) apply();
+					else uiDispatcher.BeginInvoke(apply);
+				});
 
 			_captureService.IsCaptureModeActiveStream
 				.Subscribe(state => IsCaptureModeActive = state);

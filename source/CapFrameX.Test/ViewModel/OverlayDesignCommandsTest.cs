@@ -12,6 +12,7 @@ using System.Windows.Markup;
 using System.Windows.Threading;
 using System.Xml.Linq;
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
@@ -19,6 +20,7 @@ using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Hardware.Controller;
 using CapFrameX.Overlay;
 using CapFrameX.PresentMonInterface;
+using CapFrameX.Test.Mocks;
 using CapFrameX.ViewModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -469,6 +471,34 @@ namespace CapFrameX.Test.ViewModel
         }
 
         [TestMethod]
+        public void RendererOffDisablesTheOverlayTogglesAndDesignsUntilARendererIsSelected()
+        {
+            var designs = new DesignService();
+            var configuration = Configuration();
+            var model = Create(designs, configuration, new EventAggregator());
+
+            model.OverlayModeOff = true;
+
+            Assert.AreEqual(EOverlayRenderer.Off, configuration.Object.OverlayRenderer);
+            Assert.IsTrue(model.OverlayModeOff);
+            Assert.IsFalse(model.OverlayModeRtss, "Off clears the flags like RTSS but is a renderer of its own.");
+            Assert.IsFalse(model.OverlayModeHook);
+            Assert.IsFalse(model.OverlayModeHookFree);
+            Assert.IsFalse(model.CanSwitchOverlay);
+            Assert.AreEqual(CxLang.T("OverlayView_OverlayRendererIsOff"), model.OverlayToggleToolTip);
+            Assert.IsFalse(model.IsTileOverlayAvailable);
+            Assert.IsFalse(model.CanUseDesign);
+            model.IsOverlayActive = true;
+            Assert.IsFalse(configuration.Object.IsOverlayActive, "The hotkey and every toggle refuse to show an overlay.");
+
+            model.OverlayModeHook = true;
+            Assert.IsFalse(model.OverlayModeOff);
+            Assert.IsTrue(model.CanSwitchOverlay);
+            Assert.IsTrue(model.CanUseDesign);
+            Assert.AreEqual(CxLang.T("OverlayView_ShowOrHideTheOverlay"), model.OverlayToggleToolTip);
+        }
+
+        [TestMethod]
         public void ServiceEligibilityChangesRefreshTheActivationCommand()
         {
             var designs = new DesignService();
@@ -758,7 +788,7 @@ namespace CapFrameX.Test.ViewModel
         {
             var config = new Mock<IAppConfiguration>();
             config.SetupAllProperties();
-            config.Object.EnableHookOverlay = true;
+            config.WireOverlayRenderer(EOverlayRenderer.InGame);
             config.SetupGet(c => c.OnValueChanged).Returns(Observable.Never<(string key, object value)>());
             return config;
         }
