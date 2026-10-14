@@ -38,6 +38,10 @@
                       Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\overlay-templates\OLED-Minimal.json"
                       Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\overlay-templates\NVIDIA-GeForce-RTX-GREENLINE.json"
+                      Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\overlay-templates\ICELINE-Vertical.json"
+                      Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
     <None Remove="HookCompatibilityProfiles.xml" />
     <EmbeddedResource Include="HookCompatibilityProfiles.xml"
                       LogicalName="CapFrameX.OSD.Integration.HookCompatibilityProfiles.xml" />
