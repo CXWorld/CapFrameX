@@ -51,16 +51,19 @@ namespace CapFrameX.Test.Integration
 
         [TestMethod]
         [DataRow("original")]
+        [DataRow("older-original")]
         [DataRow("edited")]
         [DataRow("renamed")]
         [DataRow("deleted")]
         [DataRow("same-name")]
         public void CatalogCorrectionUpdatesOnlyTheKnownOriginalAndPreservesSelection(string state)
         {
+            // The correction knows two earlier revisions and replaces either of them unmodified.
+            string olderJson = Design("minimal", 360);
             string originalJson = Design("minimal", 400);
-            var original = new OverlayDesignStarterProfile("revision-fixture", originalJson, 4);
+            var original = new OverlayDesignStarterProfile("revision-fixture", state == "older-original" ? olderJson : originalJson, 4);
             var corrected = new OverlayDesignStarterProfile("revision-fixture", Design("minimal", 480), 4,
-                OverlayDesignStarterProfile.ComputeDesignHash(originalJson));
+                OverlayDesignStarterProfile.ComputeDesignHash(olderJson), OverlayDesignStarterProfile.ComputeDesignHash(originalJson));
             var store = Open();
             var custom = store.Create("My custom design", Design("benchmark", 640));
             Assert.IsTrue(store.EnsureStarterProfiles(new[] { original }, 4));
@@ -83,7 +86,8 @@ namespace CapFrameX.Test.Integration
             foreach (var profile in before)
             {
                 Assert.AreEqual(profile.Name, upgraded.Get(profile.Id).Name);
-                Assert.AreEqual(state == "original" && profile.Id == original.Id ? corrected.DesignJson : profile.DesignJson,
+                bool replaced = (state == "original" || state == "older-original") && profile.Id == original.Id;
+                Assert.AreEqual(replaced ? corrected.DesignJson : profile.DesignJson,
                     upgraded.Get(profile.Id).DesignJson);
             }
             Assert.AreEqual(5, (int)JObject.Parse(File.ReadAllText(LibraryPath))["StarterCatalogVersion"]);

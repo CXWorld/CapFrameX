@@ -7,7 +7,7 @@
   "editor": {
     "format": "cfx-grid",
     "version": 1,
-    "scale": 1,
+    "scale": 0.65,
     "width": 520,
     "gap": 8,
     "padding": 10,
@@ -24,11 +24,11 @@
     "text": "#F5F7F8FF",
     "subtext": "#F5F7F8FF",
     "fontFamily": "Segoe UI",
-    "fontSize": 14,
-    "titleSize": 12,
-    "pad": 10,
-    "gap": 8,
-    "radius": 3
+    "fontSize": 9.1,
+    "titleSize": 7.800000000000001,
+    "pad": 6.5,
+    "gap": 5.2,
+    "radius": 1.9500000000000002
   },
   "root": {
     "type": "panel",
@@ -36,15 +36,15 @@
     "background": false,
     "padding": 0,
     "columns": 4,
-    "width": 520,
-    "gap": 8,
+    "width": 338,
+    "gap": 5.2,
     "children": [
       {
         "type": "panel",
         "background": true,
         "colSpan": 1,
         "padding": 0,
-        "radius": 3,
+        "radius": 1.9500000000000002,
         "color": "#090B0DF5",
         "children": [
           {
@@ -52,21 +52,21 @@
             "layout": "canvas",
             "background": false,
             "padding": 0,
-            "width": 520,
-            "height": 88,
+            "width": 338,
+            "height": 57.2,
             "children": [
               {
                 "type": "panel",
                 "background": true,
                 "colSpan": 1,
                 "padding": 0,
-                "radius": 3,
+                "radius": 1.9500000000000002,
                 "color": "#00000000",
                 "children": [
                   {
                     "type": "text",
                     "text": "APEX",
-                    "size": 40,
+                    "size": 26,
                     "weight": "semibold",
                     "color": "#F5F7F8FF",
                     "editor": {
@@ -100,10 +100,10 @@
                 ],
                 "borderColor": "#58616955",
                 "borderWidth": 0,
-                "x": 14,
-                "y": 5,
-                "frameWidth": 180,
-                "frameHeight": 49,
+                "x": 9.1,
+                "y": 3.25,
+                "frameWidth": 117,
+                "frameHeight": 31.85,
                 "clip": true
               },
               {
@@ -111,13 +111,13 @@
                 "background": true,
                 "colSpan": 1,
                 "padding": 0,
-                "radius": 3,
+                "radius": 1.9500000000000002,
                 "color": "#00000000",
                 "children": [
                   {
                     "type": "text",
                     "text": "ENTHUSIAST CLASS",
-                    "size": 12,
+                    "size": 7.800000000000001,
                     "weight": "semibold",
                     "color": "#A3ABAFFF",
                     "editor": {
@@ -151,10 +151,10 @@
                 ],
                 "borderColor": "#58616955",
                 "borderWidth": 0,
-                "x": 320,
-                "y": 12,
-                "frameWidth": 186,
-                "frameHeight": 18,
+                "x": 208,
+                "y": 7.800000000000001,
+                "frameWidth": 120.9,
+                "frameHeight": 11.700000000000001,
                 "clip": true
               },
               {
@@ -162,13 +162,13 @@
                 "background": true,
                 "colSpan": 1,
                 "padding": 0,
-                "radius": 3,
+                "radius": 1.9500000000000002,
                 "color": "#00000000",
                 "children": [
                   {
                     "type": "text",
                     "text": "5090  /  X3D",
-                    "size": 22,
+                    "size": 14.3,
                     "weight": "semibold",
                     "color": "#F5F7F8FF",
                     "editor": {
@@ -202,10 +202,10 @@
                 ],
                 "borderColor": "#58616955",
                 "borderWidth": 0,
-                "x": 326,
-                "y": 34,
-                "frameWidth": 178,
-                "frameHeight": 28,
+                "x": 211.9,
+                "y": 22.1,
+                "frameWidth": 115.7,
+                "frameHeight": 18.2,
                 "clip": true
               },
               {
@@ -213,13 +213,13 @@
                 "background": true,
                 "colSpan": 1,
                 "padding": 0,
-                "radius": 3,
+                "radius": 1.9500000000000002,
                 "color": "#00000000",
                 "children": [
                   {
                     "type": "text",
                     "text": "BLACKWELL  \u00D7  ZEN 5     //     EXTREME PERFORMANCE",
-                    "size": 10,
+                    "size": 6.5,
                     "weight": "semibold",
                     "color": "#A3ABAFFF",
                     "editor": {
@@ -253,10 +253,10 @@
                 ],
                 "borderColor": "#58616955",
                 "borderWidth": 0,
-                "x": 16,
-                "y": 58,
-                "frameWidth": 488,
-                "frameHeight": 18,
+                "x": 10.4,
+                "y": 37.7,
+                "frameWidth": 317.2,
+                "frameHeight": 11.700000000000001,
                 "clip": true
               },
               {
@@ -264,7 +264,7 @@
                 "background": true,
                 "colSpan": 1,
                 "padding": 0,
-                "radius": 3,
+                "radius": 1.9500000000000002,
                 "color": "#76B900FF",
                 "children": [
                   {
@@ -272,8 +272,8 @@
                     "layout": "canvas",
                     "background": false,
                     "padding": 0,
-                    "width": 256,
-                    "height": 8,
+                    "width": 166.4,
+                    "height": 5.2,
                     "children": [],
                     "color": "#F5F7F8FF",
                     "editor": {
@@ -308,9 +308,9 @@
                 "borderColor": "#76B900FF",
                 "borderWidth": 0,
                 "x": 0,
-                "y": 80,
-                "frameWidth": 256,
-                "frameHeight": 8,
+                "y": 52,
+                "frameWidth": 166.4,
+                "frameHeight": 5.2,
                 "clip": true
               },
               {
@@ -318,7 +318,7 @@
                 "background": true,
                 "colSpan": 1,
                 "padding": 0,
-                "radius": 3,
+                "radius": 1.9500000000000002,
                 "color": "#ED1C24FF",
                 "children": [
                   {
@@ -326,8 +326,8 @@
                     "layout": "canvas",
                     "background": false,
                     "padding": 0,
-                    "width": 256,
-                    "height": 8,
+                    "width": 166.4,
+                    "height": 5.2,
                     "children": [],
                     "color": "#F5F7F8FF",
                     "editor": {
@@ -361,10 +361,10 @@
                 ],
                 "borderColor": "#ED1C24FF",
                 "borderWidth": 0,
-                "x": 264,
-                "y": 80,
-                "frameWidth": 256,
-                "frameHeight": 8,
+                "x": 171.6,
+                "y": 52,
+                "frameWidth": 166.4,
+                "frameHeight": 5.2,
                 "clip": true
               }
             ],
@@ -563,19 +563,19 @@
           }
         ],
         "borderColor": "#717A8344",
-        "borderWidth": 1,
+        "borderWidth": 0.65,
         "x": 0,
         "y": 0,
-        "frameWidth": 520,
-        "frameHeight": 88,
+        "frameWidth": 338,
+        "frameHeight": 57.2,
         "clip": true
       },
       {
         "type": "panel",
         "background": true,
         "colSpan": 1,
-        "padding": 10,
-        "radius": 3,
+        "padding": 6.5,
+        "radius": 1.9500000000000002,
         "color": "#11190EF5",
         "children": [
           {
@@ -584,13 +584,13 @@
             "label": "LIVE FRAMERATE",
             "unit": "FPS",
             "format": "%.0f",
-            "valueSize": 56,
-            "size": 13,
-            "unitSize": 11,
+            "valueSize": 36.4,
+            "size": 8.450000000000001,
+            "unitSize": 7.15,
             "labelPosition": "top",
-            "width": 236,
+            "width": 153.4,
             "color": "#F5F7F8FF",
-            "labelSize": 10,
+            "labelSize": 6.5,
             "labelColor": "#76B900FF",
             "unitColor": "#76B900FF",
             "editor": {
@@ -623,19 +623,19 @@
           }
         ],
         "borderColor": "#76B900A0",
-        "borderWidth": 1,
+        "borderWidth": 0.65,
         "x": 0,
-        "y": 96,
-        "frameWidth": 256,
-        "frameHeight": 104,
+        "y": 62.400000000000006,
+        "frameWidth": 166.4,
+        "frameHeight": 67.60000000000001,
         "clip": true
       },
       {
         "type": "panel",
         "background": true,
         "colSpan": 1,
-        "padding": 10,
-        "radius": 3,
+        "padding": 6.5,
+        "radius": 1.9500000000000002,
         "color": "#111417F2",
         "children": [
           {
@@ -644,13 +644,13 @@
             "label": "1% LOW",
             "unit": "FPS",
             "format": "%.0f",
-            "valueSize": 32,
-            "size": 13,
-            "unitSize": 11,
+            "valueSize": 20.8,
+            "size": 8.450000000000001,
+            "unitSize": 7.15,
             "labelPosition": "top",
-            "width": 104,
+            "width": 67.60000000000001,
             "color": "#F5F7F8FF",
-            "labelSize": 10,
+            "labelSize": 6.5,
             "labelColor": "#A3ABAFFF",
             "unitColor": "#A3ABAFFF",
             "editor": {
@@ -683,19 +683,19 @@
           }
         ],
         "borderColor": "#58616955",
-        "borderWidth": 1,
-        "x": 264,
-        "y": 96,
-        "frameWidth": 124,
-        "frameHeight": 104,
+        "borderWidth": 0.65,
+        "x": 171.6,
+        "y": 62.400000000000006,
+        "frameWidth": 80.60000000000001,
+        "frameHeight": 67.60000000000001,
         "clip": true
       },
       {
         "type": "panel",
         "background": true,
         "colSpan": 1,
-        "padding": 10,
-        "radius": 3,
+        "padding": 6.5,
+        "radius": 1.9500000000000002,
         "color": "#111417F2",
         "children": [
           {
@@ -704,13 +704,13 @@
             "label": "FRAME TIME",
             "unit": "ms",
             "format": "%.2f",
-            "valueSize": 30,
-            "size": 13,
-            "unitSize": 11,
+            "valueSize": 19.5,
+            "size": 8.450000000000001,
+            "unitSize": 7.15,
             "labelPosition": "top",
-            "width": 104,
+            "width": 67.60000000000001,
             "color": "#F5F7F8FF",
-            "labelSize": 10,
+            "labelSize": 6.5,
             "labelColor": "#A3ABAFFF",
             "unitColor": "#A3ABAFFF",
             "editor": {
@@ -743,27 +743,27 @@
           }
         ],
         "borderColor": "#58616955",
-        "borderWidth": 1,
-        "x": 396,
-        "y": 96,
-        "frameWidth": 124,
-        "frameHeight": 104,
+        "borderWidth": 0.65,
+        "x": 257.40000000000003,
+        "y": 62.400000000000006,
+        "frameWidth": 80.60000000000001,
+        "frameHeight": 67.60000000000001,
         "clip": true
       },
       {
         "type": "panel",
         "background": true,
         "colSpan": 1,
-        "padding": 8,
-        "radius": 3,
+        "padding": 5.2,
+        "radius": 1.9500000000000002,
         "color": "#090B0DF5",
         "children": [
           {
             "type": "chart",
             "title": "FRAME PACING",
             "series": "frametimes",
-            "width": 504,
-            "height": 52,
+            "width": 327.6,
+            "height": 33.800000000000004,
             "unit": "ms",
             "color": "#76B900FF",
             "showLabels": true,
@@ -800,19 +800,19 @@
           }
         ],
         "borderColor": "#58616955",
-        "borderWidth": 1,
+        "borderWidth": 0.65,
         "x": 0,
-        "y": 208,
-        "frameWidth": 520,
-        "frameHeight": 68,
+        "y": 135.20000000000002,
+        "frameWidth": 338,
+        "frameHeight": 44.2,
         "clip": true
       },
       {
         "type": "panel",
         "background": true,
         "colSpan": 1,
-        "padding": 12,
-        "radius": 3,
+        "padding": 7.800000000000001,
+        "radius": 1.9500000000000002,
         "color": "#11190EF5",
         "children": [
           {
@@ -820,21 +820,21 @@
             "layout": "canvas",
             "background": false,
             "padding": 0,
-            "width": 496,
-            "height": 132,
+            "width": 322.4,
+            "height": 85.8,
             "children": [
               {
                 "type": "panel",
                 "background": true,
                 "colSpan": 1,
                 "padding": 0,
-                "radius": 3,
+                "radius": 1.9500000000000002,
                 "color": "#00000000",
                 "children": [
                   {
                     "type": "text",
                     "text": "NVIDIA GEFORCE",
-                    "size": 12,
+                    "size": 7.800000000000001,
                     "weight": "semibold",
                     "color": "#76B900FF",
                     "editor": {
@@ -870,8 +870,8 @@
                 "borderWidth": 0,
                 "x": 0,
                 "y": 0,
-                "frameWidth": 294,
-                "frameHeight": 18,
+                "frameWidth": 191.1,
+                "frameHeight": 11.700000000000001,
                 "clip": true
               },
               {
@@ -879,13 +879,13 @@
                 "background": true,
                 "colSpan": 1,
                 "padding": 0,
-                "radius": 3,
+                "radius": 1.9500000000000002,
                 "color": "#00000000",
                 "children": [
                   {
                     "type": "text",
                     "text": "RTX 5090",
-                    "size": 34,
+                    "size": 22.1,
                     "weight": "semibold",
                     "color": "#F5F7F8FF",
                     "editor": {
@@ -920,9 +920,9 @@
                 "borderColor": "#58616955",
                 "borderWidth": 0,
                 "x": 0,
-                "y": 17,
-                "frameWidth": 312,
-                "frameHeight": 42,
+                "y": 11.05,
+                "frameWidth": 202.8,
+                "frameHeight": 27.3,
                 "clip": true
               },
               {
@@ -930,13 +930,13 @@
                 "background": true,
                 "colSpan": 1,
                 "padding": 0,
-                "radius": 3,
+                "radius": 1.9500000000000002,
                 "color": "#00000000",
                 "children": [
                   {
                     "type": "text",
                     "text": "32 GB",
-                    "size": 25,
+                    "size": 16.25,
                     "weight": "semibold",
                     "color": "#76B900FF",
                     "editor": {
@@ -970,10 +970,10 @@
                 ],
                 "borderColor": "#58616955",
                 "borderWidth": 0,
-                "x": 392,
-                "y": 6,
-                "frameWidth": 104,
-                "frameHeight": 32,
+                "x": 254.8,
+                "y": 3.9000000000000004,
+                "frameWidth": 67.60000000000001,
+                "frameHeight": 20.8,
                 "clip": true
               },
               {
@@ -981,13 +981,13 @@
                 "background": true,
                 "colSpan": 1,
                 "padding": 0,
-                "radius": 3,
+                "radius": 1.9500000000000002,
                 "color": "#00000000",
                 "children": [
                   {
                     "type": "text",
                     "text": "GDDR7 / BLACKWELL",
-                    "size": 10,
+                    "size": 6.5,
                     "weight": "semibold",
                     "color": "#A3ABAFFF",
                     "editor": {
@@ -1021,18 +1021,18 @@
                 ],
                 "borderColor": "#58616955",
                 "borderWidth": 0,
-                "x": 356,
-                "y": 40,
-                "frameWidth": 140,
-                "frameHeight": 16,
+                "x": 231.4,
+                "y": 26,
+                "frameWidth": 91,
+                "frameHeight": 10.4,
                 "clip": true
               },
               {
                 "type": "panel",
                 "background": true,
                 "colSpan": 1,
-                "padding": 7,
-                "radius": 3,
+                "padding": 4.55,
+                "radius": 1.9500000000000002,
                 "color": "#080B0CCC",
                 "children": [
                   {
@@ -1041,13 +1041,13 @@
                     "label": "GPU LOAD",
                     "unit": "%",
                     "format": "%.0f",
-                    "valueSize": 25,
-                    "size": 13,
-                    "unitSize": 11,
+                    "valueSize": 16.25,
+                    "size": 8.450000000000001,
+                    "unitSize": 7.15,
                     "labelPosition": "top",
-                    "width": 104,
+                    "width": 67.60000000000001,
                     "color": "#F5F7F8FF",
-                    "labelSize": 10,
+                    "labelSize": 6.5,
                     "labelColor": "#76B900FF",
                     "unitColor": "#A3ABAFFF",
                     "editor": {
@@ -1080,19 +1080,19 @@
                   }
                 ],
                 "borderColor": "#5E686033",
-                "borderWidth": 1,
+                "borderWidth": 0.65,
                 "x": 0,
-                "y": 64,
-                "frameWidth": 118,
-                "frameHeight": 64,
+                "y": 41.6,
+                "frameWidth": 76.7,
+                "frameHeight": 41.6,
                 "clip": true
               },
               {
                 "type": "panel",
                 "background": true,
                 "colSpan": 1,
-                "padding": 7,
-                "radius": 3,
+                "padding": 4.55,
+                "radius": 1.9500000000000002,
                 "color": "#080B0CCC",
                 "children": [
                   {
@@ -1101,13 +1101,13 @@
                     "label": "GPU TEMP",
                     "unit": "\u00B0C",
                     "format": "%.0f",
-                    "valueSize": 25,
-                    "size": 13,
-                    "unitSize": 11,
+                    "valueSize": 16.25,
+                    "size": 8.450000000000001,
+                    "unitSize": 7.15,
                     "labelPosition": "top",
-                    "width": 104,
+                    "width": 67.60000000000001,
                     "color": "#F5F7F8FF",
-                    "labelSize": 10,
+                    "labelSize": 6.5,
                     "labelColor": "#76B900FF",
                     "unitColor": "#A3ABAFFF",
                     "editor": {
@@ -1140,19 +1140,19 @@
                   }
                 ],
                 "borderColor": "#5E686033",
-                "borderWidth": 1,
-                "x": 126,
-                "y": 64,
-                "frameWidth": 118,
-                "frameHeight": 64,
+                "borderWidth": 0.65,
+                "x": 81.9,
+                "y": 41.6,
+                "frameWidth": 76.7,
+                "frameHeight": 41.6,
                 "clip": true
               },
               {
                 "type": "panel",
                 "background": true,
                 "colSpan": 1,
-                "padding": 7,
-                "radius": 3,
+                "padding": 4.55,
+                "radius": 1.9500000000000002,
                 "color": "#080B0CCC",
                 "children": [
                   {
@@ -1161,13 +1161,13 @@
                     "label": "BOOST CLOCK",
                     "unit": "GHz",
                     "format": "%.2f",
-                    "valueSize": 25,
-                    "size": 13,
-                    "unitSize": 11,
+                    "valueSize": 16.25,
+                    "size": 8.450000000000001,
+                    "unitSize": 7.15,
                     "labelPosition": "top",
-                    "width": 104,
+                    "width": 67.60000000000001,
                     "color": "#F5F7F8FF",
-                    "labelSize": 10,
+                    "labelSize": 6.5,
                     "labelColor": "#76B900FF",
                     "unitColor": "#A3ABAFFF",
                     "valueScale": 0.001,
@@ -1202,19 +1202,19 @@
                   }
                 ],
                 "borderColor": "#5E686033",
-                "borderWidth": 1,
-                "x": 252,
-                "y": 64,
-                "frameWidth": 118,
-                "frameHeight": 64,
+                "borderWidth": 0.65,
+                "x": 163.8,
+                "y": 41.6,
+                "frameWidth": 76.7,
+                "frameHeight": 41.6,
                 "clip": true
               },
               {
                 "type": "panel",
                 "background": true,
                 "colSpan": 1,
-                "padding": 7,
-                "radius": 3,
+                "padding": 4.55,
+                "radius": 1.9500000000000002,
                 "color": "#080B0CCC",
                 "children": [
                   {
@@ -1223,13 +1223,13 @@
                     "label": "BOARD POWER",
                     "unit": "W",
                     "format": "%.0f",
-                    "valueSize": 25,
-                    "size": 13,
-                    "unitSize": 11,
+                    "valueSize": 16.25,
+                    "size": 8.450000000000001,
+                    "unitSize": 7.15,
                     "labelPosition": "top",
-                    "width": 104,
+                    "width": 67.60000000000001,
                     "color": "#F5F7F8FF",
-                    "labelSize": 10,
+                    "labelSize": 6.5,
                     "labelColor": "#76B900FF",
                     "unitColor": "#A3ABAFFF",
                     "editor": {
@@ -1262,11 +1262,11 @@
                   }
                 ],
                 "borderColor": "#5E686033",
-                "borderWidth": 1,
-                "x": 378,
-                "y": 64,
-                "frameWidth": 118,
-                "frameHeight": 64,
+                "borderWidth": 0.65,
+                "x": 245.70000000000002,
+                "y": 41.6,
+                "frameWidth": 76.7,
+                "frameHeight": 41.6,
                 "clip": true
               }
             ],
@@ -1520,19 +1520,19 @@
           }
         ],
         "borderColor": "#76B90088",
-        "borderWidth": 1,
+        "borderWidth": 0.65,
         "x": 0,
-        "y": 284,
-        "frameWidth": 520,
-        "frameHeight": 156,
+        "y": 184.6,
+        "frameWidth": 338,
+        "frameHeight": 101.4,
         "clip": true
       },
       {
         "type": "panel",
         "background": true,
         "colSpan": 1,
-        "padding": 12,
-        "radius": 3,
+        "padding": 7.800000000000001,
+        "radius": 1.9500000000000002,
         "color": "#1C1012F5",
         "children": [
           {
@@ -1540,21 +1540,21 @@
             "layout": "canvas",
             "background": false,
             "padding": 0,
-            "width": 496,
-            "height": 164,
+            "width": 322.4,
+            "height": 106.60000000000001,
             "children": [
               {
                 "type": "panel",
                 "background": true,
                 "colSpan": 1,
                 "padding": 0,
-                "radius": 3,
+                "radius": 1.9500000000000002,
                 "color": "#00000000",
                 "children": [
                   {
                     "type": "text",
                     "text": "AMD RYZEN 7",
-                    "size": 12,
+                    "size": 7.800000000000001,
                     "weight": "semibold",
                     "color": "#ED1C24FF",
                     "editor": {
@@ -1590,8 +1590,8 @@
                 "borderWidth": 0,
                 "x": 0,
                 "y": 0,
-                "frameWidth": 280,
-                "frameHeight": 18,
+                "frameWidth": 182,
+                "frameHeight": 11.700000000000001,
                 "clip": true
               },
               {
@@ -1599,13 +1599,13 @@
                 "background": true,
                 "colSpan": 1,
                 "padding": 0,
-                "radius": 3,
+                "radius": 1.9500000000000002,
                 "color": "#00000000",
                 "children": [
                   {
                     "type": "text",
                     "text": "9800X3D",
-                    "size": 34,
+                    "size": 22.1,
                     "weight": "semibold",
                     "color": "#F5F7F8FF",
                     "editor": {
@@ -1640,9 +1640,9 @@
                 "borderColor": "#58616955",
                 "borderWidth": 0,
                 "x": 0,
-                "y": 17,
-                "frameWidth": 310,
-                "frameHeight": 42,
+                "y": 11.05,
+                "frameWidth": 201.5,
+                "frameHeight": 27.3,
                 "clip": true
               },
               {
@@ -1650,13 +1650,13 @@
                 "background": true,
                 "colSpan": 1,
                 "padding": 0,
-                "radius": 3,
+                "radius": 1.9500000000000002,
                 "color": "#00000000",
                 "children": [
                   {
                     "type": "text",
                     "text": "ZEN 5   /   8 CORES \u00B7 16 THREADS",
-                    "size": 10,
+                    "size": 6.5,
                     "weight": "semibold",
                     "color": "#A3ABAFFF",
                     "editor": {
@@ -1691,17 +1691,17 @@
                 "borderColor": "#58616955",
                 "borderWidth": 0,
                 "x": 0,
-                "y": 62,
-                "frameWidth": 304,
-                "frameHeight": 16,
+                "y": 40.300000000000004,
+                "frameWidth": 197.6,
+                "frameHeight": 10.4,
                 "clip": true
               },
               {
                 "type": "panel",
                 "background": true,
                 "colSpan": 1,
-                "padding": 8,
-                "radius": 3,
+                "padding": 5.2,
+                "radius": 1.9500000000000002,
                 "color": "#301015EE",
                 "children": [
                   {
@@ -1709,21 +1709,21 @@
                     "layout": "canvas",
                     "background": false,
                     "padding": 0,
-                    "width": 156,
-                    "height": 64,
+                    "width": 101.39999999999999,
+                    "height": 41.6,
                     "children": [
                       {
                         "type": "panel",
                         "background": true,
                         "colSpan": 1,
                         "padding": 0,
-                        "radius": 3,
+                        "radius": 1.9500000000000002,
                         "color": "#00000000",
                         "children": [
                           {
                             "type": "text",
                             "text": "3D V-CACHE",
-                            "size": 12,
+                            "size": 7.800000000000001,
                             "weight": "semibold",
                             "color": "#F26522FF",
                             "editor": {
@@ -1759,8 +1759,8 @@
                         "borderWidth": 0,
                         "x": 0,
                         "y": 0,
-                        "frameWidth": 156,
-                        "frameHeight": 18,
+                        "frameWidth": 101.4,
+                        "frameHeight": 11.700000000000001,
                         "clip": true
                       },
                       {
@@ -1768,13 +1768,13 @@
                         "background": true,
                         "colSpan": 1,
                         "padding": 0,
-                        "radius": 3,
+                        "radius": 1.9500000000000002,
                         "color": "#00000000",
                         "children": [
                           {
                             "type": "text",
                             "text": "96 MB",
-                            "size": 28,
+                            "size": 18.2,
                             "weight": "semibold",
                             "color": "#F5F7F8FF",
                             "editor": {
@@ -1809,9 +1809,9 @@
                         "borderColor": "#58616955",
                         "borderWidth": 0,
                         "x": 0,
-                        "y": 16,
-                        "frameWidth": 156,
-                        "frameHeight": 34,
+                        "y": 10.4,
+                        "frameWidth": 101.4,
+                        "frameHeight": 22.1,
                         "clip": true
                       },
                       {
@@ -1819,13 +1819,13 @@
                         "background": true,
                         "colSpan": 1,
                         "padding": 0,
-                        "radius": 3,
+                        "radius": 1.9500000000000002,
                         "color": "#00000000",
                         "children": [
                           {
                             "type": "text",
                             "text": "L3  //  64 MB STACKED",
-                            "size": 10,
+                            "size": 6.5,
                             "weight": "semibold",
                             "color": "#A3ABAFFF",
                             "editor": {
@@ -1860,9 +1860,9 @@
                         "borderColor": "#58616955",
                         "borderWidth": 0,
                         "x": 0,
-                        "y": 51,
-                        "frameWidth": 156,
-                        "frameHeight": 13,
+                        "y": 33.15,
+                        "frameWidth": 101.4,
+                        "frameHeight": 8.450000000000001,
                         "clip": true
                       }
                     ],
@@ -1980,19 +1980,19 @@
                   }
                 ],
                 "borderColor": "#ED1C2499",
-                "borderWidth": 1,
-                "x": 324,
+                "borderWidth": 0.65,
+                "x": 210.6,
                 "y": 0,
-                "frameWidth": 172,
-                "frameHeight": 80,
+                "frameWidth": 111.8,
+                "frameHeight": 52,
                 "clip": true
               },
               {
                 "type": "panel",
                 "background": true,
                 "colSpan": 1,
-                "padding": 7,
-                "radius": 3,
+                "padding": 4.55,
+                "radius": 1.9500000000000002,
                 "color": "#080B0CCC",
                 "children": [
                   {
@@ -2001,13 +2001,13 @@
                     "label": "CPU LOAD",
                     "unit": "%",
                     "format": "%.0f",
-                    "valueSize": 25,
-                    "size": 13,
-                    "unitSize": 11,
+                    "valueSize": 16.25,
+                    "size": 8.450000000000001,
+                    "unitSize": 7.15,
                     "labelPosition": "top",
-                    "width": 104,
+                    "width": 67.60000000000001,
                     "color": "#F5F7F8FF",
-                    "labelSize": 10,
+                    "labelSize": 6.5,
                     "labelColor": "#ED1C24FF",
                     "unitColor": "#A3ABAFFF",
                     "editor": {
@@ -2040,19 +2040,19 @@
                   }
                 ],
                 "borderColor": "#5E686033",
-                "borderWidth": 1,
+                "borderWidth": 0.65,
                 "x": 0,
-                "y": 92,
-                "frameWidth": 118,
-                "frameHeight": 64,
+                "y": 59.800000000000004,
+                "frameWidth": 76.7,
+                "frameHeight": 41.6,
                 "clip": true
               },
               {
                 "type": "panel",
                 "background": true,
                 "colSpan": 1,
-                "padding": 7,
-                "radius": 3,
+                "padding": 4.55,
+                "radius": 1.9500000000000002,
                 "color": "#080B0CCC",
                 "children": [
                   {
@@ -2061,13 +2061,13 @@
                     "label": "CPU TEMP",
                     "unit": "\u00B0C",
                     "format": "%.0f",
-                    "valueSize": 25,
-                    "size": 13,
-                    "unitSize": 11,
+                    "valueSize": 16.25,
+                    "size": 8.450000000000001,
+                    "unitSize": 7.15,
                     "labelPosition": "top",
-                    "width": 104,
+                    "width": 67.60000000000001,
                     "color": "#F5F7F8FF",
-                    "labelSize": 10,
+                    "labelSize": 6.5,
                     "labelColor": "#ED1C24FF",
                     "unitColor": "#A3ABAFFF",
                     "editor": {
@@ -2100,19 +2100,19 @@
                   }
                 ],
                 "borderColor": "#5E686033",
-                "borderWidth": 1,
-                "x": 126,
-                "y": 92,
-                "frameWidth": 118,
-                "frameHeight": 64,
+                "borderWidth": 0.65,
+                "x": 81.9,
+                "y": 59.800000000000004,
+                "frameWidth": 76.7,
+                "frameHeight": 41.6,
                 "clip": true
               },
               {
                 "type": "panel",
                 "background": true,
                 "colSpan": 1,
-                "padding": 7,
-                "radius": 3,
+                "padding": 4.55,
+                "radius": 1.9500000000000002,
                 "color": "#080B0CCC",
                 "children": [
                   {
@@ -2121,13 +2121,13 @@
                     "label": "MAX CLOCK",
                     "unit": "GHz",
                     "format": "%.2f",
-                    "valueSize": 25,
-                    "size": 13,
-                    "unitSize": 11,
+                    "valueSize": 16.25,
+                    "size": 8.450000000000001,
+                    "unitSize": 7.15,
                     "labelPosition": "top",
-                    "width": 104,
+                    "width": 67.60000000000001,
                     "color": "#F5F7F8FF",
-                    "labelSize": 10,
+                    "labelSize": 6.5,
                     "labelColor": "#ED1C24FF",
                     "unitColor": "#A3ABAFFF",
                     "valueScale": 0.001,
@@ -2162,19 +2162,19 @@
                   }
                 ],
                 "borderColor": "#5E686033",
-                "borderWidth": 1,
-                "x": 252,
-                "y": 92,
-                "frameWidth": 118,
-                "frameHeight": 64,
+                "borderWidth": 0.65,
+                "x": 163.8,
+                "y": 59.800000000000004,
+                "frameWidth": 76.7,
+                "frameHeight": 41.6,
                 "clip": true
               },
               {
                 "type": "panel",
                 "background": true,
                 "colSpan": 1,
-                "padding": 7,
-                "radius": 3,
+                "padding": 4.55,
+                "radius": 1.9500000000000002,
                 "color": "#080B0CCC",
                 "children": [
                   {
@@ -2183,13 +2183,13 @@
                     "label": "PACKAGE",
                     "unit": "W",
                     "format": "%.0f",
-                    "valueSize": 25,
-                    "size": 13,
-                    "unitSize": 11,
+                    "valueSize": 16.25,
+                    "size": 8.450000000000001,
+                    "unitSize": 7.15,
                     "labelPosition": "top",
-                    "width": 104,
+                    "width": 67.60000000000001,
                     "color": "#F5F7F8FF",
-                    "labelSize": 10,
+                    "labelSize": 6.5,
                     "labelColor": "#ED1C24FF",
                     "unitColor": "#A3ABAFFF",
                     "editor": {
@@ -2222,11 +2222,11 @@
                   }
                 ],
                 "borderColor": "#5E686033",
-                "borderWidth": 1,
-                "x": 378,
-                "y": 92,
-                "frameWidth": 118,
-                "frameHeight": 64,
+                "borderWidth": 0.65,
+                "x": 245.70000000000002,
+                "y": 59.800000000000004,
+                "frameWidth": 76.7,
+                "frameHeight": 41.6,
                 "clip": true
               }
             ],
@@ -2563,19 +2563,19 @@
           }
         ],
         "borderColor": "#ED1C2488",
-        "borderWidth": 1,
+        "borderWidth": 0.65,
         "x": 0,
-        "y": 448,
-        "frameWidth": 520,
-        "frameHeight": 188,
+        "y": 291.2,
+        "frameWidth": 338,
+        "frameHeight": 122.2,
         "clip": true
       },
       {
         "type": "panel",
         "background": true,
         "colSpan": 1,
-        "padding": 8,
-        "radius": 3,
+        "padding": 5.2,
+        "radius": 1.9500000000000002,
         "color": "#090B0DF5",
         "children": [
           {
@@ -2584,13 +2584,13 @@
             "label": "VRAM",
             "unit": "GB",
             "format": "%.1f",
-            "valueSize": 18,
-            "size": 13,
-            "unitSize": 11,
+            "valueSize": 11.700000000000001,
+            "size": 8.450000000000001,
+            "unitSize": 7.15,
             "labelPosition": "left",
-            "width": 240,
+            "width": 156,
             "color": "#76B900FF",
-            "labelSize": 10,
+            "labelSize": 6.5,
             "labelColor": "#A3ABAFFF",
             "unitColor": "#A3ABAFFF",
             "secondaryKey": "vramTotal",
@@ -2631,19 +2631,19 @@
           }
         ],
         "borderColor": "#58616955",
-        "borderWidth": 1,
+        "borderWidth": 0.65,
         "x": 0,
-        "y": 644,
-        "frameWidth": 256,
-        "frameHeight": 44,
+        "y": 418.6,
+        "frameWidth": 166.4,
+        "frameHeight": 28.6,
         "clip": true
       },
       {
         "type": "panel",
         "background": true,
         "colSpan": 1,
-        "padding": 8,
-        "radius": 3,
+        "padding": 5.2,
+        "radius": 1.9500000000000002,
         "color": "#090B0DF5",
         "children": [
           {
@@ -2652,13 +2652,13 @@
             "label": "SYSTEM RAM",
             "unit": "GB",
             "format": "%.1f",
-            "valueSize": 18,
-            "size": 13,
-            "unitSize": 11,
+            "valueSize": 11.700000000000001,
+            "size": 8.450000000000001,
+            "unitSize": 7.15,
             "labelPosition": "left",
-            "width": 240,
+            "width": 156,
             "color": "#F5F7F8FF",
-            "labelSize": 10,
+            "labelSize": 6.5,
             "labelColor": "#A3ABAFFF",
             "unitColor": "#A3ABAFFF",
             "editor": {
@@ -2691,14 +2691,14 @@
           }
         ],
         "borderColor": "#58616955",
-        "borderWidth": 1,
-        "x": 264,
-        "y": 644,
-        "frameWidth": 256,
-        "frameHeight": 44,
+        "borderWidth": 0.65,
+        "x": 171.6,
+        "y": 418.6,
+        "frameWidth": 166.4,
+        "frameHeight": 28.6,
         "clip": true
       }
     ],
-    "height": 688
+    "height": 447.2
   }
 }
