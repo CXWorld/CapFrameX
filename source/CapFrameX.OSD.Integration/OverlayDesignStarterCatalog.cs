@@ -46,7 +46,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 9;
+        public const int Version = 10;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -94,7 +94,8 @@ namespace CapFrameX.OSD.Integration
                 // FUSION before its per-core-type rework (versions four and five), the version-seven
                 // GREENLINE and ICELINE whose framerate readouts adopted the bound "FPS" unit, and
                 // REDLINE, APEX, FUSION and Panther Lake at full scale before version nine reduced
-                // their base for resolution-relative sizing. Never replace a renamed or edited profile.
+                // their base for resolution-relative sizing, and GREENLINE before version ten centred
+                // the GPU name in its header. Never replace a renamed or edited profile.
                 string[] previousDesignHashes = entry.Id switch
                 {
                     "RTX-5090-9800X3D-APEX" => new[] { "02913A2E04FABDD253EE7FC4D37F6FED8BE06A0E89B15E61C03CBDD52AC6D716" },
@@ -111,7 +112,11 @@ namespace CapFrameX.OSD.Integration
                     "Panther-Lake-Arc-Aurora" => new[] { "E717AF2FB7BDDF804AFF1918BA97CC560D251D648134522040A4F7591534C9ED" },
                     "AMD-Ryzen-5-9600X-Badge" => new[] { "09795802837F766CB0350464E82B878EA4A361141F8FEC6CDB9343A314446E40" },
                     "AMD-Ryzen-7-9800X3D-Badge" => new[] { "2B9D493E89D1A3CAFAE4B4CED21BF25D85BF3025FDA82E96893A24BD09A204A0" },
-                    "NVIDIA-GeForce-RTX-GREENLINE" => new[] { "81B0EB48109F19427A3B7A9DC54883EAC83ACAEDEDDC3D7E64BFD35F5E6DDF17" },
+                    "NVIDIA-GeForce-RTX-GREENLINE" => new[]
+                    {
+                        "81B0EB48109F19427A3B7A9DC54883EAC83ACAEDEDDC3D7E64BFD35F5E6DDF17",
+                        "EE44FF48BB637A51B5AB8D870EFDD0A29B2902B918769334722D20D4D767930F"
+                    },
                     "ICELINE-Vertical" => new[] { "2236C31C8D68F5CDBA90CFBE894398DA0A23B08D48D0760C1DAB6E7516F7E2C5" },
                     _ => Array.Empty<string>()
                 };
