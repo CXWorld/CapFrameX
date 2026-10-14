@@ -7,6 +7,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading.Tasks;
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Overlay;
 using CapFrameX.OSD.Integration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -18,6 +19,42 @@ namespace CapFrameX.Test.Integration
     [TestClass]
     public class OverlayDesignPublisherLifecycleTest
     {
+        [TestMethod]
+        public void ShutdownWithdrawsTheHookRowFeedBeforeTheDesign()
+        {
+            using var context = new PublisherContext("cpuLoad");
+            var channel = context.Channel;
+            Assert.AreEqual(42, channel.Pid, "The hook must be showing the design when the app exits.");
+            using var entries = new Subject<IOverlayEntry[]>();
+            var overlay = new Mock<IOverlayService>();
+            overlay.SetupGet(service => service.OnDictionaryUpdated).Returns(entries);
+            var rowConfiguration = new Mock<IAppConfiguration>();
+            rowConfiguration.SetupGet(configuration => configuration.OnValueChanged)
+                .Returns(Observable.Never<(string key, object value)>());
+            var rowFeed = new HookMetricsPublisher(overlay.Object, rowConfiguration.Object, Observable.Never<int>());
+            Assert.IsTrue(entries.HasObservers);
+            bool? rowFeedLiveAtWithdrawal = null;
+            channel.Withdrawing = () => rowFeedLiveAtWithdrawal = entries.HasObservers;
+
+            OverlayRendererShutdown.Run(rowFeed, context.Publisher);
+
+            // Without a design the hook draws the rows it still holds, i.e. the row overlay.
+            Assert.IsTrue(channel.Disposed);
+            Assert.AreEqual(false, rowFeedLiveAtWithdrawal, "The row feed must be gone before the design is withdrawn.");
+        }
+
+        [TestMethod]
+        public void ShutdownDisposesEveryRendererInOrderEvenWhenOneFails()
+        {
+            var order = new List<string>();
+
+            OverlayRendererShutdown.Run(new ShutdownProbe("rows", order, fail: true), new ShutdownProbe("design", order),
+                new ShutdownProbe("frametimes", order), null, new ShutdownProbe("hook", order, fail: true),
+                new ShutdownProbe("hook-free", order));
+
+            CollectionAssert.AreEqual(new[] { "rows", "design", "frametimes", "hook", "hook-free" }, order);
+        }
+
         [TestMethod]
         public async Task DelayedDiscoveryPublishesTheLatestSampleWithoutRestartingTheStream()
         {
@@ -439,12 +476,38 @@ namespace CapFrameX.Test.Integration
                 Publications++;
             }
 
-            public void Disable() => Pid = 0;
+            public Action Withdrawing;
+
+            public void Disable()
+            {
+                if (Pid != 0) Withdrawing?.Invoke();
+                Pid = 0;
+            }
 
             public void Dispose()
             {
                 Disable();
                 Disposed = true;
+            }
+        }
+
+        private sealed class ShutdownProbe : IDisposable
+        {
+            private readonly string _name;
+            private readonly List<string> _order;
+            private readonly bool _fail;
+
+            public ShutdownProbe(string name, List<string> order, bool fail = false)
+            {
+                _name = name;
+                _order = order;
+                _fail = fail;
+            }
+
+            public void Dispose()
+            {
+                _order.Add(_name);
+                if (_fail) throw new InvalidOperationException(_name + " failed");
             }
         }
     }

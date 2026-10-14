@@ -68,6 +68,12 @@ namespace CapFrameX
         // exposes the container through Prism's abstraction, so unwrap it in one place.
         private new IContainer Container => ((DryIocContainerExtension)base.Container).Instance;
 
+        // The first step of ApplicationExit. Withdrawing the hook's row feed before the design
+        // keeps the in-game hook and the Vulkan layer from falling back to the row overlay.
+        private void ShutdownOverlayRenderers() => OSD.Integration.OverlayRendererShutdown.Run(
+            rowFeed: _hookMetricsPublisher, designFeed: _overlayDesignRuntime,
+            _hookFrametimePublisher, _hookOverlayManager, _osdOverlayBridge);
+
         /// <summary>
         /// While the splash screen is up, the shell stays minimized after its warm-up
         /// Show(); App reveals it via <see cref="PendingMainWindowState"/> as soon as the
@@ -173,7 +179,7 @@ namespace CapFrameX
                         _overlayDesignService,
                         Container.Resolve<OSD.Integration.IOverlayTelemetryService>(), config,
                         rtssService.ProcessIdStream, rtssService.ProcessCountStream);
-                    Exit += (_, _) => _overlayDesignRuntime.Dispose();
+                    // Disposed by ShutdownOverlayRenderers, after the hook's row feed.
                     // One resolver for both placement paths: hook-free window and hook channel.
                     _pixelOrbit = new OSD.Integration.OverlayPixelOrbitResolver(
                         config, () => _overlayDesignService?.CurrentDesign);
