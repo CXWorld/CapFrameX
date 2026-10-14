@@ -260,7 +260,7 @@
                     </Grid>
                     <!--FPS thresholds and stuttering analysis-->
                     <Grid Grid.Column="4" Margin="5 0 0 0" >
-                        <TabControl Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" FocusVisualStyle="{x:Null}" x:Name="StatisticsTabControl" >
+                        <TabControl FocusVisualStyle="{x:Null}" x:Name="StatisticsTabControl" >
                             <TabItem Header="{loc:Tr DataView_Stuttering}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <lvc:PieChart HorizontalAlignment="Left" Margin="13 0 0 0" Width="180" Height="180" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
@@ -467,7 +467,7 @@
                     </Grid>
 
                     <Grid Grid.Column="2" x:Name="SecondSensorTab" Margin="5 0 0 0" Width="450" Tag="{Binding DataContext, ElementName=DataViewUserControl}">
-                        <TabControl Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" FocusVisualStyle="{x:Null}" >
+                        <TabControl FocusVisualStyle="{x:Null}" >
                             <TabItem Header="{loc:Tr DataView_SensorData2}" IsEnabled="{Binding AdditionalGraphsEnabled}">
                                 <DataGrid Margin="{StaticResource CxTabContentMargin}" FontSize="13" ItemsSource="{Binding SensorReportItems}" ColumnHeaderHeight="25" SelectionUnit="FullRow"
 										CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False"
@@ -541,7 +541,7 @@
                     </Grid>
 
                     <Grid Grid.Column="3" x:Name="SecondThresholdTab" Margin="5 0 0 0" Width="500" >
-                        <TabControl Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" FocusVisualStyle="{x:Null}" >
+                        <TabControl FocusVisualStyle="{x:Null}" >
                             <TabItem Header="{loc:Tr DataView_FPSThresholds2}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
                                     <!--Side by side without fixed widths: "Counts" is longer in translations.-->
