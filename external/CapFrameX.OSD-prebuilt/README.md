@@ -12,6 +12,25 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Scaled minimum tile width (2026-10-14)
+
+The Controls DLL was rebuilt in `Release|x64` for .NET 10 (SDK 10.0.401) from OSD commit
+`4465d13f0e65442fb2ae004953d1c1c44411ee8b`, which adds the tile-width change to `612161f`.
+`OsdDesignDocument.Validate` required 64 rendered pixels of inner width for top-level tiles, while the
+canvas bounds and the editor's resize clamp work in design units. Lowering the design scale could
+therefore invalidate a tile that fitted at 100 %: the APEX, REDLINE, FUSION, Panther Lake and OLED
+Minimal starters could not be exported at 50 %. Below 100 % the minimum now scales with the design
+(`64 * Scale`); above 100 % it stays at 64 rendered pixels, so grid profiles saved under the old rule
+remain valid. Interop, the native payloads and the localization files are unchanged.
+
+Verification: a CapFrameX build with `CfxOsdFromSource=false` picks up this DLL (SHA-256 below) and
+passes all 110 starter, binder, bar-balance and design-publisher tests, including
+`EveryStarterBindsTheSameSourcesAndGeometryAsTheEditor` at 50 %, which fails under the previous rule.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `4AF36891B3D6C58EC7D306A843D6AE1B73B6170B0D6111F4993AB9E623E8FAEC` |
+
 ### Frame-generation telemetry after runtime reload (2026-10-14)
 
 All seven bundled DLLs were rebuilt from OSD commit
