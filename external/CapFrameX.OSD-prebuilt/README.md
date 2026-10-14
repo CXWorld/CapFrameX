@@ -12,6 +12,37 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Resolution-relative sizing (2026-10-14)
+
+The five native DLLs were clean-built with VS 2026/v145 in `RelWithDebInfo` and Interop in
+`Release|x64` for .NET 10 (SDK 10.0.401) from OSD commit
+`bf2e0bcf1be173cf7147942e98f32891de6c4c87`, which adds resolution-relative sizing to `4465d13`.
+Once a host calls the new `cfx_osd_set_reference_height`, the core builds the scene with zoom x
+target height / 1080 and scales the anchor margins by the same factor; `cfx_osd_set_target_size`
+reports the swapchain height of CPU producers. Both hooks and both Vulkan layers turn it on from
+metrics header bit5. Interop adds `OsdHost.SetReferenceHeight` and `OsdHost.DesignReferenceHeight`,
+which CapFrameX's "Scale with resolution" option calls, so a build without OSD sources needs this
+Interop. Controls, both Vulkan manifests and the localization files are unchanged.
+
+Verification: 15 of 16 core CTests pass, including the new resolution checks in `design` (345
+checks) and `overlay_position` (455 checks); `chart_gpu_raster` fails on the hardware adapter as
+documented below. All 32 hook CTests and all 10 Vulkan CTests pass on x64 and x86. A CapFrameX
+build with `CfxOsdFromSource=false` stages exactly these DLLs (SHA-256 below) into the app and test
+outputs and passes 2067 of 2069 unit tests; the two failures were PresentMon/vkcube capture tests
+that pass on a rerun, and that class fails a different subset on every run. The user confirmed the
+scaling live in a game with the sibling build of the same sources.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `6F396251B6D84E3EE1F32B3A722C7041BE4BF706A9D615CD4677C363EB0A8B83` |
+| native\cfx_osd_hook.dll | `3D7068D357ACFB85C149C3731B48CFC959BB6405F38768EF46DEF42547424118` |
+| native\x86\cfx_osd_hook.dll | `5678CA0F42A3C3C4F26D998E5C463FB218CF33C39B43DE47A4E1D192771C19EA` |
+| native\vk\cfx_osd_vklayer.dll | `5A1AC8C1958A2F9570C08A0F5B1C78ED99C9CFA593BECA98DD9558E40FDB4DF1` |
+| native\vk\x86\cfx_osd_vklayer.dll | `DD198F888B49695D6796804FEE63D6D2BE9E8D3629C8F8637B004D232919D474` |
+| net10.0-windows\CapFrameX.OSD.Interop.dll | `E9B5C7CC1BE3D8942F9F2DF99AAF345B9FF3463A57F32CA5E4D3F381FDF3F8DF` |
+
+These are unsigned development binaries.
+
 ### Scaled minimum tile width (2026-10-14)
 
 The Controls DLL was rebuilt in `Release|x64` for .NET 10 (SDK 10.0.401) from OSD commit
