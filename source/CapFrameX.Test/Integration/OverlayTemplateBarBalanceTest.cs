@@ -46,22 +46,40 @@ namespace CapFrameX.Test.Integration
             var documents = OsdDesignPresets.All.Select(preset => preset.CreateDocument())
                 .Concat(OverlayDesignStarterCatalog.Profiles.Select(starter => OsdDesignDocument.FromJson(starter.DesignJson)))
                 .Where(document => document.EnumerateTiles().Any(tile => tile.Kind == "group" && tile.GroupDisplay == "bar"));
-            int checkedGroups = 0;
+            int checkedGroups = 0, checkedSensorGroups = 0;
             foreach (var document in documents)
             {
+                // Discovery only rebuilds preset roles. Hardware starters bind their groups to
+                // concrete sensors, which keep their authored members whatever the catalog holds.
+                var sensorGroups = document.EnumerateTiles()
+                    .Where(tile => tile.Kind == "group" && tile.GroupDisplay == "bar" && tile.GroupKey?.StartsWith("role:", StringComparison.Ordinal) != true)
+                    .ToDictionary(tile => tile, tile => tile.GroupMembers.Select(member => member.Key).ToArray());
                 var result = BindAndAssertParity(document, catalog);
                 foreach (var group in document.EnumerateTiles().Where(tile => tile.Kind == "group" && tile.GroupDisplay == "bar"))
                 {
                     var layout = document.GetGroupBarLayout(group);
+                    bool sensorBound = sensorGroups.TryGetValue(group, out var sensorKeys);
+                    int bars = sensorBound ? sensorKeys.Length : count;
                     Assert.IsTrue(group.HasExplicitGroupBarLayout, document.Name);
-                    Assert.AreEqual(0, count % layout.Columns, document.Name + ": every row must have the same number of bars.");
+                    Assert.AreEqual(0, bars % layout.Columns, document.Name + ": every row must have the same number of bars.");
                     Assert.AreEqual(0, layout.Columns % 2, document.Name + ": initial rows must contain even numbers of bars.");
                     Assert.IsTrue(layout.Rows == 1 || layout.Rows % 2 == 0, document.Name + ": no unintended third row.");
-                    AssertBalancedNativeGroup(result, group.GroupMembers[0].Key[..group.GroupMembers[0].Key.LastIndexOf('/')], count, layout.Columns);
-                    checkedGroups++;
+                    if (sensorBound)
+                    {
+                        CollectionAssert.AreEqual(sensorKeys, group.GroupMembers.Select(member => member.Key).ToArray(),
+                            document.Name + ": discovery must not rebind concrete sensors.");
+                        AssertBalancedRows(result, NativeBars(result, sensorKeys.Contains), bars, layout.Columns);
+                        checkedSensorGroups++;
+                    }
+                    else
+                    {
+                        AssertBalancedNativeGroup(result, group.GroupMembers[0].Key[..group.GroupMembers[0].Key.LastIndexOf('/')], count, layout.Columns);
+                        checkedGroups++;
+                    }
                 }
             }
             Assert.IsTrue(checkedGroups >= 17, "Both the template gallery and shipped Saved tile profiles must be covered.");
+            Assert.IsTrue(checkedSensorGroups >= 5, "The hardware starters' per-core-type groups must be covered.");
         }
 
         [TestMethod]
@@ -158,12 +176,17 @@ namespace CapFrameX.Test.Integration
             }).ToArray();
 
         private static JObject[] NativeBars(OverlayRuntimeDesign design, string keyPrefix) =>
-            JObject.Parse(design.TemplateJson).DescendantsAndSelf().OfType<JObject>()
-                .Where(node => (string)node["type"] == "bar" && ((string)node["key"])?.StartsWith(keyPrefix, StringComparison.Ordinal) == true).ToArray();
+            NativeBars(design, key => key.StartsWith(keyPrefix, StringComparison.Ordinal));
 
-        private static void AssertBalancedNativeGroup(OverlayRuntimeDesign design, string keyPrefix, int count, int columns)
+        private static JObject[] NativeBars(OverlayRuntimeDesign design, Func<string, bool> includesKey) =>
+            JObject.Parse(design.TemplateJson).DescendantsAndSelf().OfType<JObject>()
+                .Where(node => (string)node["type"] == "bar" && (string)node["key"] is string key && includesKey(key)).ToArray();
+
+        private static void AssertBalancedNativeGroup(OverlayRuntimeDesign design, string keyPrefix, int count, int columns) =>
+            AssertBalancedRows(design, NativeBars(design, keyPrefix), count, columns);
+
+        private static void AssertBalancedRows(OverlayRuntimeDesign design, JObject[] members, int count, int columns)
         {
-            var members = NativeBars(design, keyPrefix);
             Assert.AreEqual(count, members.Length, design.Name);
             var rows = members.GroupBy(member => (double?)member["y"] ?? -1).ToArray();
             Assert.AreEqual(count / columns, rows.Length, design.Name);
