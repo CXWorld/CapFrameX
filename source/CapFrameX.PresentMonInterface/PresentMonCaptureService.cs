@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Capture.Contracts;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Extensions;
+using CapFrameX.PMD.Benchlab;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using System;
@@ -98,6 +99,7 @@ namespace CapFrameX.PresentMonInterface
         private IDisposable _processNameDisposable;
         private IDisposable _settleDisposable;
         private Process _presentMonProcess;
+        private ChildProcessJob _presentMonJob;
 
         public Dictionary<string, int> ParameterNameIndexMapping { get; }
 
@@ -179,6 +181,7 @@ namespace CapFrameX.PresentMonInterface
 
                 _presentMonProcess = process;
                 process.Start();
+                TieToThisProcess(process);
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
@@ -220,6 +223,25 @@ namespace CapFrameX.PresentMonInterface
             }
             catch { return false; }
 
+        }
+
+        // PresentMon runs from the application folder. Without a job it outlives CapFrameX when the
+        // app is killed or crashes, keeps that folder locked and goes on capturing in the background.
+        // The job closes with CapFrameX and ends the instance with it; a regular stop still terminates
+        // it first through --terminate_existing_session.
+        private void TieToThisProcess(Process process)
+        {
+            try
+            {
+                var job = ChildProcessJob.Attach(process);
+                // The previous instance was terminated before this one started.
+                _presentMonJob?.Dispose();
+                _presentMonJob = job;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "PresentMon could not be tied to the CapFrameX process and may outlive it.");
+            }
         }
 
         private void SetCaptureServiceRunning(bool isRunning)
