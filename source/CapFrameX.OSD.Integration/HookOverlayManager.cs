@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using Serilog;
+using Serilog.Events;
 
 namespace CapFrameX.OSD.Integration
 {
@@ -852,7 +853,8 @@ namespace CapFrameX.OSD.Integration
                     switch (action.Kind)
                     {
                         case HookProbeActionKind.LogVerdict:
-                            Log.Information(
+                            // Every pause, resize or swapchain replacement reconfirms the route.
+                            Log.Write(action.Reconfirmation ? LogEventLevel.Debug : LogEventLevel.Information,
                                 "HookOverlay: compatibility stage {index}/{count} ({stage}) for pid {pid} ('{process}') ended with {verdict}: {detail}",
                                 session.StageNumber, session.StageCount,
                                 action.Stage?.DisplayName ?? "none", pid,
@@ -863,7 +865,7 @@ namespace CapFrameX.OSD.Integration
                         case HookProbeActionKind.Learn:
                             RecordStageOutcome(pid, session, action.Stage, verified: true,
                                 pending: null, exhausted: false, verdict: "Success",
-                                detail: null);
+                                detail: null, skipUnchanged: action.Reconfirmation);
                             break;
                         case HookProbeActionKind.InvalidateVerification:
                             RecordStageOutcome(pid, session, action.Stage, verified: false,
@@ -940,7 +942,8 @@ namespace CapFrameX.OSD.Integration
 
         private void RecordStageOutcome(int pid, HookCompatibilityProbeSession session,
             HookCompatibilityStage stage, bool verified, HookCompatibilityStage pending,
-            bool exhausted, string verdict, string detail, bool countAttempt = true)
+            bool exhausted, string verdict, string detail, bool countAttempt = true,
+            bool skipUnchanged = false)
         {
             if (!TryReadProcessIdentity(pid, out string processName, out string executablePath))
             {
@@ -960,6 +963,15 @@ namespace CapFrameX.OSD.Integration
             string[] ladder = new string[session.Plan.Ladder.Count];
             for (int i = 0; i < ladder.Length; i++)
                 ladder[i] = session.Plan.Ladder[i].DisplayName;
+
+            if (skipUnchanged && stage != null &&
+                _learnedStore.TryGet(processName, signature, out HookLearnedProfileEntry known) &&
+                known.RecordsVerifiedOutcome(stage, _hookBuildHash.Value, earlySignature, ladder))
+            {
+                Log.Debug("HookOverlay: learned profile for '{process}' ({signature}) already records stage {stage} as verified",
+                    known.ExecutableName, signature, stage.DisplayName);
+                return;
+            }
 
             HookLearnedProfileEntry entry = _learnedStore.Upsert(processName, executablePath,
                 signature, earlySignature, _hookBuildHash.Value, e =>

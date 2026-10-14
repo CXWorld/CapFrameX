@@ -135,6 +135,7 @@ The in-game overlay always learns which hook route works for each game; this can
 - Some routes only take effect when the game starts. The in-game overlay then stays off for the rest of the session, and the next launch starts on the new route.
 - If no route works, the session runs without an overlay. The game is not excluded from the in-game overlay: the next game launch probes again.
 - After an update that changes the in-game hook, CapFrameX verifies the stored route again.
+- Pausing, resizing or switching the game's display mode only makes CapFrameX confirm the route again during the session; a stored route stays verified unless it actually stops working.
 
 To discard everything CapFrameX has learned, close CapFrameX and delete `HookCompatibilityProfiles.learned.json`; the next start begins with an empty cache. Deleting the file while CapFrameX is running does not reset anything, because CapFrameX keeps the learned profiles in memory and writes them back with the next result.
 

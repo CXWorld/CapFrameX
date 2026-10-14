@@ -28,7 +28,7 @@ namespace CapFrameX.OSD.Integration
         internal HookProbeAction(HookProbeActionKind kind, HookCompatibilityStage stage = null,
             string reason = null, int pollIntervalMs = 0,
             HookCompatibilityVerdict verdict = HookCompatibilityVerdict.Pending,
-            bool exhausted = false)
+            bool exhausted = false, bool reconfirmation = false)
         {
             Kind = kind;
             Stage = stage;
@@ -36,6 +36,7 @@ namespace CapFrameX.OSD.Integration
             PollIntervalMs = pollIntervalMs;
             Verdict = verdict;
             Exhausted = exhausted;
+            Reconfirmation = reconfirmation;
         }
 
         internal HookProbeActionKind Kind { get; }
@@ -44,6 +45,13 @@ namespace CapFrameX.OSD.Integration
         internal int PollIntervalMs { get; }
         internal HookCompatibilityVerdict Verdict { get; }
         internal bool Exhausted { get; }
+
+        /// <summary>
+        /// The verdict and learn actions of a route that was verified earlier in this session and
+        /// confirmed again after a pause or a context change. Nothing new was learned unless the
+        /// title's evidence changed meanwhile.
+        /// </summary>
+        internal bool Reconfirmation { get; }
     }
 
     internal enum HookProbeSettlement
@@ -81,6 +89,11 @@ namespace CapFrameX.OSD.Integration
         private ulong _awaitingLiveApplyUntilTickMs;
         private bool _stageClockPaused;
         private int? _recoveryCoverageBaseline;
+        // A learned route left Learned for a pause or a context change (a swapchain replacement,
+        // a renderer rebuild) and has to be confirmed again. The stored verification stays until
+        // a real failure replaces it: quitting a game usually passes through exactly such a
+        // moment, and an unverified entry is not reused on the next launch.
+        private bool _reconfirming;
         private readonly HookRenderProgressVerifier _renderProgress = new HookRenderProgressVerifier();
 
         internal HookCompatibilityProbeSession(int processId, HookCompatibilityStagePlan plan,
@@ -132,6 +145,7 @@ namespace CapFrameX.OSD.Integration
         {
             _timings = default;
             _renderProgress.Reset();
+            _reconfirming = false;
             _timings.InjectionSucceeded = true;
             _timings.InjectionSucceededTickMs = nowTickMs;
             _observingSinceTickMs = nowTickMs;
@@ -249,11 +263,12 @@ namespace CapFrameX.OSD.Integration
                     verdict == HookCompatibilityVerdict.Pending && !_timings.RenderProgressConfirmed))
                 {
                     // Pauses and context changes require fresh confirmation, not another route.
+                    // Leaving Learned lets the stage clocks run again, so a renderer that stays
+                    // stalled still fails; the stored verification is only revoked then.
                     Settlement = HookProbeSettlement.None;
+                    _reconfirming = true;
                     return new[]
                     {
-                        new HookProbeAction(HookProbeActionKind.InvalidateVerification, stage,
-                            verdict: HookCompatibilityVerdict.Inconclusive),
                         new HookProbeAction(HookProbeActionKind.SetPollInterval,
                             pollIntervalMs: ProbePollIntervalMs)
                     };
@@ -294,15 +309,22 @@ namespace CapFrameX.OSD.Integration
                     return Array.Empty<HookProbeAction>();
 
                 case HookCompatibilityVerdict.Success:
+                {
+                    bool reconfirmed = _reconfirming;
+                    _reconfirming = false;
                     Settlement = HookProbeSettlement.Learned;
                     _recoveryCoverageBaseline = null;
                     FallbackReason = null;
+                    // A reconfirmation still learns: the evidence may have changed meanwhile (a
+                    // provider DLL loaded), which makes it a new entry. The manager skips the
+                    // write when the stored entry already records this outcome.
                     return ProbingEnabled
                         ? new[]
                         {
                             new HookProbeAction(HookProbeActionKind.LogVerdict, stage,
-                                verdict: verdict),
-                            new HookProbeAction(HookProbeActionKind.Learn, stage),
+                                verdict: verdict, reconfirmation: reconfirmed),
+                            new HookProbeAction(HookProbeActionKind.Learn, stage,
+                                reconfirmation: reconfirmed),
                             new HookProbeAction(HookProbeActionKind.SetFallback),
                             new HookProbeAction(HookProbeActionKind.SetPollInterval,
                                 pollIntervalMs: IdlePollIntervalMs)
@@ -313,9 +335,27 @@ namespace CapFrameX.OSD.Integration
                             new HookProbeAction(HookProbeActionKind.SetPollInterval,
                                 pollIntervalMs: IdlePollIntervalMs)
                         };
+                }
 
                 default:
-                    return Fail(stage, verdict, snapshot, nowTickMs);
+                {
+                    bool reconfirming = _reconfirming;
+                    _reconfirming = false;
+                    IReadOnlyList<HookProbeAction> failureActions = Fail(stage, verdict, snapshot, nowTickMs);
+                    if (!reconfirming || !ProbingEnabled ||
+                        Settlement != HookProbeSettlement.None &&
+                        Settlement != HookProbeSettlement.QueueRecovery)
+                        return failureActions;
+                    // The route failed its reconfirmation, as a failure while Learned would: live
+                    // recovery has no final outcome to replace the old verified entry yet.
+                    var actions = new List<HookProbeAction>
+                    {
+                        new HookProbeAction(HookProbeActionKind.InvalidateVerification, stage,
+                            verdict: LastVerdict)
+                    };
+                    actions.AddRange(failureActions);
+                    return actions;
+                }
             }
         }
 

@@ -91,6 +91,22 @@ namespace CapFrameX.OSD.Integration
             => !string.IsNullOrEmpty(hookBuildHash) &&
                string.Equals(HookBuildHash, hookBuildHash, StringComparison.OrdinalIgnoreCase);
 
+        /// <summary>
+        /// True when recording <paramref name="stage"/> as verified would change nothing but the
+        /// timestamp and the attempt count, as when a route is confirmed again after a pause or a
+        /// swapchain replacement.
+        /// </summary>
+        internal bool RecordsVerifiedOutcome(HookCompatibilityStage stage, string hookBuildHash,
+            string earlySignature, string[] ladder)
+            => stage != null && Verified && !Exhausted && PendingStageId == null &&
+               string.Equals(LastVerdict, "Success", StringComparison.Ordinal) &&
+               LastVerdictDetail == null && MatchesHookBuild(hookBuildHash) &&
+               ToStage().SameRouting(stage) &&
+               (string.IsNullOrEmpty(earlySignature) ||
+                string.Equals(EarlySignature, earlySignature, StringComparison.Ordinal)) &&
+               Ladder != null && ladder != null &&
+               Ladder.SequenceEqual(ladder, StringComparer.Ordinal);
+
         internal HookCompatibilityStage ToStage()
             => new HookCompatibilityStage(StageId,
                 unchecked((NativeHookCompatibilityFlags)Flags), EarlyInjectionModule,

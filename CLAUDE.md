@@ -261,6 +261,11 @@ settings are ignored. All of it is pure and unit-tested; the manager only execut
 - **Verdicts** read status block V2 (`HookStatusProbe`: install phase + FidelityFX module/export detail,
   present coverage, queue state, decline reason, FG telemetry): success confirmed after 2 s, install hung
   after 6 s, no queue after 5 s, stage budget 20 s; idle/dormant samples pause the clocks.
+  A verified route that pauses, hides or loses its draw progress (a resize, a swapchain replacement)
+  leaves `Learned` and is confirmed again within the session (`Reconfirmation` actions). The stored entry
+  keeps `verified` until a real failure revokes it, because an unverified entry is not reused on the next
+  launch and quitting a game passes through exactly such a moment. A reconfirmation that changes nothing
+  is not written (`HookLearnedProfileEntry.RecordsVerifiedOutcome`) and logs its verdict at Debug.
 - **Escalation** runs **live** for every bit the hook advertises in `liveReloadCapabilities` (`0xE`: the
   XeSS-FG queue bit, the generic route, the FidelityFX lifecycle switch). `HookCompatibilityChannel` always
   creates the 64-byte V2 mapping (`Local\CfxOsdHookCompatibilityV2_{pid}`, plus the 16-byte V1 one for older

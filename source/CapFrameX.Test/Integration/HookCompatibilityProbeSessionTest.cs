@@ -388,8 +388,12 @@ namespace CapFrameX.Test.Integration
                 Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.Visible
             };
 
-            Assert.IsTrue(ObserveRendering(session, true, initializing, EHookOverlayStatus.Initializing, 101000)
-                .Any(a => a.Kind == HookProbeActionKind.InvalidateVerification));
+            // A renderer rebuild asks for fresh confirmation; the stored verification stays.
+            IReadOnlyList<HookProbeAction> rebuilding = ObserveRendering(session, true, initializing,
+                EHookOverlayStatus.Initializing, 101000);
+            Assert.IsFalse(rebuilding.Any(a => a.Kind == HookProbeActionKind.InvalidateVerification));
+            Assert.IsTrue(rebuilding.Any(a => a.Kind == HookProbeActionKind.SetPollInterval));
+            Assert.AreEqual(HookProbeSettlement.None, session.Settlement);
             Assert.AreEqual(HookCompatibilityVerdict.Pending, session.LastVerdict);
             Assert.AreEqual(0, ObserveRendering(session, true, initializing, EHookOverlayStatus.Initializing, 102000).Count);
         }

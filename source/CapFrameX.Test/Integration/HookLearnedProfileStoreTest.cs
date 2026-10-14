@@ -95,6 +95,44 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void RecordsVerifiedOutcome_OnlyWhenNothingButTheTimestampWouldChange()
+        {
+            var generic = HookCompatibilityStage.Create(HookCompatibilityStageId.Generic);
+            string[] ladder = { "vendor-aware", "generic D3D12" };
+            HookLearnedProfileEntry Verified() => new HookLearnedProfileEntry
+            {
+                ExecutableName = "resonance", EvidenceSignature = "sl+sldlssg",
+                StageId = generic.Id, Flags = (uint)generic.Flags, Verified = true,
+                LastVerdict = "Success", HookBuildHash = "2886d763", Ladder = ladder
+            };
+
+            Assert.IsTrue(Verified().RecordsVerifiedOutcome(generic, "2886D763", null, ladder));
+            Assert.IsFalse(Verified().RecordsVerifiedOutcome(
+                HookCompatibilityStage.Create(HookCompatibilityStageId.GenericNoFfxLifecycle),
+                "2886d763", null, ladder), "another route");
+            Assert.IsFalse(Verified().RecordsVerifiedOutcome(generic, "7a620c3b", null, ladder),
+                "another hook build");
+            Assert.IsFalse(Verified().RecordsVerifiedOutcome(generic, "2886d763", null,
+                new[] { "generic D3D12" }), "another ladder");
+            Assert.IsFalse(Verified().RecordsVerifiedOutcome(generic, "2886d763", "d3d12", ladder),
+                "a new early signature");
+
+            var unverified = Verified();
+            unverified.Verified = false;
+            unverified.LastVerdict = "Inconclusive";
+            Assert.IsFalse(unverified.RecordsVerifiedOutcome(generic, "2886d763", null, ladder),
+                "an unverified entry must be verified again");
+            var pending = Verified();
+            pending.SetPending(HookCompatibilityStage.Create(HookCompatibilityStageId.Generic,
+                earlyInjectionModule: "d3d12.dll"), "restart");
+            Assert.IsFalse(pending.RecordsVerifiedOutcome(generic, "2886d763", null, ladder),
+                "a pending restart must be cleared");
+            var exhausted = Verified();
+            exhausted.Exhausted = true;
+            Assert.IsFalse(exhausted.RecordsVerifiedOutcome(generic, "2886d763", null, ladder));
+        }
+
+        [TestMethod]
         public void Reset_EmptiesTheStoreAndTheFile()
         {
             HookLearnedProfileStore store = HookLearnedProfileStore.Create(_folder);

@@ -76,7 +76,9 @@ namespace CapFrameX.Test.Integration
                 sample.Progress = progress;
                 var actions = session.Observe(true, sample, EHookOverlayStatus.Active, now);
                 Assert.IsFalse(actions.Any(a => a.Kind == HookProbeActionKind.Learn));
-                invalidated |= actions.Any(a => a.Kind == HookProbeActionKind.InvalidateVerification);
+                // The verification goes with the final outcome: a give-up records it unverified.
+                invalidated |= actions.Any(a => a.Kind == HookProbeActionKind.InvalidateVerification ||
+                    a.Kind == HookProbeActionKind.GiveUp);
                 fallback |= actions.Any(a => a.Kind == HookProbeActionKind.SetFallback && a.Reason != null);
             }
             Assert.IsTrue(invalidated, "A previously working route must lose its verified status.");
@@ -98,20 +100,53 @@ namespace CapFrameX.Test.Integration
         [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
-        public void PauseOrSwapchainChange_RequiresFreshVerification(bool swapchain)
+        public void PauseOrSwapchainChange_ReconfirmsWithoutRevokingVerification(bool swapchain)
         {
             var session = Session();
             session.Observe(true, Sample(1250, 10), EHookOverlayStatus.Active, 1250);
-            Assert.IsTrue(session.Observe(true, Sample(3250, 30), EHookOverlayStatus.Active, 3250)
-                .Any(a => a.Kind == HookProbeActionKind.Learn));
+            var learned = session.Observe(true, Sample(3250, 30), EHookOverlayStatus.Active, 3250);
+            Assert.IsTrue(learned.Any(a => a.Kind == HookProbeActionKind.Learn && !a.Reconfirmation));
             uint generation = swapchain ? 2u : 1u;
             var changed = session.Observe(true, Sample(3500, 31, generation),
                 swapchain ? EHookOverlayStatus.Active : EHookOverlayStatus.Hidden, 3500);
-            Assert.IsTrue(changed.Any(a => a.Kind == HookProbeActionKind.InvalidateVerification));
-            Assert.IsFalse(changed.Any(a => a.Kind == HookProbeActionKind.GiveUp));
+            // Fresh confirmation, but the stored verification stays: a game quit during this
+            // window must not leave an entry that the next launch refuses to reuse.
+            Assert.AreEqual(HookProbeSettlement.None, session.Settlement);
+            Assert.IsFalse(changed.Any(a => a.Kind == HookProbeActionKind.InvalidateVerification ||
+                a.Kind == HookProbeActionKind.GiveUp));
+            Assert.IsTrue(changed.Any(a => a.Kind == HookProbeActionKind.SetPollInterval &&
+                a.PollIntervalMs == HookCompatibilityProbeSession.ProbePollIntervalMs));
             session.Observe(true, Sample(3750, 32, generation), EHookOverlayStatus.Active, 3750);
-            Assert.IsTrue(session.Observe(true, Sample(5750, 50, generation), EHookOverlayStatus.Active, 5750)
-                .Any(a => a.Kind == HookProbeActionKind.Learn));
+            var reconfirmed = session.Observe(true, Sample(5750, 50, generation), EHookOverlayStatus.Active, 5750);
+            Assert.IsTrue(reconfirmed.Any(a => a.Kind == HookProbeActionKind.Learn && a.Reconfirmation));
+            Assert.IsTrue(reconfirmed.Any(a => a.Kind == HookProbeActionKind.LogVerdict && a.Reconfirmation));
+            Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
+        }
+
+        [TestMethod]
+        public void SwapchainChangeThatNeverDrawsAgain_RevokesVerification()
+        {
+            var session = Session();
+            session.Observe(true, Sample(1250, 10), EHookOverlayStatus.Active, 1250);
+            session.Observe(true, Sample(3250, 30), EHookOverlayStatus.Active, 3250);
+            Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
+
+            // The new swapchain keeps presenting, but the hook never draws on it again.
+            bool revoked = false, learnedAgain = false;
+            for (ulong now = 3500; now <= 27000; now += 250)
+            {
+                var sample = Sample(3500, 31, 2);
+                sample.LastHeartbeatTickMs = (long)now;
+                var progress = sample.Progress.Value;
+                progress.Presents = now;
+                sample.Progress = progress;
+                var actions = session.Observe(true, sample, EHookOverlayStatus.Active, now);
+                revoked |= actions.Any(a => a.Kind == HookProbeActionKind.InvalidateVerification ||
+                    a.Kind == HookProbeActionKind.GiveUp);
+                learnedAgain |= actions.Any(a => a.Kind == HookProbeActionKind.Learn);
+            }
+            Assert.IsTrue(revoked, "A route that stopped drawing must lose its verified status.");
+            Assert.IsFalse(learnedAgain);
         }
 
         [TestMethod]
