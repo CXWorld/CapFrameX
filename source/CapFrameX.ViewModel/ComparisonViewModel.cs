@@ -978,7 +978,8 @@ namespace CapFrameX.ViewModel
             // Frametimes
             ComparisonFrametimesModel = new PlotModel
             {
-                PlotMargins = new OxyThickness(40, 10, 10, 70),
+                // Automatic left margin, so long tick labels never push the axis title out.
+                PlotMargins = new OxyThickness(double.NaN, 10, 10, 70),
                 PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30),
                 TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black,
                 DefaultFontSize = 13 * _legendFontSizeFactor
@@ -1027,7 +1028,7 @@ namespace CapFrameX.ViewModel
             // FPS
             ComparisonFpsModel = new PlotModel
             {
-                PlotMargins = new OxyThickness(40, 10, 10, 70),
+                PlotMargins = new OxyThickness(double.NaN, 10, 10, 70),
                 PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                 TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black,
                 DefaultFontSize = 13 * _legendFontSizeFactor
@@ -1076,7 +1077,7 @@ namespace CapFrameX.ViewModel
             // Distribution
             ComparisonDistributionModel = new PlotModel
             {
-                PlotMargins = new OxyThickness(40, 10, 10, 70),
+                PlotMargins = new OxyThickness(double.NaN, 10, 10, 70),
                 PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                 TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black,
                 DefaultFontSize = 13 * _legendFontSizeFactor

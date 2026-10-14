@@ -5,7 +5,12 @@ using CapFrameX.Statistics.PlotBuilder;
 using CapFrameX.Statistics.PlotBuilder.Contracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using OxyPlot;
+using OxyPlot.Axes;
+using System.Globalization;
 using System.Linq;
+using System.Security;
+using System.Text.RegularExpressions;
 
 namespace CapFrameX.Test.Statistics
 {
@@ -37,23 +42,61 @@ namespace CapFrameX.Test.Statistics
             Assert.AreEqual(2, GetSeries(builder, "Low FPS").Points.Count);
         }
 
+        [TestMethod]
+        public void FrametimeGraph_LargeFrametimes_KeepTheAxisTitleInPlace()
+        {
+            // Loading screens produce spikes of tens of seconds. Their five-digit tick labels must
+            // not push the frame time axis title further out than a regular recording does; with a
+            // fixed left margin it ended up cut off at the edge of the chart.
+            double regular = GetLeftAxisTitleX(BuildFrametimeGraph(16, 17, 18, 16));
+            double spikes = GetLeftAxisTitleX(BuildFrametimeGraph(16, 22000, 18, 16));
+
+            Assert.IsTrue(spikes >= regular - 0.5,
+                $"The axis title moved from x={regular} to x={spikes} for long tick labels.");
+        }
+
+        private static PlotModel BuildFrametimeGraph(params double[] frametimes)
+        {
+            var context = CreateContext(frametimes);
+            var builder = new FrametimePlotBuilder(context.Options.Object, context.Provider);
+            builder.BuildPlotmodel(context.Session, context.PlotSettings.Object, 0, frametimes.Length - 1,
+                ERemoveOutlierMethod.None);
+            return builder.PlotModel;
+        }
+
+        // Renders the model and returns the x position of the rotated title of its left axis.
+        private static double GetLeftAxisTitleX(PlotModel model)
+        {
+            string title = model.Axes.First(axis => axis.Position == AxisPosition.Left && axis.IsAxisVisible).Title;
+            string svg = SvgExporter.ExportToString(model, 1100, 500, false);
+            var match = Regex.Match(svg, @"translate\(([-\d.]+),[-\d.]+\) rotate\(-90\)""[^>]*>"
+                + Regex.Escape(SecurityElement.Escape(title)) + "</text>");
+            Assert.IsTrue(match.Success, "The left axis title was not rendered.");
+            return double.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+        }
+
         private static OxyPlot.Series.LineSeries GetSeries(PlotBuilder builder, string title)
             => builder.PlotModel.Series.OfType<OxyPlot.Series.LineSeries>()
                 .Single(series => series.Title == title);
 
-        private static TestContext CreateContext()
+        private static TestContext CreateContext(params double[] frametimes)
         {
+            if (frametimes.Length == 0)
+            {
+                frametimes = new[] { 10d, 20d, 40d };
+            }
+
             var options = new Mock<IFrametimeStatisticProviderOptions>();
             options.SetupGet(value => value.FpsValuesRoundingDigits).Returns(2);
             options.SetupGet(value => value.IntervalAverageWindowTime).Returns(500);
             var plotSettings = new Mock<IPlotSettings>();
             plotSettings.SetupGet(value => value.ShowThresholds).Returns(true);
             plotSettings.SetupGet(value => value.LowFPSThreshold).Returns(30);
-            var captureData = new SessionCaptureData(3)
+            var captureData = new SessionCaptureData(frametimes.Length)
             {
-                TimeInSeconds = new[] { 0d, 1d, 2d },
-                MsBetweenPresents = new[] { 10d, 20d, 40d },
-                MsBetweenDisplayChange = new[] { 0d, 0d, 0d }
+                TimeInSeconds = frametimes.Select((_, index) => (double)index).ToArray(),
+                MsBetweenPresents = frametimes,
+                MsBetweenDisplayChange = new double[frametimes.Length]
             };
             var session = new Session();
             session.Runs.Add(new SessionRun { CaptureData = captureData });
