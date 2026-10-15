@@ -55,15 +55,42 @@ namespace CapFrameX.Test.Integration
         [TestMethod]
         public void GreenlineGpuNameIsVerticallyCentredInItsHeader()
         {
-            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "NVIDIA-GeForce-RTX-GREENLINE");
+            var header = RenderStarterHeader("NVIDIA-GeForce-RTX-GREENLINE", out byte[] pixels, out int stride);
+            // A dark name on the green header.
+            var (top, bottom) = InkRows(pixels, stride, header, header.Top, (red, green, blue) => green < 100);
+            Assert.AreEqual((double)(top - header.Top), header.Bottom - 1 - bottom, 2,
+                "The GPU name must keep the same distance to the top and bottom of the green header.");
+        }
+
+        [TestMethod]
+        public void IcelineGpuNameIsVerticallyCentredBelowItsAccentLine()
+        {
+            var header = RenderStarterHeader("ICELINE-Vertical", out byte[] pixels, out int stride);
+            // The accent line along the top edge has the colour of the name, which is centred in the
+            // band below it. Without its one pixel of padding the two gaps differ by two pixels,
+            // hence the tight tolerance.
+            static bool Cyan(byte red, byte green, byte blue) => green > 120 && blue > 130;
+            int lineBottom = header.Top, middle = (header.Left + header.Right) / 2;
+            while (lineBottom < header.Bottom && IsInk(pixels, stride, middle, lineBottom, Cyan)) lineBottom++;
+            Assert.IsTrue(lineBottom > header.Top, "The accent line must be rendered along the top of the header.");
+            var (top, bottom) = InkRows(pixels, stride, header, lineBottom, Cyan);
+            Assert.AreEqual((double)(top - lineBottom), header.Bottom - 1 - bottom, 1,
+                "The GPU name must keep the same distance to the accent line and to the bottom of the header.");
+        }
+
+        // Renders a starter with a GPU name and returns the pixel bounds of its first tile, the header.
+        private static (int Left, int Top, int Right, int Bottom) RenderStarterHeader(string presetId, out byte[] pixels, out int stride)
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
             var design = OsdDesignDocument.FromJson(starter.DesignJson);
             int width = (int)Math.Ceiling(design.Width * design.Scale) + 48;
-            int height = (int)Math.Ceiling(design.CanvasHeight * design.Scale) + 48, stride = width * 4;
+            int height = (int)Math.Ceiling(design.CanvasHeight * design.Scale) + 48;
+            stride = width * 4;
             using var preview = new OsdPreview();
             Assert.IsTrue(preview.CreateBitmap(width, height));
             Assert.IsTrue(preview.LoadTemplateJson(starter.DesignJson));
             Assert.IsTrue(preview.SetMetricsJson("{\"gpuName\":\"NVIDIA GeForce RTX 5090\"}"));
-            var pixels = new byte[stride * height];
+            pixels = new byte[stride * height];
             var handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);
             try
             {
@@ -72,26 +99,33 @@ namespace CapFrameX.Test.Integration
             finally { handle.Free(); }
             var tiles = new OsdPreviewTileRect[OsdDesignDocument.MaximumTiles];
             Assert.IsTrue(preview.GetLayout(out _, tiles) > 0);
-
-            // The native metric stacks its text from the top of the padded tile, so only the tile
-            // padding centres the name. Its capitals and digits span cap height to baseline; the
-            // name has no descenders, so the dark rows on the green header are exactly that span.
             var header = tiles[0];
-            int headerTop = (int)Math.Round(header.Y), headerBottom = (int)Math.Round(header.Y + header.Height);
+            return ((int)Math.Round(header.X), (int)Math.Round(header.Y),
+                (int)Math.Round(header.X + header.Width), (int)Math.Round(header.Y + header.Height));
+        }
+
+        // The native metric stacks its text from the top of the padded tile, so only the tile
+        // padding centres a name. Capitals and digits span cap height to baseline, and the sample
+        // name has no descenders, so the rows it covers are exactly that span.
+        private static (int Top, int Bottom) InkRows(byte[] pixels, int stride, (int Left, int Top, int Right, int Bottom) area,
+            int from, Func<byte, byte, byte, bool> matches)
+        {
             int top = -1, bottom = -1;
-            for (int y = headerTop; y < headerBottom; y++)
-            for (int x = (int)Math.Round(header.X) + 2; x < (int)Math.Round(header.X + header.Width) - 2; x++)
+            for (int y = from; y < area.Bottom; y++)
+            for (int x = area.Left + 2; x < area.Right - 2; x++)
             {
-                int offset = y * stride + x * 4;
-                if (pixels[offset + 3] > 200 && pixels[offset + 1] < 100)
-                {
-                    if (top < 0) top = y;
-                    bottom = y;
-                }
+                if (!IsInk(pixels, stride, x, y, matches)) continue;
+                if (top < 0) top = y;
+                bottom = y;
             }
             Assert.IsTrue(top >= 0, "The GPU name must be rendered inside the header.");
-            Assert.AreEqual((double)(top - headerTop), headerBottom - 1 - bottom, 2,
-                "The GPU name must keep the same distance to the top and bottom of the green header.");
+            return (top, bottom);
+        }
+
+        private static bool IsInk(byte[] pixels, int stride, int x, int y, Func<byte, byte, byte, bool> matches)
+        {
+            int offset = y * stride + x * 4;
+            return pixels[offset + 3] > 200 && matches(pixels[offset + 2], pixels[offset + 1], pixels[offset]);
         }
     }
 }

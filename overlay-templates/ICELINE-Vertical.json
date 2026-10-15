@@ -107,7 +107,7 @@
                 "type": "panel",
                 "background": true,
                 "colSpan": 1,
-                "padding": 0,
+                "padding": 1,
                 "radius": 0,
                 "color": "#00000000",
                 "children": [
@@ -121,14 +121,14 @@
                     "size": 13,
                     "unitSize": 8,
                     "labelPosition": "none",
-                    "width": 260,
+                    "width": 258,
                     "family": "Bahnschrift",
                     "valueColor": "#3DD0E2FF",
                     "labelColor": "#3DD0E2FF",
                     "unitColor": "#3DD0E2FF",
                     "align": "center",
                     "editor": {
-                      "padding": 0,
+                      "padding": 1,
                       "borderWidth": 0,
                       "unitSize": 8,
                       "valueColor": "#3DD0E2FF",
@@ -192,7 +192,7 @@
                   "maximum": 100
                 },
                 {
-                  "padding": 0,
+                  "padding": 1,
                   "borderWidth": 0,
                   "unitSize": 8,
                   "valueColor": "#3DD0E2FF",
