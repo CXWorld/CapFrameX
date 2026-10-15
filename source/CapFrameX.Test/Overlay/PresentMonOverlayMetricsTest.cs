@@ -195,8 +195,8 @@ namespace CapFrameX.Test.Overlay
         }
 
         [TestMethod]
-        [DataRow("DXGI", "DX11")]
-        [DataRow("DXGI", "DX12")]
+        [DataRow("DXGI", "D3D11")]
+        [DataRow("DXGI", "D3D12")]
         [DataRow("Other", "Vulkan")]
         public void InGameRenderer_LabelsTheGroupWithTheApiItProved(string presentMonRuntime, string renderApi)
         {
@@ -218,19 +218,19 @@ namespace CapFrameX.Test.Overlay
             using var fixture = new Fixture();
             fixture.Metrics.SetEnabled(true);
             fixture.Frames.OnNext(Row(42, "10", "20"));
-            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 42, "DX12"));
-            Assert.AreEqual("DX12", fixture.Snapshot()[0].GroupName);
+            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 42, "D3D12"));
+            Assert.AreEqual("D3D12", fixture.Snapshot()[0].GroupName);
 
             // Hidden, idle and transitional statuses carry no API; the label must not flip.
             fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Hidden, 42, null));
             fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Idle, 42, " "));
-            Assert.AreEqual("DX12", fixture.Snapshot()[0].GroupName);
+            Assert.AreEqual("D3D12", fixture.Snapshot()[0].GroupName);
 
             fixture.Metrics.SetEnabled(false);
             fixture.Metrics.SetEnabled(true);
             fixture.CaptureRunning.OnNext(false);
             fixture.CaptureRunning.OnNext(true);
-            Assert.AreEqual("DX12", fixture.Snapshot()[0].GroupName,
+            Assert.AreEqual("D3D12", fixture.Snapshot()[0].GroupName,
                 "The API belongs to the process, not to the PresentMon interval.");
         }
 
@@ -241,11 +241,11 @@ namespace CapFrameX.Test.Overlay
             fixture.Metrics.SetEnabled(true);
             fixture.Frames.OnNext(Row(42, "10", "20"));
 
-            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 99, "DX12"));
+            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 99, "D3D12"));
             Assert.AreEqual("DXGI", fixture.Snapshot()[0].GroupName);
 
-            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 42, "DX11"));
-            Assert.AreEqual("DX11", fixture.Snapshot()[0].GroupName);
+            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 42, "D3D11"));
+            Assert.AreEqual("D3D11", fixture.Snapshot()[0].GroupName);
 
             // Switching to the hook-free renderer: only PresentMon is left.
             fixture.HookStatuses.OnNext(new HookOverlayStatus(EHookOverlayStatus.Disabled));
@@ -257,13 +257,13 @@ namespace CapFrameX.Test.Overlay
         {
             using var fixture = new Fixture();
             fixture.Metrics.SetEnabled(true);
-            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 42, "DX12"));
+            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 42, "D3D12"));
             fixture.Frames.OnNext(Row(42, "10", "20"));
-            Assert.AreEqual("DX12", fixture.Snapshot()[0].GroupName);
+            Assert.AreEqual("D3D12", fixture.Snapshot()[0].GroupName);
 
             // The hook manager follows the new PID before this source does.
             fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 99, "Vulkan"));
-            Assert.AreEqual("DX12", fixture.Snapshot()[0].GroupName);
+            Assert.AreEqual("D3D12", fixture.Snapshot()[0].GroupName);
             fixture.ProcessIds.OnNext(99);
             fixture.Frames.OnNext(Row(99, "10", "20", "Other"));
             Assert.AreEqual("Vulkan", fixture.Snapshot()[0].GroupName);

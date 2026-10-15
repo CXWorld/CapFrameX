@@ -98,7 +98,7 @@ With **Off**, the overlay switches and the overlay hotkey have no effect. Two th
 
 Configure individual entries, colors, groups, and three profiles in **Overlay items**. OSD options include opacity, zoom, placement, a position hotkey, and PresentMon replay buffering. Existing renderer selections are preserved. If v1.9.0 migrated your in-game selection to hook-free, you can select in-game again since 1.9.1.
 
-The group name `<APP>` (used by the FPS and frame time entries) shows the game's graphics API, as it does with RTSS. The in-game renderer shows the API it draws with: `DX11`, `DX12` or `Vulkan`. The hook-free renderer stays outside the game and shows the runtime that PresentMon reports: `DXGI`, `D3D9`, or `Other` when the game presents through neither, as many Vulkan and OpenGL games do. The in-game renderer also shows the PresentMon runtime until it has determined the API.
+The group name `<APP>` (used by the FPS and frame time entries) shows the game's graphics API, as it does with RTSS. The in-game renderer shows the API it draws with, spelled as RTSS spells it: `D3D11`, `D3D12` or `Vulkan`. The hook-free renderer stays outside the game and shows the runtime that PresentMon reports: `DXGI`, `D3D9`, or `Other` when the game presents through neither, as many Vulkan and OpenGL games do. The in-game renderer also shows the PresentMon runtime until it has determined the API. The API entry of a capture uses the same spelling; captures recorded before this change keep `DX11` or `DX12`.
 
 ### OLED pixel orbit
 

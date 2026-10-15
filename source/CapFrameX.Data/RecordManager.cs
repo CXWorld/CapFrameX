@@ -894,7 +894,7 @@ namespace CapFrameX.Data
         }
 
         /// <summary>
-        /// Graphics API of the captured game — "DX11", "DX12", "Vulkan" — or "unknown".
+        /// Graphics API of the captured game — "D3D11", "D3D12", "Vulkan" — or "unknown".
         ///
         /// Same problem as the render resolution: RTSS answers only for processes it hooked
         /// itself and is not running at all while the in-game overlay renders, which is why this

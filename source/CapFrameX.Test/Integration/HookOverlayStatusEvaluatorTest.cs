@@ -774,9 +774,9 @@ namespace CapFrameX.Test.Integration
             d3d12.Api = NativeHookApi.D3D12;
 
             // Spelled the way RTSS spells it, so both sources produce comparable records.
-            Assert.AreEqual("DX11",
+            Assert.AreEqual("D3D11",
                 HookOverlayStatusEvaluator.EvaluateNative(1, "DXGI", d3d11, Now).RenderApi);
-            Assert.AreEqual("DX12",
+            Assert.AreEqual("D3D12",
                 HookOverlayStatusEvaluator.EvaluateNative(1, "DXGI", d3d12, Now).RenderApi);
         }
 

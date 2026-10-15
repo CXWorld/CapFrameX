@@ -180,12 +180,14 @@ and switch renderers call `WireOverlayRenderer` (`CapFrameX.Test/Mocks`) after `
 
 RTSS resolves its `<APP>` macro itself. For the CapFrameX renderers and the remote API,
 `PresentMonOverlayMetrics.ApplySnapshot` replaces it in copies of the entries, in this order: the
-API the in-game renderer proved for the target (`HookOverlayStatus.RenderApi`: `DX11`/`DX12` from
+API the in-game renderer proved for the target (`HookOverlayStatus.RenderApi`: `D3D11`/`D3D12` from
 the hook's device type, `Vulkan` from the loaded layer), the PresentMon `PresentRuntime` (`DXGI`,
 `D3D9`, `Other`), then "Performance". The hook-free renderer only has PresentMon. The proven API is
 bound to the target PID and kept through statuses without one (hidden, idle, transitional): every
 label change renames the group and makes the renderer rebuild its scene. A `Disabled` status (another
-renderer selected) and a PID change drop it.
+renderer selected) and a PID change drop it. API names follow RTSS's spelling (`D3D11`, `D3D12`,
+`Vulkan`, `OpenGL`, ...), also in `RTSSCoreControl.cpp` (`IRTSSService.GetApiInfo`): both sources feed a
+capture's `ApiInfo` and the `GraphicsAPI` overlay entry, so they must spell alike.
 
 ### OLED pixel orbit
 

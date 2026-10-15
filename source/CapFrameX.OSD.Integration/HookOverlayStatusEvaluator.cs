@@ -231,16 +231,17 @@ namespace CapFrameX.OSD.Integration
         }
 
         /// <summary>
-        /// The hook's proven device type, spelled the way RTSS spells it so both can feed the
-        /// capture file's ApiInfo. Null while unknown — a caller must be able to tell "not
-        /// determined yet" from an answer.
+        /// The hook's proven device type, spelled the way RTSS spells it ("D3D11", "D3D12") so
+        /// both can feed the capture file's ApiInfo and the &lt;APP&gt; group reads the same with
+        /// either renderer. Null while unknown — a caller must be able to tell "not determined
+        /// yet" from an answer.
         /// </summary>
         internal static string FormatApi(NativeHookApi api)
         {
             switch (api)
             {
-                case NativeHookApi.D3D11: return "DX11";
-                case NativeHookApi.D3D12: return "DX12";
+                case NativeHookApi.D3D11: return "D3D11";
+                case NativeHookApi.D3D12: return "D3D12";
                 default: return null;
             }
         }

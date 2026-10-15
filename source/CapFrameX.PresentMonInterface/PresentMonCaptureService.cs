@@ -48,7 +48,7 @@ namespace CapFrameX.PresentMonInterface
         public static readonly int SwapChainAddress_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "SwapChainAddress");
         // Graphics runtime/API of the presenting app (e.g. "DXGI", "D3D9") — index 3; used to
         // label the <APP> line of the hook-free OSD (RTSS gets this from the 3D API, we get it from
-        // PresentMon). The in-game renderer replaces it with the API it proved (DX11, DX12, Vulkan).
+        // PresentMon). The in-game renderer replaces it with the API it proved (D3D11, D3D12, Vulkan).
         public static readonly int PresentRuntime_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "PresentRuntime");
         // "Application" or a generated-frame source (--track_frame_type); fixed index before the
         // optional PC latency column. Consumed by the hook-free feed diagnostics only.
