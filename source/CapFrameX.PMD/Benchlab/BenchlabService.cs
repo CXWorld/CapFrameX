@@ -676,7 +676,9 @@ namespace CapFrameX.PMD.Benchlab
         {
             var sensorSample = new SensorSample
             {
-                TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                // Milliseconds on the QPC clock, the clock of the frame times: captures place the
+                // samples by this time, because the requests do not keep MonitoringInterval exactly.
+                TimeStamp = (long)Math.Floor(Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency * 1000.0),
                 Sensors = sensorList
             };
             _pmdSensorStream.OnNext(sensorSample);

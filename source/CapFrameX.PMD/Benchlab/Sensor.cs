@@ -19,6 +19,9 @@ namespace CapFrameX.PMD.Benchlab
 
     public class SensorSample
     {
+        /// <summary>
+        /// Time of the reading in milliseconds on the QPC clock.
+        /// </summary>
         public long TimeStamp { get; set; }
         public IList<Sensor> Sensors { get; set; }
     }

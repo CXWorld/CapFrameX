@@ -7,6 +7,7 @@ using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Monitoring.Contracts;
+using CapFrameX.PMD;
 using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
@@ -91,9 +92,12 @@ namespace CapFrameX.Data
         private ISubject<CaptureStatus> _captureStatusChange =
             new BehaviorSubject<CaptureStatus>(new CaptureStatus { Status = ECaptureStatus.Stopped });
         private List<float> _aggregatedRTSSFrameTimes;
-        private LinkedList<float> _pmdDataGpuPower;
-        private LinkedList<float> _pmdDataCpuPower;
-        private LinkedList<float> _pmdDataSystemPower;
+        // PMD samples of the running capture: time in seconds on the QPC clock, power per rail.
+        private readonly object _pmdSamplesLock = new object();
+        private List<double> _pmdSampleTimes = new List<double>();
+        private List<float> _pmdDataGpuPower = new List<float>();
+        private List<float> _pmdDataCpuPower = new List<float>();
+        private List<float> _pmdDataSystemPower = new List<float>();
 
         public IObservable<CaptureStatus> CaptureStatusChange
             => _captureStatusChange.AsObservable();
@@ -196,6 +200,9 @@ namespace CapFrameX.Data
             if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
                 throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
 
+            // Before the start time is taken, so the PMD samples cover the first frame.
+            StartPmdLogging();
+
             QueryPerformanceCounter(out long startCounter);
             QueryPerformanceFrequency(out long lpFrequency);
             _qpcTimeStart = (double)startCounter / lpFrequency;
@@ -222,6 +229,7 @@ namespace CapFrameX.Data
                 }
                 catch (OperationCanceledException) when (_cancelDelay.IsCancellationRequested)
                 {
+                    StopPmdLogging();
                     _overlayService.SetCaptureServiceStatus("Ready to capture...");
                     _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Stopped });
                     delayStopwatch.Reset();
@@ -260,27 +268,6 @@ namespace CapFrameX.Data
 
             bool intializedStartTime = false;
             double captureDataArchiveLastTime = 0;
-
-            if (_appConfiguration.UsePmdDataLogging)
-            {
-                _pmdDataGpuPower = new LinkedList<float>();
-                _pmdDataCpuPower = new LinkedList<float>();
-                _pmdDataSystemPower = new LinkedList<float> { };
-
-                // Create schedulers that we can dispose later
-                _poweneticsScheduler = new EventLoopScheduler();
-                _benchlabScheduler = new EventLoopScheduler();
-
-                _disposablePoweneticsDataStream = _poweneticsService.PmdChannelStream
-                    .Where(x => IsCapturing)
-                    .ObserveOn(_poweneticsScheduler)
-                    .Subscribe(channels => FillPmdDataLists(channels));
-
-                _disposableBenchlabDataStream = _benchlabService.PmdSensorStream
-                    .Where(x => IsCapturing)
-                    .ObserveOn(_benchlabScheduler)
-                    .Subscribe(sensorSample => FillPmdDataLists(sensorSample));
-            }
 
             // Replace the previous subscription instead of assigning over it, the way
             // StartFillArchive already does. The handle is the only way to dispose one, so
@@ -435,13 +422,7 @@ namespace CapFrameX.Data
                 _captureStreamScheduler = null;
             }
 
-            // Stop PMD logging
-            _disposablePoweneticsDataStream?.Dispose();
-            _disposableBenchlabDataStream?.Dispose();
-            _poweneticsScheduler?.Dispose();
-            _benchlabScheduler?.Dispose();
-            _poweneticsScheduler = null;
-            _benchlabScheduler = null;
+            StopPmdLogging();
 
             _logEntryManager.AddLogEntry("Processing captured data", ELogMessageType.BasicInfo, false);
 
@@ -553,18 +534,120 @@ namespace CapFrameX.Data
             _logEntryManager.AddLogEntry("Started filling archive.", ELogMessageType.AdvancedInfo, false);
         }
 
+        // Collects PMD samples from before the capture start on. The capture window is cut out by
+        // the sample times when the file is written, so the subscription neither has to start at
+        // the first frame nor to stop at the last one.
+        private void StartPmdLogging()
+        {
+            StopPmdLogging();
+
+            if (!_appConfiguration.UsePmdDataLogging)
+                return;
+
+            lock (_pmdSamplesLock)
+            {
+                _pmdSampleTimes = new List<double>();
+                _pmdDataGpuPower = new List<float>();
+                _pmdDataCpuPower = new List<float>();
+                _pmdDataSystemPower = new List<float>();
+            }
+
+            // Create schedulers that we can dispose later
+            _poweneticsScheduler = new EventLoopScheduler();
+            _benchlabScheduler = new EventLoopScheduler();
+
+            _disposablePoweneticsDataStream = _poweneticsService.PmdChannelStream
+                .ObserveOn(_poweneticsScheduler)
+                .Subscribe(channels => FillPmdDataLists(channels));
+
+            _disposableBenchlabDataStream = _benchlabService.PmdSensorStream
+                .ObserveOn(_benchlabScheduler)
+                .Subscribe(sensorSample => FillPmdDataLists(sensorSample));
+        }
+
+        private void StopPmdLogging()
+        {
+            _disposablePoweneticsDataStream?.Dispose();
+            _disposableBenchlabDataStream?.Dispose();
+            _disposablePoweneticsDataStream = null;
+            _disposableBenchlabDataStream = null;
+            _poweneticsScheduler?.Dispose();
+            _benchlabScheduler?.Dispose();
+            _poweneticsScheduler = null;
+            _benchlabScheduler = null;
+        }
+
         private void FillPmdDataLists(PoweneticsChannel[] channel)
         {
-            _pmdDataGpuPower.AddLast(PoweneticsChannelExtensions.GPUPowerIndexGroup.Sum(index => channel[index].Value));
-            _pmdDataCpuPower.AddLast(PoweneticsChannelExtensions.EPSPowerIndexGroup.Sum(index => channel[index].Value));
-            _pmdDataSystemPower.AddLast(PoweneticsChannelExtensions.SystemPowerIndexGroup.Sum(index => channel[index].Value));
+            // The time stamp is the start of the downsampling bin; the sample stands for its centre.
+            AddPmdSample((channel[0].TimeStamp + 0.5 * _poweneticsService.DownSamplingSize) * 1E-03,
+                PoweneticsChannelExtensions.GPUPowerIndexGroup.Sum(index => channel[index].Value),
+                PoweneticsChannelExtensions.EPSPowerIndexGroup.Sum(index => channel[index].Value),
+                PoweneticsChannelExtensions.SystemPowerIndexGroup.Sum(index => channel[index].Value));
         }
 
         private void FillPmdDataLists(SensorSample sensorSample)
         {
-            _pmdDataGpuPower.AddLast((float)sensorSample.Sensors[_benchlabService.GpuPowerSensorIndex].Value);
-            _pmdDataCpuPower.AddLast((float)sensorSample.Sensors[_benchlabService.CpuPowerSensorIndex].Value);
-            _pmdDataSystemPower.AddLast((float)sensorSample.Sensors[_benchlabService.SytemPowerSensorIndex].Value);
+            AddPmdSample(sensorSample.TimeStamp * 1E-03,
+                (float)sensorSample.Sensors[_benchlabService.GpuPowerSensorIndex].Value,
+                (float)sensorSample.Sensors[_benchlabService.CpuPowerSensorIndex].Value,
+                (float)sensorSample.Sensors[_benchlabService.SytemPowerSensorIndex].Value);
+        }
+
+        private void AddPmdSample(double time, float gpuPower, float cpuPower, float systemPower)
+        {
+            lock (_pmdSamplesLock)
+            {
+                _pmdSampleTimes.Add(time);
+                _pmdDataGpuPower.Add(gpuPower);
+                _pmdDataCpuPower.Add(cpuPower);
+                _pmdDataSystemPower.Add(systemPower);
+            }
+        }
+
+        /// <summary>
+        /// Puts the PMD samples on the grid of the capture file, where value i belongs to
+        /// i * SampleTime after the first frame. The sample times are on the QPC clock, like the
+        /// frame times, so the series lines up with the frames whatever rate the device ran at.
+        /// </summary>
+        private void AddPmdData(ISessionRun sessionRun, double captureStartTime, double captureLengthMs)
+        {
+            double[] times;
+            float[] gpuPower, cpuPower, systemPower;
+            lock (_pmdSamplesLock)
+            {
+                times = _pmdSampleTimes.ToArray();
+                gpuPower = _pmdDataGpuPower.ToArray();
+                cpuPower = _pmdDataCpuPower.ToArray();
+                systemPower = _pmdDataSystemPower.ToArray();
+            }
+
+            if (times.Length == 0)
+                return;
+
+            int count = (int)(captureLengthMs / sessionRun.SampleTime) + 1;
+            double step = sessionRun.SampleTime * 1E-03;
+
+            sessionRun.PmdGpuPower = PmdTimeSeriesResampler.Resample(times, gpuPower, captureStartTime, step, count);
+            sessionRun.PmdCpuPower = PmdTimeSeriesResampler.Resample(times, cpuPower, captureStartTime, step, count);
+            sessionRun.PmdSystemPower = PmdTimeSeriesResampler.Resample(times, systemPower, captureStartTime, step, count);
+
+            double first = times[0] - captureStartTime;
+            double last = times[^1] - captureStartTime;
+            double captureEnd = (count - 1) * step;
+            // BENCHLAB samples are about one step apart, so its first one may come a step late.
+            double slack = Math.Max(2 * step, 0.25);
+
+            _logEntryManager.AddLogEntry(string.Format(CultureInfo.InvariantCulture,
+                "PMD: {0} samples from {1:F2} s to {2:F2} s, stored as {3} values every {4} ms",
+                times.Length, first, last, count, sessionRun.SampleTime), ELogMessageType.AdvancedInfo, false);
+
+            if (first > slack || last < captureEnd - slack)
+            {
+                _logEntryManager.AddLogEntry(string.Format(CultureInfo.InvariantCulture,
+                    "PMD data only covers {0:F2} s to {1:F2} s of the capture; the uncovered part repeats the nearest value.",
+                    first, last), ELogMessageType.BasicInfo, false);
+            }
         }
 
         private async Task WriteExtractedCaptureDataToFileAsync()
@@ -597,29 +680,13 @@ namespace CapFrameX.Data
                 if (_appConfiguration.UsePmdDataLogging)
                 {
                     if (_poweneticsService.IsServiceRunning)
-                    {
                         sessionRun.SampleTime = _poweneticsService.DownSamplingSize;
-                        int count = (int)(finalCaptureTime / sessionRun.SampleTime) + 1;
-
-                        if (_pmdDataGpuPower.Any())
-                            sessionRun.PmdGpuPower = _pmdDataGpuPower.Take(count).ToArray();
-                        if (_pmdDataCpuPower.Any())
-                            sessionRun.PmdCpuPower = _pmdDataCpuPower.Take(count).ToArray();
-                        if (_pmdDataSystemPower.Any())
-                            sessionRun.PmdSystemPower = _pmdDataSystemPower.Take(count).ToArray();
-                    }
                     else if (_benchlabService.IsServiceRunning)
-                    {
                         sessionRun.SampleTime = _benchlabService.MonitoringInterval;
-                        int count = (int)(finalCaptureTime / sessionRun.SampleTime) + 1;
 
-                        if (_pmdDataGpuPower.Any())
-                            sessionRun.PmdGpuPower = _pmdDataGpuPower.Take(count).ToArray();
-                        if (_pmdDataCpuPower.Any())
-                            sessionRun.PmdCpuPower = _pmdDataCpuPower.Take(count).ToArray();
-                        if (_pmdDataSystemPower.Any())
-                            sessionRun.PmdSystemPower = _pmdDataSystemPower.Take(count).ToArray();
-                    }
+                    // Time 0 of the file is the first frame NormalizeTimes kept.
+                    if (sessionRun.SampleTime > 0)
+                        AddPmdData(sessionRun, GetCpuStartQpcFromDataLine(adjustedCaptureData[1]), finalCaptureTime);
                 }
 
                 if (_appConfiguration.UseRunHistory)

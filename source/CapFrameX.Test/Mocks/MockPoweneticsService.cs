@@ -3,6 +3,7 @@ using CapFrameX.Contracts.PMD;
 using CapFrameX.PMD.Powenetics;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -193,7 +194,8 @@ namespace CapFrameX.Test.Mocks
             if (!_availablePorts.Contains(PortName)) return false;
 
             _isRunning = true;
-            _currentTimestamp = 0;
+            // Bin starts in milliseconds on the QPC clock, like the real service emits them.
+            _currentTimestamp = (long)Math.Floor(Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency * 1000.0);
             _sampleCount = 0;
 
             _pmdStatusSubject.OnNext(EPmdDriverStatus.Connected);
@@ -422,7 +424,7 @@ namespace CapFrameX.Test.Mocks
 
         private PoweneticsChannel[] GenerateChannelData()
         {
-            _currentTimestamp++;
+            _currentTimestamp += Math.Max(1, DownSamplingSize);
             var channels = new PoweneticsChannel[CHANNEL_COUNT];
             var mapping = PoweneticsChannelExtensions.PmdChannelIndexMapping;
 

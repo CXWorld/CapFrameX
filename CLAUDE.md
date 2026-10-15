@@ -396,6 +396,29 @@ status bar (`StateView`), the UPDATE tab in the options popup (`ColorbarView`), 
 dialog. The dialog's `DialogHost` sits in `Shell.xaml`, not in the options popup — a `DialogHost`
 nested inside a WPF `Popup` does not reliably render its overlay (same caveat as `ControlView.xaml`).
 
+## PMD time axis
+
+A capture file stores PMD power without times: value i belongs to i × `SampleTime` after the first
+frame. No PMD device delivers exactly one sample per `SampleTime`: a measured Powenetics unit sends
+979 instead of 1000 packets/s (no losses, the device is simply slower), and BENCHLAB pipe requests
+take longer than `MonitoringInterval`. Storing samples as they came compressed a 600 s capture by
+12 s. So every PMD sample carries its time in ms on the QPC clock — the clock of `CPUStartQPCTime`
+— in `PoweneticsChannel.TimeStamp` / `SensorSample.TimeStamp`, and `CaptureManager.AddPmdData` puts
+the samples onto the file's grid with `PmdTimeSeriesResampler` (time-weighted, keeps the average).
+`CaptureManager` subscribes before it takes the capture start time and cuts the window by time, so
+PMD data covers the first frame and the 2.5 s after the stop are dropped.
+
+Powenetics packets have a 16-bit packet number but no time, and `SerialPortStream` hands the data
+over only about every 106 ms (about 104 packets per read, also with blocking reads). Arrival times are
+therefore upper bounds. `PoweneticsPacketClock` takes the rate from a least-squares fit of packet
+index against arrival time and the offset from the lower envelope of the arrivals (the last packet of
+a read arrives right after it was sent); it counts lost packets across the 16-bit wrap and restarts
+on implausible jumps. The first ~6 s after connecting use plain arrival times while the rate is
+learned. `PoweneticsService` bins by time (`DownSamplingSize` is a length in ms, bins aligned to
+multiples of it) instead of by packet count; a bin's `TimeStamp` is its start. `PmdThroughput` and
+the "Sample Rate" display show the raw device packet rate. Unit tests: `CapFrameX.Test/PMD/PmdTimingTest`
+simulates the measured device including the batched delivery.
+
 ## Text field styles
 
 `CapFrameX.View/Styles/CxTextFields.xaml` (merged in `App.xaml`) replaces MDIX's implicit `TextBox`

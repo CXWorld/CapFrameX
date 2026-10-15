@@ -216,7 +216,7 @@ namespace CapFrameX.ViewModel.SubModels
 
             _pmdService.LostPacketsCounterStream
                 .SubscribeOnDispatcher()
-                .Subscribe(lostPackets => LostPackets = LostPackets.ToString());
+                .Subscribe(lostPackets => LostPackets = lostPackets.ToString());
         }
 
         internal void ManageChartsUpdate()
@@ -263,7 +263,8 @@ namespace CapFrameX.ViewModel.SubModels
             _pmdThroughputDisposable?.Dispose();
             _pmdThroughputDisposable = _pmdService.PmdThroughput
                 .SubscribeOnDispatcher()
-                .Subscribe(sampleCount => SampleRate = $"{(int)(Math.Round(sampleCount / (2 * 10d)) * 10)} [1/s]");
+                // Packets per 2 s from the device, unrounded: it does not run at exactly 1 kHz.
+                .Subscribe(sampleCount => SampleRate = $"{(int)Math.Round(sampleCount / 2d)} [1/s]");
         }
 
         private void ManagePmdService(bool startService)
@@ -272,6 +273,8 @@ namespace CapFrameX.ViewModel.SubModels
             {
                 _chartaDataBuffer.Clear();
                 _pmdDataMetricsManager.ResetHistory();
+                // The driver counts from zero again on every connection.
+                LostPackets = "0";
                 _pmdService.StartDriver();
 
                 SubscribePmdDataStreamCharts();
