@@ -17,11 +17,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Test.Data
@@ -290,6 +292,68 @@ namespace CapFrameX.Test.Data
 
             // Cancel the delay to cleanup
             await _captureManager.StopCapture();
+        }
+
+        [DataTestMethod]
+        [DataRow(0.0, DisplayName = "Stopped by hand")]
+        [DataRow(1.0, DisplayName = "Stopped by the capture time")]
+        public async Task StartCapture_WithDelay_RecordsNoFramesFromTheDelay(double captureTime)
+        {
+            // Frames sent until the delay is over carry 40 ms, the frames after it 10 ms. The capture
+            // used to start at the request, so the archive supplied the frames of the delay.
+            const double delay = 1.0;
+            const double delayFrameTime = 40.0;
+            const double captureFrameTime = 10.0;
+            _mockCaptureService.AddProcess("DelayGame", 4321, "0x00000005");
+            _mockCaptureService.UseRealQpcTime = true;
+            _mockCaptureService.StartCaptureService(null);
+            _captureManager.StartFillArchive();
+
+            long delayEnd = long.MaxValue;
+            using var stopEmitting = new CancellationTokenSource();
+            var emitter = Task.Run(async () =>
+            {
+                while (!stopEmitting.IsCancellationRequested)
+                {
+                    bool inDelay = Stopwatch.GetTimestamp() < Interlocked.Read(ref delayEnd);
+                    _mockCaptureService.EmitCustomFrame("DelayGame.exe", 4321, inDelay ? delayFrameTime : captureFrameTime);
+                    await Task.Delay(5);
+                }
+            });
+
+            // Fill the archive, then request the capture. The delay of CaptureManager ends after
+            // delayEnd, which is taken before its request.
+            await Task.Delay(300);
+            Interlocked.Exchange(ref delayEnd, Stopwatch.GetTimestamp() + (long)(delay * Stopwatch.Frequency));
+
+            var options = CreateValidCaptureOptions();
+            options.ProcessInfo = ("DelayGame", 4321);
+            options.CaptureDelay = delay;
+            options.CaptureTime = captureTime;
+            await _captureManager.StartCapture(options);
+
+            if (captureTime > 0)
+            {
+                var timeout = Stopwatch.StartNew();
+                while (_mockRecordManager.FileCount == 0 && timeout.Elapsed < TimeSpan.FromSeconds(20))
+                    await Task.Delay(100);
+            }
+            else
+            {
+                await Task.Delay(1500);
+                await _captureManager.StopCapture();
+            }
+
+            stopEmitting.Cancel();
+            await emitter;
+
+            var frameTimes = _mockRecordManager.LastConvertedPresentLines
+                .Select(line => line.Split(',')[MockCaptureService.MsBetweenPresents_INDEX])
+                .ToList();
+            Assert.AreEqual(1, _mockRecordManager.FileCount, "No capture was written.");
+            Assert.IsTrue(frameTimes.Count > 20, $"The capture has only {frameTimes.Count} frames.");
+            Assert.AreEqual(0, frameTimes.Count(frameTime => frameTime == delayFrameTime.ToString("F4")),
+                "Frames shown during the capture delay ended up in the capture.");
         }
 
         [TestMethod]

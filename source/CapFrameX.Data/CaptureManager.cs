@@ -203,14 +203,25 @@ namespace CapFrameX.Data
             // Before the start time is taken, so the PMD samples cover the first frame.
             StartPmdLogging();
 
+            // The capture starts at the request; the frames shown until the frame data subscription
+            // below is up come from the archive. A capture delay moves the start (see below).
             QueryPerformanceCounter(out long startCounter);
             QueryPerformanceFrequency(out long lpFrequency);
             _qpcTimeStart = (double)startCounter / lpFrequency;
 
-            var atomicTime = AtomicTime.Now.TimeOfDay;
-
             var delayStopwatch = new Stopwatch();
             delayStopwatch.Start();
+
+            // On its first use AtomicTime asks five NIST time servers and, when none answers, waits
+            // until all of them gave up (21 s when they are unreachable). It used to run right here,
+            // holding back the timers, the frame subscription and the sensor logging of the first
+            // capture of a session.
+            var requestStopwatch = Stopwatch.StartNew();
+            var atomicTimeOnRequest = Task.Run(() =>
+            {
+                var atomicNow = AtomicTime.Now;
+                return atomicNow == DateTime.MinValue ? (TimeSpan?)null : atomicNow.TimeOfDay - requestStopwatch.Elapsed;
+            });
 
             if (options.CaptureDelay > 0d)
             {
@@ -238,6 +249,12 @@ namespace CapFrameX.Data
                     _cancelDelay = new CancellationTokenSource();
                     return;
                 }
+
+                // The delay holds the capture back, so the frames shown meanwhile do not belong to
+                // it. With the request time as start, GetAdjustedCaptureData took them from the
+                // archive (as far as its 500 frames reach) and the capture ended that much early.
+                QueryPerformanceCounter(out long delayEndCounter);
+                _qpcTimeStart = (double)delayEndCounter / lpFrequency;
             }
 
             IsCapturing = true;
@@ -361,9 +378,12 @@ namespace CapFrameX.Data
                 _logEntryManager.AddLogEntry($"Capturing of process \"{options.ProcessInfo.Item1}\" started", ELogMessageType.BasicInfo, options.CaptureDelay > 0d ? false : true);
             }
 
-            _logEntryManager.AddLogEntry($"Atomic time(UTC) on capture start request: {atomicTime}" + Environment.NewLine
-                + $"Performance counter on capture start request: {startCounter}" + Environment.NewLine
+            _logEntryManager.AddLogEntry($"Performance counter on capture start request: {startCounter}" + Environment.NewLine
                 + $"Time between capture start request and execution in ms: {delayStopwatch.ElapsedMilliseconds}", ELogMessageType.AdvancedInfo, false);
+
+            _ = atomicTimeOnRequest.ContinueWith(task => _logEntryManager.AddLogEntry(
+                $"Atomic time(UTC) on capture start request: {(task.Result.HasValue ? task.Result.Value.ToString() : "unavailable")}",
+                ELogMessageType.AdvancedInfo, false), TaskContinuationOptions.OnlyOnRanToCompletion);
         }
 
         public async Task StopCapture()

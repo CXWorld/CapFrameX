@@ -1,6 +1,7 @@
 ﻿using CapFrameX.Capture.Contracts;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -110,6 +111,13 @@ namespace CapFrameX.Test.Mocks
         /// Set to 0 for immediate emission (useful for synchronous tests).
         /// </summary>
         public int EmissionIntervalMs { get; set; } = 16;
+
+        /// <summary>
+        /// Stamp frames with the current QPC time instead of a timeline starting at 0. CaptureManager
+        /// compares frame times with the QPC time of the capture start, so tests of the capture
+        /// window need frames on that clock.
+        /// </summary>
+        public bool UseRealQpcTime { get; set; }
 
         /// <summary>
         /// Creates a new MockCaptureService with a specific random seed for reproducible tests.
@@ -246,11 +254,18 @@ namespace CapFrameX.Test.Mocks
         {
             double displayChange = msBetweenDisplayChange ?? (msBetweenPresents + _random.NextDouble() * 1.0);
             _currentTimeInSeconds += msBetweenPresents / 1000.0;
-            _currentQpcTimeMs += msBetweenPresents;
+            AdvanceQpcTime(msBetweenPresents);
 
             var frameData = CreateFrameData(applicationName, processId, "0x00000001",
                 msBetweenPresents, displayChange, cpuBusy, gpuBusy);
             _frameDataSubject.OnNext(frameData);
+        }
+
+        private void AdvanceQpcTime(double frameTime)
+        {
+            _currentQpcTimeMs = UseRealQpcTime
+                ? Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency * 1000.0
+                : _currentQpcTimeMs + frameTime;
         }
 
         private void EmitHeader()
@@ -276,7 +291,7 @@ namespace CapFrameX.Test.Mocks
                 var (frameTime, displayChange, cpuBusy, gpuBusy) = GenerateRealisticMetrics();
 
                 _currentTimeInSeconds += frameTime / 1000.0;
-                _currentQpcTimeMs += frameTime;
+                AdvanceQpcTime(frameTime);
 
                 var frameData = CreateFrameData(
                     process.Name,
