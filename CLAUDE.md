@@ -312,6 +312,36 @@ settings are ignored. All of it is pure and unit-tested; the manager only execut
 - **Log lines**: `HookOverlay: compatibility plan for pid …` (evidence, signature, start stage, reason),
   `… compatibility stage k/n (…) … ended with <verdict>: …`, `… learned profile for '<exe>' (…) is now …`.
 
+## Tile profile authoring over MCP
+
+`TileProfileTools` (`CapFrameX.Mcp`, the `cfx_*_tile_*` tools) lets MCP clients create, edit, render
+and activate tile overlay profiles. The tools only shape arguments and results; the work happens in
+`IOverlayDesignAuthoringService` (`CapFrameX.Contracts/Overlay`), implemented by
+`OverlayDesignAuthoringService` in `CapFrameX.View/OverlayDesignAuthoring` because it needs the OSD
+Controls assembly. Clients exchange the **tile document** of `OverlayTileDocument`: the editor's
+document settings plus its tile model exactly as `OsdDesignDocument` stores it in each widget's
+`editor` metadata. Building one runs `OsdDesignDocument.Validate`, and the store canonicalizes with
+`OsdDesignDocument.FromJson(json).ToJson()` like the editor, so every profile written over MCP opens in
+the editor unchanged. `OverlayTileDocumentTest` round-trips every starter profile and gallery template
+through the tile document; keep it passing. Defaults for omitted fields may only touch fields the
+editor always serializes; defaulting an optional (`WhenWritingNull`) field would change designs on
+unrelated edits.
+
+- **UI thread**: every operation runs on the app dispatcher, which owns the designer window and the
+  native bitmap preview (`OverlayDesignPreviewRenderer`, the editor's renderer).
+- **Editor guard**: unsaved changes or a pending prompt in the open designer refuse every library
+  write (the store's stale-writer check would otherwise fail the user's next save). After a write the
+  designer reloads on the changed profile (`OverlayDesignerControl.ReloadLibraryAsync`, a no-op while
+  it has edits), and `IOverlayDesignService.RefreshProfiles` lets an active design update on screen.
+- **Binding**: semantic keys and template roles bind to this machine's sources through
+  `BindPresetSources`, as when the editor applies a template; `groupKey` set to an
+  `OsdSourceGroup` key fills a group's members. Omitted canvas frames are laid out by column.
+- **Guide**: `cfx_get_tile_design_guide` returns `OverlayTileDesignGuide`. Update it when the
+  Controls assembly adds widget kinds, fields or ranges; the field list at its end is generated.
+- **MCP infrastructure**: a tool may return `McpToolResult` for several content blocks (the render
+  tool sends an image plus text); `McpParameterSchemaAttribute` replaces a parameter's generated
+  schema; `JObject`/`JArray` parameters also accept their JSON as a string.
+
 ## Update service
 
 `IUpdateService` (`CapFrameX.Updater/UpdateService.cs`) fetches a JSON manifest from the CapFrameX

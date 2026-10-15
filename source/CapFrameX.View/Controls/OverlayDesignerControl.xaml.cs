@@ -11,6 +11,7 @@ using CapFrameX.Contracts.Localization;
 using CapFrameX.OSD.Controls;
 using CapFrameX.OSD.Integration;
 using CapFrameX.OSD.Interop;
+using CapFrameX.View.OverlayDesignAuthoring;
 using Newtonsoft.Json;
 
 namespace CapFrameX.View.Controls
@@ -174,26 +175,7 @@ namespace CapFrameX.View.Controls
                 var sources = await service.GetSourcesAsync();
                 if (!IsLoaded || generation != _sourceGeneration) return;
                 _previewSources = sources;
-                Editor.Sources = sources.Select(source => new OsdTelemetrySource
-                {
-                    Key = source.Id,
-                    Name = source.Name,
-                    Category = source.Category,
-                    Subcategory = source.Subcategory,
-                    DeviceName = source.HardwareName,
-                    Unit = source.Unit,
-                    SemanticKey = source.SemanticKey,
-                    DeviceKey = source.DeviceKey,
-                    GroupKey = source.GroupKey,
-                    GroupName = source.GroupName,
-                    GroupOrder = source.GroupOrder,
-                    CoreType = source.CoreType,
-                    CoreIndex = source.CoreIndex,
-                    ThreadIndex = source.ThreadIndex,
-                    IsAvailable = source.IsAvailable,
-                    IsText = source.IsText,
-                    SuggestedValueLines = source.Identifier == "RunHistory" ? 8 : 1
-                }).ToArray();
+                Editor.Sources = OverlayDesignSources.ToEditorSources(sources);
                 SetSourceStatus(() => CxLang.Format("OverlayEditor_SourcesReady", sources.Count));
             }
             catch (Exception ex)

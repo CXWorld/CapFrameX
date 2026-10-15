@@ -80,7 +80,7 @@ namespace CapFrameX.Mcp.Tools
 
                 if (argToken != null && argToken.Type != JTokenType.Null)
                 {
-                    args[i] = argToken.ToObject(p.ParameterType);
+                    args[i] = ConvertArgument(argToken, p);
                 }
                 else if (p.IsOptional)
                 {
@@ -112,6 +112,25 @@ namespace CapFrameX.Mcp.Tools
         }
 
         private static object GetDefault(Type t) => t.IsValueType ? Activator.CreateInstance(t) : null;
+
+        private static object ConvertArgument(JToken token, ParameterInfo parameter)
+        {
+            var type = parameter.ParameterType;
+            if (!typeof(JToken).IsAssignableFrom(type))
+                return token.ToObject(type);
+            // Some clients send a JSON parameter as its serialized text.
+            if (token.Type == JTokenType.String && type != typeof(JValue))
+            {
+                try { token = JToken.Parse((string)token); }
+                catch (JsonException ex)
+                {
+                    throw new ArgumentException($"Parameter '{parameter.Name}' is not valid JSON: {ex.Message}", parameter.Name, ex);
+                }
+            }
+            if (!type.IsInstanceOfType(token))
+                throw new ArgumentException($"Parameter '{parameter.Name}' must be a JSON {(type == typeof(JArray) ? "array" : "object")}.", parameter.Name);
+            return token;
+        }
 
         private static string ToSnakeCase(string name)
         {

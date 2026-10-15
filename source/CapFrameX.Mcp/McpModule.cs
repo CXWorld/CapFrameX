@@ -96,6 +96,7 @@ namespace CapFrameX.Mcp
                         ProtocolVersion = McpProtocol.Version,
                         Capabilities = new ServerCapabilities(),
                         ServerInfo = new ServerInfo { Name = McpProtocol.ServerName, Version = _serverVersion },
+                        Instructions = McpProtocol.Instructions,
                     });
 
                 case McpProtocol.Methods.Initialized:
@@ -144,6 +145,12 @@ namespace CapFrameX.Mcp
             try
             {
                 var rawResult = await _registry.InvokeAsync(descriptor, call.Arguments).ConfigureAwait(false);
+                if (rawResult is McpToolResult blocks)
+                {
+                    var result = new ToolsCallResult();
+                    result.Content.AddRange(blocks.Content.Select(ToolContent.FromBlock));
+                    return JsonRpcResponse.OkResult(request.Id, result);
+                }
                 var text = rawResult is string s ? s : JsonConvert.SerializeObject(rawResult);
                 return JsonRpcResponse.OkResult(request.Id, new ToolsCallResult
                 {

@@ -251,6 +251,26 @@ Restart Claude Desktop. The CapFrameX tools appear in the MCP picker.
 
 The table above covers analysis and diagnostics. Additional tools include `cfx_list_processes`, `cfx_start_capture`, `cfx_stop_capture`, `cfx_get_config`, `cfx_set_config`, `cfx_get_overlay_entries`, `cfx_set_overlay_entry`, and `cfx_set_logged_sensors`. Capture-control and configuration tools change application state; the MCP interface is not read-only.
 
+### Tile overlay profiles
+
+Claude can design tile overlay profiles for you: the designs of the tile editor that the in-game and hook-free renderers draw. Describe what you want ("a compact corner overlay with FPS, 1% low, a frame time graph and GPU temperature in orange") and Claude builds, previews and refines the profile. You need no knowledge of the design format; Claude reads it from `cfx_get_tile_design_guide`.
+
+| Tool | Purpose |
+| --- | --- |
+| `cfx_get_tile_design_guide` | The authoring reference: workflow, document format, widget kinds, fields, ranges, design advice. |
+| `cfx_list_tile_profiles` | Saved profiles, the profile the OSD shows, and whether the tile editor has unsaved changes. |
+| `cfx_list_tile_templates` | The editor's gallery templates. |
+| `cfx_list_tile_sources` | Readings a tile can show on this machine (FPS, temperatures, clocks, ...) and sensor families for group tiles. |
+| `cfx_get_tile_profile` | One profile as a tile document. |
+| `cfx_create_tile_profile` | A new profile from a document, a template, or a copy. |
+| `cfx_update_tile_profile` / `cfx_edit_tile_profile` | Replace the whole design, or apply targeted edits (add, change, move, remove tiles) atomically. |
+| `cfx_rename_tile_profile` / `cfx_delete_tile_profile` | Rename or delete a profile. |
+| `cfx_render_tile_profile` | A PNG of the profile drawn by the real OSD renderer, with live or demo values. |
+| `cfx_activate_tile_profile` / `cfx_deactivate_tile_profile` | Show the profile on the OSD, or return to the classic row overlay. |
+| `cfx_open_tile_editor` | Open the tile editor on a profile to fine-tune it by mouse. |
+
+Profiles written this way are validated like editor saves and open in the tile editor unchanged. While a profile is active, every change appears on screen at once; an open editor follows the changes. If the editor has unsaved changes, Claude cannot change the library until you save or discard them, so your own work is never overwritten. Tile profiles need the **CapFrameX in-game** or **CapFrameX hook-free** renderer; Claude can switch it with `cfx_set_osd_options`. Where the overlay sits on screen (corner, margins, zoom) stays a global OSD option.
+
 ## Example interactions
 
 Ask Claude in natural language. Below are three concrete examples that exercise multiple tools.
@@ -266,6 +286,10 @@ Claude calls `cfx_list_records` filtered by Spider-Man, picks the newest, then c
 ### 3. "My benchmark didn't get recorded. Why?"
 
 Claude calls `cfx_diagnose_capture` (default 30-min lookback) and `cfx_get_capture_timeline`. Typical findings: an ETW session conflict (FrameView SDK still installed), a blacklisted process, missing administrator rights, or an anti-cheat that blocked PresentMon — each with a concrete suggested fix.
+
+### 4. "Make me a small overlay for the top right corner: FPS, 1% low, frame times and my GPU temperature, in orange"
+
+Claude reads `cfx_get_tile_design_guide`, looks up the GPU temperature reading with `cfx_list_tile_sources`, creates the profile with `cfx_create_tile_profile` and checks it with `cfx_render_tile_profile`. It fixes what the preview shows (a clipped value, poor contrast) with `cfx_edit_tile_profile`, then activates it with `cfx_activate_tile_profile` and moves the overlay to the top right corner with `cfx_set_osd_options`. Follow-ups such as "make the FPS bigger" or "add a CPU load bar" become single edits.
 
 ## Configuration
 

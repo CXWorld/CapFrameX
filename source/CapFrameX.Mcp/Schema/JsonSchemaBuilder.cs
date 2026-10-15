@@ -1,3 +1,4 @@
+using CapFrameX.Mcp.Attributes;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
@@ -22,7 +23,8 @@ namespace CapFrameX.Mcp.Schema
 
             foreach (var p in parameters)
             {
-                var prop = BuildSchemaForType(p.ParameterType);
+                var schemaOverride = p.GetCustomAttribute<McpParameterSchemaAttribute>()?.SchemaJson;
+                var prop = schemaOverride != null ? JObject.Parse(schemaOverride) : BuildSchemaForType(p.ParameterType);
                 var description = p.GetCustomAttribute<DescriptionAttribute>()?.Description;
                 if (!string.IsNullOrEmpty(description))
                     prop["description"] = description;
@@ -57,6 +59,14 @@ namespace CapFrameX.Mcp.Schema
                 return new JObject { ["type"] = "integer" };
             if (underlying == typeof(float) || underlying == typeof(double) || underlying == typeof(decimal))
                 return new JObject { ["type"] = "number" };
+
+            // Free-form JSON. Checked before IEnumerable: every JToken enumerates JTokens.
+            if (underlying == typeof(JObject))
+                return new JObject { ["type"] = "object" };
+            if (underlying == typeof(JArray))
+                return new JObject { ["type"] = "array" };
+            if (typeof(JToken).IsAssignableFrom(underlying))
+                return new JObject();
 
             if (underlying.IsEnum)
             {

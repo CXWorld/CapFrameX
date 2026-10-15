@@ -277,7 +277,9 @@ namespace CapFrameX
             }
         }
 
-        private async void OpenOverlayDesigner(string profileId = null)
+        private async void OpenOverlayDesigner(string profileId = null) => await OpenOverlayDesignerAsync(profileId);
+
+        private async Task OpenOverlayDesignerAsync(string profileId = null)
         {
             var existing = Windows.OfType<View.OverlayDesignerWindow>().FirstOrDefault();
             if (existing != null)
@@ -430,6 +432,14 @@ namespace CapFrameX
                     Container.Register<SensorConfigTools>(Reuse.Singleton);
                     Container.Register<OverlayConfigTools>(Reuse.Singleton);
                     Container.Register<OsdOptionsTools>(Reuse.Singleton);
+                    // Tile profiles are edited on the UI thread, which owns the designer and the native preview.
+                    Container.RegisterDelegate<IOverlayDesignAuthoringService>(resolver =>
+                        new View.OverlayDesignAuthoring.OverlayDesignAuthoringService(
+                            pathService.ConfigFolder, _overlayDesignService,
+                            resolver.Resolve<OSD.Integration.IOverlayTelemetryService>(), Dispatcher,
+                            new View.OverlayDesignAuthoring.OverlayDesignerWindowHost(OpenOverlayDesignerAsync)),
+                        Reuse.Singleton);
+                    Container.Register<TileProfileTools>(Reuse.Singleton);
                 }
 
                 using (StartupPerformanceLogger.Measure("Application service registrations and initialization"))

@@ -12,6 +12,10 @@ namespace CapFrameX.Mcp.Protocol
 
         [JsonProperty("serverInfo")]
         public ServerInfo ServerInfo { get; set; }
+
+        /// <summary>Guidance clients may add to the model's context for every session.</summary>
+        [JsonProperty("instructions", NullValueHandling = NullValueHandling.Ignore)]
+        public string Instructions { get; set; }
     }
 
     internal class ServerCapabilities

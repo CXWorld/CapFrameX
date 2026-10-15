@@ -36,6 +36,15 @@ namespace CapFrameX.View
 
         public bool RequiresCloseConfirmation => Designer.HasUnsavedChanges || Designer.IsProfileOperationPending;
 
+        public string OpenProfileId => Designer.ProfileSession?.ActiveProfile?.Id;
+        public bool HasUnsavedDesignChanges => Designer.HasUnsavedChanges;
+        /// <summary>A profile action or a closing prompt is waiting for the user.</summary>
+        public bool IsDesignerBusy => Designer.IsProfileOperationPending || _closePending || _closeApproved || _ownerClosing;
+
+        /// <summary>Follows a library change made elsewhere; never touches the user's own unsaved edits.</summary>
+        public Task<bool> ReloadLibraryAsync(string profileId) =>
+            IsDesignerBusy ? Task.FromResult(false) : Designer.ReloadLibraryAsync(profileId);
+
         /// <summary>Reuses the current workspace and its unsaved-change guard for a library request.</summary>
         public async Task<bool> OpenProfileAsync(string profileId = null)
         {

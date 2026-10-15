@@ -5,6 +5,10 @@ namespace CapFrameX.Mcp.Protocol
         public const string Version = "2024-11-05";
         public const string ServerName = "CapFrameX";
         public const string EndpointPath = "/mcp";
+        public const string Instructions =
+            "Tools of the running CapFrameX instance: recorded captures and their statistics, live capture control, " +
+            "sensors, and the overlay (OSD). Before creating or changing a tile overlay profile (a design of the tile " +
+            "editor), call cfx_get_tile_design_guide, and check every change with cfx_render_tile_profile.";
 
         public static class Methods
         {

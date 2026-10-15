@@ -45,9 +45,23 @@ namespace CapFrameX.Mcp.Protocol
         [JsonProperty("type")]
         public string Type { get; set; } = "text";
 
-        [JsonProperty("text")]
+        [JsonProperty("text", NullValueHandling = NullValueHandling.Ignore)]
         public string Text { get; set; }
 
+        [JsonProperty("data", NullValueHandling = NullValueHandling.Ignore)]
+        public string Data { get; set; }
+
+        [JsonProperty("mimeType", NullValueHandling = NullValueHandling.Ignore)]
+        public string MimeType { get; set; }
+
         public static ToolContent FromText(string text) => new ToolContent { Text = text };
+
+        public static ToolContent FromBlock(McpToolContentBlock block) => new ToolContent
+        {
+            Type = block.Type,
+            Text = block.Type == "text" ? block.Text ?? string.Empty : block.Text,
+            Data = block.Data,
+            MimeType = block.MimeType,
+        };
     }
 }

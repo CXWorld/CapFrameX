@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="CapFrameX.Test" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="EmbedIO" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="Serilog" />

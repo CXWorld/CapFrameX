@@ -486,6 +486,17 @@ namespace CapFrameX.View.Controls
             return opened;
         }
 
+        /// <summary>
+        /// Rereads a library that another writer changed and shows <paramref name="profileId"/>.
+        /// Declines while the user has edits of their own: their working copy always wins.
+        /// </summary>
+        public Task<bool> ReloadLibraryAsync(string profileId)
+        {
+            if (_profileSession == null || _profileLoadFailed || _profileOperationPending || _hostIsClosing || HasUnsavedChanges)
+                return Task.FromResult(false);
+            return OpenProfileAsync(string.IsNullOrWhiteSpace(profileId) ? _profileSession.ActiveProfile.Id : profileId);
+        }
+
         private async void OnSaveProfile(object sender, EventArgs e)
         {
             await RunProfileActionAsync(() =>
