@@ -93,7 +93,7 @@ namespace CapFrameX.Contracts.Overlay
         public string RenderResolution { get; }
 
         /// <summary>
-        /// Graphics API the game presents with — "DX11", "DX12" or "Vulkan", matching the
+        /// Graphics API the game presents with — "D3D11", "D3D12" or "Vulkan", matching the
         /// spelling RTSS uses so both can feed the capture file's ApiInfo. Null while unknown.
         /// </summary>
         public string RenderApi { get; }
