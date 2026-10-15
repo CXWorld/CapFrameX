@@ -12,6 +12,8 @@ namespace CapFrameX.Overlay
     /// <summary>
     /// Collects frame scalars independently of the native renderer. A single overlay refresh
     /// closes the interval before the resulting snapshot reaches either renderers or the API.
+    /// It also resolves the RTSS macro <c>&lt;APP&gt;</c>: with the API the in-game renderer
+    /// proved for the target, else with the PresentMon runtime.
     /// </summary>
     public sealed class PresentMonOverlayMetrics : IOverlayFrameMetrics
     {
@@ -19,6 +21,7 @@ namespace CapFrameX.Overlay
         private readonly IObservable<string[]> _frames;
         private readonly IDisposable _processSubscription;
         private readonly IDisposable _captureSubscription;
+        private readonly IDisposable _hookStatusSubscription;
         private IDisposable _frameSubscription;
         private bool _enabled;
         private bool _disposed;
@@ -33,16 +36,22 @@ namespace CapFrameX.Overlay
         private double _frametime;
         private double _displayTime;
         private string _runtime;
+        // PresentMon only knows the presentation runtime (DXGI, D3D9, Other). The in-game renderer
+        // knows the API itself, as RTSS does: the hook proves the device type of the swapchain it
+        // presents into, the Vulkan layer settles it by being loaded.
+        private HookOverlayStatus _hookStatus;
+        private string _renderApi;
 
-        public PresentMonOverlayMetrics(ICaptureService captureService, IRTSSService processService)
+        public PresentMonOverlayMetrics(ICaptureService captureService, IRTSSService processService,
+            IHookOverlayStatusService hookOverlayStatusService = null)
             : this((captureService ?? throw new ArgumentNullException(nameof(captureService))).FrameDataStream,
                   (processService ?? throw new ArgumentNullException(nameof(processService))).ProcessIdStream,
-                  captureService.CaptureServiceRunningStream)
+                  captureService.CaptureServiceRunningStream, hookOverlayStatusService?.StatusStream)
         {
         }
 
         internal PresentMonOverlayMetrics(IObservable<string[]> frames, IObservable<int> processIds,
-            IObservable<bool> captureRunning = null)
+            IObservable<bool> captureRunning = null, IObservable<HookOverlayStatus> hookStatuses = null)
         {
             _frames = frames ?? throw new ArgumentNullException(nameof(frames));
             if (processIds == null)
@@ -57,6 +66,10 @@ namespace CapFrameX.Overlay
                     {
                         _targetPid = targetPid;
                         ResetLocked();
+                        // The status stream runs independently of the PID stream: a status for
+                        // the new target may already have arrived.
+                        _renderApi = null;
+                        TrackRenderApiLocked();
                     }
                 }
             });
@@ -69,6 +82,33 @@ namespace CapFrameX.Overlay
                         ResetLocked();
                 }
             });
+            _hookStatusSubscription = hookStatuses?.Subscribe(status =>
+            {
+                lock (_gate)
+                {
+                    _hookStatus = status;
+                    TrackRenderApiLocked();
+                }
+            });
+        }
+
+        private void TrackRenderApiLocked()
+        {
+            var status = _hookStatus;
+            if (status == null || status.State == EHookOverlayStatus.Disabled)
+            {
+                // The in-game overlay is not selected: hook-free and the remote API keep the
+                // PresentMon runtime, and RTSS resolves the macro itself.
+                _renderApi = null;
+                return;
+            }
+
+            // Statuses between injection steps, or while the overlay is hidden, carry no API. The
+            // last proven one stays for the process: each label flip renames the group, and the
+            // renderer rebuilds its scene for it.
+            string api = status.RenderApi?.Trim();
+            if (_targetPid > 0 && status.ProcessId == _targetPid && !string.IsNullOrEmpty(api))
+                _renderApi = api;
         }
 
         public void SetEnabled(bool enabled)
@@ -182,7 +222,7 @@ namespace CapFrameX.Overlay
                     }
                     if (resolveGroup)
                     {
-                        string runtime = _runtime ?? CxLang.Instance.TranslateOverlay("Performance");
+                        string runtime = _renderApi ?? _runtime ?? CxLang.Instance.TranslateOverlay("Performance");
                         copy.GroupName = entry.GroupName.Replace("<APP>", runtime);
                     }
                     result[i] = copy;
@@ -219,6 +259,7 @@ namespace CapFrameX.Overlay
             }
             _processSubscription.Dispose();
             _captureSubscription?.Dispose();
+            _hookStatusSubscription?.Dispose();
         }
     }
 }

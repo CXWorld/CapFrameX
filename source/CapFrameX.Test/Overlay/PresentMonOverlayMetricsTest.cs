@@ -195,6 +195,85 @@ namespace CapFrameX.Test.Overlay
         }
 
         [TestMethod]
+        [DataRow("DXGI", "DX11")]
+        [DataRow("DXGI", "DX12")]
+        [DataRow("Other", "Vulkan")]
+        public void InGameRenderer_LabelsTheGroupWithTheApiItProved(string presentMonRuntime, string renderApi)
+        {
+            using var fixture = new Fixture();
+            fixture.Metrics.SetEnabled(true);
+            fixture.Frames.OnNext(Row(42, "10", "20", presentMonRuntime));
+            Assert.AreEqual(presentMonRuntime, fixture.Snapshot()[0].GroupName);
+
+            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 42, renderApi));
+            var snapshot = fixture.Snapshot();
+            Assert.AreEqual(renderApi, snapshot[0].GroupName);
+            Assert.AreEqual(renderApi, snapshot[1].GroupName);
+            Assert.AreEqual("<APP>", fixture.Entries[0].GroupName);
+        }
+
+        [TestMethod]
+        public void InGameRenderer_KeepsTheProvenApiThroughStatusesWithoutOne()
+        {
+            using var fixture = new Fixture();
+            fixture.Metrics.SetEnabled(true);
+            fixture.Frames.OnNext(Row(42, "10", "20"));
+            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 42, "DX12"));
+            Assert.AreEqual("DX12", fixture.Snapshot()[0].GroupName);
+
+            // Hidden, idle and transitional statuses carry no API; the label must not flip.
+            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Hidden, 42, null));
+            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Idle, 42, " "));
+            Assert.AreEqual("DX12", fixture.Snapshot()[0].GroupName);
+
+            fixture.Metrics.SetEnabled(false);
+            fixture.Metrics.SetEnabled(true);
+            fixture.CaptureRunning.OnNext(false);
+            fixture.CaptureRunning.OnNext(true);
+            Assert.AreEqual("DX12", fixture.Snapshot()[0].GroupName,
+                "The API belongs to the process, not to the PresentMon interval.");
+        }
+
+        [TestMethod]
+        public void RendererApi_IgnoresOtherProcessesAndAnUnselectedInGameOverlay()
+        {
+            using var fixture = new Fixture();
+            fixture.Metrics.SetEnabled(true);
+            fixture.Frames.OnNext(Row(42, "10", "20"));
+
+            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 99, "DX12"));
+            Assert.AreEqual("DXGI", fixture.Snapshot()[0].GroupName);
+
+            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 42, "DX11"));
+            Assert.AreEqual("DX11", fixture.Snapshot()[0].GroupName);
+
+            // Switching to the hook-free renderer: only PresentMon is left.
+            fixture.HookStatuses.OnNext(new HookOverlayStatus(EHookOverlayStatus.Disabled));
+            Assert.AreEqual("DXGI", fixture.Snapshot()[0].GroupName);
+        }
+
+        [TestMethod]
+        public void TargetChange_DiscardsTheRendererApiAndAdoptsAStatusThatArrivedFirst()
+        {
+            using var fixture = new Fixture();
+            fixture.Metrics.SetEnabled(true);
+            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 42, "DX12"));
+            fixture.Frames.OnNext(Row(42, "10", "20"));
+            Assert.AreEqual("DX12", fixture.Snapshot()[0].GroupName);
+
+            // The hook manager follows the new PID before this source does.
+            fixture.HookStatuses.OnNext(Status(EHookOverlayStatus.Active, 99, "Vulkan"));
+            Assert.AreEqual("DX12", fixture.Snapshot()[0].GroupName);
+            fixture.ProcessIds.OnNext(99);
+            fixture.Frames.OnNext(Row(99, "10", "20", "Other"));
+            Assert.AreEqual("Vulkan", fixture.Snapshot()[0].GroupName);
+
+            fixture.ProcessIds.OnNext(7);
+            fixture.Frames.OnNext(Row(7, "10", "20", "D3D9"));
+            Assert.AreEqual("D3D9", fixture.Snapshot()[0].GroupName);
+        }
+
+        [TestMethod]
         public void Dispose_ReleasesAllSubscriptionsAndCannotRestart()
         {
             using var fixture = new Fixture();
@@ -205,8 +284,13 @@ namespace CapFrameX.Test.Overlay
             Assert.IsFalse(fixture.Frames.HasObservers);
             Assert.IsFalse(fixture.ProcessIds.HasObservers);
             Assert.IsFalse(fixture.CaptureRunning.HasObservers);
+            Assert.IsFalse(fixture.HookStatuses.HasObservers);
             Assert.AreSame(fixture.Entries, fixture.Snapshot());
         }
+
+        private static HookOverlayStatus Status(EHookOverlayStatus state, int processId, string renderApi)
+            => new HookOverlayStatus(state, processId, renderApi == "Vulkan" ? "Vulkan" : "DXGI",
+                renderApi: renderApi);
 
         private static string[] Row(int processId, string frametime, string displayTime, string runtime = "DXGI")
         {
@@ -233,6 +317,8 @@ namespace CapFrameX.Test.Overlay
             public Subject<string[]> Frames { get; } = new Subject<string[]>();
             public BehaviorSubject<int> ProcessIds { get; } = new BehaviorSubject<int>(42);
             public BehaviorSubject<bool> CaptureRunning { get; } = new BehaviorSubject<bool>(true);
+            public BehaviorSubject<HookOverlayStatus> HookStatuses { get; } =
+                new BehaviorSubject<HookOverlayStatus>(new HookOverlayStatus(EHookOverlayStatus.Disabled));
             public PresentMonOverlayMetrics Metrics { get; }
             public IOverlayEntry[] Entries { get; } = new IOverlayEntry[]
             {
@@ -249,7 +335,9 @@ namespace CapFrameX.Test.Overlay
                 capture.SetupGet(service => service.CaptureServiceRunningStream).Returns(CaptureRunning);
                 var process = new Mock<IRTSSService>();
                 process.SetupGet(service => service.ProcessIdStream).Returns(ProcessIds);
-                Metrics = new PresentMonOverlayMetrics(capture.Object, process.Object);
+                var hook = new Mock<IHookOverlayStatusService>();
+                hook.SetupGet(service => service.StatusStream).Returns(HookStatuses);
+                Metrics = new PresentMonOverlayMetrics(capture.Object, process.Object, hook.Object);
             }
 
             public IOverlayEntry[] Snapshot() => Metrics.ApplySnapshot(Entries);
@@ -260,6 +348,7 @@ namespace CapFrameX.Test.Overlay
                 Frames.Dispose();
                 ProcessIds.Dispose();
                 CaptureRunning.Dispose();
+                HookStatuses.Dispose();
                 foreach (var entry in Entries)
                     entry.Dispose();
             }
