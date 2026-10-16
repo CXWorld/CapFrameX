@@ -251,8 +251,12 @@ namespace CapFrameX.ViewModel
                 _directoryLoading = value;
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(DirectoryIsEmpty));
+                RaisePropertyChanged(nameof(ShowLoadingHint));
             }
         }
+
+        // The hint covers the list, so it only shows until the first records are in.
+        public bool ShowLoadingHint => DirectoryLoading && !RecordInfoList.Any();
 
         public bool FixedExpanderPosition
         {
@@ -367,6 +371,14 @@ namespace CapFrameX.ViewModel
 
         internal IScheduler FileChangeScheduler { get; set; } = DefaultScheduler.Instance;
 
+        // The list fills in batches while a folder is read, instead of all at once at the end.
+        internal static readonly TimeSpan RecordListBatchTime = TimeSpan.FromMilliseconds(250);
+        internal const int RecordListBatchSize = 200;
+
+        internal IScheduler RecordListScheduler { get; set; } = DefaultScheduler.Instance;
+
+        private int _recordListVersion;
+
         public string ResolveDocumentsPath(string path) => _pathService.ResolveDocumentsPlaceholder(path);
 
         public string DefaultCapturesPath => _pathService.CapturesFolder;
@@ -425,6 +437,7 @@ namespace CapFrameX.ViewModel
             {
                 RaisePropertyChanged(nameof(DirectoryIsEmpty));
                 RaisePropertyChanged(nameof(SearchBarText));
+                RaisePropertyChanged(nameof(ShowLoadingHint));
             };
 
             CxLang.Instance.PropertyChanged += (_, e) =>
@@ -515,37 +528,39 @@ namespace CapFrameX.ViewModel
 
             _recordObserver.DirectoryFilesStream
                 .ObserveOn(context)
-                .Do(_ =>
-                {
-                    RecordInfoList.Clear();
-                    DirectoryLoading = true;
-                    RaisePropertyChanged(nameof(DirectoryLoading));
-                })
                 .Select(fileInfos =>
                 {
+                    // A new listing replaces the list. Batches of the listing it replaces may
+                    // already be on their way to the UI thread; the version tells them apart.
+                    int version = ++_recordListVersion;
+                    RecordInfoList.Clear();
+                    DirectoryLoading = true;
+
                     return Observable.Merge(fileInfos.Select(fi => GetFileRecordInfo(fi, fileMayStillBeWritten: false)), 30)
                         .Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
                         .Distinct(recordFileInfo => recordFileInfo.Hash)
-                        .ToArray();
-                }
-                ).Switch()
+                        .Buffer(RecordListBatchTime, RecordListBatchSize, RecordListScheduler)
+                        .Where(batch => batch.Count > 0)
+                        .Select(batch => (Version: version, Batch: batch, Complete: false))
+                        .Concat(Observable.Return((Version: version, Batch: (IList<IFileRecordInfo>)Array.Empty<IFileRecordInfo>(), Complete: true)));
+                })
+                .Switch()
                 .ObserveOn(context)
-                .Subscribe(recordFileInfos =>
+                .Subscribe(update =>
                 {
-                    RecordInfoList.Clear();
-                    DirectoryLoading = false;
-                    RaisePropertyChanged(nameof(DirectoryLoading));
-                    RecordInfoList.AddRange(recordFileInfos);
+                    if (update.Version != _recordListVersion)
+                        return;
+
+                    AddRecordInfos(update.Batch);
+                    if (update.Complete)
+                        DirectoryLoading = false;
                 });
 
             _recordObserver.FileCreatedStream
                 .SelectMany(fi => GetFileRecordInfo(fi, fileMayStillBeWritten: true))
                 .Where(recordInfo => recordInfo is IFileRecordInfo)
                 .ObserveOn(context)
-                .Subscribe(recordInfo =>
-                {
-                    RecordInfoList.Add(recordInfo);
-                });
+                .Subscribe(recordInfo => AddRecordInfos(new[] { recordInfo }));
 
             _recordObserver.FileDeletedStream
                 .ObserveOn(context)
@@ -567,6 +582,19 @@ namespace CapFrameX.ViewModel
                 .Where(recordInfo => recordInfo is IFileRecordInfo)
                 .ObserveOn(context)
                 .Subscribe(OnRecordFileChanged);
+        }
+
+        // A record created while its folder is read comes from the listing and from its Created
+        // event; it is listed once.
+        private void AddRecordInfos(IEnumerable<IFileRecordInfo> recordInfos)
+        {
+            var listed = new HashSet<string>(RecordInfoList.Select(recordInfo => recordInfo.FullPath),
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var recordInfo in recordInfos)
+            {
+                if (listed.Add(recordInfo.FullPath))
+                    RecordInfoList.Add(recordInfo);
+            }
         }
 
         private void OnRecordFileChanged(IFileRecordInfo recordInfo)
