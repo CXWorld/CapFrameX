@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
 using CapFrameX.Data.Session.Contracts;
@@ -10,13 +11,38 @@ namespace CapFrameX.Data
 {
     public class LocalRecordDataServer : IRecordDataServer
     {
+        // Every time window copies the whole session and, with outlier removal, sorts it. One
+        // refresh of the analysis page asks for the same window several times, from the UI thread
+        // and from chart tasks, so the windows are kept per session, time window and outlier
+        // method. A few are enough to cover a refresh; each caller gets its own copy.
+        internal const int MaxCachedWindows = 16;
+
         private double _windowLength;
         private double _currentTime;
+        private ISession _currentSession;
         private readonly IAppConfiguration _appConfiguration;
+        private readonly object _windowCacheLock = new object();
+        private readonly Dictionary<WindowKey, object> _windowCache = new Dictionary<WindowKey, object>();
+        private readonly Queue<WindowKey> _windowCacheOrder = new Queue<WindowKey>();
 
         public bool IsActive { get; set; }
 
-        public ISession CurrentSession { get; set; }
+        public ISession CurrentSession
+        {
+            get => _currentSession;
+            set
+            {
+                if (ReferenceEquals(_currentSession, value))
+                    return;
+                _currentSession = value;
+                // The windows of the previous session are never asked for again.
+                lock (_windowCacheLock)
+                {
+                    _windowCache.Clear();
+                    _windowCacheOrder.Clear();
+                }
+            }
+        }
 
         public double WindowLength
         {
@@ -47,85 +73,34 @@ namespace CapFrameX.Data
         }
 
         public IList<double> GetFrametimeTimeWindow()
-        {
-            if (CurrentSession == null)
-                return null;
-
-            double startTime = CurrentTime;
-            double endTime = startTime + WindowLength;
-            return CurrentSession.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
-        }
+            => GetFrametimeTimeWindow(RemoveOutlierMethod);
 
         public IList<double> GetDisplayChangeTimeWindow()
-        {
-            if (CurrentSession == null)
-                return null;
-
-            double startTime = CurrentTime;
-            double endTime = startTime + WindowLength;
-            return CurrentSession.GetDisplayChangeTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
-        }
-
+            => GetValues(nameof(GetDisplayChangeTimeWindow), RemoveOutlierMethod, (session, startTime, endTime, method)
+                => session.GetDisplayChangeTimeWindow(startTime, endTime, _appConfiguration, method));
 
         public IList<double> GetGpuActiveTimeTimeWindow()
-        {
-            if (CurrentSession == null)
-                return null;
-
-            double startTime = CurrentTime;
-            double endTime = startTime + WindowLength;
-            return CurrentSession.GetGpuActiveTimeTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
-        }
+            => GetGpuActiveTimeTimeWindow(RemoveOutlierMethod);
 
         public IList<double> GetAnimationErrorTimeWindow()
-        {
-            if (CurrentSession == null)
-                return null;
-
-            double startTime = CurrentTime;
-            double endTime = startTime + WindowLength;
-            return CurrentSession.GetAnimationErrorTimeWindow(startTime, endTime);
-        }
+            => GetValues(nameof(GetAnimationErrorTimeWindow), ERemoveOutlierMethod.None, (session, startTime, endTime, _)
+                => session.GetAnimationErrorTimeWindow(startTime, endTime));
 
         public IList<Point> GetFrametimePointTimeWindow()
-        {
-            if (CurrentSession == null)
-                return null;
-
-            double startTime = CurrentTime;
-            double endTime = startTime + WindowLength;
-            return CurrentSession.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
-        }
+            => GetPoints(nameof(GetFrametimePointTimeWindow), (session, startTime, endTime, method)
+                => session.GetFrametimePointsTimeWindow(startTime, endTime, _appConfiguration, method));
 
         public IList<Point> GetGpuActiveTimePointTimeWindow()
-        {
-            if (CurrentSession == null)
-                return null;
-
-            double startTime = CurrentTime;
-            double endTime = startTime + WindowLength;
-            return CurrentSession.GetGpuActiveTimePointsTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
-        }
+            => GetPoints(nameof(GetGpuActiveTimePointTimeWindow), (session, startTime, endTime, method)
+                => session.GetGpuActiveTimePointsTimeWindow(startTime, endTime, _appConfiguration, method));
 
         public IList<Point> GetCpuActiveTimePointTimeWindow()
-        {
-            if (CurrentSession == null)
-                return null;
-
-            double startTime = CurrentTime;
-            double endTime = startTime + WindowLength;
-            return CurrentSession.GetCpuActiveTimePointsTimeWindow(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
-        }
+            => GetPoints(nameof(GetCpuActiveTimePointTimeWindow), (session, startTime, endTime, method)
+                => session.GetCpuActiveTimePointsTimeWindow(startTime, endTime, _appConfiguration, method));
 
         public IList<Point> GetFrametimeDistributionPointTimeWindow()
-        {
-            if (CurrentSession == null)
-                return null;
-
-            double startTime = CurrentTime;
-            double endTime = startTime + WindowLength;
-            return CurrentSession.GetFrametimeDistributionPoints(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
-        }
+            => GetPoints(nameof(GetFrametimeDistributionPointTimeWindow), (session, startTime, endTime, method)
+                => session.GetFrametimeDistributionPoints(startTime, endTime, _appConfiguration, method));
 
         public IList<double> GetFpsTimeWindow()
         {
@@ -158,15 +133,98 @@ namespace CapFrameX.Data
             if (CurrentSession == null)
                 return 0.0;
 
-            double startTime = CurrentTime;
-            double endTime = startTime + WindowLength;
-            return CurrentSession.GetGpuActiveDeviationPercentage(startTime, endTime, _appConfiguration, RemoveOutlierMethod);
+            // Always without outlier removal, as the session extension computes it.
+            return SessionExtensions.GetGpuActiveDeviationPercentage(
+                GetFrametimeTimeWindow(ERemoveOutlierMethod.None),
+                GetGpuActiveTimeTimeWindow(ERemoveOutlierMethod.None));
         }
 
         public void SetTimeWindow(double currentTime, double windowLength)
         {
             CurrentTime = currentTime;
             WindowLength = windowLength;
+        }
+
+        private IList<double> GetFrametimeTimeWindow(ERemoveOutlierMethod method)
+            => GetValues(nameof(GetFrametimeTimeWindow), method, (session, startTime, endTime, outlierMethod)
+                => session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, outlierMethod));
+
+        private IList<double> GetGpuActiveTimeTimeWindow(ERemoveOutlierMethod method)
+            => GetValues(nameof(GetGpuActiveTimeTimeWindow), method, (session, startTime, endTime, outlierMethod)
+                => session.GetGpuActiveTimeTimeWindow(startTime, endTime, _appConfiguration, outlierMethod));
+
+        private IList<double> GetValues(string kind, ERemoveOutlierMethod method,
+            Func<ISession, double, double, ERemoveOutlierMethod, IList<double>> compute)
+            => GetWindow(kind, method, compute, values => new List<double>(values));
+
+        private IList<Point> GetPoints(string kind,
+            Func<ISession, double, double, ERemoveOutlierMethod, IList<Point>> compute)
+            => GetWindow(kind, RemoveOutlierMethod, compute,
+                points => points.Select(point => new Point(point.X, point.Y)).ToList());
+
+        private IList<T> GetWindow<T>(string kind, ERemoveOutlierMethod method,
+            Func<ISession, double, double, ERemoveOutlierMethod, IList<T>> compute,
+            Func<IList<T>, List<T>> copy)
+        {
+            var session = CurrentSession;
+            if (session == null)
+                return null;
+
+            double startTime = CurrentTime;
+            double endTime = startTime + WindowLength;
+            var key = new WindowKey(kind, session, startTime, endTime, method);
+
+            lock (_windowCacheLock)
+            {
+                if (_windowCache.TryGetValue(key, out var cached))
+                    return copy((IList<T>)cached);
+            }
+
+            // Computed outside the lock: chart tasks ask for different windows at the same time.
+            var window = copy(compute(session, startTime, endTime, method));
+
+            lock (_windowCacheLock)
+            {
+                // A session switched in the meantime has cleared the cache; its windows stay out.
+                if (ReferenceEquals(session, _currentSession) && !_windowCache.ContainsKey(key))
+                {
+                    if (_windowCache.Count >= MaxCachedWindows)
+                        _windowCache.Remove(_windowCacheOrder.Dequeue());
+                    _windowCache.Add(key, window);
+                    _windowCacheOrder.Enqueue(key);
+                }
+            }
+
+            return copy(window);
+        }
+
+        private readonly struct WindowKey : IEquatable<WindowKey>
+        {
+            private readonly string _kind;
+            private readonly ISession _session;
+            private readonly double _startTime;
+            private readonly double _endTime;
+            private readonly ERemoveOutlierMethod _method;
+
+            public WindowKey(string kind, ISession session, double startTime, double endTime, ERemoveOutlierMethod method)
+            {
+                _kind = kind;
+                _session = session;
+                _startTime = startTime;
+                _endTime = endTime;
+                _method = method;
+            }
+
+            public bool Equals(WindowKey other)
+                => _kind == other._kind && ReferenceEquals(_session, other._session)
+                    && _startTime.Equals(other._startTime) && _endTime.Equals(other._endTime)
+                    && _method == other._method;
+
+            public override bool Equals(object obj) => obj is WindowKey other && Equals(other);
+
+            public override int GetHashCode()
+                => HashCode.Combine(_kind, System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(_session),
+                    _startTime, _endTime, _method);
         }
     }
 }
