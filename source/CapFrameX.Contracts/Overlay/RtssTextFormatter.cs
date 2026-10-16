@@ -16,6 +16,16 @@ namespace CapFrameX.Contracts.Overlay
         private static readonly Regex FormatParts = new Regex(@"(<[^>]*>|\{[^}]*\})|([^<{]+)", RegexOptions.Compiled);
         private static readonly ConcurrentDictionary<int, Encoding> Encodings = new ConcurrentDictionary<int, Encoding>();
         private static readonly ConcurrentDictionary<(int CodePage, string Text), bool> SupportedText = new ConcurrentDictionary<(int, string), bool>();
+        // Translated value formats per overlay language and code page. A format comes from the
+        // entry's settings, not from its value, so few exist; splitting each one with the regex
+        // on every refresh, for every entry, was the expensive part of formatting.
+        internal const int MaxCachedFormats = 4096;
+        private static readonly ConcurrentDictionary<(string Language, int CodePage, string Format), string> TranslatedFormats =
+            new ConcurrentDictionary<(string, int, string), string>();
+
+        internal static int CachedFormatCount => TranslatedFormats.Count;
+
+        internal static void ClearCachedFormats() => TranslatedFormats.Clear();
 
         public static string Translate(string text, int codePage)
         {
@@ -60,11 +70,30 @@ namespace CapFrameX.Contracts.Overlay
             if (string.IsNullOrWhiteSpace(entry.ValueFormat))
                 return value?.ToString() ?? string.Empty;
 
+            return string.Format(CultureInfo.InvariantCulture, GetTranslatedFormat(entry.ValueFormat, codePage), value);
+        }
+
+        private static string GetTranslatedFormat(string valueFormat, int codePage)
+        {
+            string language = CxLang.Instance.OverlayLanguage;
+            var key = (language, codePage, valueFormat);
+            if (TranslatedFormats.TryGetValue(key, out var format))
+                return format;
+
             // Leave color/size tags and numeric format placeholders intact. Never translate the
             // formatted number or arbitrary hardware names (nor cache their changing values).
-            var format = FormatParts.Replace(entry.ValueFormat, part => part.Groups[2].Success
+            format = FormatParts.Replace(valueFormat, part => part.Groups[2].Success
                 ? Translate(part.Value, codePage) : part.Value);
-            return string.Format(CultureInfo.InvariantCulture, format, value);
+
+            // A language switch during the translation must not file its result under the old
+            // language.
+            if (CxLang.Instance.OverlayLanguage == language)
+            {
+                if (TranslatedFormats.Count >= MaxCachedFormats)
+                    TranslatedFormats.Clear();
+                TranslatedFormats[key] = format;
+            }
+            return format;
         }
     }
 }

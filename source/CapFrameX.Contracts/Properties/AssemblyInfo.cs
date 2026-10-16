@@ -40,3 +40,5 @@ using System.Runtime.InteropServices;
 // treats every call site as platform neutral and flags each Windows-only API. 7.0 is the platform
 // minimum Windows version targeted by the project.
 [assembly: System.Runtime.Versioning.SupportedOSPlatform("windows7.0")]
+
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("CapFrameX.Test")]
