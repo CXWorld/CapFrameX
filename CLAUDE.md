@@ -243,7 +243,7 @@ Only the in-game hook and the Vulkan layer still read it at load:
   target process (the hook-free feed does not filter by swapchain, unlike captures), runtime
   label flips (they rename the `<APP>` group and rebuild the scene), frametime outliers, source
   and arrival gaps, backdated rows; one summary per 10 s. `Overlay target process: ... PID a -> b`
-  (`CaptureViewModel`) and `Process list: removed ...` (`PresentMonCaptureService`) show why a
+  (`CaptureViewModel`) and `Process list: removed ...` (`PresentMonProcessList`) show why a
   PID changed. Repeating lines are rate-limited; summaries come once per 10 s.
 
 ### Vulkan titles: implicit layer instead of injection
