@@ -1240,28 +1240,16 @@ namespace CapFrameX.OSD.Integration
                     return;
                 }
 
-                bool sawCandidate = false;
+                bool sawCandidate;
                 try
                 {
-                    foreach (Process process in snapshot)
+                    List<(Process Process, int Pid)> candidates =
+                        SelectEarlyInjectionCandidates(snapshot,
+                            process => process.ProcessName, process => process.Id,
+                            IsEarlyInjectionProcessName, IsInjectionAttemptBlocked);
+                    sawCandidate = candidates.Count > 0;
+                    foreach ((Process process, int pid) in candidates)
                     {
-                        // Reject on the cheap name first: this discards every unrelated process
-                        // without opening it, so the expensive identity read below runs only for
-                        // an actual candidate rather than once per (target, process) pair.
-                        string candidateName;
-                        try { candidateName = process.ProcessName; }
-                        catch (Exception ex) when (ex is InvalidOperationException ||
-                                                   ex is NotSupportedException)
-                        {
-                            continue;
-                        }
-                        if (!IsEarlyInjectionProcessName(candidateName)) continue;
-                        sawCandidate = true;
-
-                        int pid;
-                        try { pid = process.Id; }
-                        catch (InvalidOperationException) { continue; }
-                        if (IsInjectionAttemptBlocked(pid)) continue;
                         if (!TryReadProcessIdentity(process, out string actualName,
                             out string actualPath))
                             continue;
@@ -1314,6 +1302,42 @@ namespace CapFrameX.OSD.Integration
         internal static bool ShouldContinueFastEarlyInjectionProbe(bool sawCandidate,
             int idleTicks)
             => sawCandidate || idleTicks < EarlyInjectionIdleTicksBeforeStandDown;
+
+        /// <summary>
+        /// The processes of one snapshot the probe can still act on: a target name whose PID is
+        /// neither injected, reserved by an injection in flight, nor waiting out a retry backoff.
+        /// Only these keep the 25 ms probe awake. Counting an injected game as well kept the
+        /// probe from ever standing down while that game ran; a failed attempt re-arms the probe
+        /// for its retry by itself.
+        /// </summary>
+        internal static List<(TProcess Process, int Pid)> SelectEarlyInjectionCandidates<TProcess>(
+            IEnumerable<TProcess> snapshot, Func<TProcess, string> readName,
+            Func<TProcess, int> readId, Func<string, bool> isTargetName,
+            Func<int, bool> isInjectionAttemptBlocked)
+        {
+            var candidates = new List<(TProcess Process, int Pid)>();
+            foreach (TProcess process in snapshot)
+            {
+                // Reject on the cheap name first: this discards every unrelated process
+                // without opening it, so the expensive identity read of the caller runs only
+                // for an actual candidate rather than once per (target, process) pair.
+                string candidateName;
+                try { candidateName = readName(process); }
+                catch (Exception ex) when (ex is InvalidOperationException ||
+                                           ex is NotSupportedException)
+                {
+                    continue;
+                }
+                if (!isTargetName(candidateName)) continue;
+
+                int pid;
+                try { pid = readId(process); }
+                catch (InvalidOperationException) { continue; }
+                if (isInjectionAttemptBlocked(pid)) continue;
+                candidates.Add((process, pid));
+            }
+            return candidates;
+        }
 
         private void TryInjectEarlyAsync(int pid, EarlyInjectionTarget target)
         {
