@@ -125,9 +125,17 @@ namespace CapFrameX.Test.Mocks
             return Task.FromResult<IFileRecordInfo>(emptyInfo);
         }
 
-        public Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName,
+        /// <summary>
+        /// Awaited before a session is saved, so a test can hold a capture in its write.
+        /// </summary>
+        public Func<Task> BeforeSave { get; set; }
+
+        public async Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName,
             string comment, string recordDirectory, List<ISessionInfo> hwInfo)
         {
+            if (BeforeSave != null)
+                await BeforeSave();
+
             try
             {
                 var runsList = runs.ToList();
@@ -144,11 +152,11 @@ namespace CapFrameX.Test.Mocks
 
                 _inMemoryFiles[fullPath] = json;
 
-                return Task.FromResult(true);
+                return true;
             }
             catch
             {
-                return Task.FromResult(false);
+                return false;
             }
         }
 

@@ -272,7 +272,12 @@ namespace CapFrameX.Data
             _timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             _currentCaptureOptions = options;
 
-            _captureData = new List<string[]>();
+            // PresentMon reports every process, and all of their rows used to stay in memory until
+            // the next capture. Only the target's rows are kept; all of its PIDs are, so
+            // GetAdjustedCaptureData still rejects a capture of several instances.
+            var captureData = new List<string[]>();
+            _captureData = captureData;
+            string targetProcess = options.ProcessInfo.Item1;
 
             _overlayService.SetCaptureServiceStatus("Recording frametimes");
 
@@ -285,12 +290,12 @@ namespace CapFrameX.Data
 
             bool intializedStartTime = false;
             double captureDataArchiveLastTime = 0;
+            string[] firstRow = null;
 
             // Replace the previous subscription instead of assigning over it, the way
             // StartFillArchive already does. The handle is the only way to dispose one, so
-            // overwriting a live subscription orphans it forever — and its handler appends to
-            // _captureData, the FIELD, so it goes on filling whatever list the CURRENT capture
-            // uses. Each orphan adds one more copy of every frame for the rest of the session.
+            // overwriting a live subscription orphans it forever, and it goes on filling its
+            // list with every frame for the rest of the session.
             //
             // This is reachable: the IsCapturing guard in StartCapture is a check-then-act
             // across the awaits below it, so several hotkey presses a few hundred ms apart can
@@ -310,14 +315,19 @@ namespace CapFrameX.Data
                     .ObserveOn(_captureStreamScheduler)
                     .Subscribe(lineSplit =>
                     {
-                        _captureData.Add(lineSplit);
+                        if (GetProcessNameFromDataLine(lineSplit) == targetProcess)
+                            captureData.Add(lineSplit);
 
-                        if (!intializedStartTime && _captureData.Any())
+                        // The archive stops once the stream overlaps it. The first row of any
+                        // process shows that, so the archive stops as early as it always did.
+                        firstRow ??= lineSplit;
+
+                        if (!intializedStartTime)
                         {
                             double captureDataFirstTime = 0;
                             try
                             {
-                                captureDataFirstTime = GetCpuStartQpcFromDataLine(_captureData.First());
+                                captureDataFirstTime = GetCpuStartQpcFromDataLine(firstRow);
                             }
                             catch { return; }
 
@@ -431,6 +441,9 @@ namespace CapFrameX.Data
             _logEntryManager.AddLogEntry($"Running offset of {PRESICE_OFFSET}ms to gather latest frames", ELogMessageType.AdvancedInfo, false);
 
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
+            // This capture's rows. A capture that starts once IsCapturing is false puts its own
+            // list in place, which must neither be written here nor released.
+            var captureData = _captureData;
             IsCapturing = false;
 
             // Stop Present logging
@@ -449,7 +462,7 @@ namespace CapFrameX.Data
             if (_appConfiguration.IsOverlayActive)
                 _rtssService.Refresh();
 
-            await WriteExtractedCaptureDataToFileAsync();
+            await WriteExtractedCaptureDataToFileAsync(captureData);
             LockCaptureService = false;
         }
 
@@ -670,14 +683,14 @@ namespace CapFrameX.Data
             }
         }
 
-        private async Task WriteExtractedCaptureDataToFileAsync()
+        private async Task WriteExtractedCaptureDataToFileAsync(List<string[]> captureData)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(_currentCaptureOptions.ProcessInfo.Item1))
                     throw new InvalidDataException("Invalid process name!");
 
-                var adjustedCaptureData = GetAdjustedCaptureData();
+                var adjustedCaptureData = GetAdjustedCaptureData(captureData);
 
                 if (!adjustedCaptureData.Any())
                 {
@@ -740,11 +753,21 @@ namespace CapFrameX.Data
                 _logger.LogError(e, "Error writing capture data");
                 PrepareForNextCapture();
             }
+            finally
+            {
+                // Otherwise the buffer stays referenced until the next capture. MCP and REST start
+                // captures without waiting for LockCaptureService, so a new capture may already
+                // have put its own list in place; that one is kept.
+                Interlocked.CompareExchange(ref _captureData, new List<string[]>(), captureData);
+            }
         }
 
-        private List<string[]> GetAdjustedCaptureData()
+        // The buffer of the running capture; empty between captures.
+        internal IReadOnlyList<string[]> CaptureBuffer => _captureData;
+
+        private List<string[]> GetAdjustedCaptureData(List<string[]> captureData)
         {
-            if (!_captureData.Any())
+            if (!captureData.Any())
             {
                 _logEntryManager.AddLogEntry($"No available capture Data...", ELogMessageType.Error, false);
                 return Enumerable.Empty<string[]>().ToList();
@@ -769,7 +792,7 @@ namespace CapFrameX.Data
 
             var uniqueProcessIdDict = new Dictionary<string, HashSet<string>>();
 
-            foreach (var filteredCaptureDataLine in _captureData)
+            foreach (var filteredCaptureDataLine in captureData)
             {
                 var currentProcess = GetProcessNameFromDataLine(filteredCaptureDataLine);
                 var currentProcessId = GetProcessIdFromDataLine(filteredCaptureDataLine);
@@ -789,7 +812,7 @@ namespace CapFrameX.Data
             if (uniqueProcessIdDict.Any(dict => dict.Value.Count() > 1))
                 _logEntryManager.AddLogEntry($"Multi instances detected. Capture data will be filtered.", ELogMessageType.BasicInfo, false);
 
-            _logEntryManager.AddLogEntry($"Raw data counts - Archive: {_captureDataArchive.Count} frames, Capture: {_captureData.Count} frames",
+            _logEntryManager.AddLogEntry($"Raw data counts - Archive: {_captureDataArchive.Count} frames, Capture: {captureData.Count} frames of the target process",
                 ELogMessageType.AdvancedInfo, false);
 
             var filteredArchive = _captureDataArchive.Where(line =>
@@ -798,7 +821,7 @@ namespace CapFrameX.Data
                 return currentProcess == _currentCaptureOptions.ProcessInfo.Item1 && uniqueProcessIdDict[currentProcess].Count() == 1;
             }).ToList();
 
-            var filteredCaptureData = _captureData.Where(line =>
+            var filteredCaptureData = captureData.Where(line =>
             {
                 var currentProcess = GetProcessNameFromDataLine(line);
                 return currentProcess == _currentCaptureOptions.ProcessInfo.Item1 && uniqueProcessIdDict[currentProcess].Count() == 1;
