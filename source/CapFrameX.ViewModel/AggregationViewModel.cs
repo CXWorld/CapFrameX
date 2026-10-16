@@ -275,9 +275,14 @@ namespace CapFrameX.ViewModel
                     return;
             }
 
+            // Every record in the list needs its entry: outlier flags and the written aggregate
+            // map entries to records by position.
+            session = session ?? _recordManager.LoadData(recordInfo.FullPath);
+            if (!ComparisonViewModel.HasFrames(session))
+                return;
+
             _fileRecordInfoList.Add(recordInfo);
 
-            session = session ?? _recordManager.LoadData(recordInfo.FullPath);
             var frametimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
             var displaytimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenDisplayChange).ToList();
 
@@ -324,7 +329,9 @@ namespace CapFrameX.ViewModel
                     AverageValue = metricAnalysis.Average,
                     SecondMetricValue = metricAnalysis.Second,
                     ThirdMetricValue = metricAnalysis.Third,
-                    MetricAnalysis = metricAnalysis
+                    MetricAnalysis = metricAnalysis,
+                    // Without it, removing a rebuilt entry left its record in the list.
+                    FileRecordInfo = recordInfo
                 });
             }
             _supressCollectionChanged = false;

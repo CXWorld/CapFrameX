@@ -54,10 +54,9 @@ namespace CapFrameX.Test.ViewModel
             string targetName, int recordCount)
         {
             var records = CreateRecords(recordCount);
-            var session = new Mock<ISession>();
-            session.SetupGet(value => value.Runs).Returns(new List<ISessionRun>());
             var recordManager = new Mock<IRecordManager>();
-            recordManager.Setup(value => value.LoadData(It.IsAny<string>())).Returns(session.Object);
+            recordManager.Setup(value => value.LoadData(It.IsAny<string>()))
+                .Returns(() => RecordFiles.SessionWith("game", RecordFiles.Run()));
             var statistics = new Mock<IStatisticProvider>();
             statistics.Setup(value => value.GetMetricAnalysis(
                 It.IsAny<IList<double>>(), It.IsAny<IList<double>>(), It.IsAny<bool>(),
