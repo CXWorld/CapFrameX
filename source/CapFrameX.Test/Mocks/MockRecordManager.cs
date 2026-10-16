@@ -103,7 +103,7 @@ namespace CapFrameX.Test.Mocks
 
         #region IRecordManager Implementation
 
-        public Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo)
+        public Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo, bool fileMayStillBeWritten = false)
         {
             var path = fileInfo.FullName;
 

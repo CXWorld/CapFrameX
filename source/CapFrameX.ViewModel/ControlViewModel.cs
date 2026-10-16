@@ -491,8 +491,8 @@ namespace CapFrameX.ViewModel
 
         private void SetupObservers(SynchronizationContext context)
         {
-            IObservable<IFileRecordInfo> GetFileRecordInfo(FileInfo fi) =>
-                Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi))
+            IObservable<IFileRecordInfo> GetFileRecordInfo(FileInfo fi, bool fileMayStillBeWritten) =>
+                Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi, fileMayStillBeWritten))
                     .Catch<IFileRecordInfo, Exception>(e => Observable.Return<IFileRecordInfo>(null));
 
             _recordObserver.ObservingDirectoryStream
@@ -513,7 +513,7 @@ namespace CapFrameX.ViewModel
                 })
                 .Select(fileInfos =>
                 {
-                    return Observable.Merge(fileInfos.Select(GetFileRecordInfo), 30)
+                    return Observable.Merge(fileInfos.Select(fi => GetFileRecordInfo(fi, fileMayStillBeWritten: false)), 30)
                         .Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
                         .Distinct(recordFileInfo => recordFileInfo.Hash)
                         .ToArray();
@@ -529,7 +529,7 @@ namespace CapFrameX.ViewModel
                 });
 
             _recordObserver.FileCreatedStream
-                .SelectMany(GetFileRecordInfo)
+                .SelectMany(fi => GetFileRecordInfo(fi, fileMayStillBeWritten: true))
                 .Where(recordInfo => recordInfo is IFileRecordInfo)
                 .ObserveOn(context)
                 .Subscribe(recordInfo =>
@@ -549,7 +549,7 @@ namespace CapFrameX.ViewModel
                 });
 
             _recordObserver.FileChangedStream
-                .SelectMany(GetFileRecordInfo)
+                .SelectMany(fi => GetFileRecordInfo(fi, fileMayStillBeWritten: true))
                 .Where(recordInfo => recordInfo is IFileRecordInfo)
                 .ObserveOn(context)
                 .Subscribe(recordInfo =>

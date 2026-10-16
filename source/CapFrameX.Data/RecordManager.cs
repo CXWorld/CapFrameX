@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -57,6 +58,8 @@ namespace CapFrameX.Data
 
         private readonly TimeSpan _fileAccessIntervalTimespan = TimeSpan.FromMilliseconds(200);
         private readonly int _fileAccessIntervalRetryLimit = 50;
+        // Runs the waits and reads of GetFileRecordInfo; tests use a virtual clock.
+        internal IScheduler FileAccessScheduler { get; set; } = Scheduler.Default;
         private readonly ILogger<RecordManager> _logger;
         private readonly IAppConfiguration _appConfiguration;
         private readonly IRecordDirectoryObserver _recordObserver;
@@ -586,7 +589,7 @@ namespace CapFrameX.Data
                 && presentId != 0;
         }
 
-        public async Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo)
+        public async Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo, bool fileMayStillBeWritten = false)
         {
             fileInfo.Refresh();
             if (TryGetCachedRecordInfo(fileInfo, out var cachedRecordInfo))
@@ -596,7 +599,18 @@ namespace CapFrameX.Data
             long expectedLength = fileInfo.Length;
             long expectedLastWriteTimeUtcTicks = fileInfo.LastWriteTimeUtc.Ticks;
 
-            var recordInfo = await Observable.Timer(_fileAccessIntervalTimespan)
+            // Only a file reported by a Created or Changed event may still be written, so only
+            // its first read waits. Waiting in front of every file made each record folder load
+            // take ceil(N / 30) x 200 ms. A retry after an IOException always waits.
+            bool firstAttempt = true;
+            var recordInfo = await Observable.Defer(() =>
+                {
+                    var delay = firstAttempt && !fileMayStillBeWritten
+                        ? TimeSpan.Zero
+                        : _fileAccessIntervalTimespan;
+                    firstAttempt = false;
+                    return Observable.Timer(delay, FileAccessScheduler);
+                })
                 .SelectMany(_ =>
                 {
                     switch (fileInfo.Extension)
