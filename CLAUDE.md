@@ -446,6 +446,9 @@ content starts at the left edge of the headers.
 ## Configuration Files
 - User settings: `%appdata%/CapFrameX/Configuration/AppSettings.json`
 - Overlay config: `%appdata%/CapFrameX/Configuration/OverlayEntryConfiguration_(0/1/2).json`
+- Record index: `%appdata%/CapFrameX/Configuration/RecordInfoIndex.json` — the metadata of the
+  record files read so far, keyed by path, size and write time (`RecordInfoIndex`), so a record
+  folder is listed without reading its files again. Deleting it costs one full read of the folder.
 - Staged update packages: `%appdata%/CapFrameX/Updates` (portable mode: `<appdir>/Updates`)
 - Build version: `version/Version.txt`
 - Release channel (`release` or `beta`): `version/Channel.txt`

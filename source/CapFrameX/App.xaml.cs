@@ -518,6 +518,16 @@ namespace CapFrameX
                 Log.Logger.Error(ex, "Error while waiting for record files to be written.");
             }
 
+            // The record index is written a moment after its last change; write what is pending.
+            try
+            {
+                Container.Resolve<RecordInfoIndex>().Flush();
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while writing the record index.");
+            }
+
 #if DEBUG
             try
             {

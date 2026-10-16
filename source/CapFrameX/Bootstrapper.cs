@@ -413,6 +413,11 @@ namespace CapFrameX
                     Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
                     Container.Register<IOverlayTemplateService, OverlayTemplateService>(Reuse.Singleton);
                     Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);
+                    // The metadata of the records read so far, so the next start lists a record
+                    // folder without reading its files again. The exit writes what is pending.
+                    Container.RegisterDelegate(resolver => new RecordInfoIndex(
+                        System.IO.Path.Combine(pathService.ConfigFolder, "RecordInfoIndex.json"),
+                        resolver.Resolve<ILoggerFactory>().CreateLogger<RecordInfoIndex>()), Reuse.Singleton);
                     // One queue for the whole app: the exit waits for it.
                     Container.Register<RecordWriteQueue>(Reuse.Singleton);
                 }

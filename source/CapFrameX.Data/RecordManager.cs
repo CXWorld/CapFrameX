@@ -71,6 +71,8 @@ namespace CapFrameX.Data
         private readonly IEventAggregator _eventAggregator;
         private readonly ICaptureService _captureService;
         private readonly IHookOverlayStatusService _hookOverlayStatusService;
+        // Metadata of the records read so far, kept across runs; null keeps none.
+        private readonly RecordInfoIndex _recordInfoIndex;
         private readonly object _sessionCacheSync = new object();
         private readonly Dictionary<string, SessionCacheEntry> _sessionCache =
             new Dictionary<string, SessionCacheEntry>(StringComparer.OrdinalIgnoreCase);
@@ -90,9 +92,11 @@ namespace CapFrameX.Data
             IRTSSService rTSSService,
             IEventAggregator eventAggregator,
             ICaptureService captureService,
-            IHookOverlayStatusService hookOverlayStatusService)
+            IHookOverlayStatusService hookOverlayStatusService,
+            RecordInfoIndex recordInfoIndex = null)
         {
             _hookOverlayStatusService = hookOverlayStatusService;
+            _recordInfoIndex = recordInfoIndex;
             _logger = logger;
             _appConfiguration = appConfiguration;
             _recordObserver = recordObserver;
@@ -656,6 +660,18 @@ namespace CapFrameX.Data
             long expectedLength = fileInfo.Length;
             long expectedLastWriteTimeUtcTicks = fileInfo.LastWriteTimeUtc.Ticks;
 
+            // A record read before, by this or an earlier run of the app, is listed from the
+            // index without reading the file, as long as the file still has the stamp it was
+            // read at.
+            if (_recordInfoIndex != null && _recordInfoIndex.TryGet(fileInfo.FullName,
+                    expectedLength, expectedLastWriteTimeUtcTicks, out var indexedEntry))
+            {
+                var indexedRecordInfo = FileRecordInfo.FromIndexEntry(fileInfo, indexedEntry);
+                ApplyProcessListGameName(indexedRecordInfo);
+                StoreRecordInfo(fileInfo, indexedRecordInfo, expectedLength, expectedLastWriteTimeUtcTicks);
+                return indexedRecordInfo;
+            }
+
             // Only a file reported by a Created or Changed event may still be written, so only
             // its first read waits. Waiting in front of every file made each record folder load
             // take ceil(N / 30) x 200 ms. A retry after an IOException always waits.
@@ -704,26 +720,34 @@ namespace CapFrameX.Data
                     }
                 })
                 .Retry(_fileAccessIntervalRetryLimit)
-                .DefaultIfEmpty()
-                .Do(fileRecordInfo =>
-                {
-                    if (fileRecordInfo != null)
-                    {
-                        bool usesProcessListName = fileRecordInfo.ProcessName == fileRecordInfo.GameName
-                            || fileRecordInfo.GameName.IsNullOrEmpty();
-                        if (fileRecordInfo is FileRecordInfo concreteRecordInfo)
-                            concreteRecordInfo.UsesProcessListGameName = usesProcessListName;
-                        if (usesProcessListName)
-                            fileRecordInfo.GameName = GetGameNameFromProcessList(fileRecordInfo.ProcessName);
-                    }
-                });
+                .DefaultIfEmpty();
 
             if (recordInfo != null)
             {
-                StoreRecordInfo(fileInfo, recordInfo, expectedLength, expectedLastWriteTimeUtcTicks);
+                // The index keeps the game name as stored in the file; the process list's name
+                // is applied on every listing.
+                var indexEntry = (recordInfo as FileRecordInfo)?.ToIndexEntry();
+                ApplyProcessListGameName(recordInfo);
+                if (StoreRecordInfo(fileInfo, recordInfo, expectedLength, expectedLastWriteTimeUtcTicks)
+                    && indexEntry != null)
+                {
+                    _recordInfoIndex?.Store(fileInfo.FullName, expectedLength, expectedLastWriteTimeUtcTicks, indexEntry);
+                }
             }
 
             return recordInfo;
+        }
+
+        // The record list shows the process list's display name for a record whose stored game
+        // name is just its process name, and follows the list when the name changes.
+        private void ApplyProcessListGameName(IFileRecordInfo recordInfo)
+        {
+            bool usesProcessListName = recordInfo.ProcessName == recordInfo.GameName
+                || recordInfo.GameName.IsNullOrEmpty();
+            if (recordInfo is FileRecordInfo concreteRecordInfo)
+                concreteRecordInfo.UsesProcessListGameName = usesProcessListName;
+            if (usesProcessListName)
+                recordInfo.GameName = GetGameNameFromProcessList(recordInfo.ProcessName);
         }
 
         private IFileRecordInfo LoadRecordInfoFromJSON(FileInfo fileInfo)
@@ -901,14 +925,15 @@ namespace CapFrameX.Data
             return false;
         }
 
-        private void StoreRecordInfo(FileInfo fileInfo, IFileRecordInfo recordInfo,
+        /// <summary>False if the file changed while it was read; nothing is kept then.</summary>
+        private bool StoreRecordInfo(FileInfo fileInfo, IFileRecordInfo recordInfo,
             long expectedLength, long expectedLastWriteTimeUtcTicks)
         {
             fileInfo.Refresh();
             if (!fileInfo.Exists || fileInfo.Length != expectedLength
                 || fileInfo.LastWriteTimeUtc.Ticks != expectedLastWriteTimeUtcTicks)
             {
-                return;
+                return false;
             }
 
             string path = Path.GetFullPath(fileInfo.FullName);
@@ -928,6 +953,8 @@ namespace CapFrameX.Data
                     _recordInfoCache.Remove(oldest.Key);
                 }
             }
+
+            return true;
         }
 
         public async Task SavePresentmonRawToFile(IEnumerable<string> lines, string process, string recordDirectory = null)

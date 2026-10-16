@@ -498,6 +498,89 @@ namespace CapFrameX.Data
 			}
 		}
 
+		/// <summary>
+		/// The metadata as read from the file, for the on-disk record index. Taken before the
+		/// process list's display name replaces the stored game name.
+		/// </summary>
+		internal RecordInfoIndexEntry ToIndexEntry()
+			=> new RecordInfoIndexEntry
+			{
+				Id = Id,
+				Hash = Hash,
+				GameName = GameName,
+				ProcessName = ProcessName,
+				CreationDate = CreationDate,
+				CreationTime = CreationTime,
+				RecordTime = RecordTime,
+				CombinedInfo = CombinedInfo,
+				DeviceName = DeviceName,
+				MotherboardName = MotherboardName,
+				OsVersion = OsVersion,
+				ProcessorName = ProcessorName,
+				SystemRamInfo = SystemRamInfo,
+				BaseDriverVersion = BaseDriverVersion,
+				DriverPackage = DriverPackage,
+				NumberGPUs = NumberGPUs,
+				GraphicCardName = GraphicCardName,
+				GPUCoreClock = GPUCoreClock,
+				GPUMemoryClock = GPUMemoryClock,
+				GPUMemory = GPUMemory,
+				GPUDriverVersion = GPUDriverVersion,
+				Comment = Comment,
+				IsAggregated = IsAggregated,
+				IsValid = IsValid,
+				HasInfoHeader = HasInfoHeader,
+				ApiInfo = ApiInfo,
+				ResizableBar = ResizableBar,
+				WinGameMode = WinGameMode,
+				HAGS = HAGS,
+				PresentationMode = PresentationMode,
+				DisplayLayer = DisplayLayer,
+				Resolution = Resolution
+			};
+
+		/// <summary>A record as the index remembers it; the file is not read.</summary>
+		internal static FileRecordInfo FromIndexEntry(FileInfo fileInfo, RecordInfoIndexEntry entry)
+			=> new FileRecordInfo(fileInfo, entry);
+
+		private FileRecordInfo(FileInfo fileInfo, RecordInfoIndexEntry entry)
+		{
+			FileInfo = fileInfo;
+			FullPath = fileInfo.FullName;
+			Id = entry.Id;
+			Hash = entry.Hash;
+			GameName = entry.GameName;
+			ProcessName = entry.ProcessName;
+			CreationDate = entry.CreationDate;
+			CreationTime = entry.CreationTime;
+			RecordTime = entry.RecordTime;
+			CombinedInfo = entry.CombinedInfo;
+			DeviceName = entry.DeviceName;
+			MotherboardName = entry.MotherboardName;
+			OsVersion = entry.OsVersion;
+			ProcessorName = entry.ProcessorName;
+			SystemRamInfo = entry.SystemRamInfo;
+			BaseDriverVersion = entry.BaseDriverVersion;
+			DriverPackage = entry.DriverPackage;
+			NumberGPUs = entry.NumberGPUs;
+			GraphicCardName = entry.GraphicCardName;
+			GPUCoreClock = entry.GPUCoreClock;
+			GPUMemoryClock = entry.GPUMemoryClock;
+			GPUMemory = entry.GPUMemory;
+			GPUDriverVersion = entry.GPUDriverVersion;
+			Comment = entry.Comment;
+			IsAggregated = entry.IsAggregated;
+			IsValid = entry.IsValid;
+			HasInfoHeader = entry.HasInfoHeader;
+			ApiInfo = entry.ApiInfo;
+			ResizableBar = entry.ResizableBar;
+			WinGameMode = entry.WinGameMode;
+			HAGS = entry.HAGS;
+			PresentationMode = entry.PresentationMode;
+			DisplayLayer = entry.DisplayLayer;
+			Resolution = entry.Resolution;
+		}
+
 		public static bool IsMangoHudFile(string line)
 		{
 			return line.Contains("kernel") && line.Contains("cpuscheduler");
