@@ -352,7 +352,7 @@ namespace CapFrameX.Test.Data
                 .ToList();
             Assert.AreEqual(1, _mockRecordManager.FileCount, "No capture was written.");
             Assert.IsTrue(frameTimes.Count > 20, $"The capture has only {frameTimes.Count} frames.");
-            Assert.AreEqual(0, frameTimes.Count(frameTime => frameTime == delayFrameTime.ToString("F4")),
+            Assert.AreEqual(0, frameTimes.Count(frameTime => frameTime == delayFrameTime.ToString("F4", CultureInfo.InvariantCulture)),
                 "Frames shown during the capture delay ended up in the capture.");
         }
 
