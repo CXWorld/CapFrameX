@@ -12,6 +12,7 @@ using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Test.Localization;
 using CapFrameX.ViewModel;
 using GongSolutions.Wpf.DragDrop;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Prism.Events;
@@ -66,14 +67,18 @@ namespace CapFrameX.Test.ViewModel
                 .Returns((IList<IMetricAnalysis> analyses, string relatedMetric, int percentage)
                     => new bool[analyses.Count]);
             var viewModel = new AggregationViewModel(statistics.Object, new EventAggregator(),
-                CreateConfiguration(), recordManager.Object);
+                CreateConfiguration(), recordManager.Object, NullLogger<AggregationViewModel>.Instance);
             var dropInfo = new Mock<IDropInfo>();
             dropInfo.SetupGet(value => value.Data).Returns(CreateDragPayload(records));
             dropInfo.SetupGet(value => value.VisualTarget).Returns(targetName == "AggregationItemDataGrid"
                 ? (System.Windows.UIElement)new DataGrid { Name = targetName }
                 : new TextBlock { Name = targetName });
 
-            ((IDropTarget)viewModel).Drop(dropInfo.Object);
+            RecordFiles.RunOnDispatcher(() =>
+            {
+                ((IDropTarget)viewModel).Drop(dropInfo.Object);
+                return viewModel.PendingDrop;
+            });
 
             CollectionAssert.AreEqual(records,
                 viewModel.AggregationEntries.Select(entry => entry.FileRecordInfo).ToArray());
