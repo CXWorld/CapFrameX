@@ -307,7 +307,7 @@ namespace CapFrameX.Overlay
                            }
                            if (feedRtss)
                            {
-                               _rTSSService.SetOverlayEntries(entries.Where(entry => entry.IsEntryEnabled).ToArray());
+                               _rTSSService.SetOverlayEntries(SelectRtssEntries(entries));
                                await _rTSSService.CheckRTSSRunningAndRefresh();
                            }
                        });
@@ -467,6 +467,18 @@ namespace CapFrameX.Overlay
         internal static bool ShouldReplaceUnavailableRtss(bool isRTSSInstalled, EOverlayRenderer renderer)
         {
             return !isRTSSInstalled && renderer == EOverlayRenderer.Rtss;
+        }
+
+        /// <summary>
+        /// The entries RTSS can draw: a row needs ShowOnOverlay, a graph only ShowGraph. Sensor
+        /// entries are enabled by default, so sending every enabled entry marshalled and
+        /// formatted hundreds of hidden ones on each refresh.
+        /// </summary>
+        internal static IOverlayEntry[] SelectRtssEntries(IEnumerable<IOverlayEntry> entries)
+        {
+            return entries
+                .Where(entry => entry.IsEntryEnabled && (entry.ShowOnOverlay || entry.ShowGraph))
+                .ToArray();
         }
 
         /// <summary>

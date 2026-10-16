@@ -199,6 +199,31 @@ namespace CapFrameX.Test.Overlay
             fixture.Rtss.Verify(service => service.ReleaseOSD(), Times.Once);
         }
 
+        [TestMethod]
+        public async Task RtssFeed_SendsOnlyEntriesRtssCanDraw()
+        {
+            using var fixture = new RefreshFixture(overlayActive: true, rtssRenderer: true);
+            var fed = new TaskCompletionSource<IOverlayEntry[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+            fixture.Rtss.Setup(service => service.SetOverlayEntries(It.IsAny<IOverlayEntry[]>()))
+                .Callback((IOverlayEntry[] entries) => fed.TrySetResult(entries));
+            fixture.Provider.Setup(provider => provider.GetOverlayEntries(true)).ReturnsAsync(new IOverlayEntry[]
+            {
+                new OverlayEntryWrapper("Framerate") { ShowOnOverlay = false, ShowGraph = true },
+                new OverlayEntryWrapper("CpuLoad") { ShowOnOverlay = true },
+                new OverlayEntryWrapper("CpuTemp") { ShowOnOverlay = false },
+                new OverlayEntryWrapper("GpuLoad") { ShowOnOverlay = true, IsEntryEnabled = false },
+            });
+            fixture.Start();
+
+            var sent = await fed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            CollectionAssert.AreEqual(new[] { "Framerate", "CpuLoad" },
+                sent.Select(entry => entry.Identifier).ToArray());
+            // The CapFrameX renderers and the remote API still receive every entry.
+            CollectionAssert.AreEqual(new[] { "Framerate", "CpuLoad", "CpuTemp", "GpuLoad" },
+                fixture.Service.CurrentOverlayEntries.Select(entry => entry.Identifier).ToArray());
+        }
+
         private static IOverlayEntry[] FrameEntries() => new IOverlayEntry[]
         {
             new OverlayEntryWrapper("Framerate") { GroupName = "<APP>", Value = 0d, IsNumeric = true,
