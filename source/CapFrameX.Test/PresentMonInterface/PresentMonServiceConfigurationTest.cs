@@ -46,7 +46,6 @@ namespace CapFrameX.Test.PresentMonInterface
 
             var arguments = configuration.ConfigParameterToArguments();
 
-            Assert.AreEqual(4096, PresentMonCircularBuffer.DefaultSize);
             StringAssert.Contains(arguments, "--set_circular_buffer_size 4096");
         }
 

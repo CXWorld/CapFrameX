@@ -32,9 +32,10 @@ namespace CapFrameX.Hardware.Controller
     {
         private const uint CPUID_CORE_MASK_STATUS = 0x1A;
 
-        private CpuId[] _threads;
-        private CpuId[][] _coreThreads;
-        private Vendor _vendor;
+        // The topology detection below is disabled, so no threads are known and the vendor stays
+        // unknown: the affinity toggles leave the process affinity alone.
+        private CpuId[] _threads = Array.Empty<CpuId>();
+        private Vendor _vendor = Vendor.Unknown;
         private int _currentProcessId;
 
         private readonly IAppConfiguration _appConfiguration;

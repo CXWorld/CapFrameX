@@ -46,9 +46,6 @@ namespace CapFrameX
         // are skipped.
         private bool _startupAborted;
         private Mutex _mutex;
-#if DEBUG
-        private DebugMonitorWindow _debugMonitorWindow;
-#endif
 
         public App()
         {
@@ -279,10 +276,10 @@ namespace CapFrameX
                 }
 
 #if DEBUG
-                // Open debug monitor window in Debug mode
+                // Open the debug monitor window in Debug mode (close it again in ApplicationExit):
                 //var captureService = Container.Resolve<ICaptureService>();
-                //_debugMonitorWindow = new DebugMonitorWindow(captureService);
-                //_debugMonitorWindow.Show();
+                //var debugMonitorWindow = new DebugMonitorWindow(captureService);
+                //debugMonitorWindow.Show();
 #endif
 
                 StartupPerformanceLogger.Complete();
@@ -527,14 +524,6 @@ namespace CapFrameX
             {
                 Log.Logger.Error(ex, "Error while writing the record index.");
             }
-
-#if DEBUG
-            try
-            {
-                _debugMonitorWindow?.Close();
-            }
-            catch { }
-#endif
 
             try
             {

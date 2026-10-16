@@ -294,7 +294,7 @@ namespace CapFrameX.Test.Data
             await _captureManager.StopCapture();
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(0.0, DisplayName = "Stopped by hand")]
         [DataRow(1.0, DisplayName = "Stopped by the capture time")]
         public async Task StartCapture_WithDelay_RecordsNoFramesFromTheDelay(double captureTime)

@@ -55,7 +55,8 @@ internal class MemoryGroup : IGroup, IHardwareChanged
     }
 
     public event HardwareEventHandler HardwareAdded;
-    public event HardwareEventHandler HardwareRemoved;
+    // DIMMs are only ever added, by the retry task; none is removed while the group lives.
+    public event HardwareEventHandler HardwareRemoved { add { } remove { } }
 
     public IReadOnlyList<IHardware> Hardware => _hardware;
 

@@ -316,7 +316,7 @@ public:
 	array<float>^ GetFrameTimesInterval(INT processId, INT milliseconds)
 	{
 		std::vector<float> frameTimes = _coreControl->GetFrameTimesInterval((UINT)processId, (UINT)milliseconds);
-		array<float>^ frameTimesArray = gcnew array<float>(frameTimes.size());
+		array<float>^ frameTimesArray = gcnew array<float>(static_cast<int>(frameTimes.size()));
 
 		pin_ptr<float> dest = &frameTimesArray[0];
 		std::memcpy(dest, &frameTimes[0], frameTimes.size() * sizeof(float));

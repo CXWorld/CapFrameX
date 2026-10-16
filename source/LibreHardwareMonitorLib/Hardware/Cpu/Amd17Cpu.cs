@@ -18,7 +18,9 @@ namespace LibreHardwareMonitor.Hardware.Cpu;
 internal sealed class Amd17Cpu : AmdCpu
 {
     // Keep raw SMU dump code available for diagnostics, but disabled by default.
-    private const bool EnableSmuRawDump = false;
+    // A field, not a const: the dump path stays compiled and the compiler does not report it
+    // as unreachable while the switch is off.
+    private static readonly bool EnableSmuRawDump = false;
 
     private readonly Processor _processor;
     private readonly Dictionary<SensorType, int> _sensorTypeIndex;

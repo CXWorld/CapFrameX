@@ -97,7 +97,7 @@ namespace CapFrameX.Test.PMD
         private static List<double> Run(PoweneticsPacketClock clock, IEnumerable<SimulatedPacket> packets)
             => packets.Select(p => clock.OnPacket(p.Number, p.Arrival)).ToList();
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(0.0)]
         [DataRow(BatchedDelivery)]
         public void PacketClock_FollowsTheDeviceRateInsteadOfOneMillisecondPerPacket(double deliveryPeriod)
@@ -115,7 +115,7 @@ namespace CapFrameX.Test.PMD
             Assert.IsTrue(spread < Tolerance(deliveryPeriod), $"Packet times drift against the production times ({spread * 1000:F2} ms).");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(0.0)]
         [DataRow(BatchedDelivery)]
         public void PacketClock_PlacesTheBurstAfterAStallAtItsProductionTimes(double deliveryPeriod)
@@ -135,7 +135,7 @@ namespace CapFrameX.Test.PMD
                 $"The stall burst is placed at its arrival instead of its production time ({spread * 1000:F2} ms).");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(0.0)]
         [DataRow(BatchedDelivery)]
         public void PacketClock_IgnoresTheBacklogDeliveredWhenThePortOpens(double deliveryPeriod)
@@ -152,7 +152,7 @@ namespace CapFrameX.Test.PMD
             Assert.IsTrue(spread < Tolerance(deliveryPeriod), $"The start-up backlog skews the clock ({spread * 1000:F2} ms).");
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(0.0)]
         [DataRow(BatchedDelivery)]
         public void PacketClock_CountsGapsAcrossTheWrapOfThePacketNumber(double deliveryPeriod)

@@ -503,11 +503,8 @@ namespace CapFrameX.Test.Integration
         {
             ulong since = 1000;
 
-            Assert.AreEqual(15000UL, HookOverlayManager.HookFirstPresentTimeoutMs);
-            Assert.IsFalse(HookOverlayManager.HasFirstPresentTimedOut(
-                since, since + HookOverlayManager.HookFirstPresentTimeoutMs - 1));
-            Assert.IsTrue(HookOverlayManager.HasFirstPresentTimedOut(
-                since, since + HookOverlayManager.HookFirstPresentTimeoutMs));
+            Assert.IsFalse(HookOverlayManager.HasFirstPresentTimedOut(since, since + 14999));
+            Assert.IsTrue(HookOverlayManager.HasFirstPresentTimedOut(since, since + 15000));
         }
 
         [TestMethod]

@@ -1,3 +1,7 @@
+// The P/Invoke signatures below annotate optional strings and buffers; the library itself
+// does not enable nullable warnings.
+#nullable enable annotations
+
 using LibreHardwareMonitor.PawnIo;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;

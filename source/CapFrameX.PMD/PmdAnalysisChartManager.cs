@@ -89,9 +89,13 @@ namespace CapFrameX.PMD
             PerformanceModel.Axes.Add(AxisDefinitions["X_Axis_Performance"]);
             PerformanceModel.Axes.Add(AxisDefinitions["Y_Axis_Performance"]);
 
+            // OxyPlot 2.2 marks AxisChanged obsolete (#111) without offering another event that
+            // reports pan, zoom and reset; the three analysis charts follow each other through it.
+#pragma warning disable CS0618
             AxisDefinitions["X_Axis_Time_GPU_Analysis"].AxisChanged += GPU_AxisChanged;
             AxisDefinitions["X_Axis_Time_CPU_Analysis"].AxisChanged += CPU_AxisChanged;
             AxisDefinitions["X_Axis_Performance"].AxisChanged += Performance_AxisChanged;
+#pragma warning restore CS0618
 
             ApplyAxisTitles();
             CxLang.Instance.PropertyChanged += (_, e) =>

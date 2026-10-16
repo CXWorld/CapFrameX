@@ -60,20 +60,40 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void MaxEntries_HoldsAnEnthusiastProfileOnAHighCoreCountCpu()
+        public void Publish_AnEnthusiastProfileOnAHighCoreCountCpu_KeepsEveryEntry()
         {
             // 24 cores x (clock + load) + CPU Max + package power/temp + 7 GPU + CPU/RAM headers
             // + DIMMs + RAM Used + 2 online metrics + Framerate/Frametime/DisplayTime = 68 on the
-            // reference machine; leave room for per-thread loads and larger core counts.
-            Assert.IsTrue(HookMetricsChannel.MaxEntries >= 256,
-                $"capacity {HookMetricsChannel.MaxEntries} is too small for the Enthusiast template");
+            // reference machine; per-thread loads and larger core counts need room well beyond.
+            const int count = 256;
+            var entries = new List<OsdEntry>();
+            for (int i = 0; i < count; i++)
+                entries.Add(new OsdEntry { Identifier = $"e{i}", IsNumeric = true });
+
+            using (var channel = HookMetricsChannel.Create(targetPid: 4245, mapName: TestMapName))
+            {
+                channel.Publish(entries, flags: 0u, targetPid: 4245);
+
+                IntPtr view = OpenReadOnlyView();
+                Assert.AreNotEqual(IntPtr.Zero, view, "The isolated metrics section must be readable.");
+                try
+                {
+                    Assert.AreEqual(count, Marshal.ReadInt32(view, OffEntryCount),
+                        "the capacity is too small for the Enthusiast template");
+                    Assert.AreEqual($"e{count - 1}", ReadIdentifier(view, count - 1));
+                }
+                finally
+                {
+                    UnmapViewOfFile(view);
+                }
+            }
         }
 
         [TestMethod]
         public void Publish_MoreEntriesThanTheOldCap_KeepsTheTailThatCarriesMetricsAndGraph()
         {
-            const int count = 68; // what the reference 24-core machine actually produces
-            Assert.IsTrue(count > 64, "the regression case must exceed the old 64-entry cap");
+            // What the reference 24-core machine actually produces: past the old 64-entry cap.
+            const int count = 68;
 
             var entries = new List<OsdEntry>();
             for (int i = 0; i < count - 4; i++)
