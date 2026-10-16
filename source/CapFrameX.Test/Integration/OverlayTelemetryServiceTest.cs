@@ -823,6 +823,185 @@ namespace CapFrameX.Test.Integration
                 HardwareType = hardwareType, SensorType = sensorType, IsPresentationDefault = false
             };
 
+        [TestMethod]
+        public async Task NarrowLease_ComputesOnlyTheOnlineMetricsItShows()
+        {
+            // Regression: every snapshot computed all 14 online metrics, each copying the whole
+            // metric window, whatever the tile design showed.
+            var metrics = OnlineMetrics();
+            using var fixture = new Fixture(Array.Empty<ISensorEntry>(), metrics.Object);
+            await fixture.Service.GetSourcesAsync();
+            using var lease = fixture.Service.AcquirePreview(() => new[] { "metric/OnlineAverage" });
+
+            var snapshot = await fixture.Next(new Dictionary<ISensorEntry, float>());
+
+            Assert.AreEqual(144d, snapshot.Values["metric/OnlineAverage"]);
+            Assert.IsNull(snapshot.Values["metric/OnlineP1"]);
+            metrics.Verify(m => m.GetOnlineFpsMetricValue(EMetric.Average), Times.Once);
+            metrics.Verify(m => m.GetOnlineFpsMetricValue(It.Is<EMetric>(metric => metric != EMetric.Average)), Times.Never);
+            metrics.Verify(m => m.GetOnlineFrameTimeMetricValue(It.IsAny<EMetric>()), Times.Never);
+            metrics.Verify(m => m.GetOnlineGpuActiveTimeMetricValue(It.IsAny<EMetric>()), Times.Never);
+            metrics.Verify(m => m.GetOnlineCpuActiveTimeMetricValue(It.IsAny<EMetric>()), Times.Never);
+            metrics.Verify(m => m.GetOnlineGpuActiveTimeDeviationMetricValue(), Times.Never);
+            metrics.Verify(m => m.GetOnlineStutteringPercentageValue(), Times.Never);
+            metrics.Verify(m => m.GetOnlinePcLatencyAverageValue(), Times.Never);
+            metrics.Verify(m => m.GetOnlineAnimationErrorValue(), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task FullLease_NextToANarrowOne_ComputesEverything()
+        {
+            // The editors take the full lease: their preview shows every source.
+            var metrics = OnlineMetrics();
+            using var fixture = new Fixture(Array.Empty<ISensorEntry>(), metrics.Object);
+            await fixture.Service.GetSourcesAsync();
+            using var narrow = fixture.Service.AcquirePreview(() => new[] { "metric/OnlineAverage" });
+            using var full = fixture.Service.AcquirePreview();
+
+            var snapshot = await fixture.Next(new Dictionary<ISensorEntry, float>());
+
+            Assert.AreEqual(90d, snapshot.Values["metric/OnlineP1"]);
+            metrics.Verify(m => m.GetOnlineStutteringPercentageValue(), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task TwoNarrowLeases_ComputeWhatEitherShows()
+        {
+            var metrics = OnlineMetrics();
+            using var fixture = new Fixture(Array.Empty<ISensorEntry>(), metrics.Object);
+            await fixture.Service.GetSourcesAsync();
+            using var first = fixture.Service.AcquirePreview(() => new[] { "metric/OnlineAverage" });
+            using var second = fixture.Service.AcquirePreview(() => new[] { "metric/OnlineP1" });
+
+            var snapshot = await fixture.Next(new Dictionary<ISensorEntry, float>());
+
+            Assert.AreEqual(144d, snapshot.Values["metric/OnlineAverage"]);
+            Assert.AreEqual(90d, snapshot.Values["metric/OnlineP1"]);
+            metrics.Verify(m => m.GetOnlineFpsMetricValue(EMetric.P0dot1), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task NarrowLease_FollowsTheSourcesItReportsNow()
+        {
+            // A design change only swaps the set the function returns; the lease stays.
+            var metrics = OnlineMetrics();
+            using var fixture = new Fixture(Array.Empty<ISensorEntry>(), metrics.Object);
+            await fixture.Service.GetSourcesAsync();
+            IReadOnlyCollection<string> shown = new[] { "metric/OnlineAverage" };
+            using var lease = fixture.Service.AcquirePreview(() => shown);
+            var before = await fixture.Next(new Dictionary<ISensorEntry, float>());
+
+            shown = new[] { "metric/OnlineP1" };
+            var after = await fixture.Next(new Dictionary<ISensorEntry, float>());
+
+            Assert.AreEqual(144d, before.Values["metric/OnlineAverage"]);
+            Assert.IsNull(before.Values["metric/OnlineP1"]);
+            Assert.IsNull(after.Values["metric/OnlineAverage"]);
+            Assert.AreEqual(90d, after.Values["metric/OnlineP1"]);
+        }
+
+        [TestMethod]
+        public async Task NarrowLease_ReportingNull_NeedsEverySource()
+        {
+            var metrics = OnlineMetrics();
+            using var fixture = new Fixture(Array.Empty<ISensorEntry>(), metrics.Object);
+            await fixture.Service.GetSourcesAsync();
+            using var lease = fixture.Service.AcquirePreview(() => null);
+
+            var snapshot = await fixture.Next(new Dictionary<ISensorEntry, float>());
+
+            Assert.AreEqual(90d, snapshot.Values["metric/OnlineP1"]);
+        }
+
+        [TestMethod]
+        public async Task ReleasedNarrowLease_NoLongerNarrowsTheSnapshot()
+        {
+            // A subscriber without a lease, like the existing consumers, still gets everything.
+            var metrics = OnlineMetrics();
+            using var fixture = new Fixture(Array.Empty<ISensorEntry>(), metrics.Object);
+            await fixture.Service.GetSourcesAsync();
+            var lease = fixture.Service.AcquirePreview(() => new[] { "metric/OnlineAverage" });
+            lease.Dispose();
+
+            var snapshot = await fixture.Next(new Dictionary<ISensorEntry, float>());
+
+            Assert.AreEqual(90d, snapshot.Values["metric/OnlineP1"]);
+        }
+
+        [TestMethod]
+        public async Task NarrowLease_AsksTheClassicProviderOnlyForItsValues()
+        {
+            // Regression: the ping went out every second even without a ping tile.
+            var classic = new Mock<IOverlayEntryProvider>();
+            classic.Setup(p => p.GetTelemetrySourcesAsync()).ReturnsAsync(
+                OverlayUtils.GetOverlayEntryDefaults(Mock.Of<IAppConfiguration>()).Cast<IOverlayEntry>().ToArray());
+            IReadOnlySet<string> requested = null;
+            classic.Setup(p => p.GetTelemetryValues(It.IsAny<IReadOnlySet<string>>()))
+                .Callback((IReadOnlySet<string> identifiers) => requested = identifiers)
+                .Returns(new Dictionary<string, object> { ["SystemTime"] = "12:34" });
+            using var fixture = new Fixture(Array.Empty<ISensorEntry>(), Mock.Of<IOnlineMetricService>(), classic.Object);
+            await fixture.Service.GetSourcesAsync();
+            using var lease = fixture.Service.AcquirePreview(() => new[]
+            {
+                "metric/SystemTime", "metric/OnlineAverage", "sensor:cpu%2F0%2Fload%2F0"
+            });
+
+            var snapshot = await fixture.Next(new Dictionary<ISensorEntry, float>());
+
+            CollectionAssert.AreEquivalent(new[] { "SystemTime", "OnlineAverage" }, requested.ToArray());
+            Assert.AreEqual("12:34", snapshot.MetricValues["metric/SystemTime"]);
+            classic.Verify(p => p.GetTelemetryValues(), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task FullLease_ReadsEveryClassicValue()
+        {
+            var classic = new Mock<IOverlayEntryProvider>();
+            classic.Setup(p => p.GetTelemetrySourcesAsync()).ReturnsAsync(Array.Empty<IOverlayEntry>());
+            classic.Setup(p => p.GetTelemetryValues()).Returns(new Dictionary<string, object>());
+            using var fixture = new Fixture(Array.Empty<ISensorEntry>(), Mock.Of<IOnlineMetricService>(), classic.Object);
+            await fixture.Service.GetSourcesAsync();
+            using var lease = fixture.Service.AcquirePreview();
+
+            await fixture.Next(new Dictionary<ISensorEntry, float>());
+
+            classic.Verify(p => p.GetTelemetryValues(), Times.Once);
+            classic.Verify(p => p.GetTelemetryValues(It.IsAny<IReadOnlySet<string>>()), Times.Never);
+        }
+
+        [TestMethod]
+        [DataRow(null, false)]
+        [DataRow("metric/FrameGenerationTechnology", true)]
+        [DataRow("metric/FrameGenerationStatus", true)]
+        public async Task NarrowLease_ReadsTheHookStatusOnlyForFrameGenerationTiles(string shown, bool read)
+        {
+            var hookStatus = new Mock<IHookOverlayStatusService>();
+            hookStatus.SetupGet(h => h.Current).Returns(new HookOverlayStatus(EHookOverlayStatus.Disabled));
+            using var stream = new Subject<(DateTime, Dictionary<ISensorEntry, float>)>();
+            var sensors = new Mock<ISensorService>();
+            sensors.Setup(p => p.GetSensorEntries()).ReturnsAsync(Array.Empty<ISensorEntry>());
+            sensors.SetupGet(p => p.SensorSnapshotStream).Returns(stream);
+            using var service = new OverlayTelemetryService(sensors.Object, new Mock<ISensorConfig>().Object,
+                hookStatus: hookStatus.Object);
+            using var lease = service.AcquirePreview(() => shown == null ? new[] { "metric/OnlineAverage" } : new[] { shown });
+            var next = new TaskCompletionSource<OverlayTelemetrySnapshot>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var subscription = service.Snapshots.Take(1).Subscribe(next.SetResult, next.SetException);
+
+            stream.OnNext((DateTime.UtcNow, new Dictionary<ISensorEntry, float>()));
+            await next.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            hookStatus.VerifyGet(h => h.Current, read ? Times.Once() : Times.Never());
+        }
+
+        private static Mock<IOnlineMetricService> OnlineMetrics()
+        {
+            var metrics = new Mock<IOnlineMetricService>();
+            metrics.SetupGet(m => m.LastFrameTimestampUtc).Returns(() => DateTime.UtcNow);
+            metrics.Setup(m => m.GetOnlineFpsMetricValue(EMetric.Average)).Returns(144);
+            metrics.Setup(m => m.GetOnlineFpsMetricValue(EMetric.P1)).Returns(90);
+            return metrics;
+        }
+
         private sealed class Fixture : IDisposable
         {
             public Subject<(DateTime, Dictionary<ISensorEntry, float>)> Stream { get; } = new Subject<(DateTime, Dictionary<ISensorEntry, float>)>();

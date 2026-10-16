@@ -270,36 +270,52 @@ namespace CapFrameX.Overlay
             return entries.ToArray();
         }
 
-        public IReadOnlyDictionary<string, object> GetTelemetryValues()
+        public IReadOnlyDictionary<string, object> GetTelemetryValues() => GetTelemetryValues(null);
+
+        public IReadOnlyDictionary<string, object> GetTelemetryValues(IReadOnlySet<string> identifiers)
         {
+            bool Requested(string identifier) => identifiers == null || identifiers.Contains(identifier);
+
             var values = new Dictionary<string, object>(StringComparer.Ordinal);
             lock (_overlayEntriesGate)
             {
                 foreach (string identifier in new[] { "CaptureServiceStatus", "CaptureTimer",
                     "CustomCPU", "CustomGPU", "Mainboard", "CustomRAM", "OS", "GPUDriver" })
-                    values[identifier] = GetOverlayEntry(identifier)?.Value;
-                values["SystemTime"] = DateTime.Now.ToString(ShowSystemTimeSeconds ? "HH:mm:ss" : "HH:mm");
-                values["CxAppCpuUsage"] = GetAppCpuUsage();
-                values["HookOverlayStatus"] = HookOverlayStatusLabel.ForState(_appConfiguration.EnableHookOverlay
-                    ? _hookOverlayStatus?.State ?? EHookOverlayStatus.Waiting : EHookOverlayStatus.Disabled);
+                    if (Requested(identifier))
+                        values[identifier] = GetOverlayEntry(identifier)?.Value;
+                if (Requested("SystemTime"))
+                    values["SystemTime"] = DateTime.Now.ToString(ShowSystemTimeSeconds ? "HH:mm:ss" : "HH:mm");
+                if (Requested("CxAppCpuUsage"))
+                    values["CxAppCpuUsage"] = GetAppCpuUsage();
+                if (Requested("HookOverlayStatus"))
+                    values["HookOverlayStatus"] = HookOverlayStatusLabel.ForState(_appConfiguration.EnableHookOverlay
+                        ? _hookOverlayStatus?.State ?? EHookOverlayStatus.Waiting : EHookOverlayStatus.Disabled);
                 var targetHook = _currentProcessId > 0 && _hookOverlayStatus?.ProcessId == _currentProcessId
                     ? _hookOverlayStatus : null;
-                values["Resolution"] = _appConfiguration.EnableHookOverlay
-                    ? targetHook?.RenderResolution
-                    : _appConfiguration.UsesRtss() && _currentProcessId > 0
-                        ? _rTSSService.GetResolution(_currentProcessId) : null;
-                values["GraphicsAPI"] = _appConfiguration.EnableHookOverlay ? targetHook?.RenderApi
-                    : _appConfiguration.UsesRtss() && _currentProcessId > 0
-                        ? _rTSSService.GetApiInfo(_currentProcessId) : null;
-                foreach (var display in GetDetectedDisplays())
-                    values[GetDisplayResolutionIdentifier(display.DeviceName)] = FormatDisplayResolution(display);
-                if (GetSystemPowerStatus(out var power))
+                if (Requested("Resolution"))
+                    values["Resolution"] = _appConfiguration.EnableHookOverlay
+                        ? targetHook?.RenderResolution
+                        : _appConfiguration.UsesRtss() && _currentProcessId > 0
+                            ? _rTSSService.GetResolution(_currentProcessId) : null;
+                if (Requested("GraphicsAPI"))
+                    values["GraphicsAPI"] = _appConfiguration.EnableHookOverlay ? targetHook?.RenderApi
+                        : _appConfiguration.UsesRtss() && _currentProcessId > 0
+                            ? _rTSSService.GetApiInfo(_currentProcessId) : null;
+                if (identifiers == null || identifiers.Any(identifier =>
+                        identifier.StartsWith(DISPLAY_RESOLUTION_IDENTIFIER_PREFIX, StringComparison.Ordinal)))
+                    foreach (var display in GetDetectedDisplays())
+                        values[GetDisplayResolutionIdentifier(display.DeviceName)] = FormatDisplayResolution(display);
+                if ((Requested("BatteryLifePercent") || Requested("BatteryLifeRemaining"))
+                    && GetSystemPowerStatus(out var power))
                 {
                     values["BatteryLifePercent"] = power.BatteryLifePercent == 255 ? null : (object)(double)power.BatteryLifePercent;
                     values["BatteryLifeRemaining"] = power.BatteryLifeTime < 0 ? null : (object)(power.BatteryLifeTime / 60d);
                 }
-                values["Ping"] = double.IsNaN(_ping) ? null : (object)_ping;
-                SetPing();
+                if (Requested("Ping"))
+                {
+                    values["Ping"] = double.IsNaN(_ping) ? null : (object)_ping;
+                    SetPing();
+                }
             }
             return values;
         }

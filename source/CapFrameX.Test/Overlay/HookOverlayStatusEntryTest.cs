@@ -15,6 +15,7 @@ using Moq;
 using Newtonsoft.Json;
 using Prism.Events;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reactive.Subjects;
@@ -121,7 +122,74 @@ namespace CapFrameX.Test.Overlay
             catch { }
         }
 
-        private OverlayEntryProvider CreateProvider(bool hookOverlayEnabled)
+        [TestMethod]
+        public async Task TelemetryValues_ForGivenIdentifiers_ReadOnlyThose()
+        {
+            _systemInfoMock.Setup(s => s.GetCapFrameXAppCpuUsage()).Returns(2.5);
+            int displayQueries = 0;
+            var provider = CreateProvider(hookOverlayEnabled: false, displays: () =>
+            {
+                displayQueries++;
+                return Array.Empty<DetectedDisplay>();
+            });
+            await provider.GetTelemetrySourcesAsync();
+            provider.GetOverlayEntry("CaptureTimer").Value = 23;
+            displayQueries = 0;
+            _appConfigMock.Invocations.Clear();
+
+            var values = provider.GetTelemetryValues(new HashSet<string> { "CaptureTimer", "SystemTime" });
+
+            CollectionAssert.AreEquivalent(new[] { "CaptureTimer", "SystemTime" }, values.Keys.ToArray());
+            Assert.AreEqual(23, values["CaptureTimer"]);
+            _appConfigMock.VerifyGet(c => c.PingURL, Times.Never(), "No ping without a ping tile.");
+            _systemInfoMock.Verify(s => s.GetCapFrameXAppCpuUsage(), Times.Never);
+            Assert.AreEqual(0, displayQueries, "The displays are not enumerated without a display tile.");
+        }
+
+        [TestMethod]
+        public async Task TelemetryValues_ForThePingAndTheDisplays_MeasureThem()
+        {
+            _systemInfoMock.Setup(s => s.GetCapFrameXAppCpuUsage()).Returns(2.5);
+            int displayQueries = 0;
+            var provider = CreateProvider(hookOverlayEnabled: false, displays: () =>
+            {
+                displayQueries++;
+                return Array.Empty<DetectedDisplay>();
+            });
+            await provider.GetTelemetrySourcesAsync();
+            displayQueries = 0;
+            _appConfigMock.Invocations.Clear();
+
+            var values = provider.GetTelemetryValues(new HashSet<string>
+            {
+                "Ping", "CxAppCpuUsage", "DisplayResolution:DISPLAY1"
+            });
+
+            Assert.IsTrue(values.ContainsKey("Ping"));
+            Assert.AreEqual(2.5d, values["CxAppCpuUsage"]);
+            _appConfigMock.VerifyGet(c => c.PingURL, Times.AtLeastOnce(), "The ping tile starts the ping.");
+            Assert.AreEqual(1, displayQueries);
+        }
+
+        [TestMethod]
+        public async Task TelemetryValues_WithoutIdentifiers_ReadEverything()
+        {
+            var provider = CreateProvider(hookOverlayEnabled: false);
+            await provider.GetTelemetrySourcesAsync();
+
+            var all = provider.GetTelemetryValues();
+            var none = provider.GetTelemetryValues(null);
+
+            foreach (string identifier in new[] { "CaptureTimer", "SystemTime", "CxAppCpuUsage", "HookOverlayStatus",
+                "Resolution", "GraphicsAPI", "Ping" })
+            {
+                Assert.IsTrue(all.ContainsKey(identifier), identifier);
+                Assert.IsTrue(none.ContainsKey(identifier), identifier);
+            }
+        }
+
+        private OverlayEntryProvider CreateProvider(bool hookOverlayEnabled,
+            Func<IReadOnlyList<DetectedDisplay>> displays = null)
         {
             _enableHookOverlay = hookOverlayEnabled;
 
@@ -138,7 +206,7 @@ namespace CapFrameX.Test.Overlay
                 _pathServiceMock.Object,
                 _hookOverlayStatusMock.Object,
                 _loggerMock.Object,
-                () => Array.Empty<DetectedDisplay>());
+                displays ?? (() => Array.Empty<DetectedDisplay>()));
         }
 
         [TestMethod]

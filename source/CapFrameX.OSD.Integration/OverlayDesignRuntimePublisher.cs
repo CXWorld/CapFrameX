@@ -48,6 +48,8 @@ namespace CapFrameX.OSD.Integration
         private HashSet<string> _processIndependentSourceIds = new HashSet<string>(StringComparer.Ordinal);
         private IReadOnlyList<OverlayTelemetrySource> _catalogSources, _boundCatalog;
         private OverlayRuntimeDesign _boundSourceDesign, _boundDesign;
+        // What the bound design reads, handed to the telemetry lease; null until it is bound.
+        private volatile IReadOnlyCollection<string> _requiredSourceIds;
         private OverlayTelemetrySnapshot _latestTelemetry;
         private int _pid, _catalogGeneration;
         private bool _active, _hookEnabled, _freeEnabled, _hasProcesses, _disposed;
@@ -152,7 +154,7 @@ namespace CapFrameX.OSD.Integration
                     {
                         if (_demand == null)
                         {
-                            _demand = _telemetry.AcquirePreview();
+                            _demand = _telemetry.AcquirePreview(() => _requiredSourceIds);
                             try
                             {
                                 _snapshotSubscription = _telemetry.Snapshots.Subscribe(OnTelemetry, OnTelemetryError);
@@ -274,6 +276,8 @@ namespace CapFrameX.OSD.Integration
                 _boundSourceDesign = design;
                 _boundCatalog = _catalogSources;
                 _boundDesign = bound;
+                // The catalog and its aliases are replaced together, so this runs for both.
+                _requiredSourceIds = GetRequiredSourceIds(bound, _aliases);
             }
             design = _boundDesign;
             bool changed = _current.Design?.ProfileId != design?.ProfileId || _current.Design?.TemplateJson != design?.TemplateJson;
@@ -281,6 +285,23 @@ namespace CapFrameX.OSD.Integration
             string metrics = design?.CreateMetrics(GetPublishableTelemetry(), _aliases) ?? "{}";
             if (changed || metrics != _current.MetricsJson || _metricsRevision == 0) ++_metricsRevision;
             _current = new OverlayDesignRuntimeSnapshot(design, metrics, _designRevision, _metricsRevision);
+        }
+
+        /// <summary>
+        /// The catalog sources a design reads, resolved as CreateMetrics resolves them: a key that
+        /// is a source id, and the source its semantic alias names.
+        /// </summary>
+        internal static IReadOnlyCollection<string> GetRequiredSourceIds(OverlayRuntimeDesign design,
+            IReadOnlyDictionary<string, string> aliases)
+        {
+            var ids = new HashSet<string>(StringComparer.Ordinal);
+            if (design == null) return ids;
+            foreach (string key in design.MetricKeys)
+            {
+                ids.Add(key);
+                if (aliases != null && aliases.TryGetValue(key, out string source)) ids.Add(source);
+            }
+            return ids;
         }
 
         private OverlayTelemetrySnapshot GetPublishableTelemetry()

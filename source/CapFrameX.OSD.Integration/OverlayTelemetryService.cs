@@ -29,6 +29,8 @@ namespace CapFrameX.OSD.Integration
             @"^(?:CPU\s+)?Core\s+#(?<core>\d{1,5})(?:\s+(?<type>LPE|LP|P|E|D))?(?:\s+Thread\s+#(?<thread>\d{1,3}))?\s*(?<suffix>\(Effective\)|Distance to TjMax|\(SMU\)|VID)?$",
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
+        private const string MetricPrefix = "metric/";
+
         private readonly ISensorService _sensors;
         private readonly ISensorConfig _config;
         private readonly IOnlineMetricService _metrics;
@@ -37,7 +39,9 @@ namespace CapFrameX.OSD.Integration
         private readonly IHookOverlayStatusService _hookStatus;
         private readonly SemaphoreSlim _catalogLock = new SemaphoreSlim(1, 1);
         private readonly object _lifecycleLock = new object();
-        private readonly HashSet<IDisposable> _leases = new HashSet<IDisposable>();
+        // Each lease with the sources it needs; a null function needs all of them.
+        private readonly Dictionary<IDisposable, Func<IReadOnlyCollection<string>>> _leases =
+            new Dictionary<IDisposable, Func<IReadOnlyCollection<string>>>();
         private readonly ReplaySubject<bool> _stop = new ReplaySubject<bool>(1);
         private volatile OverlayTelemetrySource[] _sources = Array.Empty<OverlayTelemetrySource>();
         private volatile bool _disposed;
@@ -106,7 +110,9 @@ namespace CapFrameX.OSD.Integration
             }
         }
 
-        public IDisposable AcquirePreview()
+        public IDisposable AcquirePreview() => AcquirePreview(null);
+
+        public IDisposable AcquirePreview(Func<IReadOnlyCollection<string>> requiredSourceIds)
         {
             lock (_lifecycleLock)
             {
@@ -123,7 +129,7 @@ namespace CapFrameX.OSD.Integration
                     lock (_lifecycleLock) _leases.Remove(lease);
                     demand.Dispose();
                 });
-                _leases.Add(lease);
+                _leases.Add(lease, requiredSourceIds);
                 return lease;
             }
         }
@@ -437,9 +443,29 @@ namespace CapFrameX.OSD.Integration
                 SensorType = text ? "Text" : "Metric"
             };
 
+        // The sources the leases need, or null when one of them, or a subscriber without a lease,
+        // needs every source.
+        private HashSet<string> GetRequiredSourceIds()
+        {
+            Func<IReadOnlyCollection<string>>[] demands;
+            lock (_lifecycleLock) demands = _leases.Values.ToArray();
+            if (demands.Length == 0) return null;
+            var required = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var demand in demands)
+            {
+                var ids = demand?.Invoke();
+                if (ids == null) return null;
+                required.UnionWith(ids);
+            }
+            return required;
+        }
+
         private OverlayTelemetrySnapshot CreateSnapshot(DateTime timestamp, Dictionary<ISensorEntry, float> readings)
         {
             var sources = _sources;
+            // Every online metric copies the whole metric window, and the CapFrameX values send a
+            // ping and query RTSS and the displays. Compute only what some lease shows.
+            var required = GetRequiredSourceIds();
             var values = sources.ToDictionary(source => source.Id, source => (double?)null, StringComparer.Ordinal);
             var textValues = new Dictionary<string, object>(StringComparer.Ordinal);
             var runtimeValues = new Dictionary<string, float>(StringComparer.Ordinal);
@@ -474,20 +500,20 @@ namespace CapFrameX.OSD.Integration
                 var age = DateTime.UtcNow - lastFrameTimestamp;
                 if (age >= TimeSpan.Zero && age <= TimeSpan.FromSeconds(2))
                 {
-                    Set("OnlineAverage", _metrics.GetOnlineFpsMetricValue(EMetric.Average));
-                    Set("OnlineP1", _metrics.GetOnlineFpsMetricValue(EMetric.P1));
-                    Set("OnlineP0dot1", _metrics.GetOnlineFpsMetricValue(EMetric.P0dot1));
-                    Set("OnlineP0dot2", _metrics.GetOnlineFpsMetricValue(EMetric.P0dot2));
-                    Set("Online1PercentLow", _metrics.GetOnlineFpsMetricValue(EMetric.OnePercentLowAverage));
-                    Set("Online0dot1PercentLow", _metrics.GetOnlineFpsMetricValue(EMetric.ZerodotOnePercentLowAverage));
-                    Set("Online0dot2PercentLow", _metrics.GetOnlineFpsMetricValue(EMetric.ZerodotTwoPercentLowAverage));
-                    Set("OnlineFrameTimeAverage", _metrics.GetOnlineFrameTimeMetricValue(EMetric.Average));
-                    Set("OnlineGpuActiveTimeAverage", _metrics.GetOnlineGpuActiveTimeMetricValue(EMetric.GpuActiveAverage));
-                    Set("OnlineCpuActiveTimeAverage", _metrics.GetOnlineCpuActiveTimeMetricValue(EMetric.CpuActiveAverage));
-                    Set("OnlineGpuActiveTimePercentageDeviation", _metrics.GetOnlineGpuActiveTimeDeviationMetricValue());
-                    Set("OnlineStutteringPercentage", _metrics.GetOnlineStutteringPercentageValue());
-                    Set("OnlinePcLatency", _metrics.GetOnlinePcLatencyAverageValue());
-                    Set("OnlineAnimationError", _metrics.GetOnlineAnimationErrorValue());
+                    SetIfRequired("OnlineAverage", () => _metrics.GetOnlineFpsMetricValue(EMetric.Average));
+                    SetIfRequired("OnlineP1", () => _metrics.GetOnlineFpsMetricValue(EMetric.P1));
+                    SetIfRequired("OnlineP0dot1", () => _metrics.GetOnlineFpsMetricValue(EMetric.P0dot1));
+                    SetIfRequired("OnlineP0dot2", () => _metrics.GetOnlineFpsMetricValue(EMetric.P0dot2));
+                    SetIfRequired("Online1PercentLow", () => _metrics.GetOnlineFpsMetricValue(EMetric.OnePercentLowAverage));
+                    SetIfRequired("Online0dot1PercentLow", () => _metrics.GetOnlineFpsMetricValue(EMetric.ZerodotOnePercentLowAverage));
+                    SetIfRequired("Online0dot2PercentLow", () => _metrics.GetOnlineFpsMetricValue(EMetric.ZerodotTwoPercentLowAverage));
+                    SetIfRequired("OnlineFrameTimeAverage", () => _metrics.GetOnlineFrameTimeMetricValue(EMetric.Average));
+                    SetIfRequired("OnlineGpuActiveTimeAverage", () => _metrics.GetOnlineGpuActiveTimeMetricValue(EMetric.GpuActiveAverage));
+                    SetIfRequired("OnlineCpuActiveTimeAverage", () => _metrics.GetOnlineCpuActiveTimeMetricValue(EMetric.CpuActiveAverage));
+                    SetIfRequired("OnlineGpuActiveTimePercentageDeviation", () => _metrics.GetOnlineGpuActiveTimeDeviationMetricValue());
+                    SetIfRequired("OnlineStutteringPercentage", () => _metrics.GetOnlineStutteringPercentageValue());
+                    SetIfRequired("OnlinePcLatency", () => _metrics.GetOnlinePcLatencyAverageValue());
+                    SetIfRequired("OnlineAnimationError", () => _metrics.GetOnlineAnimationErrorValue());
                 }
                 var pmd = _metrics.GetPmdTelemetrySnapshot();
                 var pmdAge = pmd == null ? TimeSpan.MaxValue : DateTime.UtcNow - pmd.TimestampUtc;
@@ -500,7 +526,12 @@ namespace CapFrameX.OSD.Integration
             }
             if (_classic != null)
             {
-                var classicValues = _classic.GetTelemetryValues();
+                var classicValues = required == null
+                    ? _classic.GetTelemetryValues()
+                    : _classic.GetTelemetryValues(required
+                        .Where(id => id.StartsWith(MetricPrefix, StringComparison.Ordinal))
+                        .Select(id => id.Substring(MetricPrefix.Length))
+                        .ToHashSet(StringComparer.Ordinal));
                 foreach (var source in sources.Where(s => !s.IsHardwareSensor))
                 {
                     if (classicValues == null || !classicValues.TryGetValue(source.Identifier, out object raw)) continue;
@@ -527,7 +558,8 @@ namespace CapFrameX.OSD.Integration
                 if (!string.IsNullOrWhiteSpace(_overlay.RunHistoryAggregation)) runs.Add(_overlay.RunHistoryAggregation);
                 textValues["metric/RunHistory"] = runs.Count == 0 ? null : string.Join("\n", runs);
             }
-            var hook = _hookStatus?.Current;
+            var hook = IsRequired(MetricPrefix + "FrameGenerationTechnology")
+                || IsRequired(MetricPrefix + "FrameGenerationStatus") ? _hookStatus?.Current : null;
             if (hook != null && hook.ProcessId > 0 && hook.State != EHookOverlayStatus.Disabled
                 && HookStatusProbe.TryRead(hook.ProcessId, out var native, out _)
                 && HookStatusProbe.GetHeartbeatAgeMilliseconds(native.LastHeartbeatTickMs, (ulong)Environment.TickCount64)
@@ -539,6 +571,13 @@ namespace CapFrameX.OSD.Integration
             return new OverlayTelemetrySnapshot(timestamp, values, textValues);
 
             void Set(string identifier, double value) => values["metric/" + identifier] = Finite(value);
+
+            void SetIfRequired(string identifier, Func<double> read)
+            {
+                if (IsRequired(MetricPrefix + identifier)) Set(identifier, read());
+            }
+
+            bool IsRequired(string sourceId) => required == null || required.Contains(sourceId);
         }
 
         private static double? Finite(double value) => double.IsFinite(value) ? value : (double?)null;
@@ -561,7 +600,7 @@ namespace CapFrameX.OSD.Integration
             {
                 if (_disposed) return;
                 _disposed = true;
-                leases = _leases.ToArray();
+                leases = _leases.Keys.ToArray();
                 _leases.Clear();
             }
             foreach (var lease in leases) lease.Dispose();

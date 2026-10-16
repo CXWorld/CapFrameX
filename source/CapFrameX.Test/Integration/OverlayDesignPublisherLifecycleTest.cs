@@ -323,6 +323,38 @@ namespace CapFrameX.Test.Integration
                 "Once the renderer also recovers, restore the active profile status rather than the superseded telemetry error.");
         }
 
+        [TestMethod]
+        public async Task TelemetryLease_ReportsTheSourcesOfTheActiveDesign()
+        {
+            // The telemetry computes online metrics and CapFrameX values only for these sources.
+            using var context = new PublisherContext("cpuLoad");
+            CollectionAssert.AreEquivalent(new[] { "cpuLoad" }, context.Telemetry.RequiredSources.ToArray());
+
+            await context.Telemetry.CompleteCatalogAsync(0, CpuCatalog("cpu/total"));
+            CollectionAssert.AreEquivalent(new[] { "cpuLoad", "cpu/total" }, context.Telemetry.RequiredSources.ToArray(),
+                "The alias the design resolves through is a source it reads.");
+
+            context.Service.Activate(context.AddProfile("GPU profile", "gpuLoad", "metric/OnlineP1"));
+            CollectionAssert.AreEquivalent(new[] { "gpuLoad", "metric/OnlineP1" }, context.Telemetry.RequiredSources.ToArray(),
+                "A design change swaps the sources without a new lease.");
+            Assert.AreEqual(1, context.Telemetry.Acquisitions);
+        }
+
+        [TestMethod]
+        public void RequiredSourceIds_ResolveKeysTheWayTheMetricsDo()
+        {
+            var design = OverlayRuntimeDesign.Parse("profile", "Test", Scene("cpuLoad", "metric/Ping", "unknownKey"));
+            var aliases = new Dictionary<string, string> { ["cpuLoad"] = "sensor:cpu-total", ["other"] = "sensor:other" };
+
+            var required = OverlayDesignRuntimePublisher.GetRequiredSourceIds(design, aliases);
+
+            CollectionAssert.AreEquivalent(new[] { "cpuLoad", "sensor:cpu-total", "metric/Ping", "unknownKey" },
+                required.ToArray());
+            Assert.AreEqual(0, OverlayDesignRuntimePublisher.GetRequiredSourceIds(null, aliases).Count);
+            CollectionAssert.AreEquivalent(new[] { "cpuLoad", "metric/Ping", "unknownKey" },
+                OverlayDesignRuntimePublisher.GetRequiredSourceIds(design, null).ToArray());
+        }
+
         private static IReadOnlyList<OverlayTelemetrySource> CpuCatalog(string id) => new[]
         {
             new OverlayTelemetrySource { Id = id, SemanticKey = "cpuLoad", IsHardwareSensor = true }
@@ -425,6 +457,17 @@ namespace CapFrameX.Test.Integration
                 Acquisitions++;
                 Leases++;
                 return Disposable.Create(() => Leases--);
+            }
+
+            private Func<IReadOnlyCollection<string>> _requiredSources;
+
+            // The sources the publisher's lease reports right now.
+            public IReadOnlyCollection<string> RequiredSources => _requiredSources?.Invoke();
+
+            public IDisposable AcquirePreview(Func<IReadOnlyCollection<string>> requiredSourceIds)
+            {
+                _requiredSources = requiredSourceIds;
+                return AcquirePreview();
             }
 
             public Task<IReadOnlyList<OverlayTelemetrySource>> GetSourcesAsync()

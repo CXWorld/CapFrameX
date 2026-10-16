@@ -40,6 +40,12 @@ namespace CapFrameX.Contracts.Overlay
         /// <summary>Read-only scalar/text values, independent of classic row selection and formatting.</summary>
         IReadOnlyDictionary<string, object> GetTelemetryValues();
 
+        /// <summary>
+        /// Only the values with the given identifiers. The others are not measured at all: no
+        /// ping is sent and neither RTSS nor the displays are asked.
+        /// </summary>
+        IReadOnlyDictionary<string, object> GetTelemetryValues(IReadOnlySet<string> identifiers);
+
 		Task<IEnumerable<IOverlayEntry>> GetDefaultOverlayEntries();
 
 		void RefreshDisplayEntries(IReadOnlyList<DetectedDisplay> displays = null);
