@@ -17,9 +17,11 @@ namespace CapFrameX.Data
         private readonly IPathService _pathService;
         private readonly ILogger<RecordDirectoryObserver> _logger;
         private readonly Func<FileInfo, bool> _validFileFilterFunc = (FileInfo fi) => fi.Extension == ".csv" || fi.Extension == ".json";
-        private readonly ISubject<FileInfo> _fileCreatedSubject = new ReplaySubject<FileInfo>();
-        private readonly ISubject<FileInfo> _fileChangedSubject = new ReplaySubject<FileInfo>();
-        private readonly ISubject<FileInfo> _fileDeletedSubject = new ReplaySubject<FileInfo>();
+        // Plain subjects: replay subjects kept every file event of the session in memory. A late
+        // subscriber gets the current files from DirectoryFilesStream instead.
+        private readonly ISubject<FileInfo> _fileCreatedSubject = new Subject<FileInfo>();
+        private readonly ISubject<FileInfo> _fileChangedSubject = new Subject<FileInfo>();
+        private readonly ISubject<FileInfo> _fileDeletedSubject = new Subject<FileInfo>();
         private readonly ISubject<IEnumerable<FileInfo>> _directoryFilesSubject = new BehaviorSubject<IEnumerable<FileInfo>>(new FileInfo[] { });
         private readonly ISubject<DirectoryInfo> _observingDirectorySubject = new BehaviorSubject<DirectoryInfo>(null);
 
