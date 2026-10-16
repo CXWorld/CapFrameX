@@ -143,6 +143,51 @@ namespace CapFrameX.Test.Data
             CollectionAssert.AreEqual(new[] { "new.csv" }, files.Select(file => file.Name).ToArray());
         }
 
+        [TestMethod]
+        public void DirectoryList_StaysAsItWasHandedOut()
+        {
+            // Regression: subscribers got the watcher's own list, which changed under them.
+            File.WriteAllText(Path.Combine(_folder, "old.json"), "{}");
+            var observer = CreateObserver();
+            using var probe = new EventRecorder(observer);
+            IEnumerable<FileInfo> files = null;
+            using (observer.DirectoryFilesStream.Subscribe(value => files = value))
+            {
+            }
+
+            File.WriteAllText(Path.Combine(_folder, "new.json"), "{}");
+            probe.WaitFor("created", "new.json");
+            File.Delete(Path.Combine(_folder, "old.json"));
+            probe.WaitFor("deleted", "old.json");
+
+            CollectionAssert.AreEqual(new[] { "old.json" }, files.Select(file => file.Name).ToArray());
+        }
+
+        [TestMethod]
+        public void ReadingTheDirectoryList_SurvivesAFileCreatedMeanwhile()
+        {
+            // The record list reads the files one after the other while new captures arrive.
+            File.WriteAllText(Path.Combine(_folder, "a.json"), "{}");
+            File.WriteAllText(Path.Combine(_folder, "b.json"), "{}");
+            var observer = CreateObserver();
+            using var probe = new EventRecorder(observer);
+            IEnumerable<FileInfo> files = null;
+            using (observer.DirectoryFilesStream.Subscribe(value => files = value))
+            {
+            }
+            var read = new List<string>();
+            using var reader = files.GetEnumerator();
+            Assert.IsTrue(reader.MoveNext());
+            read.Add(reader.Current.Name);
+
+            File.WriteAllText(Path.Combine(_folder, "c.json"), "{}");
+            probe.WaitFor("created", "c.json");
+            while (reader.MoveNext())
+                read.Add(reader.Current.Name);
+
+            CollectionAssert.AreEquivalent(new[] { "a.json", "b.json" }, read);
+        }
+
         private RecordDirectoryObserver CreateObserver()
         {
             var configuration = new Mock<IAppConfiguration>();
