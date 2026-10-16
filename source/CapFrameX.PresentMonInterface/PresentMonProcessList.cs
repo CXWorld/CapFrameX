@@ -81,9 +81,11 @@ namespace CapFrameX.PresentMonInterface
 
         public IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter)
         {
+            // A snapshot taken inside the lock. A lazy query ran after the lock was released,
+            // while the row thread kept adding to the same set ("Collection was modified").
             lock (_listLock)
             {
-                return _processes.Where(processInfo => !filter.Contains(processInfo.Item1));
+                return _processes.Where(processInfo => !filter.Contains(processInfo.Item1)).ToArray();
             }
         }
 

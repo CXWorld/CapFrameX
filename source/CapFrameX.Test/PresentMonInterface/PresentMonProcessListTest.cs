@@ -214,6 +214,120 @@ namespace CapFrameX.Test.PresentMonInterface
             CollectionAssert.AreEqual(new[] { ("Game", 100) }, processes);
         }
 
+        [TestMethod]
+        public void Filter_UsesTheComparerOfTheGivenSet()
+        {
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishHeader();
+            context.PublishRow("Game", 100);
+            context.PublishRow("dwm", 200);
+            context.WaitForProcess("dwm", 200);
+
+            var filter = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "DWM" };
+            var processes = context.List.GetAllFilteredProcesses(filter).ToArray();
+
+            CollectionAssert.AreEqual(new[] { ("Game", 100) }, processes);
+        }
+
+        [TestMethod]
+        public void FilteredProcesses_AreASnapshotThatLaterRowsDoNotChange()
+        {
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishHeader();
+            context.PublishRow("Game", 100);
+            context.WaitForProcess("Game", 100);
+
+            var snapshot = context.List.GetAllFilteredProcesses(new HashSet<string>());
+            context.PublishRow("Other", 200);
+            context.WaitForProcess("Other", 200);
+
+            CollectionAssert.AreEqual(new[] { ("Game", 100) }, snapshot.ToArray());
+        }
+
+        [TestMethod]
+        public void FilteredProcesses_SurviveARowAddedWhileTheyAreEnumerated()
+        {
+            // Regression: the UI thread enumerates the list every second while the row thread
+            // adds a newly reported process, which failed with "Collection was modified".
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishHeader();
+            context.PublishRow("Game", 100);
+            context.PublishRow("Launcher", 150);
+            context.WaitForProcess("Launcher", 150);
+
+            var seen = new List<(string, int)>();
+            using (var enumerator = context.List.GetAllFilteredProcesses(new HashSet<string>()).GetEnumerator())
+            {
+                Assert.IsTrue(enumerator.MoveNext());
+                seen.Add(enumerator.Current);
+                context.PublishRow("Other", 200);
+                context.WaitForProcess("Other", 200);
+                while (enumerator.MoveNext()) seen.Add(enumerator.Current);
+            }
+
+            CollectionAssert.AreEquivalent(new[] { ("Game", 100), ("Launcher", 150) }, seen);
+        }
+
+        [TestMethod]
+        public void FilteredProcesses_KeepTheirSnapshotAcrossStop()
+        {
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishHeader();
+            context.PublishRow("Game", 100);
+            context.WaitForProcess("Game", 100);
+
+            var snapshot = context.List.GetAllFilteredProcesses(new HashSet<string>());
+            context.List.Stop();
+
+            CollectionAssert.AreEqual(new[] { ("Game", 100) }, snapshot.ToArray());
+            Assert.AreEqual(0, context.Processes().Length);
+        }
+
+        [TestMethod]
+        public void FilteredProcesses_CanBeEnumeratedWhileRowsKeepArriving()
+        {
+            const int processCount = 20_000;
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishHeader();
+            using var stop = new CancellationTokenSource();
+            var producer = new Thread(() =>
+            {
+                // Every row is a new process, so every one of them modifies the set.
+                for (int pid = 1; pid <= processCount && !stop.IsCancellationRequested; pid++)
+                {
+                    context.PublishRow("Game", pid);
+                    if (pid % 64 == 0) Thread.Sleep(0);
+                }
+            }) { IsBackground = true };
+            producer.Start();
+
+            int seen = 0;
+            try
+            {
+                var watch = System.Diagnostics.Stopwatch.StartNew();
+                while (seen < processCount && watch.Elapsed < TimeSpan.FromSeconds(10))
+                {
+                    seen = 0;
+                    foreach (var process in context.List.GetAllFilteredProcesses(new HashSet<string>()))
+                        seen++;
+                }
+            }
+            finally
+            {
+                // A failed enumeration must not leave the producer writing into the disposed
+                // subject, which would take down the test host.
+                stop.Cancel();
+                producer.Join(WaitTimeout);
+            }
+
+            Assert.AreEqual(processCount, seen);
+        }
+
         private sealed class ListContext : IDisposable
         {
             private readonly object _threadsLock = new object();
@@ -263,22 +377,8 @@ namespace CapFrameX.Test.PresentMonInterface
 
             public void WaitForProcess(string name, int processId)
             {
-                Assert.IsTrue(SpinWait.SpinUntil(() => ContainsWhileRowsArrive(name, processId), WaitTimeout),
+                Assert.IsTrue(SpinWait.SpinUntil(() => Processes().Contains((name, processId)), WaitTimeout),
                     $"{name} ({processId}) never reached the list.");
-            }
-
-            // The list is enumerated after its lock is released, so a row added meanwhile can
-            // fail the enumeration (audit finding 13); retry until it is fixed.
-            private bool ContainsWhileRowsArrive(string name, int processId)
-            {
-                try
-                {
-                    return Processes().Contains((name, processId));
-                }
-                catch (InvalidOperationException)
-                {
-                    return false;
-                }
             }
 
             private bool IsAlive(int processId)
