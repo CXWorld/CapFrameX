@@ -173,4 +173,130 @@
             </Setter.Value>
         </Setter>
     </Style>
+
+    <!-- MaterialDesignActionToggleButton (MaterialDesignThemes 5.2.1, MaterialDesign3.ToggleButton.xaml)
+         without the two EllipseGeometry clips: their bindings to the templated parent's Width and
+         Height sit in Freezables, and WPF instantiates those once when it parses the template,
+         which reports "Cannot find governing FrameworkElement" in the debugger on the first use.
+         A radial opacity mask gives the same circle without a binding. The elevation effect
+         binding is left out (the elevation is Dp0 here) and so is the Indeterminate state, whose
+         storyboard targets an element the template does not contain. -->
+    <!-- The circle: an opacity mask over the whole element, relative to its bounds. -->
+    <RadialGradientBrush x:Key="CxActionToggleButton.CircleMask">
+        <GradientStop Color="Black" Offset="0.98" />
+        <GradientStop Color="Transparent" Offset="1" />
+    </RadialGradientBrush>
+
+    <Style x:Key="CxActionToggleButton" TargetType="{x:Type ToggleButton}">
+        <Style.Resources>
+            <ResourceDictionary>
+                <Style TargetType="materialDesign:PackIcon" BasedOn="{StaticResource {x:Type materialDesign:PackIcon}}">
+                    <Setter Property="Height" Value="20" />
+                    <Setter Property="Width" Value="20" />
+                </Style>
+            </ResourceDictionary>
+        </Style.Resources>
+        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Primary}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Primary.Foreground}" />
+        <Setter Property="Height" Value="32" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type ToggleButton}">
+                    <Grid>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Disabled">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.Opacity)" To="0.38" Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="CheckStates">
+                                <VisualStateGroup.Transitions>
+                                    <VisualTransition From="*" To="Checked">
+                                        <Storyboard FillBehavior="HoldEnd">
+                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OffScaleTransform" Storyboard.TargetProperty="ScaleX" Duration="0:0:0.2">
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="1" />
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.1" Value="0" />
+                                            </DoubleAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OnScaleTransform" Storyboard.TargetProperty="ScaleX" Duration="0:0:0.2">
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.1" Value="0" />
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.2" Value="1" />
+                                            </DoubleAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualTransition>
+                                    <VisualTransition From="Checked" To="Unchecked">
+                                        <Storyboard FillBehavior="HoldEnd">
+                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OnScaleTransform" Storyboard.TargetProperty="ScaleX" Duration="0:0:0.2">
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.0" Value="1" />
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.1" Value="0" />
+                                            </DoubleAnimationUsingKeyFrames>
+                                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="OffScaleTransform" Storyboard.TargetProperty="ScaleX" Duration="0:0:0.2">
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.1" Value="0" />
+                                                <LinearDoubleKeyFrame KeyTime="0:0:0.2" Value="1" />
+                                            </DoubleAnimationUsingKeyFrames>
+                                        </Storyboard>
+                                    </VisualTransition>
+                                </VisualStateGroup.Transitions>
+                                <VisualState x:Name="Checked">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="OffScaleTransform" Storyboard.TargetProperty="ScaleX" To="0" Duration="0" />
+                                        <DoubleAnimation Storyboard.TargetName="OnScaleTransform" Storyboard.TargetProperty="ScaleX" To="1" Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+                                <VisualState x:Name="Unchecked">
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="OffScaleTransform" Storyboard.TargetProperty="ScaleX" To="1" Duration="0" />
+                                        <DoubleAnimation Storyboard.TargetName="OnScaleTransform" Storyboard.TargetProperty="ScaleX" To="0" Duration="0" />
+                                    </Storyboard>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Grid x:Name="OffGrid"
+                              Background="{TemplateBinding Background}"
+                              OpacityMask="{StaticResource CxActionToggleButton.CircleMask}"
+                              RenderTransformOrigin=".5,.5">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              FlowDirection="LeftToRight" />
+                            <Grid.RenderTransform>
+                                <ScaleTransform x:Name="OffScaleTransform" ScaleX="1" ScaleY="1" />
+                            </Grid.RenderTransform>
+                        </Grid>
+                        <Grid x:Name="OnGrid"
+                              Background="{TemplateBinding Background}"
+                              OpacityMask="{StaticResource CxActionToggleButton.CircleMask}"
+                              RenderTransformOrigin=".5,.5">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Content="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(materialDesign:ToggleButtonAssist.OnContent)}"
+                                              ContentTemplate="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(materialDesign:ToggleButtonAssist.OnContentTemplate)}"
+                                              FlowDirection="LeftToRight" />
+                            <Grid.RenderTransform>
+                                <ScaleTransform x:Name="OnScaleTransform" ScaleX="0" ScaleY="1" />
+                            </Grid.RenderTransform>
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Width" Value="32" />
+        <Setter Property="materialDesign:ToggleButtonAssist.OnContent" Value="{StaticResource CheckMarkIcon}" />
+    </Style>
+
+    <Style x:Key="CxActionSecondaryToggleButton"
+           TargetType="{x:Type ToggleButton}"
+           BasedOn="{StaticResource CxActionToggleButton}">
+        <Setter Property="Background" Value="{DynamicResource MaterialDesign.Brush.Secondary}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialDesign.Brush.Secondary}" />
+        <Setter Property="Foreground" Value="{DynamicResource MaterialDesign.Brush.Secondary.Foreground}" />
+    </Style>
 </ResourceDictionary>

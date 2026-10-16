@@ -601,7 +601,7 @@
 					Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
 				</ComboBox>
 				<ToggleButton Margin="5 0 0 0" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" BorderThickness="1" Background="Transparent"
-					Style="{StaticResource MaterialDesignActionSecondaryToggleButton}" IsChecked="{Binding IsSortModeAscending}"
+					Style="{StaticResource CxActionSecondaryToggleButton}" IsChecked="{Binding IsSortModeAscending}"
 					Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToCollapsedConverter}}">
 					<ToggleButton.Content>
 						<materialDesign:PackIcon Kind="SortDescending" RenderTransformOrigin=".5,.5">
@@ -661,7 +661,7 @@
 
                             </StackPanel>
 
-                            <StackPanel Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20 10 10 0" Orientation="Horizontal" Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}">
+                            <StackPanel Grid.Column="5" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="20 10 10 0" Orientation="Horizontal" Visibility="{Binding ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}">
                                 <TextBlock Text="{loc:Tr ComparisonView_ColorOrder}" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
                                 <materialDesign:PopupBox  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="LeftAndAlignBottomEdges"
                                ToolTip="{loc:Tr ComparisonView_ChangeTheOrderInWhich}" Closed="ColorPickerPopup_Closed">
@@ -806,7 +806,7 @@
 															Content="{materialDesign:PackIcon Close, Size=12}" Command="{Binding RemoveCommand}">
 													</Button>
 													<ToggleButton Grid.Row="1" Grid.Column="2" Margin="0 0 -2 4" Width="20" Height="20" HorizontalAlignment="Right" VerticalAlignment="Bottom" 
-																  Style="{StaticResource MaterialDesignActionToggleButton}"
+																  Style="{StaticResource CxActionToggleButton}"
                                                                   Foreground="White"
 																  Visibility="{Binding ElementName=ComparisonRecordItemControl, Path=DataContext.ColorPickerVisibility, Converter={StaticResource FalseToHiddenConverter}}"
 																  IsChecked="{Binding IsHideModeSelected}">

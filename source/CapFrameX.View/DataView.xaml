@@ -354,13 +354,13 @@
                                                      Command="{Binding ThresholdCountsCommand}"/>
                                     </StackPanel>
                                     <Grid Margin="0 0 40 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                        <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}" Foreground="White" 
+                                        <ToggleButton Width="25" Height="25" Style="{StaticResource CxActionToggleButton}" Foreground="White" 
 												  ToolTip="{loc:Tr DataView_ToggleBetweenAbsoluteAndRelative}" IsChecked="{Binding ThresholdShowAbsoluteValues}">
                                             <materialDesign:ToggleButtonAssist.OnContent>#</materialDesign:ToggleButtonAssist.OnContent> %
                                         </ToggleButton>
                                     </Grid>
                                     <Grid Margin="0 0 5 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                        <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}" Foreground="White" 
+                                        <ToggleButton Width="25" Height="25" Style="{StaticResource CxActionToggleButton}" Foreground="White" 
 												  ToolTip="{loc:Tr DataView_ChangeFpsThresholdsDirection}" IsChecked="{Binding ThresholdToggleButtonIsChecked}">
                                             <materialDesign:ToggleButtonAssist.OnContent>
                                                 <materialDesign:PackIcon Width="25" Margin="1 0 0 0"
@@ -564,13 +564,13 @@
                                                      Command="{Binding ThresholdCountsCommand}"/>
                                     </StackPanel>
                                     <Grid Margin="0 0 40 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                        <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}" Foreground="White" 
+                                        <ToggleButton Width="25" Height="25" Style="{StaticResource CxActionToggleButton}" Foreground="White" 
 												  ToolTip="{loc:Tr DataView_ToggleBetweenAbsoluteAndRelative2}" IsChecked="{Binding ThresholdShowAbsoluteValues}">
                                             <materialDesign:ToggleButtonAssist.OnContent>#</materialDesign:ToggleButtonAssist.OnContent> %
                                         </ToggleButton>
                                     </Grid>
                                     <Grid Margin="0 0 5 0" Panel.ZIndex="1" HorizontalAlignment="Right" VerticalAlignment="Top">
-                                        <ToggleButton Width="25" Height="25" Style="{StaticResource MaterialDesignActionToggleButton}" Foreground="White" 
+                                        <ToggleButton Width="25" Height="25" Style="{StaticResource CxActionToggleButton}" Foreground="White" 
 												  ToolTip="{loc:Tr DataView_ChangeFpsThresholdsDirection2}" IsChecked="{Binding ThresholdToggleButtonIsChecked}">
                                             <materialDesign:ToggleButtonAssist.OnContent>
                                                 <materialDesign:PackIcon Width="25" Margin="1 0 0 0"

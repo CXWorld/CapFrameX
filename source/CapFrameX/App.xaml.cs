@@ -792,6 +792,12 @@ namespace CapFrameX
             {
                 Log.Logger = ApplicationLogging.CreateLogger(logPath);
             }
+
+#if DEBUG
+            // Binding failures, with a snapshot of the data grids for lost ancestors; the
+            // debugger output has the message alone.
+            BindingFailureLog.Attach();
+#endif
         }
 
     }

@@ -204,7 +204,6 @@
                             dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"
                             Style="{StaticResource MaterialDesignDataGrid}"
                             EnableRowVirtualization="True"
-                            EnableColumnVirtualization="True"
                             VirtualizingPanel.IsVirtualizing="True"
                             VirtualizingPanel.VirtualizationMode="Recycling"
                             Background="{DynamicResource MaterialDesign.Brush.Card.Background}">

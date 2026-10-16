@@ -257,7 +257,7 @@
 						</StackPanel>
 						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 20 0">
 							<TextBlock VerticalAlignment="Center" FontSize="14" Text="{loc:Tr PmdView_PMDServiceStatus}"/>
-							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{loc:LanguageBinding {Binding PmdCaptureStatus, Converter={StaticResource EnumDescriptionConverter}}}"
+							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{loc:LanguageBinding {Binding PoweneticsViewModel.PmdCaptureStatus, Converter={StaticResource EnumDescriptionConverter}}}"
 								FontWeight="Bold" FontSize="14" Foreground="{Binding PoweneticsViewModel.PmdCaptureStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
 						</StackPanel>
 					</Grid>
