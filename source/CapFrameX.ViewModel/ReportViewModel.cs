@@ -280,9 +280,15 @@ namespace CapFrameX.ViewModel
         partial void InitializeReportParameters();
 
 
+        /// <returns>Null for a record that could not be loaded or has no frames.</returns>
         private ReportInfo GetReportInfoFromRecordInfo(IFileRecordInfo recordInfo)
         {
             var session = _recordManager.LoadData(recordInfo.FullPath);
+            if (!ComparisonViewModel.HasFrames(session))
+            {
+                _logger?.LogWarning("Report: {path} could not be loaded and was not added.", recordInfo.FullPath);
+                return null;
+            }
 
             double cpuPmdAverage = double.NaN;
             double gpuPmdAverage = double.NaN;
@@ -445,6 +451,9 @@ namespace CapFrameX.ViewModel
 
         private void AddReportRecord(ReportInfo reportInfo)
         {
+            if (reportInfo == null)
+                return;
+
             ReportInfoCollection.Add(reportInfo);
 
             if (ReportShowAverageRow)

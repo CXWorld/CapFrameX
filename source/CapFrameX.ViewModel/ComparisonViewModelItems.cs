@@ -24,6 +24,9 @@ namespace CapFrameX.ViewModel
             }
 
             var comparisonRecordInfo = GetComparisonRecordInfoFromFileRecordInfo(recordInfo);
+            if (comparisonRecordInfo == null)
+                return;
+
             var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
 
             // Insert into list (sorted)

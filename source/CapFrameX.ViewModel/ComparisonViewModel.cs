@@ -2382,19 +2382,24 @@ namespace CapFrameX.ViewModel
                 return 0;
         }
 
+        /// <returns>Null for a record that could not be loaded or has no frames.</returns>
         private ComparisonRecordInfo GetComparisonRecordInfoFromFileRecordInfo(IFileRecordInfo fileRecordInfo)
         {
-            string infoText = string.Empty;
             var session = _recordManager.LoadData(fileRecordInfo.FullPath);
+            // The session was used before this check, so one unreadable record ended a whole
+            // drop with a NullReferenceException.
+            if (!HasFrames(session))
+            {
+                _logger?.LogWarning("Comparison: {path} could not be loaded and was not added.", fileRecordInfo.FullPath);
+                return null;
+            }
+
             var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
             var recordTime = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
-            if (session != null)
-            {
-                var newLine = Environment.NewLine;
-                infoText += $"{fileRecordInfo.CreationDate} {fileRecordInfo.CreationTime}" + newLine +
-                    CxLang.Format("ComparisonViewModel_FramesIn01", frameTimes.Count(),
-                        Math.Round(recordTime, 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture));
-            }
+            var newLine = Environment.NewLine;
+            string infoText = $"{fileRecordInfo.CreationDate} {fileRecordInfo.CreationTime}" + newLine +
+                CxLang.Format("ComparisonViewModel_FramesIn01", frameTimes.Count(),
+                    Math.Round(recordTime, 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture));
 
             return new ComparisonRecordInfo
             {
@@ -2405,6 +2410,10 @@ namespace CapFrameX.ViewModel
                 FileRecordInfo = fileRecordInfo
             };
         }
+
+        internal static bool HasFrames(Data.Session.Contracts.ISession session)
+            => session?.Runs != null
+                && session.Runs.Any(run => run?.CaptureData?.TimeInSeconds?.Length > 0);
 
         private ComparisonRecordInfoWrapper GetWrappedRecordInfo(ComparisonRecordInfo comparisonRecordInfo)
         {
