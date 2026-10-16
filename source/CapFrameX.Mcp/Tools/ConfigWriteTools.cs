@@ -295,13 +295,18 @@ namespace CapFrameX.Mcp.Tools
             if (info == null)
                 throw new InvalidOperationException("Could not load record metadata: " + id);
 
-            string oldComment = info.Comment;
+            // The record info shows the process list's name for a record without a game name of
+            // its own. The other fields are written back as the file stores them.
+            var stored = _recordManager.LoadData(id)?.Info
+                ?? throw new InvalidOperationException("Could not load record: " + id);
+
+            string oldComment = stored.Comment;
             _recordManager.UpdateCustomData(info,
-                customCpuInfo: info.ProcessorName,
-                customGpuInfo: info.GraphicCardName,
-                customRamInfo: info.SystemRamInfo,
-                customMainboardInfo: info.MotherboardName,
-                customGameName: info.GameName,
+                customCpuInfo: stored.Processor,
+                customGpuInfo: stored.GPU,
+                customRamInfo: stored.SystemRam,
+                customMainboardInfo: stored.Motherboard,
+                customGameName: stored.GameName,
                 customComment: comment ?? string.Empty);
 
             Log.Logger.Information("MCP cfx_set_record_comment: {id} '{old}' -> '{new}'", id, oldComment, comment);
