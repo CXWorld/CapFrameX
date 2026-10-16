@@ -52,7 +52,8 @@ namespace CapFrameX.Data
 
         public void Dispose()
         {
-            _watcher.Dispose();
+            // There is no watcher while the observed folder does not exist.
+            _watcher?.Dispose();
             _directoryFilesSubject.OnCompleted();
             _fileCreatedSubject.OnCompleted();
             _fileChangedSubject.OnCompleted();
@@ -148,21 +149,14 @@ namespace CapFrameX.Data
 
             void OnFileRenamed(object sender, RenamedEventArgs e)
             {
-                lock (_filesLock)
+                // The old name need not be listed: the listing leaves out temp files, and the folder
+                // may have held no records. The new name is reported either way.
+                if (CheckRelevantFiles(e.OldFullPath))
                 {
-                    if (!_currentFiles.Any() || !CheckRelevantFiles(e.OldFullPath))
-                        return;
-                }
-
-                var oldFileInfo = new FileInfo(e.OldFullPath);
-                _fileDeletedSubject.OnNext(oldFileInfo);
-                lock (_filesLock)
-                {
-                    var item = _currentFiles.First(f => f.FullName.Equals(oldFileInfo.FullName));
-                    if (item is FileInfo)
-                    {
-                        _currentFiles.Remove(item);
-                    }
+                    var oldFileInfo = new FileInfo(e.OldFullPath);
+                    _fileDeletedSubject.OnNext(oldFileInfo);
+                    lock (_filesLock)
+                        _currentFiles.RemoveAll(f => f.FullName.Equals(oldFileInfo.FullName));
                 }
                 OnFileCreated(sender, e);
             }

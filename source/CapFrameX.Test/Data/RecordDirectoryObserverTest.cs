@@ -188,17 +188,86 @@ namespace CapFrameX.Test.Data
             CollectionAssert.AreEquivalent(new[] { "a.json", "b.json" }, read);
         }
 
-        private RecordDirectoryObserver CreateObserver()
+        [TestMethod]
+        public void RenamingATempFileTheListingLeftOut_ReportsTheRecord()
+        {
+            // Regression: the old name was looked up with First, which threw on the watcher's
+            // thread for a temp file the listing had left out.
+            File.WriteAllText(Path.Combine(_folder, "other.json"), "{}");
+            File.WriteAllText(Path.Combine(_folder, "capture.json.tmp"), "{}");
+            var observer = CreateObserver();
+            using var probe = new EventRecorder(observer);
+
+            File.Move(Path.Combine(_folder, "capture.json.tmp"), Path.Combine(_folder, "capture.json"));
+            probe.WaitFor("created", "capture.json");
+            File.WriteAllText(Path.Combine(_folder, "next.json"), "{}");
+            probe.WaitFor("created", "next.json");
+
+            CollectionAssert.AreEquivalent(new[] { "other.json", "capture.json", "next.json" }, Listing(observer));
+        }
+
+        [TestMethod]
+        public void RenamingIntoAFolderWithoutRecords_ReportsTheRecord()
+        {
+            File.WriteAllText(Path.Combine(_folder, "capture.json.tmp"), "{}");
+            var observer = CreateObserver();
+            using var probe = new EventRecorder(observer);
+
+            File.Move(Path.Combine(_folder, "capture.json.tmp"), Path.Combine(_folder, "capture.json"));
+            probe.WaitFor("created", "capture.json");
+
+            CollectionAssert.AreEqual(new[] { "capture.json" }, Listing(observer));
+        }
+
+        [TestMethod]
+        public void RenamingAFileIntoARecordName_ReportsTheRecord()
+        {
+            File.WriteAllText(Path.Combine(_folder, "other.json"), "{}");
+            File.WriteAllText(Path.Combine(_folder, "capture.part"), "{}");
+            var observer = CreateObserver();
+            using var probe = new EventRecorder(observer);
+
+            File.Move(Path.Combine(_folder, "capture.part"), Path.Combine(_folder, "capture.json"));
+            probe.WaitFor("created", "capture.json");
+
+            Assert.IsFalse(probe.Events.Any(e => e.Name == "capture.part"));
+            CollectionAssert.AreEquivalent(new[] { "other.json", "capture.json" }, Listing(observer));
+        }
+
+        [TestMethod]
+        public void Dispose_WithoutAnObservedFolder_EndsTheStreams()
+        {
+            var observer = CreateObserver(Path.Combine(_folder, "missing"), keep: false);
+            bool completed = false;
+            using var subscription = observer.FileCreatedStream.Subscribe(_ => { }, () => completed = true);
+
+            observer.Dispose();
+
+            Assert.IsTrue(completed);
+        }
+
+        private static string[] Listing(RecordDirectoryObserver observer)
+        {
+            IEnumerable<FileInfo> files = null;
+            using (observer.DirectoryFilesStream.Subscribe(value => files = value))
+            {
+            }
+            return files.Select(file => file.Name).ToArray();
+        }
+
+        private RecordDirectoryObserver CreateObserver(string folder = null, bool keep = true)
         {
             var configuration = new Mock<IAppConfiguration>();
             configuration.SetupAllProperties();
-            configuration.Object.ObservedDirectory = _folder;
+            configuration.Object.ObservedDirectory = folder ?? _folder;
             var pathService = new Mock<IPathService>();
             pathService.Setup(service => service.ResolveDocumentsPlaceholder(It.IsAny<string>()))
                 .Returns((string path) => path);
-            _observer = new RecordDirectoryObserver(configuration.Object, pathService.Object,
+            var observer = new RecordDirectoryObserver(configuration.Object, pathService.Object,
                 NullLogger<RecordDirectoryObserver>.Instance);
-            return _observer;
+            if (keep)
+                _observer = observer;
+            return observer;
         }
 
         /// <summary>Records the kind and file name of every event, in order.</summary>
