@@ -413,6 +413,8 @@ namespace CapFrameX
                     Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
                     Container.Register<IOverlayTemplateService, OverlayTemplateService>(Reuse.Singleton);
                     Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);
+                    // One queue for the whole app: the exit waits for it.
+                    Container.Register<RecordWriteQueue>(Reuse.Singleton);
                 }
 
                 using (StartupPerformanceLogger.Measure("MCP tool registrations"))

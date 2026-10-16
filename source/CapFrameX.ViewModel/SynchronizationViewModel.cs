@@ -335,6 +335,17 @@ namespace CapFrameX.ViewModel
                                 }
                             });
 
+            // A metadata edit of the record on display: the session is not loaded again for it.
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>()
+                            .Subscribe(msg =>
+                            {
+                                if (_recordInfo == null || msg?.RecordInfo == null || msg.RecordInfo.Id != _recordInfo.Id)
+                                    return;
+
+                                _recordInfo = msg.RecordInfo;
+                                CurrentGameName = _recordInfo.GameName;
+                            });
+
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
                   .Subscribe(msg =>
                   {

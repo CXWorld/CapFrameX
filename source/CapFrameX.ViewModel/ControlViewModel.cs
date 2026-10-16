@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
@@ -40,6 +41,7 @@ namespace CapFrameX.ViewModel
         private readonly ProcessList _processList;
         private readonly ILogger<ControlViewModel> _logger;
         private readonly ApplicationState _applicationState;
+        private readonly RecordWriteQueue _recordWriteQueue;
         private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
         private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
         private PubSubEvent<ViewMessages.UpdateRecordInfos> _updateRecordInfosEvent;
@@ -359,12 +361,19 @@ namespace CapFrameX.ViewModel
 
         public ISubject<bool> CreateFolderdialogIsOpenStream = new BehaviorSubject<bool>(false);
 
+        // A rewrite raises several Changed events; a record is read again once its file has been
+        // quiet for this long.
+        internal static readonly TimeSpan FileChangeQuietTime = TimeSpan.FromMilliseconds(500);
+
+        internal IScheduler FileChangeScheduler { get; set; } = DefaultScheduler.Instance;
+
         public string ResolveDocumentsPath(string path) => _pathService.ResolveDocumentsPlaceholder(path);
 
         public string DefaultCapturesPath => _pathService.CapturesFolder;
 
         public ControlViewModel(IRecordDirectoryObserver recordObserver, IEventAggregator eventAggregator, IAppConfiguration appConfiguration,
-            IPathService pathService, RecordManager recordManager, ISystemInfo systemInfo, ProcessList processList, ILogger<ControlViewModel> logger, ApplicationState applicationState)
+            IPathService pathService, RecordManager recordManager, ISystemInfo systemInfo, ProcessList processList, ILogger<ControlViewModel> logger, ApplicationState applicationState,
+            RecordWriteQueue recordWriteQueue)
         {
             _recordObserver = recordObserver;
             _eventAggregator = eventAggregator;
@@ -375,6 +384,7 @@ namespace CapFrameX.ViewModel
             _processList = processList;
             _logger = logger;
             _applicationState = applicationState;
+            _recordWriteQueue = recordWriteQueue;
 
             //Commands
             DeleteRecordFileCommand = new DelegateCommand(OnDeleteRecordFile);
@@ -549,24 +559,63 @@ namespace CapFrameX.ViewModel
                 });
 
             _recordObserver.FileChangedStream
+                .GroupByUntil(fi => fi.FullName,
+                    changes => changes.Throttle(FileChangeQuietTime, FileChangeScheduler),
+                    StringComparer.OrdinalIgnoreCase)
+                .SelectMany(changes => changes.LastAsync())
                 .SelectMany(fi => GetFileRecordInfo(fi, fileMayStillBeWritten: true))
                 .Where(recordInfo => recordInfo is IFileRecordInfo)
                 .ObserveOn(context)
-                .Subscribe(recordInfo =>
+                .Subscribe(OnRecordFileChanged);
+        }
+
+        private void OnRecordFileChanged(IFileRecordInfo recordInfo)
+        {
+            var itemToRemove = RecordInfoList.FirstOrDefault(ri => ri.FullPath.Equals(recordInfo.FullPath));
+            if (!(itemToRemove is IFileRecordInfo))
+                return;
+
+            // A metadata edit leaves the hash alone. The entry takes the new metadata in place, so
+            // the selection and the loaded session stay instead of being parsed and analysed again.
+            if (itemToRemove is FileRecordInfo entry && recordInfo is FileRecordInfo update
+                && entry.Hash != null && entry.Hash == update.Hash)
+            {
+                entry.UpdateFrom(update);
+                if (ReferenceEquals(_selectedRecordInfo, entry))
                 {
-                    var itemToRemove = RecordInfoList.FirstOrDefault(ri => ri.FullPath.Equals(recordInfo.FullPath));
-                    if (itemToRemove is IFileRecordInfo)
-                    {
-                        var selectedRecordId = _selectedRecordInfo?.Id;
-                        var itemIndex = RecordInfoList.IndexOf(itemToRemove);
-                        RecordInfoList[itemIndex] = recordInfo;
-                        if (selectedRecordId?.Equals(itemToRemove.Id) ?? false)
-                        {
-                            SelectedRecordInfo = recordInfo;
-                            _updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(itemToRemove));
-                        }
-                    }
-                });
+                    // An edit made here has updated the loaded session; another writer's has not.
+                    if (!LoadedSessionShows(entry))
+                        OnSelectedRecordInfoChanged();
+                    _updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(entry));
+                }
+                return;
+            }
+
+            var selectedRecordId = _selectedRecordInfo?.Id;
+            var itemIndex = RecordInfoList.IndexOf(itemToRemove);
+            RecordInfoList[itemIndex] = recordInfo;
+            if (selectedRecordId?.Equals(itemToRemove.Id) ?? false)
+            {
+                SelectedRecordInfo = recordInfo;
+                _updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(itemToRemove));
+            }
+        }
+
+        private bool LoadedSessionShows(IFileRecordInfo recordInfo)
+        {
+            var sessionTask = _selectedSessionTask;
+            if (sessionTask == null || !sessionTask.IsCompletedSuccessfully
+                || !(sessionTask.Result?.Info is ISessionInfo info))
+                return false;
+
+            bool Same(string sessionValue, string recordValue)
+                => (sessionValue ?? string.Empty) == (recordValue ?? string.Empty);
+
+            return Same(info.Processor, recordInfo.ProcessorName)
+                && Same(info.GPU, recordInfo.GraphicCardName)
+                && Same(info.SystemRam, recordInfo.SystemRamInfo)
+                && Same(info.Motherboard, recordInfo.MotherboardName)
+                && Same(info.Comment, recordInfo.Comment);
         }
 
         private void OnDeleteRecordFile()
@@ -743,27 +792,46 @@ namespace CapFrameX.ViewModel
                 CustomGameName, CustomComment, _selectedRecordInfo, _applicationState.SelectedRecords))
                 return;
 
+            // The values are taken now; the files are rewritten off the UI thread, since each
+            // rewrite parses and serializes the whole record.
+            string cpu = CustomCpuDescription, gpu = CustomGpuDescription, ram = CustomRamDescription,
+                mainboard = CustomMainboardDescription, gameName = CustomGameName, comment = CustomComment,
+                resolution = CustomResolution;
+
             if (_applicationState.SelectedRecords.Count == 1)
             {
-                _recordManager.UpdateCustomData(_selectedRecordInfo, CustomCpuDescription,
-                    CustomGpuDescription, CustomRamDescription, CustomMainboardDescription,
-                    CustomGameName, CustomComment, CustomResolution);
+                var recordInfo = _selectedRecordInfo;
+                _recordWriteQueue.Enqueue(() => _recordManager.UpdateCustomData(recordInfo,
+                    cpu, gpu, ram, mainboard, gameName, comment, resolution));
             }
             else if (_applicationState.SelectedRecords.Count > 1)
             {
-                foreach (var recordInfoObject in _applicationState.SelectedRecords)
-                {
-                    var recordInfo = recordInfoObject as IFileRecordInfo;
-                    var session = _recordManager.LoadData(recordInfo.FullPath);
+                bool cpuChanged = _customCpuDescriptionChanged, gpuChanged = _customGpuDescriptionChanged,
+                    ramChanged = _customRamDescriptionChanged, mainboardChanged = _customMainboardDescriptionChanged,
+                    gameNameChanged = _customGameNameChanged, commentChanged = _customCommentChanged,
+                    resolutionChanged = _customResolutionChanged;
 
-                    _recordManager.UpdateCustomData(recordInfo,
-                        _customCpuDescriptionChanged ? CustomCpuDescription : session.Info.Processor,
-                        _customGpuDescriptionChanged ? CustomGpuDescription : session.Info.GPU,
-                        _customRamDescriptionChanged ? CustomRamDescription : session.Info.SystemRam,
-                        _customMainboardDescriptionChanged ? CustomMainboardDescription : session.Info.Motherboard,
-                        _customGameNameChanged ? CustomGameName : session.Info.GameName,
-                        _customCommentChanged ? CustomComment : session.Info.Comment,
-                        _customResolutionChanged ? CustomResolution : session.Info.ResolutionInfo);
+                foreach (var recordInfo in _applicationState.SelectedRecords.OfType<IFileRecordInfo>().ToList())
+                {
+                    // Each record keeps its own values for the fields that were not edited.
+                    _recordWriteQueue.Enqueue(() =>
+                    {
+                        var session = _recordManager.LoadData(recordInfo.FullPath);
+                        if (session?.Info == null)
+                        {
+                            _logger.LogWarning("Metadata of {path} not saved: the record cannot be read", recordInfo.FullPath);
+                            return;
+                        }
+
+                        _recordManager.UpdateCustomData(recordInfo,
+                            cpuChanged ? cpu : session.Info.Processor,
+                            gpuChanged ? gpu : session.Info.GPU,
+                            ramChanged ? ram : session.Info.SystemRam,
+                            mainboardChanged ? mainboard : session.Info.Motherboard,
+                            gameNameChanged ? gameName : session.Info.GameName,
+                            commentChanged ? comment : session.Info.Comment,
+                            resolutionChanged ? resolution : session.Info.ResolutionInfo);
+                    });
                 }
             }
 

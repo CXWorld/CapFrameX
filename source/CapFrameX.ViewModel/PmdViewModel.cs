@@ -224,6 +224,14 @@ namespace CapFrameX.ViewModel
                     }
                 });
 
+            // A metadata edit updates the loaded session in place: show its new names.
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>()
+                .Subscribe(msg =>
+                {
+                    RaisePropertyChanged(nameof(SessionCpuName));
+                    RaisePropertyChanged(nameof(SessionGpuName));
+                });
+
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
                 .Subscribe(msg =>
                 {

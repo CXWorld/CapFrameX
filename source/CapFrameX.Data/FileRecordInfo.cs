@@ -62,6 +62,53 @@ namespace CapFrameX.Data
 		public string Resolution { get; private set; }
 		internal bool UsesProcessListGameName { get; set; }
 
+		/// <summary>
+		/// Takes over a newer read of the same record, so a list entry follows a metadata edit
+		/// without being replaced: its selection and the session loaded for it stay.
+		/// </summary>
+		public void UpdateFrom(FileRecordInfo other)
+		{
+			_lines = other._lines;
+			GameName = other.GameName;
+			ProcessName = other.ProcessName;
+			CreationDate = other.CreationDate;
+			CreationTime = other.CreationTime;
+			RecordTime = other.RecordTime;
+			FullPath = other.FullPath;
+			FileInfo = other.FileInfo;
+			CombinedInfo = other.CombinedInfo;
+			DeviceName = other.DeviceName;
+			MotherboardName = other.MotherboardName;
+			OsVersion = other.OsVersion;
+			ProcessorName = other.ProcessorName;
+			SystemRamInfo = other.SystemRamInfo;
+			BaseDriverVersion = other.BaseDriverVersion;
+			DriverPackage = other.DriverPackage;
+			NumberGPUs = other.NumberGPUs;
+			GraphicCardName = other.GraphicCardName;
+			GPUCoreClock = other.GPUCoreClock;
+			GPUMemoryClock = other.GPUMemoryClock;
+			GPUMemory = other.GPUMemory;
+			GPUDriverVersion = other.GPUDriverVersion;
+			Comment = other.Comment;
+			IsAggregated = other.IsAggregated;
+			IsValid = other.IsValid;
+			HasInfoHeader = other.HasInfoHeader;
+			Id = other.Id;
+			Hash = other.Hash;
+			ApiInfo = other.ApiInfo;
+			ResizableBar = other.ResizableBar;
+			WinGameMode = other.WinGameMode;
+			HAGS = other.HAGS;
+			PresentationMode = other.PresentationMode;
+			DisplayLayer = other.DisplayLayer;
+			Resolution = other.Resolution;
+			UsesProcessListGameName = other.UsesProcessListGameName;
+
+			// An empty name tells the bindings that every property may have changed.
+			NotifyPropertyChanged(string.Empty);
+		}
+
 		private FileRecordInfo(FileInfo fileInfo, ISession session)
 			: this(fileInfo, session?.Info, session?.Hash, session?.Runs?.Count ?? 0,
 				session?.Runs?.LastOrDefault()?.CaptureData?.TimeInSeconds?.LastOrDefault() ?? 0)

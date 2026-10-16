@@ -5,6 +5,7 @@ using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.Data;
 using CapFrameX.Extensions;
 using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
@@ -505,6 +506,17 @@ namespace CapFrameX
             // PresentMon or the sensors can drop the tile design while the row feed stays valid,
             // and the hook would show the row overlay until the process is gone.
             ShutdownOverlayRenderers();
+
+            // A record rewrite truncates the file first; a cut-off one would lose the record.
+            try
+            {
+                if (!Container.Resolve<RecordWriteQueue>().WaitForPendingWrites(TimeSpan.FromSeconds(10)))
+                    Log.Logger.Warning("Record files were still being written at exit.");
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while waiting for record files to be written.");
+            }
 
 #if DEBUG
             try

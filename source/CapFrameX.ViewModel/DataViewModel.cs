@@ -1304,6 +1304,20 @@ namespace CapFrameX.ViewModel
                     }
                 });
 
+            // A metadata edit of the record on display changes what shows the metadata, not the
+            // analysis: the session is not loaded again for it.
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>()
+                .Subscribe(msg =>
+                {
+                    if (RecordInfo == null || msg?.RecordInfo == null || msg.RecordInfo.Id != RecordInfo.Id)
+                        return;
+
+                    RecordInfo = msg.RecordInfo;
+                    CurrentGameName = RemoveOutliers ? CxLang.Format("DataViewModel_OutlierCleaned0", RecordInfo.GameName)
+                        : RecordInfo.GameName;
+                    SystemInfos = _recordManager.GetSystemInfos(RecordInfo);
+                });
+
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
                 .Subscribe(msg =>
                 {

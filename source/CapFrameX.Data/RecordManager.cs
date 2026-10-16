@@ -121,6 +121,11 @@ namespace CapFrameX.Data
             customGameName = customGameName ?? string.Empty;
             customComment = customComment ?? string.Empty;
 
+            // The views keep showing the session loaded before the edit; it takes the new values,
+            // so the record does not have to be parsed and analysed again for them.
+            var loadedSession = GetLoadedSession(recordInfo.FullPath);
+            bool motherboardWritten = true;
+
             try
             {
                 if (recordInfo.FileInfo.Extension == ".json")
@@ -161,7 +166,8 @@ namespace CapFrameX.Data
                         // Motherboard — records written before the mainboard became editable may
                         // not carry the header at all, so skip it instead of losing the whole edit
                         int motherboardNameHeaderIndex = FindHeaderIndex(lines, "Motherboard");
-                        if (motherboardNameHeaderIndex > -1)
+                        motherboardWritten = motherboardNameHeaderIndex > -1;
+                        if (motherboardWritten)
                             lines[motherboardNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}Motherboard{FileRecordInfo.INFO_SEPERATOR}{customMainboardInfo}";
 
                         // GameName
@@ -202,12 +208,63 @@ namespace CapFrameX.Data
                         File.WriteAllLines(recordInfo.FullPath, headerLines.Concat(lines));
                         InvalidateSessionCache(recordInfo.FullPath);
                     }
+
+                    // CSV records have no resolution header.
+                    customResolution = null;
+                }
+                else
+                {
+                    return;
+                }
+
+                if (loadedSession?.Info is ISessionInfo info)
+                {
+                    info.Processor = customCpuInfo;
+                    info.GPU = customGpuInfo;
+                    info.SystemRam = customRamInfo;
+                    if (motherboardWritten)
+                        info.Motherboard = customMainboardInfo;
+                    info.GameName = customGameName;
+                    info.Comment = customComment;
+                    if (customResolution != null)
+                        info.ResolutionInfo = customResolution;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error writing Lines");
             }
+        }
+
+        /// <summary>
+        /// The cached session of the file as it is on disk now, if one is still in use.
+        /// </summary>
+        private ISession GetLoadedSession(string path)
+        {
+            try
+            {
+                var fileInfo = new FileInfo(Path.GetFullPath(path));
+                if (!fileInfo.Exists)
+                    return null;
+
+                lock (_sessionCacheSync)
+                {
+                    if (_sessionCache.TryGetValue(fileInfo.FullName, out var entry)
+                        && entry.Length == fileInfo.Length
+                        && entry.LastWriteTimeUtcTicks == fileInfo.LastWriteTimeUtc.Ticks
+                        && entry.Session != null
+                        && entry.Session.TryGetTarget(out var session))
+                    {
+                        return session;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Unable to look up the cached session of {path}", path);
+            }
+
+            return null;
         }
 
         private int GetHeaderIndex(string[] lines, string headerEntry)
