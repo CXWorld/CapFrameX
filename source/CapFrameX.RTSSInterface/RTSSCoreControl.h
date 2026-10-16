@@ -45,6 +45,7 @@ public:
 	CString						GetResolution(DWORD processId);
 	std::vector<float>		    GetCurrentFramerate(DWORD processId);
 	std::vector<float>			GetFrameTimesInterval(DWORD processId, DWORD milliSeconds);
+	BOOL						IsSharedMemoryAvailable();
 	BOOL						ShowRunHistory;
 	DWORD						OverlayPositionX;
 	DWORD						OverlayPositionY;

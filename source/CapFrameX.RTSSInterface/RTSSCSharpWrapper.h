@@ -292,6 +292,21 @@ public:
 		return gcnew String(_coreControl->GetResolution((UINT)processId));
 	}
 
+	// Whether RTSS' shared memory carries a valid header, which RTSS writes when it starts and
+	// invalidates when it exits. Read-only, so it takes no lock.
+	bool IsSharedMemoryAvailable()
+	{
+		try
+		{
+			return _coreControl->IsSharedMemoryAvailable() != FALSE;
+		}
+		catch (SEHException^)
+		{
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while probing the RTSS shared memory."));
+			return false;
+		}
+	}
+
 	Tuple<double, double>^ GetCurrentFramerate(INT processId)
 	{
 		std::vector<float> result = _coreControl->GetCurrentFramerate((UINT)processId);

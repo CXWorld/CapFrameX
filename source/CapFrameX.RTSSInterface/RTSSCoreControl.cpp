@@ -565,6 +565,30 @@ void RTSSCoreControl::ReleaseOSD()
 	}
 }
 
+BOOL RTSSCoreControl::IsSharedMemoryAvailable()
+{
+	// RTSS creates the section and writes the signature when it starts, and marks the section
+	// 0xDEAD when it exits. The section itself outlives RTSS while a process it hooked still
+	// maps it, so only a valid header counts.
+	BOOL bAvailable = FALSE;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_READ, FALSE, "RTSSSharedMemoryV2");
+
+	if (hMapFile)
+	{
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_READ, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+		if (pMem)
+		{
+			bAvailable = (pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020000);
+			UnmapViewOfFile(pMapAddr);
+		}
+		CloseHandle(hMapFile);
+	}
+
+	return bAvailable;
+}
+
 DWORD RTSSCoreControl::GetClientsNum()
 {
 	DWORD dwClients = 0;

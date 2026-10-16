@@ -13,6 +13,8 @@ namespace CapFrameX.RTSSIntegration
     public class RTSSService : RTSSCSharpWrapper, IRTSSService
     {
         private const string RTSS_PROCESS_NAME = "RTSS";
+        // How long a valid shared memory header is trusted before the process list confirms it.
+        internal const int ProcessListIntervalMs = 10_000;
         private bool _isRTSSInstalled;
 
         private static ILogger<RTSSService> _logger;
@@ -21,6 +23,7 @@ namespace CapFrameX.RTSSIntegration
         private readonly BehaviorSubject<int> _processCountStream;
         private readonly object _launchGate = new object();
         private string _lastLaunchState;
+        private long? _lastProcessListCheckTicks;
 
         public ISubject<int> ProcessIdStream => _processIdStream;
 
@@ -91,21 +94,16 @@ namespace CapFrameX.RTSSIntegration
         {
             try
             {
-                // Runs on every overlay tick, so release the handles GetProcessesByName hands out
-                // instead of leaving them to the finalizer.
-                int runningCount = 0;
-                if (_isRTSSInstalled)
-                {
-                    var processes = Process.GetProcessesByName(RTSS_PROCESS_NAME);
-                    runningCount = processes.Length;
-                    foreach (var process in processes) process.Dispose();
-                }
+                bool isRTSSRunning = _isRTSSInstalled && IsRTSSRunning();
                 int gameProcessId = _processIdStream.Value;
-                bool gameIsRunning = gameProcessId > 0 && IsProcessAlive(gameProcessId);
+                // Only the launch decision needs the game and its Vulkan state; with RTSS
+                // running neither is looked up.
+                bool gameIsRunning = _isRTSSInstalled && !isRTSSRunning
+                    && gameProcessId > 0 && IsProcessAlive(gameProcessId);
                 bool presentsWithVulkan = gameIsRunning &&
                     (VulkanPresentationProbe?.Invoke(gameProcessId) ?? false);
 
-                switch (DecideLaunch(_isRTSSInstalled, runningCount > 0, gameIsRunning, presentsWithVulkan))
+                switch (DecideLaunch(_isRTSSInstalled, isRTSSRunning, gameIsRunning, presentsWithVulkan))
                 {
                     case RTSSLaunchDecision.NotInstalled:
                         LogLaunchState("not-installed", () => _logger.LogWarning(
@@ -113,8 +111,7 @@ namespace CapFrameX.RTSSIntegration
                         return;
 
                     case RTSSLaunchDecision.AlreadyRunning:
-                        LogLaunchState("running", () => _logger.LogDebug(
-                            "RTSS already running ({count})", runningCount));
+                        LogLaunchState("running", () => _logger.LogDebug("RTSS already running"));
                         return;
 
                     case RTSSLaunchDecision.DeferredVulkanGameRunning:
@@ -140,6 +137,34 @@ namespace CapFrameX.RTSSIntegration
                 _logger.LogError(ex, "Error while starting RTSS process");
             }
         }
+
+        /// <summary>
+        /// Whether RTSS is running, answered from its shared memory where possible. RTSS writes
+        /// the section's header when it starts and invalidates it when it exits, so a valid header
+        /// means RTSS is running, unless it crashed and a game it hooked still maps the section,
+        /// and a missing one means it is not, unless it is still starting. The process list settles
+        /// both and is consulted only then: whenever the header is missing, and every
+        /// <see cref="ProcessListIntervalMs"/> while it is present. Listing every process on each
+        /// overlay tick took a system-wide snapshot several times a second.
+        /// </summary>
+        private bool IsRTSSRunning()
+        {
+            bool sharedMemoryAvailable = IsSharedMemoryAvailable();
+            long now = Environment.TickCount64;
+            long sinceProcessListCheck = _lastProcessListCheckTicks is long last ? now - last : long.MaxValue;
+            if (!ShouldConsultProcessList(sharedMemoryAvailable, sinceProcessListCheck))
+                return true;
+
+            _lastProcessListCheckTicks = now;
+            // Release the handles GetProcessesByName hands out instead of leaving them to the
+            // finalizer.
+            var processes = Process.GetProcessesByName(RTSS_PROCESS_NAME);
+            foreach (var process in processes) process.Dispose();
+            return processes.Length > 0;
+        }
+
+        internal static bool ShouldConsultProcessList(bool sharedMemoryAvailable, long millisecondsSinceProcessListCheck)
+            => !sharedMemoryAvailable || millisecondsSinceProcessListCheck >= ProcessListIntervalMs;
 
         internal enum RTSSLaunchDecision
         {
