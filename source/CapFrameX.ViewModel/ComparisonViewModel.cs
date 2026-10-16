@@ -2541,10 +2541,7 @@ namespace CapFrameX.ViewModel
                             return;
                         }
 
-                        foreach (IFileRecordInfo recordInfo in await GetDroppedRecordInfosAsync(dropInfo.Data))
-                        {
-                            AddComparisonItem(recordInfo);
-                        }
+                        await AddComparisonItemsAsync(await GetDroppedRecordInfosAsync(dropInfo.Data));
                     }
                 }
             }

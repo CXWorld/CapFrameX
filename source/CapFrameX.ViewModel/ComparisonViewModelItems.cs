@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Localization;
+using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Sensor.Reporting;
 using CapFrameX.Statistics.NetStandard;
@@ -9,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace CapFrameX.ViewModel
 {
@@ -18,32 +20,61 @@ namespace CapFrameX.ViewModel
         {
             if (CheckListContains(recordInfo))
             {
-                MessageText = CxLang.T("ComparisonViewModel_RecordAlreadyInList");
-                MessageDialogContentIsOpen = true;
+                ShowRecordAlreadyInList();
                 return;
             }
 
             var comparisonRecordInfo = GetComparisonRecordInfoFromFileRecordInfo(recordInfo);
-            if (comparisonRecordInfo == null)
+            if (comparisonRecordInfo != null)
+                AddComparisonRecords(new[] { comparisonRecordInfo });
+        }
+
+        /// <summary>
+        /// Adds dropped records: they are loaded off the UI thread, then all of them are inserted
+        /// and the charts are drawn once. Adding them one by one parsed each record on the UI
+        /// thread and redrew every chart for every record, N(N+1)/2 series for N records.
+        /// </summary>
+        private async Task AddComparisonItemsAsync(IReadOnlyList<IFileRecordInfo> recordInfos)
+        {
+            var ids = new HashSet<string>();
+            var newRecords = recordInfos
+                .Where(recordInfo => !CheckListContains(recordInfo) && ids.Add(recordInfo.Id))
+                .ToList();
+            if (newRecords.Count < recordInfos.Count)
+                ShowRecordAlreadyInList();
+
+            var comparisonRecordInfos = await RecordBatchLoader.LoadAsync(newRecords,
+                GetComparisonRecordInfoFromFileRecordInfo, _logger);
+            AddComparisonRecords(comparisonRecordInfos);
+        }
+
+        private void AddComparisonRecords(IReadOnlyList<ComparisonRecordInfo> comparisonRecordInfos)
+        {
+            if (comparisonRecordInfos.Count == 0)
                 return;
 
-            var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
-
-            // Insert into list (sorted)
-            bool sourceChanged = UpdateComparisonMetricSource(wrappedComparisonRecordInfo);
-            if (sourceChanged)
+            foreach (var comparisonRecordInfo in comparisonRecordInfos)
             {
-                foreach (ComparisonRecordInfoWrapper existingRecord in ComparisonRecords)
-                    SetMetrics(existingRecord);
+                var wrappedComparisonRecordInfo = GetWrappedRecordInfo(comparisonRecordInfo);
+
+                // Insert into list (sorted)
+                bool sourceChanged = UpdateComparisonMetricSource(wrappedComparisonRecordInfo);
+                if (sourceChanged)
+                {
+                    foreach (ComparisonRecordInfoWrapper existingRecord in ComparisonRecords)
+                        SetMetrics(existingRecord);
+                }
+                // Adding records resets the range to the whole longest record below, so a new
+                // record's metrics cover all of it rather than the range from before.
+                SetMetrics(wrappedComparisonRecordInfo, 0, 0);
+                InsertComparisonRecordsSorted(wrappedComparisonRecordInfo);
             }
-            SetMetrics(wrappedComparisonRecordInfo);
-            InsertComparisonRecordsSorted(wrappedComparisonRecordInfo);
 
             HasComparisonItems = ComparisonRecords.Any();
 
             // Manage game name header
             HasUniqueGameNames = GetHasUniqueGameNames();
-            CurrentGameName = comparisonRecordInfo.Game;
+            CurrentGameName = comparisonRecordInfos[comparisonRecordInfos.Count - 1].Game;
 
             // Update height of bar chart control here
             UpdateBarChartHeight();
@@ -52,6 +83,12 @@ namespace CapFrameX.ViewModel
 
             //Draw charts and performance parameter
             UpdateCharts();
+        }
+
+        private void ShowRecordAlreadyInList()
+        {
+            MessageText = CxLang.T("ComparisonViewModel_RecordAlreadyInList");
+            MessageDialogContentIsOpen = true;
         }
 
         private bool CheckListContains(IFileRecordInfo recordInfo)
@@ -63,8 +100,12 @@ namespace CapFrameX.ViewModel
         }
 
         private void SetMetrics(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo)
+            => SetMetrics(wrappedComparisonRecordInfo, FirstSeconds, LastSeconds);
+
+        // A lastSeconds of 0 stands for the record's last frame.
+        private void SetMetrics(ComparisonRecordInfoWrapper wrappedComparisonRecordInfo,
+            double startTime, double lastSeconds)
         {
-            double startTime = FirstSeconds;
             double lastFrameStart;
             if (!TryGetLastFrameStart(wrappedComparisonRecordInfo.WrappedRecordInfo.Session, out lastFrameStart))
             {
@@ -75,8 +116,8 @@ namespace CapFrameX.ViewModel
                 return;
             }
 
-            double endTime = LastSeconds <= 0 || LastSeconds > lastFrameStart
-                ? lastFrameStart : LastSeconds;
+            double endTime = lastSeconds <= 0 || lastSeconds > lastFrameStart
+                ? lastFrameStart : lastSeconds;
 
             var frametimeTimeWindow = wrappedComparisonRecordInfo.WrappedRecordInfo.Session.GetFrametimeTimeWindow(startTime, endTime, _appConfiguration, ERemoveOutlierMethod.None);
             var displayChangeTimeWindow = _useDisplayChangeSamplesForComparison

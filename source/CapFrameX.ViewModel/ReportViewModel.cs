@@ -449,6 +449,24 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        /// <summary>
+        /// Adds dropped records: their rows are computed off the UI thread, then all of them are
+        /// added and the average row is computed once. Each row parses its record and computes
+        /// about thirty metrics, which froze the view for a dropped folder.
+        /// </summary>
+        private async System.Threading.Tasks.Task AddReportRecordsAsync(IReadOnlyList<IFileRecordInfo> recordInfos)
+        {
+            var reportInfos = await RecordBatchLoader.LoadAsync(recordInfos, GetReportInfoFromRecordInfo, _logger);
+            if (reportInfos.Count == 0)
+                return;
+
+            foreach (var reportInfo in reportInfos)
+                ReportInfoCollection.Add(reportInfo);
+
+            if (ReportShowAverageRow)
+                AddAverageReportInfo(ReportInfoCollection);
+        }
+
         private void AddReportRecord(ReportInfo reportInfo)
         {
             if (reportInfo == null)
@@ -518,11 +536,7 @@ namespace CapFrameX.ViewModel
                 {
                     if (frameworkElement.Name == "ReportDataGrid")
                     {
-                        foreach (IFileRecordInfo recordInfo in await GetDroppedRecordInfosAsync(dropInfo.Data))
-                        {
-                            ReportInfo reportInfo = GetReportInfoFromRecordInfo(recordInfo);
-                            AddReportRecord(reportInfo);
-                        }
+                        await AddReportRecordsAsync(await GetDroppedRecordInfosAsync(dropInfo.Data));
                     }
                 }
             }
