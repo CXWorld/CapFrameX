@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -54,6 +55,61 @@ namespace CapFrameX.Test.Sensor
             config.EvaluateAllSensors = true;
             using (config.AcquireAllSensors()) { }
             Assert.IsTrue(config.EvaluateAllSensors, "Releasing the editor must not stop a visible Info view.");
+        }
+
+        [TestMethod]
+        public void SensorLeaseEvaluatesOnlyItsSensorsAndCountsAsOverlaySelection()
+        {
+            var config = new SensorConfig(_configurationDirectory);
+            const string leased = "/gpu-nvidia/0/load/0";
+            const string other = "/amdcpu/0/power/0";
+            const string pmc = "pmcreader/cpu/dram-bandwidth";
+            foreach (string sensor in new[] { leased, other, pmc })
+                config.GetSensorEvaluate(sensor);
+            IReadOnlySet<string> identifiers = new HashSet<string> { leased };
+            int reads = 0;
+
+            var lease = config.AcquireSensors(() => { reads++; return identifiers; });
+
+            Assert.IsTrue(config.GetSensorEvaluate(leased));
+            Assert.IsFalse(config.GetSensorEvaluate(other), "A sensor the lease does not name stays off.");
+            Assert.IsFalse(config.EvaluateAllSensors, "A narrow lease must not turn every sensor on.");
+            Assert.IsTrue(config.HasSelectedOverlaySensors, "The leased hardware keeps the hardware poll running.");
+            Assert.IsFalse(config.HasSelectedPmcOverlaySensors);
+            Assert.IsTrue(reads > 0, "The lease is read on every evaluation.");
+
+            // The consumer changes what it shows; the lease follows without being re-acquired.
+            identifiers = new HashSet<string> { pmc };
+            Assert.IsFalse(config.GetSensorEvaluate(leased));
+            Assert.IsTrue(config.GetSensorEvaluate(pmc));
+            Assert.IsTrue(config.HasSelectedPmcOverlaySensors);
+
+            // Null stands for every sensor, as an all-sensors lease does.
+            identifiers = null;
+            Assert.IsTrue(config.GetSensorEvaluate(other));
+            Assert.IsTrue(config.EvaluateAllSensors);
+
+            identifiers = new HashSet<string>();
+            Assert.IsFalse(config.HasSelectedOverlaySensors, "An empty lease names no hardware.");
+            identifiers = new HashSet<string> { leased };
+            config.ResetEvaluate();
+            Assert.IsTrue(config.GetSensorEvaluate(leased), "A profile reset does not touch the lease.");
+            Assert.IsTrue(config.GetSensorEvaluate(leased));
+
+            lease.Dispose();
+            lease.Dispose();
+            Assert.IsFalse(config.GetSensorEvaluate(leased));
+            Assert.IsFalse(config.HasSelectedOverlaySensors);
+            Assert.IsFalse(config.EvaluateAllSensors);
+
+            using (config.AcquireSensors(() => null))
+            using (config.AcquireSensors(() => identifiers))
+            {
+                Assert.IsTrue(config.GetSensorEvaluate(other));
+                Assert.IsTrue(config.GetSensorEvaluate(leased));
+            }
+            Assert.IsFalse(config.GetSensorEvaluate(other));
+            Assert.ThrowsExactly<ArgumentNullException>(() => config.AcquireSensors(null));
         }
 
         [TestMethod]

@@ -993,6 +993,76 @@ namespace CapFrameX.Test.Integration
             hookStatus.VerifyGet(h => h.Current, read ? Times.Once() : Times.Never());
         }
 
+        [TestMethod]
+        public async Task NarrowLease_PollsOnlyTheHardwareBehindItsSources()
+        {
+            // Regression: a tile design took the all-sensors lease, so every per-core, SMU, SMART
+            // and PMC value was read for a design that showed two of them.
+            var used = Sensor("/ram/data/0", "RAM Used", "Memory", "Data", "RAM");
+            var free = Sensor("/ram/data/1", "RAM Available", "Memory", "Data", "RAM");
+            var load = Sensor("/cpu/load/0", "CPU Total", "Cpu", "Load", "CPU");
+            var temperature = Sensor("/cpu/temperature/0", "CPU Package", "Cpu", "Temperature", "CPU");
+            using var fixture = new Fixture(new[] { used, free, load, temperature }, OnlineMetrics().Object);
+            Func<IReadOnlySet<string>> leased = null;
+            bool released = false;
+            fixture.Config.Setup(c => c.AcquireSensors(It.IsAny<Func<IReadOnlySet<string>>>()))
+                .Callback((Func<IReadOnlySet<string>> identifiers) => leased = identifiers)
+                .Returns(Disposable.Create(() => released = true));
+            IReadOnlyCollection<string> shown = null;
+            var lease = fixture.Service.AcquirePreview(() => shown);
+
+            Assert.IsNull(leased(), "An unbound design needs every sensor, as before it was known.");
+            var sources = await fixture.Service.GetSourcesAsync();
+            string loadId = sources.Single(source => source.Identifier == load.Identifier).Id;
+            string totalId = sources.Single(source => source.SemanticKey == "ramTotal").Id;
+            shown = new[] { loadId, totalId, "metric/OnlineAverage", "sensor:unknown" };
+            var identifiers = leased();
+
+            CollectionAssert.AreEquivalent(new[] { load.Identifier, used.Identifier, free.Identifier }, identifiers.ToArray());
+            Assert.AreSame(identifiers, leased(), "Resolved once per design and catalog, not per evaluation.");
+            shown = new[] { loadId };
+            CollectionAssert.AreEquivalent(new[] { load.Identifier }, leased().ToArray());
+            fixture.Config.Verify(c => c.AcquireAllSensors(), Times.Never);
+            Assert.IsFalse(released);
+            lease.Dispose();
+            Assert.IsTrue(released, "Releasing the design releases its sensors.");
+        }
+
+        [TestMethod]
+        public async Task NarrowLease_NamesNoSensorUntilTheCatalogIsKnown()
+        {
+            var load = Sensor("/cpu/load/0", "CPU Total", "Cpu", "Load", "CPU");
+            string loadId;
+            using (var catalog = new Fixture(new[] { load }))
+                loadId = (await catalog.Service.GetSourcesAsync()).Single().Id;
+            using var fixture = new Fixture(new[] { load });
+            Func<IReadOnlySet<string>> leased = null;
+            fixture.Config.Setup(c => c.AcquireSensors(It.IsAny<Func<IReadOnlySet<string>>>()))
+                .Callback((Func<IReadOnlySet<string>> identifiers) => leased = identifiers)
+                .Returns(Disposable.Empty);
+            var shown = new[] { loadId };
+            using var lease = fixture.Service.AcquirePreview(() => shown);
+
+            Assert.AreEqual(0, leased().Count, "The sources are not known yet.");
+            await fixture.Service.GetSourcesAsync();
+
+            CollectionAssert.AreEquivalent(new[] { load.Identifier }, leased().ToArray(),
+                "The same design resolves again once the catalog is there.");
+        }
+
+        [TestMethod]
+        public async Task FullLease_StillTakesEverySensor()
+        {
+            using var fixture = new Fixture(Array.Empty<ISensorEntry>());
+            fixture.Config.Setup(c => c.AcquireAllSensors()).Returns(Disposable.Empty);
+            await fixture.Service.GetSourcesAsync();
+
+            using var lease = fixture.Service.AcquirePreview();
+
+            fixture.Config.Verify(c => c.AcquireAllSensors(), Times.Once);
+            fixture.Config.Verify(c => c.AcquireSensors(It.IsAny<Func<IReadOnlySet<string>>>()), Times.Never);
+        }
+
         private static Mock<IOnlineMetricService> OnlineMetrics()
         {
             var metrics = new Mock<IOnlineMetricService>();

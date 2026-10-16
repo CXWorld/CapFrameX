@@ -47,6 +47,16 @@ namespace CapFrameX.Monitoring.Contracts
         /// </summary>
         IDisposable AcquireAllSensors();
 
+        /// <summary>
+        /// Keeps only the sensors with the given runtime identifiers available for an
+        /// independent live consumer until the returned lease is disposed. The function is read
+        /// on every evaluation and returns the current identifiers; null stands for every sensor,
+        /// as <see cref="AcquireAllSensors"/> does. A leased hardware or PmcReader sensor counts
+        /// as a selected overlay sensor for the polling gates
+        /// (<see cref="HasSelectedOverlaySensors"/>, <see cref="HasSelectedPmcOverlaySensors"/>).
+        /// </summary>
+        IDisposable AcquireSensors(Func<IReadOnlySet<string>> identifiers);
+
         int SensorLoggingRefreshPeriod { get; set; }
 
         bool IsSelectedForLogging(string identifier);

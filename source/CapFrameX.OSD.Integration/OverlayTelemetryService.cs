@@ -117,7 +117,10 @@ namespace CapFrameX.OSD.Integration
             lock (_lifecycleLock)
             {
                 ThrowIfDisposed();
-                var sensorLease = _config.AcquireAllSensors();
+                // The editors need every sensor; a design only the hardware its sources read.
+                var sensorLease = requiredSourceIds == null
+                    ? _config.AcquireAllSensors()
+                    : _config.AcquireSensors(new LeasedSensorResolver(this, requiredSourceIds).Resolve);
                 IDisposable metricLease;
                 try { metricLease = _metrics?.AcquireTelemetry(); }
                 catch { sensorLease?.Dispose(); throw; }
@@ -442,6 +445,80 @@ namespace CapFrameX.OSD.Integration
                 IsProcessSpecific = processSpecific,
                 SensorType = text ? "Text" : "Metric"
             };
+
+        /// <summary>
+        /// The runtime identifiers of the hardware sensors behind the given source ids: a hardware
+        /// source's own identifier, and both identifiers a derived memory total is computed from.
+        /// Other sources (online metrics, CapFrameX values) read no sensor. Unknown ids are ignored.
+        /// </summary>
+        internal static IReadOnlySet<string> ResolveSensorIdentifiers(IReadOnlyCollection<string> sourceIds,
+            IReadOnlyList<OverlayTelemetrySource> sources)
+        {
+            var byId = new Dictionary<string, OverlayTelemetrySource>(StringComparer.Ordinal);
+            foreach (var source in sources)
+                byId.TryAdd(source.Id, source);
+            var identifiers = new HashSet<string>(StringComparer.Ordinal);
+            foreach (string id in sourceIds)
+            {
+                if (!byId.TryGetValue(id, out var source)) continue;
+                if (source.IsHardwareSensor)
+                    identifiers.Add(source.Identifier);
+                else if (source.SumSourceIdA != null)
+                {
+                    if (byId.TryGetValue(source.SumSourceIdA, out var used) && used.IsHardwareSensor)
+                        identifiers.Add(used.Identifier);
+                    if (byId.TryGetValue(source.SumSourceIdB, out var free) && free.IsHardwareSensor)
+                        identifiers.Add(free.Identifier);
+                }
+            }
+            return identifiers;
+        }
+
+        /// <summary>
+        /// Answers the sensor lease of one design: the identifiers behind the sources the design
+        /// needs right now. The sensor update loop asks on every evaluation, so the answer is
+        /// resolved again only when the required ids or the catalog are replaced.
+        /// </summary>
+        private sealed class LeasedSensorResolver
+        {
+            private readonly OverlayTelemetryService _service;
+            private readonly Func<IReadOnlyCollection<string>> _requiredSourceIds;
+            private volatile Resolution _last;
+
+            public LeasedSensorResolver(OverlayTelemetryService service, Func<IReadOnlyCollection<string>> requiredSourceIds)
+            {
+                _service = service;
+                _requiredSourceIds = requiredSourceIds;
+            }
+
+            public IReadOnlySet<string> Resolve()
+            {
+                var required = _requiredSourceIds();
+                // Not bound yet: every sensor, as before the design was known.
+                if (required == null) return null;
+                var sources = _service._sources;
+                var last = _last;
+                if (last != null && ReferenceEquals(last.Required, required) && ReferenceEquals(last.Sources, sources))
+                    return last.Identifiers;
+                var identifiers = ResolveSensorIdentifiers(required, sources);
+                _last = new Resolution(required, sources, identifiers);
+                return identifiers;
+            }
+
+            private sealed class Resolution
+            {
+                public Resolution(IReadOnlyCollection<string> required, OverlayTelemetrySource[] sources, IReadOnlySet<string> identifiers)
+                {
+                    Required = required;
+                    Sources = sources;
+                    Identifiers = identifiers;
+                }
+
+                public IReadOnlyCollection<string> Required { get; }
+                public OverlayTelemetrySource[] Sources { get; }
+                public IReadOnlySet<string> Identifiers { get; }
+            }
+        }
 
         // The sources the leases need, or null when one of them, or a subscriber without a lease,
         // needs every source.
