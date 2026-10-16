@@ -203,9 +203,21 @@ public:
 		}
 	}
 
+	// The entries Refresh renders. Read by tests; RTSS itself is never asked.
+	property int OverlayEntryCount
+	{
+		int get()
+		{
+			msclr::lock l(m_lock);
+			return static_cast<int>(_coreControl->OverlayEntries.size());
+		}
+	}
+
 	void SetOverlayEntries(array<IOverlayEntry^>^ overlayEntries)
 	{
-		if (overlayEntries == nullptr || overlayEntries->Length == 0)
+		// An empty list is a real state (every entry switched off) and must clear the rows;
+		// returning early left the last ones on screen.
+		if (overlayEntries == nullptr)
 			return;
 
 		try
