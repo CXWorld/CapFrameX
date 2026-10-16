@@ -829,8 +829,17 @@ namespace CapFrameX.ViewModel
             if (_applicationState.SelectedRecords.Count == 1)
             {
                 var recordInfo = _selectedRecordInfo;
-                _recordWriteQueue.Enqueue(() => _recordManager.UpdateCustomData(recordInfo,
-                    cpu, gpu, ram, mainboard, gameName, comment, resolution));
+                bool gameNameChanged = _customGameNameChanged;
+                _recordWriteQueue.Enqueue(() =>
+                {
+                    // For a record without a game name of its own the box shows the process list's
+                    // name; it is only written when it was edited.
+                    string storedGameName = gameNameChanged
+                        ? gameName
+                        : _recordManager.LoadData(recordInfo.FullPath)?.Info?.GameName ?? gameName;
+                    _recordManager.UpdateCustomData(recordInfo,
+                        cpu, gpu, ram, mainboard, storedGameName, comment, resolution);
+                });
             }
             else if (_applicationState.SelectedRecords.Count > 1)
             {

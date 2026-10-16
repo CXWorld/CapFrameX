@@ -202,8 +202,58 @@ namespace CapFrameX.Test.ViewModel
             Assert.AreEqual("both", ReadComment(second));
         }
 
-        private string WriteRecord(string name, string comment, string hash = null, string cpu = "CPU")
-            => RecordListContext.WriteRecord(_folder, name, comment, hash, cpu);
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("Game.exe")]
+        public void CommentEditOfARecordNamedAfterItsProcess_KeepsTheStoredGameName(string storedGameName)
+        {
+            // Regression: the edit wrote the name the list shows, taken from the process, into the record.
+            string path = WriteRecord("a.json", "before", gameName: storedGameName);
+            using var context = new RecordListContext(_folder);
+            var entry = context.Model.RecordInfoList.Single();
+            Assert.AreEqual("Game", entry.GameName);
+            context.SelectAndLoad(entry);
+
+            context.Model.CustomComment = "after";
+            context.Save();
+
+            var stored = ReadSession(path).Info;
+            Assert.AreEqual(storedGameName, stored.GameName);
+            Assert.AreEqual("after", stored.Comment);
+        }
+
+        [TestMethod]
+        public void EditedGameName_IsWritten()
+        {
+            string path = WriteRecord("a.json", "before", gameName: "Game.exe");
+            using var context = new RecordListContext(_folder);
+            context.SelectAndLoad(context.Model.RecordInfoList.Single());
+
+            context.Model.CustomGameName = "Renamed";
+            context.Save();
+
+            Assert.AreEqual("Renamed", ReadSession(path).Info.GameName);
+        }
+
+        [TestMethod]
+        public void CommentEditOfSeveralRecordsNamedAfterTheirProcess_KeepsTheStoredGameNames()
+        {
+            string first = WriteRecord("a.json", "a", gameName: "");
+            string second = WriteRecord("b.json", "b", hash: "hash-b", gameName: "Game.exe");
+            using var context = new RecordListContext(_folder);
+            context.SelectAndLoad(context.Model.RecordInfoList.OrderBy(entry => entry.FullPath).ToArray());
+
+            context.Model.CustomComment = "both";
+            context.Save();
+
+            Assert.AreEqual("", ReadSession(first).Info.GameName);
+            Assert.AreEqual("Game.exe", ReadSession(second).Info.GameName);
+            Assert.AreEqual("both", ReadComment(second));
+        }
+
+        private string WriteRecord(string name, string comment, string hash = null, string cpu = "CPU",
+            string gameName = "Game")
+            => RecordListContext.WriteRecord(_folder, name, comment, hash, cpu, gameName);
 
         private static CapFrameX.Data.Session.Contracts.ISession ReadSession(string path)
             => new RecordManager(new Mock<ILogger<RecordManager>>().Object,

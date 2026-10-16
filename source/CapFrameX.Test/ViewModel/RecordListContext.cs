@@ -94,9 +94,10 @@ namespace CapFrameX.Test.ViewModel
 
         /// <summary>A capture with its own hash and the given metadata.</summary>
         public static string WriteRecord(string folder, string name, string comment = "comment",
-            string hash = null, string cpu = "CPU")
+            string hash = null, string cpu = "CPU", string gameName = "Game")
         {
             var session = RecordFiles.SessionWith("Game", RecordFiles.Run());
+            session.Info.GameName = gameName;
             session.Hash = hash ?? "hash-" + name;
             session.Info.Processor = cpu;
             session.Info.GPU = "GPU";
