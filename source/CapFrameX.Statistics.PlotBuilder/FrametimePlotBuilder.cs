@@ -28,7 +28,10 @@ namespace CapFrameX.Statistics.PlotBuilder
             plotModel.Axes.Add(AxisDefinitions[EPlotAxis.YAXISFRAMETIMES]);
 
             var frametimepoints = session.GetFrametimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
-            var displaytimespoints = session.GetDisplayChangeTimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
+            // Only the display time graph and its moving average read these points.
+            var displaytimespoints = plotSettings.ShowDisplayTimes
+                ? session.GetDisplayChangeTimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod)
+                : null;
 
             IList<Point> GpuActiveTimePoints = new List<Point>();
             IList<Point> CpuActiveTimePoints = new List<Point>();
@@ -38,8 +41,6 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             if (plotSettings.ShowCpuActiveCharts)
                 CpuActiveTimePoints = session.GetCpuActiveTimePointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod);
-
-            var frametimes = session.GetFrametimeTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod); ;
 
             SetFrametimeChart(plotModel, frametimepoints, displaytimespoints, GpuActiveTimePoints, CpuActiveTimePoints, plotSettings);
 

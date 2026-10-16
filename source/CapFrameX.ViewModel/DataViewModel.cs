@@ -2044,12 +2044,11 @@ namespace CapFrameX.ViewModel
                     break;
                 case EChartYAxisSetting.IQR:
                     {
-                        double iqr = MathNet.Numerics.Statistics.Statistics
-                            .InterquartileRange(_localRecordDataServer?
-                            .GetFrametimePointTimeWindow().Select(pnt => pnt.Y));
-                        double median = MathNet.Numerics.Statistics.Statistics
-                            .Median(_localRecordDataServer?
-                            .GetFrametimePointTimeWindow().Select(pnt => pnt.Y));
+                        // One window per series serves both statistics.
+                        var frametimes = _localRecordDataServer
+                            .GetFrametimePointTimeWindow().Select(pnt => pnt.Y).ToArray();
+                        double iqr = MathNet.Numerics.Statistics.Statistics.InterquartileRange(frametimes);
+                        double median = MathNet.Numerics.Statistics.Statistics.Median(frametimes);
 
                         double gpuActiveIqr = double.MinValue;
                         double gpuActiveMedian = double.MinValue;
@@ -2058,22 +2057,18 @@ namespace CapFrameX.ViewModel
 
                         if (GetIsGpuActiveChartAvailable() && ShowGpuActiveChart)
                         {
-                            gpuActiveIqr = MathNet.Numerics.Statistics.Statistics
-                                .InterquartileRange(_localRecordDataServer?
-                                .GetGpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
-                            gpuActiveMedian = MathNet.Numerics.Statistics.Statistics
-                                .Median(_localRecordDataServer?
-                                .GetGpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
+                            var gpuActiveTimes = _localRecordDataServer
+                                .GetGpuActiveTimePointTimeWindow().Select(pnt => pnt.Y).ToArray();
+                            gpuActiveIqr = MathNet.Numerics.Statistics.Statistics.InterquartileRange(gpuActiveTimes);
+                            gpuActiveMedian = MathNet.Numerics.Statistics.Statistics.Median(gpuActiveTimes);
                         }
 
                         if (GetIsCpuActiveChartAvailable() && ShowCpuActiveChart)
                         {
-                            cpuActiveIqr = MathNet.Numerics.Statistics.Statistics
-                                .InterquartileRange(_localRecordDataServer?
-                                .GetCpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
-                            cpuActiveMedian = MathNet.Numerics.Statistics.Statistics
-                                .Median(_localRecordDataServer?
-                                .GetCpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
+                            var cpuActiveTimes = _localRecordDataServer
+                                .GetCpuActiveTimePointTimeWindow().Select(pnt => pnt.Y).ToArray();
+                            cpuActiveIqr = MathNet.Numerics.Statistics.Statistics.InterquartileRange(cpuActiveTimes);
+                            cpuActiveMedian = MathNet.Numerics.Statistics.Statistics.Median(cpuActiveTimes);
                         }
 
                         double maxMedian = Math.Max(Math.Max(median, gpuActiveMedian), cpuActiveMedian);
