@@ -181,38 +181,34 @@ jobs:
           nuget restore CapFrameX.sln
           nuget restore -SolutionDirectory "%GITHUB_WORKSPACE%" source\CapFrameX.CustomInstallerActions\CapFrameX.CustomInstallerActions.csproj
 
-      - name: Build CX
-        shell: cmd
-        run: |
-          msbuild source\CapFrameX\CapFrameX.csproj /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
-
+      # The native P/Invoke DLLs build before the application: CapFrameX.csproj stages them
+      # from the native projects' own x64\Release output next to CapFrameX.exe.
       - name: Build HWInfo
         shell: cmd
         run: |
-          msbuild source\CapFrameX.Hwinfo\CapFrameX.Hwinfo.vcxproj /p:SolutionDir="%GITHUB_WORKSPACE%\\" /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
+          msbuild source\CapFrameX.Hwinfo\CapFrameX.Hwinfo.vcxproj /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
 
       - name: Build IGCL
         shell: cmd
         run: |
-          msbuild source\CapFrameX.IGCL\CapFrameX.IGCL.vcxproj /p:SolutionDir="%GITHUB_WORKSPACE%\\" /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
+          msbuild source\CapFrameX.IGCL\CapFrameX.IGCL.vcxproj /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
 
       - name: Build ADLX
         shell: cmd
         run: |
-          msbuild source\CapFrameX.ADLX\CapFrameX.ADLX.vcxproj /p:SolutionDir="%GITHUB_WORKSPACE%\\" /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
+          msbuild source\CapFrameX.ADLX\CapFrameX.ADLX.vcxproj /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
 
-      - name: Stage native DLLs
+      - name: Build CX
         shell: cmd
         run: |
-          copy /y source\CapFrameX\bin\x64\Release\CapFrameX.Hwinfo.dll source\CapFrameX\bin\x64\Release\net10.0-windows\
-          copy /y source\CapFrameX\bin\x64\Release\CapFrameX.IGCL.dll source\CapFrameX\bin\x64\Release\net10.0-windows\
-          copy /y source\CapFrameX\bin\x64\Release\CapFrameX.ADLX.dll source\CapFrameX\bin\x64\Release\net10.0-windows\
+          msbuild source\CapFrameX\CapFrameX.csproj /p:Configuration=%CONFIGURATION% /p:Platform=%PLATFORM% /p:DeployOnBuild=true /p:VisualStudioVersion=%VS_VERSION%
 
       - name: Verify native runtime payloads
         shell: pwsh
         run: |
           $appOutput = Join-Path $env:GITHUB_WORKSPACE "source\CapFrameX\bin\x64\Release\net10.0-windows"
           $requiredPaths = @(
+            "CapFrameX.Hwinfo.dll", "CapFrameX.IGCL.dll", "CapFrameX.ADLX.dll",
             "cfx_osd_core.dll",
             "hook\cfx_osd_hook.dll", "hook\x86\cfx_osd_hook.dll", "hook\MinHook.LICENSE.txt",
             "vulkan\cfx_osd_vklayer.dll", "vulkan\cfx_osd_vklayer_v1.json",
