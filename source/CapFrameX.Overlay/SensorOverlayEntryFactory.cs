@@ -46,7 +46,7 @@ namespace CapFrameX.Overlay
                     formatString = "{0,5:F1}";
                     break;
                 case SensorType.Voltage:
-                    formatString = "{0,5:F2}";
+                    formatString = "{0,5:F3}";
                     break;
                 case SensorType.Clock:
                     formatString = "{0,5:F0}";
