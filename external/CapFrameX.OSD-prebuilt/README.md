@@ -12,6 +12,40 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Overlay fonts (2026-10-17)
+
+All seven bundled DLLs were rebuilt from OSD commit `38a42e137baaeb25dc5275cf825f286c3fb81ab0`, which
+adds fonts to `bf2e0bc`. The five native DLLs were clean-built with VS 2026/v145 in `RelWithDebInfo`;
+Interop and Controls were rebuilt in `Release|x64` for .NET 10 (SDK 10.0.401). Bars, charts, gauges
+and linked classic blocks take a `family`, every other text widget already did, and all of them fall
+back to `theme.fontFamily`. The new `cfx_osd_set_font_family` sets the classic layout's font; both
+hooks and both Vulkan layers read it from metrics header bit6 plus a 128-byte UTF-8 field at
+`0x18000` and log `classic font -> ...`. Interop adds `OsdHost.SetFontFamily`. Controls writes the
+design font (`OsdDesignDocument.FontFamily`) and a font per text tile; a Controls build without this
+change rejects designs whose theme font is not Segoe UI. `Editor_099` changed and
+`Editor_DesignFont`/`Editor_DesignFontHint` were added in all five languages; the en/ko copies in
+`Localization/` are updated. Both Vulkan manifests and the template catalogs are unchanged.
+
+Verification: 15 of 16 core CTests pass, including the font checks in `design` (363 checks);
+`chart_gpu_raster` fails on the hardware adapter as documented below. All 33 hook CTests (including
+the new `metrics_shm`) and all 10 Vulkan CTests pass on x64 and x86. A CapFrameX build with
+`CfxOsdFromSource=false` stages exactly these DLLs (SHA-256 below) into the test output and
+passes all 2405 runnable unit tests (6 skipped). With these native builds, CapFrameX.Test's
+`verify-osd-fonts.ps1` passes on D3D11, D3D12 and Vulkan, x64 and x86.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `B4A90985675576FC966C9A0ED37C115292BEB96B6C7EDCF8EE54425420194856` |
+| native\cfx_osd_hook.dll | `097490EC33DE7ED0AD5AB24B1B387BDA2481A84AFF2513C463444434F4433572` |
+| native\x86\cfx_osd_hook.dll | `EB709C1E0CC10A2A615C2C6CEFAC34248F093F733EB7DFE4578D6E7D3706B653` |
+| native\vk\cfx_osd_vklayer.dll | `35E7A75795FF90D875005F99FA2EA929362EDF494068EF66494E51DC6E80DCB8` |
+| native\vk\x86\cfx_osd_vklayer.dll | `4CC3FA5FF93354161AB367E2DD5F8F6DD11B9D99363691C5B5A0D0141DDF38D5` |
+| net10.0-windows\CapFrameX.OSD.Interop.dll | `3028F70E51F40C8C3658F6DFC82C5E8A24FEBA952CC52CCC2BDE15E5A5668590` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `581BD860FA4C9E53489F96E9308F5959C66E2F25AB17BAB701140855BA8186AB` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Resolution-relative sizing (2026-10-14)
 
 The five native DLLs were clean-built with VS 2026/v145 in `RelWithDebInfo` and Interop in
