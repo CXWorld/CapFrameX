@@ -18,8 +18,8 @@
 
   <ItemGroup>
     <!-- WMI moved out of the platform on .NET; GenericMonitoringArea queries Win32_Processor.
-         Version kept in step with LibreHardwareMonitorLib to avoid a downgrade in consumers. -->
-    <PackageReference Include="System.Management" Version="10.0.11" />
+         Version kept in step with source/Directory.Packages.props to avoid a downgrade in consumers. -->
+    <PackageReference Include="System.Management" Version="10.0.12" />
   </ItemGroup>
 
   <ItemGroup>
