@@ -12,6 +12,35 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Rebuild diagnostics only with extended logging (2026-10-17)
+
+The five native DLLs were clean-built with VS 2026/v145 in `RelWithDebInfo` from OSD commit
+`d102d9b4e2b985162ded31728ab97cbdc92db3f0`, which follows `38a42e1` with logging only. The in-game
+producer (both hooks, both Vulkan layers) logs every scene rebuild as `[diag] scene rebuild #N
+(producer)` with its duration, panel size and layout scale, and the hook-free line gains the
+scale. Without extended logging neither path nor `PopulateClassicRows` formats a line, reads the
+clock or counts a rebuild; the two `[scene] rebuild` / `[scene] built` lines that used to be written
+on every classic rebuild now need the switch as well. Interop, Controls, both Vulkan manifests and
+the localization files are unchanged.
+
+Verification: 15 of 16 core CTests pass (`design`: 363 checks); `chart_gpu_raster` fails on the
+hardware adapter as documented below. All 33 hook CTests and all 10 Vulkan CTests pass on x64 and
+x86. A CapFrameX build with `CfxOsdFromSource=false` stages exactly these DLLs into the test output
+and passes all 2405 runnable unit tests (6 skipped). In CapFrameX.Test's font suite the D3D11, D3D12 and Vulkan targets log one
+producer rebuild per change with `CFX_OSD_VERBOSE_LOG=1`; without it the core log keeps only its
+four start-up lines.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `778F25196EB465E80886A2FAD04DAE57CD948CB0232D9D18686845EE8DF400DC` |
+| native\cfx_osd_hook.dll | `F4E604DE00ECAE05F1CA04AEC7B4534F56DF6F7AF081060F24F42361FCCCF4FC` |
+| native\x86\cfx_osd_hook.dll | `7F394AB6FF58C3BDDD512590781882A8CA959984288C319276EC1427DEC90A4E` |
+| native\vk\cfx_osd_vklayer.dll | `0CC42D682B518F0180721606D0E068717F050FC2393C6C49D2C44EFBBE1707AC` |
+| native\vk\x86\cfx_osd_vklayer.dll | `AAF339ABFE20C77D320CD54F87CC31449F09478B367BBB52EA026EF3B578C59A` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Overlay fonts (2026-10-17)
 
 All seven bundled DLLs were rebuilt from OSD commit `38a42e137baaeb25dc5275cf825f286c3fb81ab0`, which
