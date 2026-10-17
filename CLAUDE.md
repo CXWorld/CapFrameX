@@ -21,10 +21,23 @@ msbuild source\CapFrameX\CapFrameX.csproj /p:Configuration=Release /p:Platform=x
 
 ### Build Native C++ Components (required for full functionality)
 ```bash
-msbuild source\CapFrameX.Hwinfo\CapFrameX.Hwinfo.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
-msbuild source\CapFrameX.IGCL\CapFrameX.IGCL.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
-msbuild source\CapFrameX.ADLX\CapFrameX.ADLX.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
+msbuild source\CapFrameX.Hwinfo\CapFrameX.Hwinfo.vcxproj /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
+msbuild source\CapFrameX.IGCL\CapFrameX.IGCL.vcxproj /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
+msbuild source\CapFrameX.ADLX\CapFrameX.ADLX.vcxproj /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
 ```
+Build them before the application. They are reached through P/Invoke only, so they are solution
+build dependencies, not project references, and they build into their own
+`source\<project>\x64\<Configuration>\`. The `StageCapFrameXNativeRuntime` target in
+`CapFrameX.csproj` copies the three DLLs from there next to `CapFrameX.exe` and logs every DLL it
+cannot find; a missing one does not fail the build, the sensor groups just fall back silently.
+`CapFrameX.RTSSInterface` (C++/CLI) is an ordinary project reference and needs no staging.
+
+### Output layout
+Every project builds into its own `bin\x64\<Configuration>\<tfm>\` (`obj\` beside it); the native
+projects into `x64\<Configuration>\`. There is no shared output folder: `source\bin` and the flat
+`source\CapFrameX\bin\x64\<Configuration>\` were the former LibreHardwareMonitorLib and .NET
+Framework layouts. Folders for other target frameworks (`net9.0`, `netstandard2.0`, `net472`, ...)
+are leftovers of earlier builds and can be deleted.
 
 ### Build Installer
 ```bash
