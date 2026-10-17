@@ -209,6 +209,31 @@ namespace CapFrameX.Test.Mcp
         }
 
         [TestMethod]
+        public void SetOsdOptions_FontFamilySetsTheClassicFontAndAnEmptyNameRestoresTheDefault()
+        {
+            var config = CreateConfiguration();
+            config.Object.OsdFontFamily = "Segoe UI";
+            var tool = CreateOsdOptionsTool(config);
+
+            var set = tool.SetOsdOptions(fontFamily: "  Consolas ");
+            Assert.AreEqual("Consolas", config.Object.OsdFontFamily);
+            Assert.AreEqual("Consolas", set.Options.FontFamily);
+            CollectionAssert.Contains(set.ChangedProperties, nameof(IAppConfiguration.OsdFontFamily));
+
+            Assert.AreEqual(0, tool.SetOsdOptions(fontFamily: "Consolas").ChangedCount);
+
+            var restored = tool.SetOsdOptions(fontFamily: string.Empty);
+            Assert.AreEqual("Segoe UI", config.Object.OsdFontFamily);
+            Assert.AreEqual(1, restored.ChangedCount);
+
+            Assert.ThrowsExactly<ArgumentException>(() => tool.SetOsdOptions(fontFamily: new string('A', 101)));
+            Assert.ThrowsExactly<ArgumentException>(() => tool.SetOsdOptions(fontFamily: new string('é', 64)),
+                "The name must fit the 127 UTF-8 bytes the in-game renderers receive.");
+            Assert.ThrowsExactly<ArgumentException>(() => tool.SetOsdOptions(fontFamily: "Segoe\nUI"));
+            Assert.AreEqual("Segoe UI", config.Object.OsdFontFamily);
+        }
+
+        [TestMethod]
         public void SetOsdOptions_InvalidInputDoesNotPartiallyApply()
         {
             var config = CreateConfiguration();

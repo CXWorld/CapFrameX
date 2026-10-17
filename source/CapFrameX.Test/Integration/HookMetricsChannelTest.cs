@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using CapFrameX.OSD.Integration;
 using CapFrameX.OSD.Interop;
@@ -21,7 +22,7 @@ namespace CapFrameX.Test.Integration
     {
         // Mirrors of the private layout constants (kept local so a change to either side has to
         // be a deliberate edit here as well).
-        private const int OffMagic = 0, OffEntryCount = 12;
+        private const int OffMagic = 0, OffEntryCount = 12, OffFlags = 20;
         private const int HeaderSize = 32;
         private const int RecordSize = 380; // v5: v4's 376 bytes + the value display mode
         private const int RId = 0;
@@ -156,6 +157,79 @@ namespace CapFrameX.Test.Integration
                 }
             }
         }
+
+        [TestMethod]
+        public void Publish_FontFamily_TravelsBehindTheRecordsWithBitSix()
+        {
+            var entries = new List<OsdEntry> { new OsdEntry { Identifier = "Framerate", IsNumeric = true } };
+            const uint zoom = HookMetricsChannel.FlagZoom | (150u << HookMetricsChannel.ZoomShift);
+
+            using (var channel = HookMetricsChannel.Create(targetPid: 4246, mapName: TestMapName))
+            {
+                channel.Publish(entries, zoom, targetPid: 4246, fontFamily: " Consolas ");
+                IntPtr view = OpenReadOnlyView();
+                Assert.AreNotEqual(IntPtr.Zero, view, "The isolated metrics section must be readable.");
+                try
+                {
+                    Assert.AreEqual(zoom | HookMetricsChannel.FlagFontFamily, (uint)Marshal.ReadInt32(view, OffFlags));
+                    Assert.AreEqual("Consolas", ReadFontFamily(view));
+                    Assert.AreEqual("Framerate", ReadIdentifier(view, 0), "The records stay where they were.");
+                    Assert.AreEqual(5, Marshal.ReadInt32(view, 4), "The font needs no new version.");
+
+                    channel.Publish(entries, zoom | HookMetricsChannel.FlagFontFamily, targetPid: 4246, fontFamily: null);
+                    Assert.AreEqual(zoom, (uint)Marshal.ReadInt32(view, OffFlags),
+                        "Without a name the bit must be clear, whatever the caller passed.");
+                    Assert.AreEqual(string.Empty, ReadFontFamily(view), "The previous name must not linger.");
+                }
+                finally
+                {
+                    UnmapViewOfFile(view);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void Publish_AtCapacityWithAFont_KeepsTheLastRecordAndTheFontApart()
+        {
+            // The font field lies behind the largest record area: a full entry set and a font of
+            // the maximum length must not overwrite each other, and both must fit the mapping.
+            var entries = new List<OsdEntry>();
+            for (int i = 0; i < HookMetricsChannel.MaxEntries; i++)
+                entries.Add(new OsdEntry { Identifier = new string('i', 63), IsNumeric = true });
+            string font = new string('F', HookMetricsChannel.SzFontFamily + 10);
+
+            using (var channel = HookMetricsChannel.Create(targetPid: 4247, mapName: TestMapName))
+            {
+                channel.Publish(entries, 0u, targetPid: 4247, fontFamily: font);
+                IntPtr view = OpenReadOnlyView();
+                Assert.AreNotEqual(IntPtr.Zero, view, "The isolated metrics section must be readable.");
+                try
+                {
+                    Assert.AreEqual(new string('i', 63), ReadIdentifier(view, HookMetricsChannel.MaxEntries - 1));
+                    Assert.AreEqual(font.Substring(0, HookMetricsChannel.SzFontFamily - 1), ReadFontFamily(view),
+                        "The name stops one byte short of the field, which keeps its terminator.");
+                }
+                finally
+                {
+                    UnmapViewOfFile(view);
+                }
+            }
+        }
+
+        [TestMethod]
+        public void TruncateUtf8_NeverSplitsACharacter()
+        {
+            Assert.AreEqual("Consolas", HookMetricsChannel.TruncateUtf8("Consolas", 127));
+            string kanji = new string('游', 50); // three UTF-8 bytes each
+            string cut = HookMetricsChannel.TruncateUtf8(kanji, 127);
+            Assert.AreEqual(42, cut.Length);
+            Assert.IsTrue(System.Text.Encoding.UTF8.GetByteCount(cut) <= 127);
+            string emoji = string.Concat(Enumerable.Repeat("\U0001F600", 40)); // surrogate pairs, four bytes each
+            Assert.AreEqual(31 * 2, HookMetricsChannel.TruncateUtf8(emoji, 127).Length);
+        }
+
+        private static string ReadFontFamily(IntPtr view)
+            => Marshal.PtrToStringUTF8(IntPtr.Add(view, HookMetricsChannel.OffFontFamily));
 
         private static string ReadIdentifier(IntPtr view, int index)
         {

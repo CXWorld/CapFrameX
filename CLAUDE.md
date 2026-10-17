@@ -219,6 +219,20 @@ measure the height themselves; `OsdOverlayBridge` passes `OsdHost.DesignReferenc
 `OsdHost.SetReferenceHeight`, which survives a renderer restart. The pixel orbit offset is part of
 the margins, so its steps scale too. RTSS is not affected. Details: the OSD repo's CLAUDE.md.
 
+### Overlay fonts
+
+Two sources, RTSS untouched. A tile design carries its own fonts: the design font
+(`OsdDesignDocument.FontFamily`, the editor's Layout tab, `fontFamily` in the MCP tile document)
+and a `family` on every tile that draws text (metric, text, bar, gauge, chart, group, classicRows).
+The classic layout takes `IAppConfiguration.OsdFontFamily` ("Overlay font", Overlay tab, default
+Segoe UI, MCP `fontFamily` option); it never overrides a design. `OsdOverlayBridge` forwards it
+through `OsdHost.SetFontFamily` (retained across renderer restarts); `HookMetricsPublisher` hands it
+to `HookMetricsChannel.Publish`, which sets header bit6 (`FlagFontFamily`) and writes the name as
+UTF-8 into the 128-byte field at `OffFontFamily` (0x18000), behind the records, so the version stays
+5 and older hooks ignore it. `TruncateUtf8` keeps the name on a character boundary. The prebuilt
+Controls must contain this change: a Controls build without it rejects designs whose theme font is
+not Segoe UI. Details: the OSD repo's CLAUDE.md.
+
 ### Hook-free stall diagnostics
 
 Chart pauses/hitches in the hook-free overlay have three unrelated possible causes — the render

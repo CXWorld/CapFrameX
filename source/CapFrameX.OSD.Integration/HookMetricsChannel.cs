@@ -58,6 +58,9 @@ namespace CapFrameX.OSD.Integration
         // bit5: scale the panel and its margins with the back buffer's height over 1080 px
         // (CFX_METRICS_FLAG_RESOLUTION_SCALE). Old hooks ignore it and keep fixed pixel sizes.
         internal const uint FlagResolutionScale = 32u;
+        // bit6: the classic layout's font family follows the records at OffFontFamily
+        // (CFX_METRICS_FLAG_FONT_FAMILY). Publish sets it with the name; old hooks ignore both.
+        internal const uint FlagFontFamily = 64u;
         internal const int BackgroundAlphaShift = 8;
         internal const int ZoomShift = 16;
         internal const int ReplayBufferShift = 24;
@@ -80,6 +83,9 @@ namespace CapFrameX.OSD.Integration
                           RValueDisplayMode = 376;
         internal const int RecordSize = 380;
         private const int MapSize = 131072; // > HeaderSize + MaxEntries*RecordSize (97312)
+        // Behind the largest record area, so neither the record layout nor the version changes:
+        // UTF-8, NUL-terminated within SzFontFamily (CFX_METRICS_FONT_FAMILY_OFFSET / _BYTES).
+        internal const int OffFontFamily = 0x18000, SzFontFamily = 128;
 
         private const string Sddl = "D:(A;;GA;;;WD)S:(ML;;NW;;;LW)";
         private const uint SDDL_REVISION_1 = 1;
@@ -197,12 +203,17 @@ namespace CapFrameX.OSD.Integration
         /// <summary>
         /// Seqlock-publish the current entry set (truncated to <see cref="MaxEntries"/>).
         /// <paramref name="flags"/> is stamped into the header (e.g. <see cref="FlagPresentMonGraph"/>)
-        /// so the hook knows which graph source to use.
+        /// so the hook knows which graph source to use. A non-empty <paramref name="fontFamily"/>
+        /// travels in the same snapshot and sets <see cref="FlagFontFamily"/>; without one the hook
+        /// keeps the classic layout on its default font.
         /// </summary>
-        public void Publish(System.Collections.Generic.IReadOnlyList<OsdEntry> entries, uint flags, int targetPid)
+        public void Publish(System.Collections.Generic.IReadOnlyList<OsdEntry> entries, uint flags, int targetPid,
+            string fontFamily = null)
         {
             if (entries == null) return;
             targetPid = NormalizePid(targetPid);
+            flags &= ~FlagFontFamily;
+            if (!string.IsNullOrWhiteSpace(fontFamily)) flags |= FlagFontFamily;
             lock (_gate)
             {
                 if (_view == IntPtr.Zero) return;
@@ -260,6 +271,8 @@ namespace CapFrameX.OSD.Integration
                     Marshal.WriteInt32(rec, RValueScale, e.ValueScalePercent);
                     Marshal.WriteInt32(rec, RValueDisplayMode, (int)e.ValueDisplayMode);
                 }
+                WriteStr(_view, OffFontFamily, SzFontFamily,
+                    (flags & FlagFontFamily) != 0 ? TruncateUtf8(fontFamily.Trim(), SzFontFamily - 1) : null);
 
                 Thread.MemoryBarrier();
                 _seq++; // even => consistent snapshot ready
@@ -313,6 +326,22 @@ namespace CapFrameX.OSD.Integration
                 Array.Copy(bytes, buf, Math.Min(bytes.Length, size - 1));
             }
             Marshal.Copy(buf, 0, IntPtr.Add(recBase, off), size);
+        }
+
+        // WriteStr cuts at a byte boundary; a font name must not end in half a UTF-8 sequence,
+        // or the hook would ask DirectWrite for a family with a replacement character.
+        internal static string TruncateUtf8(string s, int maxBytes)
+        {
+            if (Encoding.UTF8.GetByteCount(s) <= maxBytes) return s;
+            var builder = new StringBuilder();
+            int bytes = 0;
+            foreach (var rune in s.EnumerateRunes())
+            {
+                bytes += rune.Utf8SequenceLength;
+                if (bytes > maxBytes) break;
+                builder.Append(rune.ToString());
+            }
+            return builder.ToString();
         }
 
         private static void WriteDouble(IntPtr recBase, int off, double v)

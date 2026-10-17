@@ -1217,6 +1217,8 @@
     "OverlayView_OpenTheFolderContainingThe": "Open the folder containing the OSD log files",
     "OverlayView_OverlayActive": "Overlay active",
     "OverlayView_OverlayCoordinates": "Overlay coordinates",
+    "OverlayView_OverlayFont": "Overlay font",
+    "OverlayView_OverlayFontDescription": "Font of the rows and graphs in the CapFrameX renderers (hook-free, in-game, Vulkan). Tile designs keep the fonts set in the overlay editor; RTSS uses its own font settings.",
     "OverlayView_OverlayHotkey": "Overlay hotkey",
     "OverlayView_OverlayItems": "Row overlay",
     "OverlayView_OverlayItems2": "Row overlay items",

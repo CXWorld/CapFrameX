@@ -74,6 +74,9 @@ Document fields (all optional except tiles):
   gridSize.
 - accent: default color of text tiles, icons, charts, bars and gauges. tileColor: default tile
   background. textColor: default color of values and labels.
+- fontFamily: font of every text in the design (default Segoe UI), an installed font family such as
+  Bahnschrift or Consolas. A tile's own family overrides it. Fonts that are not installed fall back
+  to a system font.
 - pixelShift: { ""intervalSeconds"": 10..3600, ""radius"": 1..32 } moves the overlay by one pixel per
   interval (OLED burn-in protection). Omit or null for none.
 - tiles: the tiles, at most {MAXTILES} including nested ones.
@@ -98,13 +101,16 @@ by all kinds:
   the document's padding and tileColor.
 - color: the widget's main color (metric: label, value and unit; bar, gauge and chart: the accent;
   text and icon: the glyphs). Omitted: theme colors.
+- family: the font of everything a metric, text, bar, gauge, chart, group or classicRows tile writes
+  (labels, values, units, titles, axis labels). Omitted: the document's fontFamily. On an icon it
+  names the icon font instead.
 - locked: editor-only, prevents moving the tile with the mouse.
 
 Kinds:
 - metric: one reading. key (a source key, see Keys), unit, digits (0..3 decimals), valueSize (10..72,
   value font size), labelPosition (top, left, bottom, none), labelSize and unitSize (6..72),
-  valueColor, labelColor, unitColor, align (left, center, right), family (font family, default
-  Segoe UI), valueLines (1..16, for multi-line text readings), showValue.
+  valueColor, labelColor, unitColor, align (left, center, right), valueLines (1..16, for
+  multi-line text readings), showValue.
   valueScale multiplies the value (0.001 turns MB into GB; then set unit). valueFormat ""duration""
   shows seconds as a clock (h:mm:ss) instead of ""number"".
   A second reading in the same tile: secondaryKey, secondaryUnit, secondaryScale,
@@ -116,7 +122,7 @@ Kinds:
   displaytimes in ms). label is the title, unit the axis unit. showBackground, showBorder,
   showLabels (axis labels), currentValue (badge with the latest value). In a grid, height 24..240.
 - text: static text. text (up to 500 characters, ""\n"" for a line break), valueSize (font size),
-  color (default accent), align (left, center, right), family.
+  color (default accent), align (left, center, right).
 - icon: one glyph. glyph (1..16 characters, e.g. """" from Segoe MDL2 Assets or Segoe Fluent
   Icons), family (default Segoe MDL2 Assets), valueSize (glyph size), color.
 - image: PNG or JPEG. dataUri (""data:image/png;base64,..."", at most 512 KB and 2048 x 2048 px),

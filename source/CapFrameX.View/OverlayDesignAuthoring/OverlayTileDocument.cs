@@ -32,7 +32,7 @@ namespace CapFrameX.View.OverlayDesignAuthoring
         private static readonly string[] DocumentFields =
         {
             "name", "layout", "width", "canvasHeight", "columns", "gap", "padding", "radius", "scale",
-            "gridSize", "showGrid", "snapToGrid", "accent", "tileColor", "textColor", "pixelShift", "tiles"
+            "gridSize", "showGrid", "snapToGrid", "accent", "tileColor", "textColor", "fontFamily", "pixelShift", "tiles"
         };
         private static readonly Lazy<IReadOnlyDictionary<string, string>> TileFields =
             new Lazy<IReadOnlyDictionary<string, string>>(() => FieldsOf(typeof(OsdDesignTile)));
@@ -66,6 +66,7 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             result["accent"] = document.Accent;
             result["tileColor"] = document.TileColor;
             result["textColor"] = document.TextColor;
+            result["fontFamily"] = document.FontFamily;
             if (document.PixelShiftEnabled)
                 result["pixelShift"] = new JObject
                 {
@@ -127,6 +128,7 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             document.Accent = ReadString(json, "accent", "document") ?? document.Accent;
             document.TileColor = ReadString(json, "tileColor", "document") ?? document.TileColor;
             document.TextColor = ReadString(json, "textColor", "document") ?? document.TextColor;
+            document.FontFamily = ReadString(json, "fontFamily", "document") ?? document.FontFamily;
             if (json["pixelShift"] is JObject pixelShift)
             {
                 CheckFields(pixelShift, new[] { "intervalSeconds", "radius" }, "The document field 'pixelShift'");
@@ -223,7 +225,7 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             Radius = document.Radius, Scale = document.Scale, IsCanvas = document.IsCanvas, CanvasHeight = document.CanvasHeight,
             GridSize = document.GridSize, ShowGrid = document.ShowGrid, SnapToGrid = document.SnapToGrid,
             PixelShiftEnabled = document.PixelShiftEnabled, PixelShiftInterval = document.PixelShiftInterval,
-            PixelShiftRadius = document.PixelShiftRadius
+            PixelShiftRadius = document.PixelShiftRadius, FontFamily = document.FontFamily
         };
 
         /// <summary>Resolves a tile path such as "2" or "2/0" (container 2, its first child).</summary>
@@ -710,6 +712,8 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             Range(document.Scale, .5, 2, "scale");
             Range(document.GridSize, 1, 128, "gridSize");
             Range(document.CanvasHeight, 64, 4096, "canvasHeight");
+            if (document.FontFamily.Length > OsdDesignDocument.MaximumFontFamilyLength)
+                throw Error($"The document field 'fontFamily' holds at most {OsdDesignDocument.MaximumFontFamilyLength} characters.");
             if (document.PixelShiftEnabled)
             {
                 Range(document.PixelShiftInterval, 10, 3600, "pixelShift.intervalSeconds");

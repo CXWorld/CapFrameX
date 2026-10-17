@@ -1216,6 +1216,8 @@
     "OverlayView_OpenTheFolderContainingThe": "Abre la carpeta que contiene los archivos de log del OSD",
     "OverlayView_OverlayActive": "Overlay activo",
     "OverlayView_OverlayCoordinates": "Coordenadas del overlay",
+    "OverlayView_OverlayFont": "Fuente del overlay",
+    "OverlayView_OverlayFontDescription": "Fuente de las filas y gráficos en los renderizadores de CapFrameX (sin hook, en el juego, Vulkan). Los diseños de mosaicos conservan las fuentes del editor de overlay; RTSS usa su propia configuración de fuente.",
     "OverlayView_OverlayHotkey": "Atajo del overlay",
     "OverlayView_OverlayItems": "Overlay de filas",
     "OverlayView_OverlayItems2": "Elementos del overlay de filas",

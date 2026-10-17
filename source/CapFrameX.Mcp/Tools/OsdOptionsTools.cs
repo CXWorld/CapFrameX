@@ -1,3 +1,4 @@
+using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
@@ -9,6 +10,7 @@ using Serilog;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace CapFrameX.Mcp.Tools
 {
@@ -67,6 +69,8 @@ namespace CapFrameX.Mcp.Tools
             [Description("Vertical distance from the anchor in pixels, 0..2000.")] int? marginY = null,
             [Description("CapFrameX renderer size in percent, 50..200.")] int? zoom = null,
             [Description("Scale the CapFrameX renderer and its margins with the game's height relative to 1080 px, on top of zoom (the hook-free renderer follows its monitor).")] bool? scaleWithResolution = null,
+            [Description("Font family of the classic rows and graphs in the CapFrameX renderers, for example Consolas; an empty string restores Segoe UI. " +
+                "Tile designs keep their own fonts and RTSS is unaffected. A font that is not installed falls back to a system font.")] string fontFamily = null,
             [Description("OLED pixel orbit: move the CapFrameX renderer by one pixel per interval for every design. A design can request its own orbit regardless.")] bool? pixelOrbitEnabled = null,
             [Description("Seconds between two pixel orbit steps, 10..3600.")] int? pixelOrbitIntervalSeconds = null,
             [Description("Largest pixel orbit offset from the configured margins in pixels, 1..32.")] int? pixelOrbitRadius = null,
@@ -81,7 +85,7 @@ namespace CapFrameX.Mcp.Tools
             if (!HasAnyUpdate(renderer, isOverlayActive, autoDisableOverlay, showSystemTimeSeconds,
                 hideOverlay, hookOverlayUsePresentMonFrametimes, replayBufferSizeMs, hookFreeRefreshRate,
                 osdCustomPosition, osdPositionX,
-                osdPositionY, backgroundOpacity, anchor, marginX, marginY, zoom, scaleWithResolution,
+                osdPositionY, backgroundOpacity, anchor, marginX, marginY, zoom, scaleWithResolution, fontFamily,
                 pixelOrbitEnabled, pixelOrbitIntervalSeconds, pixelOrbitRadius,
                 useValueSmoothing, overlayHotkey, overlayConfigHotkey, overlayPositionHotkey, resetMetricsHotkey,
                 refreshPeriodMs, metricIntervalSeconds))
@@ -97,6 +101,7 @@ namespace CapFrameX.Mcp.Tools
             ValidateRange(marginX, 0, 2000, nameof(marginX));
             ValidateRange(marginY, 0, 2000, nameof(marginY));
             ValidateRange(zoom, 50, 200, nameof(zoom));
+            ValidateFontFamily(fontFamily, nameof(fontFamily));
             ValidateRange(pixelOrbitIntervalSeconds, OsdPixelOrbit.MinimumIntervalSeconds,
                 OsdPixelOrbit.MaximumIntervalSeconds, nameof(pixelOrbitIntervalSeconds));
             ValidateRange(pixelOrbitRadius, OsdPixelOrbit.MinimumRadius, OsdPixelOrbit.MaximumRadius,
@@ -174,6 +179,9 @@ namespace CapFrameX.Mcp.Tools
                 () => _config.OsdZoom, value => _config.OsdZoom = value, changed);
             ApplyIfChanged(nameof(IAppConfiguration.OsdScaleWithResolution), scaleWithResolution,
                 () => _config.OsdScaleWithResolution, value => _config.OsdScaleWithResolution = value, changed);
+            ApplyIfChanged(nameof(IAppConfiguration.OsdFontFamily),
+                fontFamily == null ? null : string.IsNullOrWhiteSpace(fontFamily) ? CapFrameXConfiguration.DefaultOsdFontFamily : fontFamily.Trim(),
+                () => _config.OsdFontFamily, value => _config.OsdFontFamily = value, changed);
             ApplyIfChanged(nameof(IAppConfiguration.OsdPixelOrbitEnabled), pixelOrbitEnabled,
                 () => _config.OsdPixelOrbitEnabled, value => _config.OsdPixelOrbitEnabled = value, changed);
             ApplyIfChanged(nameof(IAppConfiguration.OsdPixelOrbitInterval), pixelOrbitIntervalSeconds,
@@ -254,6 +262,7 @@ namespace CapFrameX.Mcp.Tools
                 MarginY = _config.OsdMarginY,
                 Zoom = _config.OsdZoom,
                 ScaleWithResolution = _config.OsdScaleWithResolution,
+                FontFamily = _config.OsdFontFamily,
                 PixelOrbitEnabled = _config.OsdPixelOrbitEnabled,
                 PixelOrbitIntervalSeconds = _config.OsdPixelOrbitInterval,
                 PixelOrbitRadius = _config.OsdPixelOrbitRadius,
@@ -369,6 +378,17 @@ namespace CapFrameX.Mcp.Tools
         {
             if (value.HasValue && !Enum.IsDefined(typeof(T), value.Value))
                 throw new ArgumentOutOfRangeException(parameterName, value.Value, "Unknown enum value.");
+        }
+
+        // The in-game renderers receive the name in a 128-byte UTF-8 field of the metrics channel.
+        private static void ValidateFontFamily(string value, string parameterName)
+        {
+            if (value == null) return;
+            if (value.Trim().Length > 100 || System.Text.Encoding.UTF8.GetByteCount(value.Trim()) > 127 ||
+                value.Any(char.IsControl))
+                throw new ArgumentException(
+                    "Font family must be at most 100 characters (127 UTF-8 bytes) without control characters.",
+                    parameterName);
         }
 
         private static void ValidateHotkey(string value, string parameterName)

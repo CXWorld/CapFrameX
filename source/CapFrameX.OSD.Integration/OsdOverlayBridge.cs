@@ -43,6 +43,7 @@ namespace CapFrameX.OSD.Integration
         private readonly IDisposable _backgroundOpacitySub;
         private readonly IDisposable _zoomSub;
         private readonly IDisposable _resolutionScalingSub;
+        private readonly IDisposable _fontFamilySub;
         private readonly OverlayDesignRuntimePublisher _designRuntime;
         private readonly IDisposable _designSub;
         private readonly object _designGate = new object();
@@ -143,6 +144,8 @@ namespace CapFrameX.OSD.Integration
             _osd.SetHookFreeRefreshRate(appConfiguration.HookFreeRefreshRate);
             // Retained by OsdHost while stopped, so unlike the zoom it needs no retry on data ticks.
             _osd.SetReferenceHeight(ReferenceHeight(appConfiguration.OsdScaleWithResolution));
+            // Retained the same way; only the classic layout uses it, designs keep their fonts.
+            _osd.SetFontFamily(appConfiguration.OsdFontFamily);
 
             // FrameDataStream contains rows for every ETW process. Capture the selected game's PID
             // before activating the feed so foreign desktop/process rows cannot alter its graph
@@ -187,6 +190,9 @@ namespace CapFrameX.OSD.Integration
             _resolutionScalingSub = appConfiguration.OnValueChanged
                 .Where(x => x.key == nameof(IAppConfiguration.OsdScaleWithResolution))
                 .Subscribe(x => _osd.SetReferenceHeight(ReferenceHeight((bool)x.value)));
+            _fontFamilySub = appConfiguration.OnValueChanged
+                .Where(x => x.key == nameof(IAppConfiguration.OsdFontFamily))
+                .Subscribe(x => _osd.SetFontFamily(x.value as string));
             if (_designRuntime != null)
                 _designSub = _designRuntime.Snapshots.Subscribe(snapshot =>
                 {
@@ -611,6 +617,7 @@ namespace CapFrameX.OSD.Integration
             _backgroundOpacitySub?.Dispose();
             _zoomSub?.Dispose();
             _resolutionScalingSub?.Dispose();
+            _fontFamilySub?.Dispose();
             _targetPidSub?.Dispose();
             _processCountSub?.Dispose();
             lock (_designGate) _osd?.Dispose();

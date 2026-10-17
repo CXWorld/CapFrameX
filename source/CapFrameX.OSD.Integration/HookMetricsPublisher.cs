@@ -242,7 +242,8 @@ namespace CapFrameX.OSD.Integration
                         _overlayService.RunHistory,
                         _overlayService.RunHistoryOutlierFlags,
                         _overlayService.RunHistoryAggregation);
-                    _channel.Publish(list, BuildHeaderFlags(_appConfiguration), targetPid);
+                    _channel.Publish(list, BuildHeaderFlags(_appConfiguration), targetPid,
+                        _appConfiguration.OsdFontFamily);
                     // Publishes only on change; the renderers re-place the panel on every write.
                     PublishPlacement();
                 }

@@ -1087,6 +1087,8 @@
     "OverlayView_OpenTheFolderContainingThe": "Открыть папку с файлами журнала OSD",
     "OverlayView_OverlayActive": "Оверлей включён",
     "OverlayView_OverlayCoordinates": "Координаты оверлея",
+    "OverlayView_OverlayFont": "Шрифт оверлея",
+    "OverlayView_OverlayFontDescription": "Шрифт строк и графиков в рендерерах CapFrameX (без внедрения, в игре, Vulkan). Плиточные дизайны сохраняют шрифты из редактора оверлея; RTSS использует собственные настройки шрифта.",
     "OverlayView_OverlayHotkey": "Клавиша оверлея",
     "OverlayView_OverlayItems": "Строчный оверлей",
     "OverlayView_OverlayItems2": "Элементы строчного оверлея",

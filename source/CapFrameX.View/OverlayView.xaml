@@ -1429,6 +1429,19 @@
 										</StackPanel>
 									</DockPanel>
 
+									<TextBlock Margin="0 12 0 0" FontWeight="SemiBold" Text="{loc:Tr OverlayView_OverlayFont}"/>
+									<TextBlock Style="{StaticResource OsdOptionsDescription}"
+											   Text="{loc:Tr OverlayView_OverlayFontDescription}"/>
+									<ComboBox Margin="0 8 0 0" MaxDropDownHeight="320" IsTextSearchEnabled="True"
+											  ItemsSource="{Binding OsdFontFamilies}"
+											  SelectedItem="{Binding OsdFontFamily, Mode=TwoWay}">
+										<ComboBox.ItemsPanel>
+											<ItemsPanelTemplate>
+												<VirtualizingStackPanel/>
+											</ItemsPanelTemplate>
+										</ComboBox.ItemsPanel>
+									</ComboBox>
+
 									<Separator Margin="0 12 0 4" Background="{DynamicResource MaterialDesign.Brush.TextBox.HoverBackground}"/>
 									<DockPanel Margin="0 8 0 0">
 										<CheckBox DockPanel.Dock="Right" Margin="12 0 5 0" VerticalAlignment="Center"

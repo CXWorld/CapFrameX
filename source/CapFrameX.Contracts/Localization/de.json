@@ -1217,6 +1217,8 @@
     "OverlayView_OpenTheFolderContainingThe": "Öffnet den Ordner mit den OSD-Logdateien",
     "OverlayView_OverlayActive": "Overlay aktiv",
     "OverlayView_OverlayCoordinates": "Overlay-Koordinaten",
+    "OverlayView_OverlayFont": "Overlay-Schriftart",
+    "OverlayView_OverlayFontDescription": "Schrift der Zeilen und Diagramme in den CapFrameX-Renderern (ohne Hook, im Spiel, Vulkan). Kachel-Designs behalten die Schriften aus dem Overlay-Editor; RTSS nutzt eigene Schrifteinstellungen.",
     "OverlayView_OverlayHotkey": "Overlay-Hotkey",
     "OverlayView_OverlayItems": "Zeilen-Overlay",
     "OverlayView_OverlayItems2": "Zeilen-Overlay-Einträge",

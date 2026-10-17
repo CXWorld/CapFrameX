@@ -64,6 +64,7 @@ namespace CapFrameX.ViewModel
         private IReadOnlyList<HookFreeDisplayItem> _hookFreeDisplayItemsSource =
             Array.Empty<HookFreeDisplayItem>();
         private bool _displaySettingsChangedSubscribed;
+        private IReadOnlyList<string> _osdFontFamilies;
 
         public bool OverlayItemsOptionsEnabled
         {
@@ -560,6 +561,37 @@ namespace CapFrameX.ViewModel
                 _appConfiguration.OsdScaleWithResolution = value;
                 RaisePropertyChanged();
             }
+        }
+
+        // Font of the classic rows and graphs in the CapFrameX renderers. Designs keep the fonts
+        // chosen in the overlay editor; RTSS is unaffected.
+        public string OsdFontFamily
+        {
+            get { return _appConfiguration.OsdFontFamily; }
+            set
+            {
+                if (value == null) return; // the selection is cleared while the list is rebuilt
+                _appConfiguration.OsdFontFamily = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        // The installed fonts, read once. A stored font that is no longer installed stays in the
+        // list so the selection still shows it; the renderers then fall back to a system font.
+        public IReadOnlyList<string> OsdFontFamilies => _osdFontFamilies ??= ListFontFamilies(OsdFontFamily);
+
+        internal static IReadOnlyList<string> ListFontFamilies(string selected)
+        {
+            var families = System.Windows.Media.Fonts.SystemFontFamilies
+                .Select(family => family.Source)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            if (!string.IsNullOrWhiteSpace(selected) &&
+                !families.Contains(selected, StringComparer.OrdinalIgnoreCase))
+                families.Add(selected);
+            families.Sort(StringComparer.CurrentCultureIgnoreCase);
+            return families;
         }
 
         // Placement of the CapFrameX overlay: anchored corner + distance from it. Reaches all

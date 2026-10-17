@@ -249,6 +249,13 @@ namespace CapFrameX.Contracts.Configuration
 		/// </summary>
 		bool OsdScaleWithResolution { get; set; }
 
+		/// <summary>
+		/// Font family of the classic layout in the CapFrameX renderers (hook-free, in-game hook,
+		/// Vulkan layer): its rows and graphs. Default "Segoe UI"; an empty value restores it. A
+		/// design keeps the fonts set in the overlay editor. Does not affect RTSS.
+		/// </summary>
+		string OsdFontFamily { get; set; }
+
 		/// <summary>Saved designer profile used by the CapFrameX renderers; empty retains the classic overlay.</summary>
 		string ActiveOverlayDesignProfileId { get; set; }
 

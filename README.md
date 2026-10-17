@@ -106,6 +106,10 @@ Static overlay text can burn into OLED panels. With **OLED pixel orbit** in **Ov
 
 A tile design can carry its own orbit: in the designer, enable it under **Layout → OLED pixel orbit**. It then applies whenever that design is active, even with the global option switched off, and its interval and range take precedence.
 
+### Overlay fonts
+
+**Overlay font** in **Overlay → OSD options** sets the font of the row overlay in the CapFrameX in-game and hook-free renderers. A tile design keeps its own fonts: in the designer, **Layout → Font** sets the font of the whole design, and **Typography and alignment** gives every tile that shows text its own font (leave it empty to use the design font). A font that is not installed falls back to a system font. RTSS uses its own font settings.
+
 [`overlay-templates/OLED-Minimal.json`](overlay-templates/OLED-Minimal.json) is a ready-made OLED design that you can add in the designer with **Import…**. It shows FPS, 1% low and frame time in dimmed colors, plus a frame-time line, without panels, frames, labels or images, and it has the orbit enabled.
 
 ### Custom in-game compatibility profiles

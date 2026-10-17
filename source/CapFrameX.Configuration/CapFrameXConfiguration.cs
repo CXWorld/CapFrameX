@@ -856,6 +856,14 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public const string DefaultOsdFontFamily = "Segoe UI";
+
+        public string OsdFontFamily
+        {
+            get => Get<string>(DefaultOsdFontFamily);
+            set => Set(string.IsNullOrWhiteSpace(value) ? DefaultOsdFontFamily : value.Trim());
+        }
+
         public string ActiveOverlayDesignProfileId
         {
             get => Get<string>(null);

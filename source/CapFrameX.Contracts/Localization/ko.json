@@ -1216,6 +1216,8 @@
     "OverlayView_OpenTheFolderContainingThe": "OSD 로그 파일이 있는 폴더를 엽니다.",
     "OverlayView_OverlayActive": "오버레이 활성",
     "OverlayView_OverlayCoordinates": "오버레이 좌표",
+    "OverlayView_OverlayFont": "오버레이 글꼴",
+    "OverlayView_OverlayFontDescription": "CapFrameX 렌더러(후킹 없음, 게임 내, Vulkan)의 행과 그래프에 쓰이는 글꼴입니다. 타일 디자인은 오버레이 편집기에서 지정한 글꼴을 유지하며, RTSS는 자체 글꼴 설정을 사용합니다.",
     "OverlayView_OverlayHotkey": "오버레이 단축키",
     "OverlayView_OverlayItems": "행 오버레이",
     "OverlayView_OverlayItems2": "행 오버레이 항목",
