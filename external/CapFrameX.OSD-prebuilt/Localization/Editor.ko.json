@@ -458,5 +458,10 @@
   "Editor_RyzenBadge": "Ryzen 배지",
   "Editor_RyzenBadgeFrame": "프레임 및 브랜드 로고",
   "Editor_RyzenBadgeModel": "프로세서 모델 — 9600X",
-  "Editor_RyzenBadgeTier": "Ryzen 등급 — 5"
+  "Editor_RyzenBadgeTier": "Ryzen 등급 — 5",
+  "Editor_GroupHeatmap": "히트맵",
+  "Editor_HeatmapWindow": "평균 구간(초)",
+  "Editor_HeatmapWindowHint": "각 셀은 이 시간(초) 동안 평균한 값을 표시합니다(10–600).",
+  "Editor_HeatmapColor": "최대 부하 색상",
+  "Editor_HeatmapHint": "셀은 이 색상으로 유휴부터 최대 부하까지 표시됩니다. 코어 유형마다 이름이 붙은 별도의 블록을 이루며, 셀이 16개를 넘으면 여러 줄로 배치됩니다."
 }

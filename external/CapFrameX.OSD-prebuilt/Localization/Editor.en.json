@@ -458,5 +458,10 @@
   "Editor_RyzenBadge": "Ryzen badge",
   "Editor_RyzenBadgeFrame": "Frame and branding",
   "Editor_RyzenBadgeModel": "Processor model — 9600X",
-  "Editor_RyzenBadgeTier": "Ryzen tier — 5"
+  "Editor_RyzenBadgeTier": "Ryzen tier — 5",
+  "Editor_GroupHeatmap": "Heatmap",
+  "Editor_HeatmapWindow": "Averaging window (s)",
+  "Editor_HeatmapWindowHint": "Each cell shows its reading averaged over this many seconds (10–600).",
+  "Editor_HeatmapColor": "Full-load color",
+  "Editor_HeatmapHint": "Cells shade from idle to full load in this color. Each core type forms a labelled block of its own; more than 16 cells spread over several rows."
 }

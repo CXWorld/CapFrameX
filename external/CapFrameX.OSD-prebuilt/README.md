@@ -12,6 +12,40 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Core load heatmap (2026-10-18)
+
+The five native DLLs were clean-built with VS 2026/v145 in `RelWithDebInfo` and Controls was rebuilt
+in `Release|x64` for .NET 10 from OSD commit `62372562f310e27c54074c04a8bab0b4ddfdfaff`, which adds the heatmap to
+`d102d9b`. The new `heatmap` widget draws one cell per key, shaded from idle to `color`, under a
+header with the title and an idle-to-maximum legend. Every core class forms a labelled block of its
+own (P-Cores, E-Cores, ...), the blocks side by side; up to 16 cells share one row, more take the
+fewest rows at which the blocks
+need at most 16 columns (8 P + 16 E: 4x2 beside 8x2). Controls adds the heatmap group display
+(`GroupDisplay = "heatmap"`, `GroupWindowSeconds` 10..600, default 60), which exports each member as
+`avg:{seconds}:{key}`; CapFrameX supplies those averages. A Controls build without this change
+rejects designs with a heatmap group, among them the FUSION starter. `Editor_GroupHeatmap`,
+`Editor_HeatmapWindow`, `Editor_HeatmapWindowHint`, `Editor_HeatmapColor` and `Editor_HeatmapHint`
+were added in all five languages; the en/ko copies in `Localization/` are updated. Interop, both
+Vulkan manifests and the template catalogs are unchanged.
+
+Verification: 15 of 16 core CTests pass (`design`: 385 checks, including the heatmap block layout and labels,
+round trip and raster checks); `chart_gpu_raster` fails on the hardware adapter as documented below.
+All 33 hook CTests and all 10 Vulkan CTests pass on x64 and x86. A CapFrameX Release build with
+`CfxOsdFromSource=false` stages exactly these DLLs into the test output and passes all 2437 runnable
+unit tests (6 skipped).
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `27734C4C75C8E6A83B3054E3DD02DC54C2E005D80ECCC70D6B64530A6CFF90F2` |
+| native\cfx_osd_hook.dll | `CBA0BF711265053962F8803D0F146AB9F4FD8A3FED77E1AE1F360623E5D74702` |
+| native\x86\cfx_osd_hook.dll | `C81ABBE926C962E5EF9CD4B230F19205FED6057C46233510A02F97C8B7165778` |
+| native\vk\cfx_osd_vklayer.dll | `766FEAE838963ED7506F8FC23A17BE34BC46C24AF95A0905C0AFB64C072264A5` |
+| native\vk\x86\cfx_osd_vklayer.dll | `BCB091D33F2591F9A1D12333B063F0F401ABED9A38E2B8FA744BBB86034B57A5` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `D3512C84F5422FDBF80763EADEC2E39E8741A6DC47873B803F8A81C83356AB6E` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Rebuild diagnostics only with extended logging (2026-10-17)
 
 The five native DLLs were clean-built with VS 2026/v145 in `RelWithDebInfo` from OSD commit
