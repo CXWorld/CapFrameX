@@ -41,18 +41,18 @@
             </Grid.ColumnDefinitions>
             <StackPanel>
                 <TextBlock x:Name="SourceStatus" Text="{loc:Tr OverlayEditor_SourceHelp}"
-                           Margin="0,5,12,0" TextWrapping="Wrap" VerticalAlignment="Center"
-                           Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
+                    Margin="0,5,12,0" TextWrapping="Wrap" VerticalAlignment="Center"
+                    Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
             </StackPanel>
             <Button x:Name="RefreshSourcesButton" Grid.Column="1" Content="{loc:Tr OverlayEditor_RefreshSources}"
-                    VerticalAlignment="Center" Click="OnRefreshSources" Padding="12,6"
-                    ToolTip="{loc:Tr OverlayEditor_RefreshSourcesHint}" />
+                VerticalAlignment="Center" Click="OnRefreshSources" Padding="12,6"
+                ToolTip="{loc:Tr OverlayEditor_RefreshSourcesHint}" />
         </Grid>
         <osd:OsdEditorControl x:Name="Editor" LivePreviewChanged="OnLivePreviewChanged"
-                              SurfaceBrush="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
-                              AccentBrush="{DynamicResource MaterialDesign.Brush.Primary}"
-                              Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
-                              Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" />
+            SurfaceBrush="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
+            AccentBrush="{DynamicResource MaterialDesign.Brush.Primary}"
+            Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
+            Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" />
     </DockPanel>
     </materialDesign:DialogHost>
 </UserControl>
