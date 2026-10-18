@@ -12,6 +12,37 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Chart edges and 1 s heatmap window (2026-10-18)
+
+The five native DLLs were clean-built with VS 2026/v145 in `RelWithDebInfo` and Controls was rebuilt
+in `Release|x64` for .NET 10 from OSD commit `6d963d59a6709d4069be4df7f5a8a08f4baa941c`, which follows `6237256`. Every
+chart line, classic rows included, now meets both edges of its window: `AppendChartLine` adds one
+point at each edge, interpolated between the samples around it. Before, the line ended at the sample
+nearest each edge, whose column moves by up to the frame spacing while the window scrolls, and its
+outermost 1-3 px flickered. Controls lowers the heatmap window minimum from 10 s to 1 s and draws the
+inspector's validation frame inside each field, so the inspector no longer clips its left edge.
+`Editor_HeatmapWindowHint` changed in all five languages; the en/ko copies in `Localization/` are
+updated. Interop, both Vulkan manifests and the template catalogs are unchanged.
+
+Verification: 15 of 16 core CTests pass (`chart_geometry` checks that a scrolling line meets both
+edges at every window position and, as a negative control, that the samples inside the window alone
+start up to 2 px late); `chart_gpu_raster` fails on the hardware adapter as documented below. All 33
+hook CTests and all 10 Vulkan CTests pass on x64 and x86. A CapFrameX Release build with
+`CfxOsdFromSource=false` stages exactly these DLLs into the test output and passes all 2439 runnable
+unit tests (6 skipped).
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `F4C776AE77DE9E913676C58FB42F8771B70D529B53072C4113BE054397C53BAF` |
+| native\cfx_osd_hook.dll | `C15DFC2835A2B8B5FB9B9685F9CAA208AFEB39C28A1CCC8D33F4736AB7AD70F5` |
+| native\x86\cfx_osd_hook.dll | `2B98C708EC5CE8D38ACF82F00935EEDCCB36E7B0DBBEA95DBE4E23789B961C22` |
+| native\vk\cfx_osd_vklayer.dll | `1AE5774A993BF510190839D0AAF43759E1D6AD5DA1F74F86075054CDB0760ED5` |
+| native\vk\x86\cfx_osd_vklayer.dll | `60E39D73F0070267336A48C0393C47D22695C508FDC0D9171498268694B458B7` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `FE7E1F011395E73ADEA669733C0474FE3D68AADDCB4CFF592F77BEC28FEC39DA` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Core load heatmap (2026-10-18)
 
 The five native DLLs were clean-built with VS 2026/v145 in `RelWithDebInfo` and Controls was rebuilt
