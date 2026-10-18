@@ -12,6 +12,24 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### 10 s heatmap window default (2026-10-18)
+
+Controls was rebuilt in `Release|x64` for .NET 10 from OSD commit `6955d6c10c649af4791d18d88db27bd4cd988a34`, which follows
+`6d963d5`. A heatmap group without an explicit window now averages over 10 s instead of 60 s
+(`DefaultHeatmapWindowSeconds`). Designs saved under the former default stored no window and exported
+their cells as `avg:60`; `FromJson` gives those groups 60 s explicitly and then requires the round trip
+to match the saved scene with the same change, as it already does for pre-font families. A Controls
+build without this change rejects designs that rely on the 10 s default, among them the FUSION starter.
+The native DLLs, Interop, both Vulkan manifests, the localization files and the template catalogs are
+unchanged.
+
+Verification: a CapFrameX Release build with `CfxOsdFromSource=false` stages exactly this DLL into the
+test output and passes all 2442 runnable unit tests (6 skipped).
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `199AF0762F664E1A023A0ABE99A214D0417E474B469AA5725574B2AA8D0A774D` |
+
 ### Chart edges and 1 s heatmap window (2026-10-18)
 
 The five native DLLs were clean-built with VS 2026/v145 in `RelWithDebInfo` and Controls was rebuilt
