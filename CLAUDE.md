@@ -246,6 +246,23 @@ UTF-8 into the 128-byte field at `OffFontFamily` (0x18000), behind the records, 
 Controls must contain this change: a Controls build without it rejects designs whose theme font is
 not Segoe UI. Details: the OSD repo's CLAUDE.md.
 
+### Heatmap tiles
+
+A group tile with `GroupDisplay = "heatmap"` exports the native `heatmap` widget, one cell per
+member, and keys every cell `avg:{seconds}:{source}` (`GroupWindowSeconds`, 10..600, default 60).
+The native widget only draws. The averages come from CapFrameX: `OverlayMovingAverages`
+(`CapFrameX.OSD.Integration`) keeps one `SlidingWindowAverage` (`CapFrameX.Statistics.NetStandard`,
+a running sum, O(1) amortized per sample) per tracked key. `OverlayDesignRuntimePublisher` feeds it
+from every telemetry snapshot and asks the binder for the plain sources behind the averaged keys
+(`GetRequiredSourceIds`). The designer's live preview keeps its own instance. The MCP render has no
+history and shows current readings. `OverlayRuntimeSourceBinder.ExpandHeatmap` expands a
+`role:cpu-loads` heatmap like the editor: ordered by core type, core and thread, with `types` so
+that every core type forms a labelled block of its own (`HeatmapRows` and the label row repeat the
+renderer's layout for the flow height).
+`OverlayRuntimeSourceBinderTest` checks parity for hybrid CPUs with HT P-cores. The prebuilt
+Controls must contain the heatmap: a Controls build without it rejects FUSION. Block and row rules:
+the OSD repo's CLAUDE.md.
+
 ### Hook-free stall diagnostics
 
 Chart pauses/hitches in the hook-free overlay have three unrelated possible causes — the render

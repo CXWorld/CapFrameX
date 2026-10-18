@@ -308,6 +308,72 @@ namespace CapFrameX.Test.Integration
             finally { if (Directory.Exists(folder)) Directory.Delete(folder, true); }
         }
 
+        [TestMethod]
+        [DataRow("P16", 1)]
+        [DataRow("P4 E8 LPE4", 1)]
+        [DataRow("P8 E16", 2)]
+        [DataRow("P16 E16", 2)]
+        [DataRow("P8 E12", 2)]
+        [DataRow("-24", 2)]
+        [DataRow("-48", 3)]
+        public void HeatmapRowsKeepEveryCoreTypeInABlockLikeTheRenderer(string runs, int rows)
+        {
+            // Mirrors the renderer's ArrangeHeatmap cases in the OSD design test.
+            string[] types = runs.Split(' ').SelectMany(run =>
+            {
+                int digits = run.IndexOfAny("0123456789".ToCharArray());
+                return Enumerable.Repeat(run.Substring(0, digits), int.Parse(run.Substring(digits)));
+            }).ToArray();
+            Assert.AreEqual(rows, OverlayRuntimeSourceBinder.HeatmapRows(types));
+        }
+
+        [TestMethod]
+        [DataRow(true, 1.0)]
+        [DataRow(true, 2.0)]
+        [DataRow(false, 1.0)]
+        public void HeatmapGroupsOrderCoreTypesAndAverageEveryCellLikeTheEditor(bool hybrid, double scale)
+        {
+            OsdDesignDocument Heatmap()
+            {
+                var document = ThreadStrip();
+                document.Scale = scale;
+                var group = document.Tiles.Single(tile => tile.Kind == "group");
+                group.GroupDisplay = "heatmap";
+                group.GroupWindowSeconds = 30;
+                return document;
+            }
+            var catalog = hybrid ? HybridLoads() : Sources("cpu-loads", 24);
+            var source = Heatmap();
+            var bound = OverlayRuntimeSourceBinder.Bind(OverlayRuntimeDesign.Parse("profile", source.Name, source.ToJson()), catalog);
+            var heatmap = JObject.Parse(bound.TemplateJson).Descendants().OfType<JObject>()
+                .Single(node => (string)node["type"] == "heatmap");
+            var expected = hybrid
+                ? Enumerable.Range(1, 8).SelectMany(core => new[] { $"cpu0/cpu-loads/{core}/1", $"cpu0/cpu-loads/{core}/2" })
+                    .Concat(Enumerable.Range(9, 8).Select(core => $"cpu0/cpu-loads/{core}/0"))
+                : Enumerable.Range(1, 24).Select(index => "cpu0/cpu-loads/" + index);
+            // P-cores first with both threads of a core together, although discovery listed the E-cores first.
+            CollectionAssert.AreEqual(expected.Select(key => "avg:30:" + key).ToArray(), heatmap["keys"].Values<string>().ToArray());
+            if (hybrid)
+                CollectionAssert.AreEqual(Enumerable.Repeat("P", 16).Concat(Enumerable.Repeat("E", 8)).ToArray(),
+                    heatmap["types"].Values<string>().ToArray());
+            else Assert.IsNull(heatmap["types"], "Readings without a core class carry no types.");
+            AssertEditorParity(Heatmap(), catalog, "heatmap hybrid=" + hybrid + " scale=" + scale);
+        }
+
+        // Eight hyper-threaded P-cores and eight E-cores, reported E-cores first.
+        private static OverlayTelemetrySource[] HybridLoads()
+        {
+            var readings = Enumerable.Range(1, 8).SelectMany(core => new[] { 1, 2 }.Select(thread => (Type: "P", Core: core, Thread: thread)))
+                .Concat(Enumerable.Range(9, 8).Select(core => (Type: "E", Core: core, Thread: 0))).Reverse().ToArray();
+            return readings.Select((reading, index) => new OverlayTelemetrySource
+            {
+                Id = $"cpu0/cpu-loads/{reading.Core}/{reading.Thread}", DeviceKey = "cpu0", HardwareName = "cpu0",
+                Name = reading.Thread > 0 ? $"Core #{reading.Core} {reading.Type} Thread #{reading.Thread}" : $"Core #{reading.Core} {reading.Type}",
+                GroupKey = "cpu0/cpu-loads", Category = "CPU", Unit = "%", GroupOrder = index, IsAvailable = true,
+                CoreType = reading.Type, CoreIndex = reading.Core, ThreadIndex = reading.Thread
+            }).ToArray();
+        }
+
         private static OsdDesignDocument ThreadStrip() => OsdDesignDocument.FromJson(
             OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "vertical-thread-strip").DesignJson);
 
@@ -348,7 +414,8 @@ namespace CapFrameX.Test.Integration
         {
             Key = source.Id, Name = source.Name, DeviceKey = source.DeviceKey, DeviceName = source.HardwareName,
             Category = source.Category, Unit = source.Unit, GroupKey = source.GroupKey, GroupOrder = source.GroupOrder,
-            IsAvailable = source.IsAvailable, IsText = source.IsText, SemanticKey = source.SemanticKey
+            IsAvailable = source.IsAvailable, IsText = source.IsText, SemanticKey = source.SemanticKey,
+            CoreType = source.CoreType, CoreIndex = source.CoreIndex, ThreadIndex = source.ThreadIndex
         };
 
         private static void AssertEditorParity(OsdDesignDocument document, OverlayTelemetrySource[] catalog, string context)

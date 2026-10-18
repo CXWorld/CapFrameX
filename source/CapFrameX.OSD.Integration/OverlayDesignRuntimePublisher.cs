@@ -51,6 +51,8 @@ namespace CapFrameX.OSD.Integration
         // What the bound design reads, handed to the telemetry lease; null until it is bound.
         private volatile IReadOnlyCollection<string> _requiredSourceIds;
         private OverlayTelemetrySnapshot _latestTelemetry;
+        // Heatmap cells read sliding-window averages, fed from every telemetry snapshot.
+        private readonly OverlayMovingAverages _averages = new OverlayMovingAverages();
         private int _pid, _catalogGeneration;
         private bool _active, _hookEnabled, _freeEnabled, _hasProcesses, _disposed;
         private bool _channelFailureReported;
@@ -252,6 +254,7 @@ namespace CapFrameX.OSD.Integration
             {
                 if (_disposed || _demand == null) return;
                 _latestTelemetry = snapshot;
+                _averages.Add(snapshot, _aliases);
             }
             Change(null);
         }
@@ -278,26 +281,29 @@ namespace CapFrameX.OSD.Integration
                 _boundDesign = bound;
                 // The catalog and its aliases are replaced together, so this runs for both.
                 _requiredSourceIds = GetRequiredSourceIds(bound, _aliases);
+                _averages.Track(bound?.MetricKeys);
             }
             design = _boundDesign;
             bool changed = _current.Design?.ProfileId != design?.ProfileId || _current.Design?.TemplateJson != design?.TemplateJson;
             if (changed) ++_designRevision;
-            string metrics = design?.CreateMetrics(GetPublishableTelemetry(), _aliases) ?? "{}";
+            string metrics = design?.CreateMetrics(GetPublishableTelemetry(), _aliases, _averages, DateTime.UtcNow) ?? "{}";
             if (changed || metrics != _current.MetricsJson || _metricsRevision == 0) ++_metricsRevision;
             _current = new OverlayDesignRuntimeSnapshot(design, metrics, _designRevision, _metricsRevision);
         }
 
         /// <summary>
         /// The catalog sources a design reads, resolved as CreateMetrics resolves them: a key that
-        /// is a source id, and the source its semantic alias names.
+        /// is a source id, the source its semantic alias names, and the source an averaged key
+        /// (<c>avg:{seconds}:{source}</c>) averages.
         /// </summary>
         internal static IReadOnlyCollection<string> GetRequiredSourceIds(OverlayRuntimeDesign design,
             IReadOnlyDictionary<string, string> aliases)
         {
             var ids = new HashSet<string>(StringComparer.Ordinal);
             if (design == null) return ids;
-            foreach (string key in design.MetricKeys)
+            foreach (string metricKey in design.MetricKeys)
             {
+                string key = OverlayMovingAverages.TryParseKey(metricKey, out _, out string averaged) ? averaged : metricKey;
                 ids.Add(key);
                 if (aliases != null && aliases.TryGetValue(key, out string source)) ids.Add(source);
             }
@@ -332,6 +338,7 @@ namespace CapFrameX.OSD.Integration
             _snapshotSubscription?.Dispose(); _snapshotSubscription = null;
             _demand?.Dispose(); _demand = null;
             _latestTelemetry = null;
+            _averages.Clear();
         }
 
         public void Dispose()

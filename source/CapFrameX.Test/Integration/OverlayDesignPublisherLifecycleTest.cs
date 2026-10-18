@@ -20,6 +20,32 @@ namespace CapFrameX.Test.Integration
     public class OverlayDesignPublisherLifecycleTest
     {
         [TestMethod]
+        public void HeatmapCellsPublishTheSlidingAverageOfTheirSource()
+        {
+            using var context = new PublisherContext("cpuLoad");
+            string heatmap = new JObject
+            {
+                ["version"] = 1, ["name"] = "Heatmap",
+                ["root"] = new JObject
+                {
+                    ["type"] = "panel",
+                    ["children"] = new JArray(new JObject { ["type"] = "heatmap", ["keys"] = new JArray("avg:60:cpu/1", "avg:60:cpu/2") })
+                }
+            }.ToString(Formatting.None);
+            context.Service.Activate(context.Store().Create("Heatmap", heatmap).Id);
+
+            context.Telemetry.Emit(("cpu/1", 20), ("cpu/2", 90));
+            context.Telemetry.Emit(("cpu/1", 40));
+
+            Assert.AreEqual(30, (double)context.Metrics["avg:60:cpu/1"], 1e-9);
+            Assert.AreEqual(90, (double)context.Metrics["avg:60:cpu/2"], 1e-9, "A snapshot without the reading does not count.");
+            Assert.AreEqual(context.Publisher.Current.MetricsJson, context.Channel.Metrics, "The hook receives the averages.");
+            CollectionAssert.IsSubsetOf(new[] { "cpu/1", "cpu/2" },
+                OverlayDesignRuntimePublisher.GetRequiredSourceIds(context.Publisher.Current.Design, null).ToArray(),
+                "The telemetry lease polls the averaged sources.");
+        }
+
+        [TestMethod]
         public void ShutdownWithdrawsTheHookRowFeedBeforeTheDesign()
         {
             using var context = new PublisherContext("cpuLoad");

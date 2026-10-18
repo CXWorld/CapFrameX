@@ -85,6 +85,11 @@ namespace CapFrameX.OSD.Integration
         private static void ExpandGroup(JObject root, JArray tiles, JObject outer, JObject widget, JObject editor,
             OverlayTelemetrySource[] sources, double scale, double gridSize)
         {
+            if ((string)editor["groupDisplay"] == "heatmap")
+            {
+                ExpandHeatmap(root, tiles, outer, widget, editor, sources, scale, gridSize);
+                return;
+            }
             if (widget["children"] is not JArray sections || sections.Count != 2 || sections[1] is not JObject grid
                 || grid["children"] is not JArray oldMembers || oldMembers.FirstOrDefault() is not JObject prototype)
                 throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_GroupLayout"), message => new FormatException(message));
@@ -287,6 +292,63 @@ namespace CapFrameX.OSD.Integration
             double contentHeight = 18.2 + gap + canvasHeight;
             double required = Math.Max(24, Math.Ceiling((contentHeight + 2 * padding / scale) / gridSize) * gridSize) * scale;
             GrowFrame(root, tiles, outer, required, scale, gridSize);
+        }
+
+        // Matches the editor's heatmap group: members ordered P-cores first with each core's threads
+        // together, one averaged key per cell, core types as labelled blocks, and a frame grown to the
+        // flow height when too small.
+        private static void ExpandHeatmap(JObject root, JArray tiles, JObject outer, JObject widget, JObject editor,
+            OverlayTelemetrySource[] sources, double scale, double gridSize)
+        {
+            if (widget["children"] is not JArray children || children.Count != 1 || children[0] is not JObject heatmap
+                || (string)heatmap["type"] != "heatmap")
+                throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_GroupLayout"), message => new FormatException(message));
+            var ordered = sources.Select((source, index) => (Source: source, Index: index))
+                .OrderBy(item => CoreTypeOrder(item.Source.CoreType))
+                .ThenBy(item => item.Source.CoreIndex ?? int.MaxValue)
+                .ThenBy(item => item.Source.ThreadIndex ?? int.MaxValue)
+                .ThenBy(item => item.Index).Select(item => item.Source).ToArray();
+            int seconds = (int?)editor["groupWindowSeconds"] ?? DefaultHeatmapWindowSeconds;
+            heatmap["keys"] = new JArray(ordered.Select(source => OverlayMovingAverages.Key(seconds, source.Id)));
+            string[] types = ordered.Select(source => CoreType(source.CoreType) ?? "-").ToArray();
+            if (types.Any(type => type != "-")) heatmap["types"] = new JArray(types);
+            else heatmap.Remove("types");
+
+            int rows = HeatmapRows(types);
+            double labels = types.Any(type => type != "-") ? 13 * .85 * 1.3 + 2 : 0;
+            double flowHeight = 13 * 1.3 + 4 + labels + rows * 14 + (rows - 1) * 2;
+            if ((string)root["layout"] != "canvas")
+            {
+                heatmap["height"] = flowHeight * scale;
+                return;
+            }
+            double padding = (double?)outer["padding"] ?? 0;
+            double required = Math.Max(24, Math.Ceiling((flowHeight + 2 * padding / scale) / gridSize) * gridSize) * scale;
+            if (required <= ((double?)outer["frameHeight"] ?? 0)) return;
+            GrowFrame(root, tiles, outer, required, scale, gridSize);
+            heatmap["height"] = required - 2 * padding;
+        }
+
+        private const int DefaultHeatmapWindowSeconds = 60;
+        private const int HeatmapColumns = 16;
+
+        // The renderer's ArrangeHeatmap: every run of one core type is a block, up to 16 cells share
+        // one row, and more take the fewest rows at which the blocks need at most 16 columns.
+        internal static int HeatmapRows(IReadOnlyList<string> types)
+        {
+            if (types.Count <= HeatmapColumns) return 1;
+            var blocks = new List<int>();
+            for (int start = 0; start < types.Count;)
+            {
+                int end = start + 1;
+                while (end < types.Count && types[end] == types[start]) end++;
+                blocks.Add(end - start);
+                start = end;
+            }
+            int longest = blocks.Max();
+            for (int rows = 2; rows < longest; rows++)
+                if (blocks.Sum(count => (count + rows - 1) / rows) <= HeatmapColumns) return rows;
+            return longest;
         }
 
         private static void GrowFrame(JObject root, JArray tiles, JObject outer, double required, double scale, double gridSize)

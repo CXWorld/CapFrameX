@@ -134,7 +134,7 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             }
             foreach (var tile in document.EnumerateTiles())
             {
-                bool ranged = tile.Kind == "bar" || tile.Kind == "gauge" || tile.Kind == "group" && tile.GroupDisplay == "bar";
+                bool ranged = tile.Kind == "bar" || tile.Kind == "gauge" || tile.Kind == "group" && tile.GroupDisplay is "bar" or "heatmap";
                 if (tile.Kind == "metric" || tile.Kind == "bar" || tile.Kind == "gauge")
                 {
                     Add(tile.Key, tile.Unit, ranged ? tile.Minimum : null, ranged ? tile.Maximum : null);
@@ -147,6 +147,21 @@ namespace CapFrameX.View.OverlayDesignAuthoring
                 }
             }
             return values;
+        }
+
+        /// <summary>
+        /// Gives every heatmap cell its source's reading. A single image has no history to average,
+        /// so the current value stands in for the window's mean.
+        /// </summary>
+        public static void AddHeatmapReadings(OsdDesignDocument document, IDictionary<string, object> values)
+        {
+            foreach (var tile in document.EnumerateTiles().Where(tile => tile.IsGroupHeatmap && tile.GroupMembers != null))
+            {
+                int seconds = tile.GroupWindowSeconds ?? OsdDesignDocument.DefaultHeatmapWindowSeconds;
+                foreach (var member in tile.GroupMembers.Where(member => member?.IsEnabled == true))
+                    if (values.TryGetValue(member.Key, out object value))
+                        values[OsdDesignDocument.AveragedKey(seconds, member.Key)] = value;
+            }
         }
 
         /// <summary>Five seconds of plausible frames at <paramref name="fps"/>, so chart tiles show a trace.</summary>

@@ -35,6 +35,8 @@ namespace CapFrameX.View.Controls
         private IDisposable _snapshotSubscription;
         private IDisposable _frameSubscription;
         private OverlayTelemetrySnapshot _pendingSnapshot;
+        // Heatmap cells read sliding-window averages, as in the runtime publisher.
+        private readonly OverlayMovingAverages _previewAverages = new OverlayMovingAverages();
         private readonly object _frameGate = new object();
         private readonly Queue<OsdStreamSample> _pendingFrames = new Queue<OsdStreamSample>();
         private bool _resetFrames;
@@ -247,7 +249,11 @@ namespace CapFrameX.View.Controls
             var snapshot = Interlocked.Exchange(ref _pendingSnapshot, null);
             if (snapshot != null)
             {
-                Editor.SetMetricsJson(JsonConvert.SerializeObject(snapshot.MetricValues));
+                _previewAverages.Track(HeatmapKeys(Editor.Document));
+                _previewAverages.Add(snapshot);
+                var values = new Dictionary<string, object>(snapshot.MetricValues, StringComparer.Ordinal);
+                _previewAverages.CopyTo(values, DateTime.UtcNow);
+                Editor.SetMetricsJson(JsonConvert.SerializeObject(values));
                 RefreshClassicPreview(snapshot);
             }
             OsdStreamSample[] samples;
@@ -326,7 +332,16 @@ namespace CapFrameX.View.Controls
             _previewLease = null;
             Interlocked.Exchange(ref _pendingSnapshot, null);
             ClearPendingFrames();
+            _previewAverages.Clear();
         }
+
+        // The averaged keys the document's heatmap cells read, as its export writes them.
+        private static IEnumerable<string> HeatmapKeys(OsdDesignDocument document)
+            => document?.EnumerateTiles().Where(tile => tile.IsGroupHeatmap)
+                .SelectMany(tile => (tile.GroupMembers ?? new List<OsdGroupMember>()).Where(member => member?.IsEnabled == true)
+                    .Select(member => OsdDesignDocument.AveragedKey(
+                        tile.GroupWindowSeconds ?? OsdDesignDocument.DefaultHeatmapWindowSeconds, member.Key)))
+                ?? Enumerable.Empty<string>();
 
         private void AttachOwnerWindow()
         {

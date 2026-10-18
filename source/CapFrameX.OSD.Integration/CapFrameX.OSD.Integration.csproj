@@ -19,6 +19,7 @@
     <!-- the CapFrameX overlay contracts this project adapts -->
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj" />
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj" />
+    <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj" />
   </ItemGroup>
 
   <ItemGroup>

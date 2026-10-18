@@ -128,11 +128,20 @@ Kinds:
 - image: PNG or JPEG. dataUri (""data:image/png;base64,..."", at most 512 KB and 2048 x 2048 px),
   fit (contain, cover, stretch), opacity (0..1).
 - group: many readings of one sensor family, e.g. every CPU core clock or thread load. Set groupKey to
-  a family key from cfx_list_tile_sources and the members are filled in. groupDisplay (metric or
-  bar), groupColumns (1..32), groupBarOrientation (horizontal, vertical), groupShowValues,
+  a family key from cfx_list_tile_sources and the members are filled in. groupDisplay (metric, bar
+  or heatmap), groupColumns (1..32), groupBarOrientation (horizontal, vertical), groupShowValues,
   groupShowLabels, groupByCoreType (a row per CPU core type), groupBarWidth, groupBarHeight,
   minimum and maximum (bar range), unit, digits, valueSize. groupMembers lists
   { ""key"", ""label"", ""isEnabled"" }: rename or hide members there.
+  groupDisplay ""heatmap"" draws one cell per member, shaded from idle to full load in valueColor
+  (default the document's textColor) under the title (in color) and an idle..maximum legend. Each
+  cell shows its reading averaged over groupWindowSeconds (10..600, default 60). Members are ordered
+  P-cores first with each core's threads together, and every core type forms a block of its own,
+  labelled (P-Cores, E-Cores, ...) and side by side. Up to 16 cells share one row; more take the
+  fewest rows at which the
+  blocks need at most 16 columns (8 P + 16 E cores: 4x2 beside 8x2). The cells fill the tile's
+  height; minimum and maximum set the range. Use it with a thread or core load family
+  (role:cpu-loads).
 - container (canvas only): holds tiles in `children`; build cards from several pieces (icon + text +
   metric). Containers nest up to 4 levels.
 - classicRows: embeds the classic row overlay (the entries configured on the Overlay tab, see

@@ -30,6 +30,12 @@ namespace CapFrameX.OSD.Integration
             var keys = new HashSet<string>(StringComparer.Ordinal);
             bool frame = false, display = false, classicRows = false;
             int count = 0;
+            void AddKey(string key)
+            {
+                if (string.IsNullOrWhiteSpace(key) || key.IndexOf('\0') >= 0 || Encoding.UTF8.GetByteCount(key) > 2048)
+                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_TelemetryKey"), message => new InvalidDataException(message));
+                keys.Add(key);
+            }
             void Inspect(JObject node, int depth)
             {
                 if (depth > 32 || ++count > 512)
@@ -52,10 +58,14 @@ namespace CapFrameX.OSD.Integration
                     if (node[field] == null) continue;
                     if (node[field].Type != JTokenType.String)
                         throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_TelemetryKey"), message => new InvalidDataException(message));
-                    string key = (string)node[field];
-                    if (string.IsNullOrWhiteSpace(key) || key.IndexOf('\0') >= 0 || Encoding.UTF8.GetByteCount(key) > 2048)
+                    AddKey((string)node[field]);
+                }
+                // A heatmap reads one key per cell.
+                if (node["keys"] != null)
+                {
+                    if (node["keys"] is not JArray cellKeys || cellKeys.Any(cell => cell.Type != JTokenType.String))
                         throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_TelemetryKey"), message => new InvalidDataException(message));
-                    keys.Add(key);
+                    foreach (var cell in cellKeys) AddKey((string)cell);
                 }
                 if (node["children"] is JArray children)
                 {
@@ -119,13 +129,16 @@ namespace CapFrameX.OSD.Integration
             return document;
         }
 
-        internal string CreateMetrics(OverlayTelemetrySnapshot snapshot, IReadOnlyDictionary<string, string> aliases)
+        internal string CreateMetrics(OverlayTelemetrySnapshot snapshot, IReadOnlyDictionary<string, string> aliases,
+            OverlayMovingAverages averages = null, DateTime nowUtc = default)
         {
             var values = new JObject();
             foreach (string key in MetricKeys)
             {
                 object value = null;
-                if (snapshot != null && !snapshot.MetricValues.TryGetValue(key, out value) && aliases != null && aliases.TryGetValue(key, out string source))
+                if (averages != null && averages.TryGetAverage(key, nowUtc, out double? average))
+                    value = average;
+                else if (snapshot != null && !snapshot.MetricValues.TryGetValue(key, out value) && aliases != null && aliases.TryGetValue(key, out string source))
                     snapshot.MetricValues.TryGetValue(source, out value);
                 values[key] = Scalar(value);
             }

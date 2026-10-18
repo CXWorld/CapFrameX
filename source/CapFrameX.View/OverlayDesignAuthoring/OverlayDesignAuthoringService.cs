@@ -241,6 +241,7 @@ namespace CapFrameX.View.OverlayDesignAuthoring
                 foreach (var source in sources.Where(source => source.IsAvailable && !string.IsNullOrEmpty(source.SemanticKey)))
                     if (!metrics.ContainsKey(source.SemanticKey) && metrics.TryGetValue(source.Key, out object value))
                         metrics[source.SemanticKey] = value;
+                OverlayDesignPreviewRenderer.AddHeatmapReadings(document, metrics);
                 static double? Number(object value) => value switch
                 {
                     double number => number, float number => number, int number => number, long number => number,
