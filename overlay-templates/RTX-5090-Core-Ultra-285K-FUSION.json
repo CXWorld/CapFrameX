@@ -13,7 +13,7 @@
     "padding": 10,
     "radius": 4,
     "canvas": true,
-    "canvasHeight": 892,
+    "canvasHeight": 1044,
     "gridSize": 4,
     "showGrid": true,
     "snapToGrid": true
@@ -2322,7 +2322,7 @@
                 "background": false,
                 "padding": 0,
                 "width": 101.4,
-                "height": 37.440000000000005,
+                "height": 45.239999999999995,
                 "gap": 2.6,
                 "children": [
                   {
@@ -2331,7 +2331,7 @@
                     "label": "1",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2339,7 +2339,7 @@
                     "x": 0,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#6DDBFEFF"
                   },
@@ -2349,7 +2349,7 @@
                     "label": "2",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2357,7 +2357,7 @@
                     "x": 13,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#6DDBFEFF"
                   },
@@ -2367,7 +2367,7 @@
                     "label": "11",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2375,7 +2375,7 @@
                     "x": 26,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#6DDBFEFF"
                   },
@@ -2385,7 +2385,7 @@
                     "label": "12",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2393,7 +2393,7 @@
                     "x": 39,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#6DDBFEFF"
                   },
@@ -2403,7 +2403,7 @@
                     "label": "13",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2411,7 +2411,7 @@
                     "x": 52,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#6DDBFEFF"
                   },
@@ -2421,7 +2421,7 @@
                     "label": "14",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2429,7 +2429,7 @@
                     "x": 65,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#6DDBFEFF"
                   },
@@ -2439,7 +2439,7 @@
                     "label": "23",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2447,7 +2447,7 @@
                     "x": 78,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#6DDBFEFF"
                   },
@@ -2457,7 +2457,7 @@
                     "label": "24",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2465,7 +2465,7 @@
                     "x": 91,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#6DDBFEFF"
                   }
@@ -2485,7 +2485,7 @@
               "x": 0,
               "y": 740,
               "frameWidth": 176,
-              "frameHeight": 100,
+              "frameHeight": 112,
               "groupKey": "fusion-285k/p/cpu-loads",
               "groupDisplay": "bar",
               "groupColumns": 8,
@@ -2568,11 +2568,11 @@
               "columnSpan": 1,
               "digits": 0,
               "valueSize": 12,
-              "height": 38,
+              "height": 50,
               "minimum": 0,
               "maximum": 100,
               "groupBarWidth": 16,
-              "groupBarHeight": 38
+              "groupBarHeight": 50
             }
           }
         ],
@@ -2581,7 +2581,7 @@
         "x": 0,
         "y": 481,
         "frameWidth": 114.4,
-        "frameHeight": 65,
+        "frameHeight": 72.8,
         "clip": true
       },
       {
@@ -2611,7 +2611,7 @@
                 "background": false,
                 "padding": 0,
                 "width": 205.4,
-                "height": 37.440000000000005,
+                "height": 45.239999999999995,
                 "gap": 2.6,
                 "children": [
                   {
@@ -2620,7 +2620,7 @@
                     "label": "3",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2628,7 +2628,7 @@
                     "x": 0,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2638,7 +2638,7 @@
                     "label": "4",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2646,7 +2646,7 @@
                     "x": 13,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2656,7 +2656,7 @@
                     "label": "5",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2664,7 +2664,7 @@
                     "x": 26,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2674,7 +2674,7 @@
                     "label": "6",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2682,7 +2682,7 @@
                     "x": 39,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2692,7 +2692,7 @@
                     "label": "7",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2700,7 +2700,7 @@
                     "x": 52,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2710,7 +2710,7 @@
                     "label": "8",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2718,7 +2718,7 @@
                     "x": 65,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2728,7 +2728,7 @@
                     "label": "9",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2736,7 +2736,7 @@
                     "x": 78,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2746,7 +2746,7 @@
                     "label": "10",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2754,7 +2754,7 @@
                     "x": 91,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2764,7 +2764,7 @@
                     "label": "15",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2772,7 +2772,7 @@
                     "x": 104,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2782,7 +2782,7 @@
                     "label": "16",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2790,7 +2790,7 @@
                     "x": 117,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2800,7 +2800,7 @@
                     "label": "17",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2808,7 +2808,7 @@
                     "x": 130,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2818,7 +2818,7 @@
                     "label": "18",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2826,7 +2826,7 @@
                     "x": 143,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2836,7 +2836,7 @@
                     "label": "19",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2844,7 +2844,7 @@
                     "x": 156,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2854,7 +2854,7 @@
                     "label": "20",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2862,7 +2862,7 @@
                     "x": 169,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2872,7 +2872,7 @@
                     "label": "21",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2880,7 +2880,7 @@
                     "x": 182,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   },
@@ -2890,7 +2890,7 @@
                     "label": "22",
                     "unit": "%",
                     "width": 10.4,
-                    "height": 24.7,
+                    "height": 32.5,
                     "min": 0,
                     "max": 100,
                     "digits": 0,
@@ -2898,7 +2898,7 @@
                     "x": 195,
                     "y": 0,
                     "frameWidth": 10.4,
-                    "frameHeight": 37.440000000000005,
+                    "frameHeight": 45.239999999999995,
                     "orientation": "vertical",
                     "color": "#4383F4FF"
                   }
@@ -2918,7 +2918,7 @@
               "x": 184,
               "y": 740,
               "frameWidth": 336,
-              "frameHeight": 100,
+              "frameHeight": 112,
               "groupKey": "fusion-285k/e/cpu-loads",
               "groupDisplay": "bar",
               "groupColumns": 16,
@@ -3065,11 +3065,11 @@
               "columnSpan": 1,
               "digits": 0,
               "valueSize": 12,
-              "height": 38,
+              "height": 50,
               "minimum": 0,
               "maximum": 100,
               "groupBarWidth": 16,
-              "groupBarHeight": 38
+              "groupBarHeight": 50
             }
           }
         ],
@@ -3078,7 +3078,322 @@
         "x": 119.60000000000001,
         "y": 481,
         "frameWidth": 218.4,
-        "frameHeight": 65,
+        "frameHeight": 72.8,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 6.5,
+        "radius": 2.6,
+        "color": "#101B35F5",
+        "children": [
+          {
+            "type": "panel",
+            "background": false,
+            "padding": 0,
+            "children": [
+              {
+                "type": "heatmap",
+                "keys": [
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%231%20P",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%232%20P",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2311%20P",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2312%20P",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2313%20P",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2314%20P",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2323%20P",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2324%20P",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%233%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%234%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%235%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%236%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%237%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%238%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%239%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2310%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2315%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2316%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2317%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2318%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2319%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2320%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2321%20E",
+                  "avg:60:sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2322%20E"
+                ],
+                "title": "CPU Load Heatmap",
+                "unit": "%",
+                "min": 0,
+                "max": 100,
+                "width": 325,
+                "height": 72.8,
+                "gap": 1.3,
+                "size": 8.450000000000001,
+                "titleColor": "#6DDBFEFF",
+                "color": "#F1F6FBFF",
+                "types": [
+                  "P",
+                  "P",
+                  "P",
+                  "P",
+                  "P",
+                  "P",
+                  "P",
+                  "P",
+                  "E",
+                  "E",
+                  "E",
+                  "E",
+                  "E",
+                  "E",
+                  "E",
+                  "E",
+                  "E",
+                  "E",
+                  "E",
+                  "E",
+                  "E",
+                  "E",
+                  "E",
+                  "E"
+                ]
+              }
+            ],
+            "color": "#6DDBFEFF",
+            "editor": {
+              "padding": 10,
+              "borderWidth": 1,
+              "labelSize": 10,
+              "unitSize": 11,
+              "borderColor": "#4383F488",
+              "valueColor": "#F1F6FBFF",
+              "labelColor": "#A8B7C6FF",
+              "unitColor": "#A8B7C6FF",
+              "x": 0,
+              "y": 860,
+              "frameWidth": 520,
+              "frameHeight": 132,
+              "groupKey": "fusion-285k/cpu-loads",
+              "groupDisplay": "heatmap",
+              "groupColumns": 16,
+              "groupMembers": [
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%231%20P",
+                  "label": "1",
+                  "sourceName": "Core #1 P",
+                  "coreType": "P",
+                  "coreIndex": 1,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%232%20P",
+                  "label": "2",
+                  "sourceName": "Core #2 P",
+                  "coreType": "P",
+                  "coreIndex": 2,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2311%20P",
+                  "label": "11",
+                  "sourceName": "Core #11 P",
+                  "coreType": "P",
+                  "coreIndex": 11,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2312%20P",
+                  "label": "12",
+                  "sourceName": "Core #12 P",
+                  "coreType": "P",
+                  "coreIndex": 12,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2313%20P",
+                  "label": "13",
+                  "sourceName": "Core #13 P",
+                  "coreType": "P",
+                  "coreIndex": 13,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2314%20P",
+                  "label": "14",
+                  "sourceName": "Core #14 P",
+                  "coreType": "P",
+                  "coreIndex": 14,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2323%20P",
+                  "label": "23",
+                  "sourceName": "Core #23 P",
+                  "coreType": "P",
+                  "coreIndex": 23,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2324%20P",
+                  "label": "24",
+                  "sourceName": "Core #24 P",
+                  "coreType": "P",
+                  "coreIndex": 24,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%233%20E",
+                  "label": "3",
+                  "sourceName": "Core #3 E",
+                  "coreType": "E",
+                  "coreIndex": 3,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%234%20E",
+                  "label": "4",
+                  "sourceName": "Core #4 E",
+                  "coreType": "E",
+                  "coreIndex": 4,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%235%20E",
+                  "label": "5",
+                  "sourceName": "Core #5 E",
+                  "coreType": "E",
+                  "coreIndex": 5,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%236%20E",
+                  "label": "6",
+                  "sourceName": "Core #6 E",
+                  "coreType": "E",
+                  "coreIndex": 6,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%237%20E",
+                  "label": "7",
+                  "sourceName": "Core #7 E",
+                  "coreType": "E",
+                  "coreIndex": 7,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%238%20E",
+                  "label": "8",
+                  "sourceName": "Core #8 E",
+                  "coreType": "E",
+                  "coreIndex": 8,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%239%20E",
+                  "label": "9",
+                  "sourceName": "Core #9 E",
+                  "coreType": "E",
+                  "coreIndex": 9,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2310%20E",
+                  "label": "10",
+                  "sourceName": "Core #10 E",
+                  "coreType": "E",
+                  "coreIndex": 10,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2315%20E",
+                  "label": "15",
+                  "sourceName": "Core #15 E",
+                  "coreType": "E",
+                  "coreIndex": 15,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2316%20E",
+                  "label": "16",
+                  "sourceName": "Core #16 E",
+                  "coreType": "E",
+                  "coreIndex": 16,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2317%20E",
+                  "label": "17",
+                  "sourceName": "Core #17 E",
+                  "coreType": "E",
+                  "coreIndex": 17,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2318%20E",
+                  "label": "18",
+                  "sourceName": "Core #18 E",
+                  "coreType": "E",
+                  "coreIndex": 18,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2319%20E",
+                  "label": "19",
+                  "sourceName": "Core #19 E",
+                  "coreType": "E",
+                  "coreIndex": 19,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2320%20E",
+                  "label": "20",
+                  "sourceName": "Core #20 E",
+                  "coreType": "E",
+                  "coreIndex": 20,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2321%20E",
+                  "label": "21",
+                  "sourceName": "Core #21 E",
+                  "coreType": "E",
+                  "coreIndex": 21,
+                  "isEnabled": true
+                },
+                {
+                  "key": "sensor:Intel%20Core%20Ultra%209%20285K%2Fload%2FCore%20%2322%20E",
+                  "label": "22",
+                  "sourceName": "Core #22 E",
+                  "coreType": "E",
+                  "coreIndex": 22,
+                  "isEnabled": true
+                }
+              ],
+              "kind": "group",
+              "label": "CPU Load Heatmap",
+              "key": "fusion-285k/cpu-loads",
+              "unit": "%",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "color": "#6DDBFEFF",
+              "backgroundColor": "#101B35F5",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 12,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "borderColor": "#4383F488",
+        "borderWidth": 0.65,
+        "x": 0,
+        "y": 559,
+        "frameWidth": 338,
+        "frameHeight": 85.8,
         "clip": true
       },
       {
@@ -3121,7 +3436,7 @@
               "separator": " / ",
               "secondaryDigits": 0,
               "x": 0,
-              "y": 848,
+              "y": 1000,
               "frameWidth": 256,
               "frameHeight": 44,
               "kind": "metric",
@@ -3144,7 +3459,7 @@
         "borderColor": "#48626E55",
         "borderWidth": 0.65,
         "x": 0,
-        "y": 551.2,
+        "y": 650,
         "frameWidth": 166.4,
         "frameHeight": 28.6,
         "clip": true
@@ -3181,7 +3496,7 @@
               "labelColor": "#6DDBFEFF",
               "unitColor": "#A8B7C6FF",
               "x": 264,
-              "y": 848,
+              "y": 1000,
               "frameWidth": 256,
               "frameHeight": 44,
               "kind": "metric",
@@ -3204,12 +3519,12 @@
         "borderColor": "#48626E55",
         "borderWidth": 0.65,
         "x": 171.6,
-        "y": 551.2,
+        "y": 650,
         "frameWidth": 166.4,
         "frameHeight": 28.6,
         "clip": true
       }
     ],
-    "height": 579.8000000000001
+    "height": 678.6
   }
 }
