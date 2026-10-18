@@ -249,10 +249,12 @@ not Segoe UI. Details: the OSD repo's CLAUDE.md.
 ### Heatmap tiles
 
 A group tile with `GroupDisplay = "heatmap"` exports the native `heatmap` widget, one cell per
-member, and keys every cell `avg:{seconds}:{source}` (`GroupWindowSeconds`, 10..600, default 60).
+member, and keys every cell `avg:{seconds}:{source}` (`GroupWindowSeconds`, 1..600, default 60).
 The native widget only draws. The averages come from CapFrameX: `OverlayMovingAverages`
 (`CapFrameX.OSD.Integration`) keeps one `SlidingWindowAverage` (`CapFrameX.Statistics.NetStandard`,
-a running sum, O(1) amortized per sample) per tracked key. `OverlayDesignRuntimePublisher` feeds it
+a running sum, O(1) amortized per sample) per tracked key; the newest reading stays current for twice
+the gap between the last two readings, so a window shorter than the overlay refresh (1 s at the default
+`OSDRefreshPeriod`) never falls empty between readings. `OverlayDesignRuntimePublisher` feeds it
 from every telemetry snapshot and asks the binder for the plain sources behind the averaged keys
 (`GetRequiredSourceIds`). The designer's live preview keeps its own instance. The MCP render has no
 history and shows current readings. `OverlayRuntimeSourceBinder.ExpandHeatmap` expands a

@@ -5,7 +5,9 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Windows.Threading;
 using CapFrameX.OSD.Controls;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -343,6 +345,37 @@ namespace CapFrameX.Test.Integration
             host.Commit("GroupBarHeightField", "24");
             Assert.IsFalse(Validation.GetHasError(field));
             Assert.AreEqual(24.0, host.Layout.TrackHeight);
+        }
+
+        [TestMethod]
+        public void HeatmapWindowAcceptsOneSecondAndFramesAnInvalidEntryInsideTheField()
+        {
+            using var host = new EditorHost("vertical");
+            host.Editor.SelectedElement.GroupDisplay = "heatmap";
+            Settle();
+            host.Window.UpdateLayout();
+            var field = host.Field("HeatmapWindowField");
+            field.SetCurrentValue(TextBox.TextProperty, "0");
+            Enter(field);
+            Settle();
+            host.Window.UpdateLayout();
+            Assert.IsTrue(Validation.GetHasError(field), "A window below one second is rejected.");
+
+            // The inspector clips everything left of its edge, where this field starts: the error
+            // frame has to stay inside the field to be visible all around.
+            var adorners = AdornerLayer.GetAdornerLayer(field)?.GetAdorners(field);
+            Assert.IsTrue(adorners?.Length > 0, "An invalid entry shows an error frame.");
+            foreach (var adorner in adorners)
+            {
+                var bounds = adorner.TransformToVisual(field).TransformBounds(VisualTreeHelper.GetDescendantBounds(adorner));
+                Assert.IsTrue(bounds.Left >= -0.01 && bounds.Top >= -0.01 &&
+                              bounds.Right <= field.ActualWidth + 0.01 && bounds.Bottom <= field.ActualHeight + 0.01,
+                    $"The error frame {bounds} leaves the field (0,0,{field.ActualWidth},{field.ActualHeight}).");
+            }
+
+            host.Commit("HeatmapWindowField", "1");
+            Assert.IsFalse(Validation.GetHasError(field));
+            Assert.AreEqual(1, host.Editor.SelectedElement.GroupWindowSeconds);
         }
 
         [TestMethod]

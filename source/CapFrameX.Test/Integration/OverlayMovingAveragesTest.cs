@@ -62,6 +62,25 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void A_WindowShorterThanTheReadingIntervalNeverFallsEmptyBetweenReadings()
+        {
+            // A 1 s window fed once per second, the default overlay refresh.
+            var averages = new OverlayMovingAverages();
+            averages.Track(new[] { "avg:1:cpu" });
+            averages.Add(Snapshot(0, ("cpu", 10)));
+            averages.Add(Snapshot(1000, ("cpu", 20)));
+            averages.Add(Snapshot(2000, ("cpu", 30)));
+
+            foreach (double now in new[] { 2500.0, 2999.0, 3000.0, 3999.0 })
+            {
+                Assert.IsTrue(averages.TryGetAverage("avg:1:cpu", Start.AddMilliseconds(now), out double? value));
+                Assert.AreEqual(30, value.Value, 1e-12, "The newest reading holds until the next one is due, at " + now + " ms.");
+            }
+            Assert.IsTrue(averages.TryGetAverage("avg:1:cpu", Start.AddMilliseconds(4000), out double? stale));
+            Assert.IsNull(stale, "A source that stopped reporting turns empty after twice its interval.");
+        }
+
+        [TestMethod]
         public void A_SourceMissingFromTheSnapshotIsFoundThroughItsAlias()
         {
             var averages = new OverlayMovingAverages();

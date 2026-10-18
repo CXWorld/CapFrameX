@@ -52,7 +52,7 @@ namespace CapFrameX.OSD.Integration
                 if (!TryParseKey(key, out int seconds, out string source)) continue;
                 wanted.Add(key);
                 if (!_entries.ContainsKey(key))
-                    _entries[key] = new Entry(source, new SlidingWindowAverage(seconds * 1000.0));
+                    _entries[key] = new Entry(source, seconds * 1000.0);
             }
             foreach (string key in new List<string>(_entries.Keys))
                 if (!wanted.Contains(key)) _entries.Remove(key);
@@ -74,7 +74,7 @@ namespace CapFrameX.OSD.Integration
                 if (!snapshot.Values.TryGetValue(entry.Source, out double? value) && aliases != null
                     && aliases.TryGetValue(entry.Source, out string alias))
                     snapshot.Values.TryGetValue(alias, out value);
-                if (value.HasValue) entry.Average.Add(time, value.Value);
+                if (value.HasValue) entry.Add(time, value.Value);
             }
         }
 
@@ -86,7 +86,7 @@ namespace CapFrameX.OSD.Integration
         {
             average = null;
             if (key == null || !_entries.TryGetValue(key, out var entry)) return false;
-            average = entry.Average.Average(ToMilliseconds(nowUtc));
+            average = entry.Current(ToMilliseconds(nowUtc));
             return true;
         }
 
@@ -95,7 +95,7 @@ namespace CapFrameX.OSD.Integration
         {
             foreach (var pair in _entries)
             {
-                double? average = pair.Value.Average.Average(ToMilliseconds(nowUtc));
+                double? average = pair.Value.Current(ToMilliseconds(nowUtc));
                 values[pair.Key] = average.HasValue ? (object)average.Value : null;
             }
         }
@@ -103,21 +103,50 @@ namespace CapFrameX.OSD.Integration
         /// <summary>Drops every sample but keeps the tracked keys.</summary>
         public void Clear()
         {
-            foreach (var entry in _entries.Values) entry.Average.Clear();
+            foreach (var entry in _entries.Values) entry.Clear();
         }
 
         private static double ToMilliseconds(DateTime utc) => utc.Ticks / (double)TimeSpan.TicksPerMillisecond;
 
+        // A window shorter than the interval between two readings would fall empty before the next
+        // one arrives and blink its cell to "no reading" (a 1 s window at the default 1 s overlay
+        // refresh). The newest reading therefore stays current for twice the gap between the last
+        // two readings; a source that stops reporting still turns empty soon after.
         private sealed class Entry
         {
-            public Entry(string source, SlidingWindowAverage average)
+            private readonly SlidingWindowAverage _average;
+            private double _newestTime = double.NaN, _newestValue, _lastGap;
+
+            public Entry(string source, double windowMilliseconds)
             {
                 Source = source;
-                Average = average;
+                _average = new SlidingWindowAverage(windowMilliseconds);
             }
 
             public string Source { get; }
-            public SlidingWindowAverage Average { get; }
+
+            public void Add(double time, double value)
+            {
+                if (!double.IsFinite(time) || !double.IsFinite(value)) return;
+                _lastGap = time > _newestTime ? time - _newestTime : 0;
+                _newestTime = time;
+                _newestValue = value;
+                _average.Add(time, value);
+            }
+
+            public double? Current(double now)
+            {
+                double? average = _average.Average(now);
+                if (average.HasValue || double.IsNaN(_newestTime)) return average;
+                return now - _newestTime < 2 * _lastGap ? _newestValue : (double?)null;
+            }
+
+            public void Clear()
+            {
+                _average.Clear();
+                _newestTime = double.NaN;
+                _lastGap = 0;
+            }
         }
     }
 }
