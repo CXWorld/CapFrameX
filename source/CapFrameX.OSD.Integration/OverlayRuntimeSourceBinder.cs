@@ -308,7 +308,9 @@ namespace CapFrameX.OSD.Integration
                 .ThenBy(item => item.Source.CoreIndex ?? int.MaxValue)
                 .ThenBy(item => item.Source.ThreadIndex ?? int.MaxValue)
                 .ThenBy(item => item.Index).Select(item => item.Source).ToArray();
-            int seconds = (int?)editor["groupWindowSeconds"] ?? DefaultHeatmapWindowSeconds;
+            // Without an explicit window the saved cells tell it: designs saved while the default was
+            // 60 s keep it, as the editor's FromJson does.
+            int seconds = (int?)editor["groupWindowSeconds"] ?? SavedHeatmapWindow(heatmap) ?? DefaultHeatmapWindowSeconds;
             heatmap["keys"] = new JArray(ordered.Select(source => OverlayMovingAverages.Key(seconds, source.Id)));
             string[] types = ordered.Select(source => CoreType(source.CoreType) ?? "-").ToArray();
             if (types.Any(type => type != "-")) heatmap["types"] = new JArray(types);
@@ -329,8 +331,12 @@ namespace CapFrameX.OSD.Integration
             heatmap["height"] = required - 2 * padding;
         }
 
-        private const int DefaultHeatmapWindowSeconds = 60;
+        private const int DefaultHeatmapWindowSeconds = 10;
         private const int HeatmapColumns = 16;
+
+        private static int? SavedHeatmapWindow(JObject heatmap)
+            => heatmap["keys"] is JArray keys && keys.Count > 0 &&
+               OverlayMovingAverages.TryParseKey((string)keys[0], out int seconds, out _) ? seconds : null;
 
         // The renderer's ArrangeHeatmap: every run of one core type is a block, up to 16 cells share
         // one row, and more take the fewest rows at which the blocks need at most 16 columns.

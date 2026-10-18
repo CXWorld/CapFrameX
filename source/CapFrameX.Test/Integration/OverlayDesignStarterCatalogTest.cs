@@ -218,14 +218,14 @@ namespace CapFrameX.Test.Integration
                 Assert.AreEqual(1, document.GetGroupBarLayout(group).Rows, label + " must remain a single row of bars.");
             }
 
-            // The heatmap averages every thread over the default minute, P-cores first; the types
+            // The heatmap averages every thread over the default ten seconds, P-cores first; the types
             // set the eight P-cores (4x2) beside the sixteen E-cores (8x2) as blocks of their own.
             var heatmap = document.Tiles.Single(tile => tile.Kind == "group" && tile.GroupDisplay == "heatmap");
             Assert.IsNull(heatmap.GroupWindowSeconds, "The heatmap keeps the default window.");
             var cells = coreTypes.SelectMany(coreType => coreType.Cores.Select(core => Key("Load", $"Core #{core} {coreType.Type}"))).ToArray();
             var heatmapWidget = JObject.Parse(OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson).TemplateJson)
                 .Descendants().OfType<JObject>().Single(node => (string)node["type"] == "heatmap");
-            CollectionAssert.AreEqual(cells.Select(cell => OverlayMovingAverages.Key(60, cell)).ToArray(),
+            CollectionAssert.AreEqual(cells.Select(cell => OverlayMovingAverages.Key(10, cell)).ToArray(),
                 heatmapWidget["keys"].Values<string>().ToArray());
             CollectionAssert.AreEqual(Enumerable.Repeat("P", 8).Concat(Enumerable.Repeat("E", 16)).ToArray(),
                 heatmapWidget["types"].Values<string>().ToArray());

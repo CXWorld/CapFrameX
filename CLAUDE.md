@@ -249,7 +249,7 @@ not Segoe UI. Details: the OSD repo's CLAUDE.md.
 ### Heatmap tiles
 
 A group tile with `GroupDisplay = "heatmap"` exports the native `heatmap` widget, one cell per
-member, and keys every cell `avg:{seconds}:{source}` (`GroupWindowSeconds`, 1..600, default 60).
+member, and keys every cell `avg:{seconds}:{source}` (`GroupWindowSeconds`, 1..600, default 10).
 The native widget only draws. The averages come from CapFrameX: `OverlayMovingAverages`
 (`CapFrameX.OSD.Integration`) keeps one `SlidingWindowAverage` (`CapFrameX.Statistics.NetStandard`,
 a running sum, O(1) amortized per sample) per tracked key; the newest reading stays current for twice
@@ -260,7 +260,9 @@ from every telemetry snapshot and asks the binder for the plain sources behind t
 history and shows current readings. `OverlayRuntimeSourceBinder.ExpandHeatmap` expands a
 `role:cpu-loads` heatmap like the editor: ordered by core type, core and thread, with `types` so
 that every core type forms a labelled block of its own (`HeatmapRows` and the label row repeat the
-renderer's layout for the flow height).
+renderer's layout for the flow height). A group without an explicit window takes it from its saved
+cell keys (`SavedHeatmapWindow`), so designs saved while the default was 60 s keep it, as the editor's
+`FromJson` does.
 `OverlayRuntimeSourceBinderTest` checks parity for hybrid CPUs with HT P-cores. The prebuilt
 Controls must contain the heatmap: a Controls build without it rejects FUSION. Block and row rules:
 the OSD repo's CLAUDE.md.

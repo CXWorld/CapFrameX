@@ -135,7 +135,7 @@ Kinds:
   { ""key"", ""label"", ""isEnabled"" }: rename or hide members there.
   groupDisplay ""heatmap"" draws one cell per member, shaded from idle to full load in valueColor
   (default the document's textColor) under the title (in color) and an idle..maximum legend. Each
-  cell shows its reading averaged over groupWindowSeconds (1..600, default 60). Members are ordered
+  cell shows its reading averaged over groupWindowSeconds (1..600, default 10). Members are ordered
   P-cores first with each core's threads together, and every core type forms a block of its own,
   labelled (P-Cores, E-Cores, ...) and side by side. Up to 16 cells share one row; more take the
   fewest rows at which the

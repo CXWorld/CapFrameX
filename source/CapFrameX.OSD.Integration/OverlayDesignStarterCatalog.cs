@@ -46,7 +46,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 15;
+        public const int Version = 16;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -97,8 +97,9 @@ namespace CapFrameX.OSD.Integration
                 // their base for resolution-relative sizing, GREENLINE before version ten and ICELINE
                 // before version eleven centred the GPU name in their headers, and FUSION before version
                 // twelve added its core load heatmap, before version thirteen grouped the heatmap's
-                // core types into blocks, before version fourteen labelled them and before version
-                // fifteen centred "285K" below its logo. Never replace a renamed or edited profile.
+                // core types into blocks, before version fourteen labelled them, before version
+                // fifteen centred "285K" below its logo and before version sixteen averaged its heatmap
+                // over the 10 s default instead of 60 s. Never replace a renamed or edited profile.
                 string[] previousDesignHashes = entry.Id switch
                 {
                     "RTX-5090-9800X3D-APEX" => new[] { "02913A2E04FABDD253EE7FC4D37F6FED8BE06A0E89B15E61C03CBDD52AC6D716" },
@@ -114,7 +115,8 @@ namespace CapFrameX.OSD.Integration
                         "8C874E3BC06D09F722627AB3978316AA613733D11CBE18337E0C41570DE7D0EF",
                         "338F4F0E7525D2CD5D9B4096612C869DECEE947A3A53204E362304544501E276",
                         "A93FBDED3CDEE2E51EE9D76F12907E2FB0C2CE5629C3175AEC72C0EFD83D8465",
-                        "375AD5D0DDF1F923960970412183A0A5A8F5704170BB955235818552608037F0"
+                        "375AD5D0DDF1F923960970412183A0A5A8F5704170BB955235818552608037F0",
+                        "2F2081F41702F0156285B055621F0350AC7FC61514600DA6CBF17FFF3BC4B8F4"
                     },
                     "Panther-Lake-Arc-Aurora" => new[] { "E717AF2FB7BDDF804AFF1918BA97CC560D251D648134522040A4F7591534C9ED" },
                     "AMD-Ryzen-5-9600X-Badge" => new[] { "09795802837F766CB0350464E82B878EA4A361141F8FEC6CDB9343A314446E40" },

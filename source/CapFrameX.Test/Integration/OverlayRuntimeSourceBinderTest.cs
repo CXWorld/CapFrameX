@@ -328,6 +328,41 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void HeatmapsDefaultToTenSecondsAndDesignsSavedWithTheFormerDefaultKeepIt(bool former)
+        {
+            var document = ThreadStrip();
+            document.Tiles.Single(tile => tile.Kind == "group").GroupDisplay = "heatmap";
+            string json = document.ToJson();
+            Assert.IsTrue(json.Contains("\"avg:10:"), "A heatmap without a window averages over ten seconds.");
+            // The editor before the 10 s default stored no window either and wrote its cells as avg:60.
+            if (former) json = json.Replace("\"avg:10:", "\"avg:60:");
+            int seconds = former ? 60 : 10;
+
+            var loaded = OsdDesignDocument.FromJson(json);
+            Assert.AreEqual(former ? 60 : null, loaded.Tiles.Single(tile => tile.Kind == "group").GroupWindowSeconds,
+                "The editor opens the design with the window it was saved with.");
+            Assert.IsTrue(loaded.ToJson().Contains($"\"avg:{seconds}:"));
+
+            var bound = OverlayRuntimeSourceBinder.Bind(OverlayRuntimeDesign.Parse("profile", document.Name, json), Sources("cpu-loads", 24));
+            var keys = JObject.Parse(bound.TemplateJson).Descendants().OfType<JObject>()
+                .Single(node => (string)node["type"] == "heatmap")["keys"].Values<string>().ToArray();
+            Assert.AreEqual(24, keys.Length);
+            Assert.IsTrue(keys.All(key => key.StartsWith($"avg:{seconds}:", StringComparison.Ordinal)),
+                "The runtime averages over the window the design was saved with.");
+        }
+
+        [TestMethod]
+        public void A_HeatmapWindowNoEditorWroteStillFailsTheRoundTrip()
+        {
+            var document = ThreadStrip();
+            document.Tiles.Single(tile => tile.Kind == "group").GroupDisplay = "heatmap";
+            string json = document.ToJson().Replace("\"avg:10:", "\"avg:30:");
+            Assert.ThrowsExactly<FormatException>(() => OsdDesignDocument.FromJson(json));
+        }
+
+        [TestMethod]
         [DataRow(true, 1.0)]
         [DataRow(true, 2.0)]
         [DataRow(false, 1.0)]
