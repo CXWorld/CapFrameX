@@ -1248,11 +1248,14 @@ namespace CapFrameX.Data
 
                             var clonedSensorEntry = new SessionSensorEntry(collection.Value.Name, collection.Value.Type);
 
-                            if (collection.Value.Values.Count() >= sensorIndicesToKeep.LastOrDefault())
+                            // Values is a linked list: ElementAt walked it from the start for every kept
+                            // sample, O(n²) per sensor, which froze the UI for seconds on long captures.
+                            var values = collection.Value.Values.ToArray();
+                            if (sensorIndicesToKeep.Length == 0 || values.Length > sensorIndicesToKeep[sensorIndicesToKeep.Length - 1])
                             {
                                 foreach (var indexToKeep in sensorIndicesToKeep)
                                 {
-                                    clonedSensorEntry.Values.AddLast(collection.Value.Values.ElementAt(indexToKeep));
+                                    clonedSensorEntry.Values.AddLast(values[indexToKeep]);
                                 }
                             }
 
