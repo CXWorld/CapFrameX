@@ -1228,6 +1228,8 @@
                                         </Style>
                                     </ListBox.ItemContainerStyle>
                                 </ListBox>
+                                <ctrls:TileProfileDescription Profile="{Binding SelectedDesign}" Margin="0,12,0,0" Padding="14,10" CornerRadius="6"
+                                    Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}" />
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource OsdOptionsCard}" Margin="0,12,0,0">

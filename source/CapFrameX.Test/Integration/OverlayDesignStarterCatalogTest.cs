@@ -15,6 +15,10 @@ namespace CapFrameX.Test.Integration
     [TestClass]
     public class OverlayDesignStarterCatalogTest
     {
+        private static readonly string[] SlickPresetIds =
+        {
+            "Slick-Overlay-Vertical-Panel", "Slick-Overlay-Wide-3-Rows", "Slick-Overlay-Compact-2x2", "Slick-Overlay-Single-Line"
+        };
         private string _folder;
         private string LibraryPath => Path.Combine(_folder, "OverlayDesigns", "profiles.json");
 
@@ -101,6 +105,7 @@ namespace CapFrameX.Test.Integration
         [DataRow(3, 4)]
         [DataRow(5, 6)]
         [DataRow(6, 7)]
+        [DataRow(16, 17)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -111,6 +116,7 @@ namespace CapFrameX.Test.Integration
                 4 => new[] { "RTX-5090-9800X3D-APEX", "AMD-Ryzen-Radeon-REDLINE", "RTX-5090-Core-Ultra-285K-FUSION",
                     "AMD-Ryzen-5-9600X-Badge", "AMD-Ryzen-7-9800X3D-Badge" },
                 6 => new[] { "Panther-Lake-Arc-Aurora", "OLED-Minimal" },
+                17 => SlickPresetIds,
                 _ => new[] { "NVIDIA-GeForce-RTX-GREENLINE", "ICELINE-Vertical" }
             };
             CollectionAssert.AreEquivalent(expectedIds,
@@ -173,6 +179,10 @@ namespace CapFrameX.Test.Integration
         [DataRow("OLED-Minimal", "OLED Minimal", false, 6)]
         [DataRow("NVIDIA-GeForce-RTX-GREENLINE", "GREENLINE - GeForce RTX", true, 7)]
         [DataRow("ICELINE-Vertical", "ICELINE - Vertical", true, 7)]
+        [DataRow("Slick-Overlay-Vertical-Panel", "Slick Overlay - Vertical Panel", true, 17)]
+        [DataRow("Slick-Overlay-Wide-3-Rows", "Slick Overlay - Wide 3 Rows", true, 17)]
+        [DataRow("Slick-Overlay-Compact-2x2", "Slick Overlay - Compact 2x2", true, 17)]
+        [DataRow("Slick-Overlay-Single-Line", "Slick Overlay - Single Line", true, 17)]
         public void HardwareStarterCanBeEditedAndRenderedWithItsEmbeddedGraphics(string presetId, string name, bool hasImages, int introducedInVersion)
         {
             var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
@@ -238,6 +248,10 @@ namespace CapFrameX.Test.Integration
         [TestMethod]
         [DataRow("NVIDIA-GeForce-RTX-GREENLINE", new[] { "gpuName" })]
         [DataRow("ICELINE-Vertical", new[] { "gpuName", "cpuName" })]
+        [DataRow("Slick-Overlay-Vertical-Panel", new[] { "gpuNameShort", "cpuNameShort", "gpuDriver" })]
+        [DataRow("Slick-Overlay-Wide-3-Rows", new[] { "gpuNameShort", "cpuNameShort", "gpuDriver" })]
+        [DataRow("Slick-Overlay-Compact-2x2", new[] { "gpuNameShort", "cpuNameShort", "gpuDriver" })]
+        [DataRow("Slick-Overlay-Single-Line", new[] { "gpuNameShort", "cpuNameShort", "gpuDriver" })]
         public void GenericStarterNamesTheInstalledHardwareAndStaysPortable(string presetId, string[] nameKeys)
         {
             var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
@@ -247,7 +261,8 @@ namespace CapFrameX.Test.Integration
                 Assert.AreEqual(1, tiles.Count(tile => tile.Kind == "metric" && tile.Key == key), key + " must show the name the system reports.");
             // The native metric draws text readouts in the theme text colour whatever their value
             // colour, so each one declares that colour and the editor shows what is rendered.
-            foreach (var readout in tiles.Where(tile => tile.Kind == "metric" && new[] { "gpuName", "cpuName", "graphicsApi" }.Contains(tile.Key)))
+            foreach (var readout in tiles.Where(tile => tile.Kind == "metric"
+                && new[] { "gpuName", "cpuName", "gpuNameShort", "cpuNameShort", "graphicsApi", "gpuDriver" }.Contains(tile.Key)))
                 Assert.AreEqual(document.TextColor, readout.ValueColor, readout.Key);
             Assert.IsFalse(tiles.Any(tile => Regex.IsMatch(tile.Label + " " + tile.Text, @"\b(?:[RG]TX|RX)\s*\d{3,4}\b|\bi[3579]-\d{4}|\bRyzen\s+\d")),
                 "No tile may name a specific CPU or GPU model.");
@@ -259,6 +274,10 @@ namespace CapFrameX.Test.Integration
         [TestMethod]
         [DataRow("NVIDIA-GeForce-RTX-GREENLINE")]
         [DataRow("ICELINE-Vertical")]
+        [DataRow("Slick-Overlay-Vertical-Panel")]
+        [DataRow("Slick-Overlay-Wide-3-Rows")]
+        [DataRow("Slick-Overlay-Compact-2x2")]
+        [DataRow("Slick-Overlay-Single-Line")]
         public void GenericStarterKeepsItsFramerateReadoutsUnitlessWhenBound(string presetId)
         {
             var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
@@ -272,6 +291,38 @@ namespace CapFrameX.Test.Integration
             // Binding adopts the source unit unless a scale is set. The captions below the values
             // already name them, and a bound "FPS" unit would crowd the large readout.
             Assert.IsTrue(readouts.All(node => (string)node["unit"] == ""), string.Join(", ", readouts.Select(node => (string)node["unit"])));
+        }
+
+        [TestMethod]
+        public void AdaptedStartersDescribeThemselvesAndCreditTheirAuthorsThroughRenamesAndEdits()
+        {
+            foreach (var starter in OverlayDesignStarterCatalog.Profiles)
+            {
+                bool adapted = SlickPresetIds.Contains(starter.PresetId);
+                Assert.AreEqual(adapted, starter.Description.Count > 0, starter.PresetId);
+                Assert.AreEqual(adapted, starter.Links.Count > 0, starter.PresetId);
+                Assert.IsTrue(starter.Links.All(link => link.Uri.IsAbsoluteUri && link.Uri.Scheme == Uri.UriSchemeHttps), starter.PresetId);
+            }
+
+            var store = Open();
+            Assert.IsTrue(OverlayDesignStarterCatalog.EnsureProfiles(store));
+            var panel = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "Slick-Overlay-Vertical-Panel");
+            store.Rename(panel.Id, "My corner panel");
+            store.Save(panel.Id, Design("minimal", 400));
+
+            var info = OverlayDesignStarterCatalog.Describe(store.Get(panel.Id));
+            Assert.AreEqual("My corner panel", info.Name);
+            Assert.IsTrue(info.HasDescription);
+            Assert.AreEqual(3, info.Description.Count, "Layout, credit and notes.");
+            Assert.IsTrue(info.Description.All(paragraph => !paragraph.StartsWith("OverlayDesignStarter_", StringComparison.Ordinal)),
+                "Every paragraph resolves to catalog text.");
+            StringAssert.Contains(info.Description[1], "HeyOkay");
+            CollectionAssert.Contains(info.Links.Select(link => link.Uri.AbsoluteUri).ToArray(), "https://github.com/HeyOkay/Slick-Overlay-for-RTSS");
+
+            var copy = store.Duplicate(panel.Id, "My copy");
+            Assert.IsFalse(OverlayDesignStarterCatalog.Describe(copy).HasDescription, "A copy is the user's own design.");
+            var benchmark = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "benchmark");
+            Assert.IsFalse(OverlayDesignStarterCatalog.Describe(store.Get(benchmark.Id)).HasDescription);
         }
 
         [TestMethod]

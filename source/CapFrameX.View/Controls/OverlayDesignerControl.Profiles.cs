@@ -318,8 +318,12 @@ namespace CapFrameX.View.Controls
             Editor.IsEnabled = _profileSession != null && !_profileLoadFailed && !_hostIsClosing;
             if (_profileSession?.ActiveProfile == null)
             {
+                ProfileDescription.Profile = null;
                 return;
             }
+            // The description follows the language by itself; only another profile replaces it.
+            if (ProfileDescription.Profile?.Id != _profileSession.ActiveProfile.Id)
+                ProfileDescription.Profile = OverlayDesignStarterCatalog.Describe(_profileSession.ActiveProfile);
             _updatingProfileUi = true;
             try
             {

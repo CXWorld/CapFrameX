@@ -43,6 +43,15 @@
                       Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\overlay-templates\ICELINE-Vertical.json"
                       Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
+    <!-- Adapted from Slick Overlay for RTSS by HeyOkay (MIT License, overlay-templates\Slick-Overlay-LICENSE.txt). -->
+    <EmbeddedResource Include="..\..\overlay-templates\Slick-Overlay-Vertical-Panel.json"
+                      Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\overlay-templates\Slick-Overlay-Wide-3-Rows.json"
+                      Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\overlay-templates\Slick-Overlay-Compact-2x2.json"
+                      Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\overlay-templates\Slick-Overlay-Single-Line.json"
+                      Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
     <None Remove="HookCompatibilityProfiles.xml" />
     <EmbeddedResource Include="HookCompatibilityProfiles.xml"
                       LogicalName="CapFrameX.OSD.Integration.HookCompatibilityProfiles.xml" />

@@ -4,6 +4,7 @@
              xmlns:loc="clr-namespace:CapFrameX.MVVM.Localization;assembly=CapFrameX.MVVM"
              xmlns:osd="clr-namespace:CapFrameX.OSD.Controls;assembly=CapFrameX.OSD.Controls"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:CapFrameX.View.Controls"
              Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
              Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
              Loaded="OnLoaded" Unloaded="OnUnloaded" IsVisibleChanged="OnIsVisibleChanged">
@@ -32,6 +33,8 @@
                            Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
                 <TextBlock x:Name="ProfileError" Margin="0,6,0,0" FontSize="12" TextWrapping="Wrap" Visibility="Collapsed"
                            Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+                <local:TileProfileDescription x:Name="ProfileDescription" Margin="0,8,0,0" MaxWidth="1100" HorizontalAlignment="Left"
+                    TextElement.FontSize="12" />
             </StackPanel>
         </Border>
         <Grid DockPanel.Dock="Bottom" Margin="0,12,0,0">

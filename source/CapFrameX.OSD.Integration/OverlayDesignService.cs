@@ -63,7 +63,7 @@ namespace CapFrameX.OSD.Integration
                 try
                 {
                     var store = Open();
-                    _profiles = Array.AsReadOnly(store.Profiles.Select(profile => new OverlayDesignInfo(profile.Id, profile.Name)).ToArray());
+                    _profiles = Array.AsReadOnly(store.Profiles.Select(OverlayDesignStarterCatalog.Describe).ToArray());
                     string selected = _configuration.ActiveOverlayDesignProfileId;
                     var active = store.Profiles.FirstOrDefault(profile => profile.Id == selected);
                     // Recovery can return an older backup from before the current profile
@@ -119,7 +119,7 @@ namespace CapFrameX.OSD.Integration
                 SetActiveProfileId(profile.Id);
                 _current = design;
                 RememberProfile(profile.Id);
-                _profiles = Array.AsReadOnly(store.Profiles.Select(item => new OverlayDesignInfo(item.Id, item.Name)).ToArray());
+                _profiles = Array.AsReadOnly(store.Profiles.Select(OverlayDesignStarterCatalog.Describe).ToArray());
                 _status = CurrentModeStatus;
                 AppendLibraryWarnings(store);
                 _runtimeError = false;
@@ -150,7 +150,7 @@ namespace CapFrameX.OSD.Integration
                 // Deletion never installs starters or refreshes an unrelated active design.
                 var store = new OverlayDesignProfileStore(_configurationFolder, OverlayRuntimeDesign.Canonicalize);
                 store.Delete(profileId);
-                _profiles = Array.AsReadOnly(store.Profiles.Select(profile => new OverlayDesignInfo(profile.Id, profile.Name)).ToArray());
+                _profiles = Array.AsReadOnly(store.Profiles.Select(OverlayDesignStarterCatalog.Describe).ToArray());
                 if (_current?.ProfileId == profileId || _configuration.ActiveOverlayDesignProfileId == profileId)
                 {
                     ClearActiveDesign();

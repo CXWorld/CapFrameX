@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using CapFrameX.Contracts.Localization;
+using CapFrameX.Contracts.Overlay;
 using Newtonsoft.Json.Linq;
 
 namespace CapFrameX.OSD.Integration
@@ -29,6 +30,10 @@ namespace CapFrameX.OSD.Integration
         public string Id { get; }
         public string Name { get; }
         public string DesignJson { get; }
+        /// <summary>What the design shows and whom it credits; empty for CapFrameX's own designs.</summary>
+        public IReadOnlyList<LocalizedText> Description { get; internal init; } = Array.Empty<LocalizedText>();
+        /// <summary>Web pages of the authors whose work the design is adapted from.</summary>
+        public IReadOnlyList<OverlayDesignLink> Links { get; internal init; } = Array.Empty<OverlayDesignLink>();
         internal int IntroducedInVersion { get; }
 
         internal bool CanUpdate(OverlayDesignProfile profile) => _previousDesignHashes.Length > 0
@@ -46,7 +51,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 16;
+        public const int Version = 17;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -54,6 +59,17 @@ namespace CapFrameX.OSD.Integration
         {
             ArgumentNullException.ThrowIfNull(store);
             return store.EnsureStarterProfiles(Profiles, Version);
+        }
+
+        /// <summary>
+        /// A saved profile as the profile lists show it. A profile that started as a shipped design keeps
+        /// that design's description and credits through renames and edits; a copy is the user's own design.
+        /// </summary>
+        public static OverlayDesignInfo Describe(OverlayDesignProfile profile)
+        {
+            ArgumentNullException.ThrowIfNull(profile);
+            var starter = Profiles.FirstOrDefault(item => item.Id == profile.Id);
+            return new OverlayDesignInfo(profile.Id, profile.Name, starter?.Description, starter?.Links);
         }
 
         public static bool IsUnmodifiedStarter(OverlayDesignProfile profile)
@@ -83,7 +99,11 @@ namespace CapFrameX.OSD.Integration
                 (Id: "Panther-Lake-Arc-Aurora", Version: 6),
                 (Id: "OLED-Minimal", Version: 6),
                 (Id: "NVIDIA-GeForce-RTX-GREENLINE", Version: 7),
-                (Id: "ICELINE-Vertical", Version: 7)
+                (Id: "ICELINE-Vertical", Version: 7),
+                (Id: "Slick-Overlay-Vertical-Panel", Version: 17),
+                (Id: "Slick-Overlay-Wide-3-Rows", Version: 17),
+                (Id: "Slick-Overlay-Compact-2x2", Version: 17),
+                (Id: "Slick-Overlay-Single-Line", Version: 17)
             }.Select(entry =>
             {
                 using var stream = assembly.GetManifestResourceStream("CapFrameX.OSD.Integration.StarterDesigns." + entry.Id + ".json")
@@ -133,8 +153,39 @@ namespace CapFrameX.OSD.Integration
                     },
                     _ => Array.Empty<string>()
                 };
-                return new OverlayDesignStarterProfile(entry.Id, reader.ReadToEnd(), entry.Version, previousDesignHashes);
+                var (description, links) = About(entry.Id);
+                return new OverlayDesignStarterProfile(entry.Id, reader.ReadToEnd(), entry.Version, previousDesignHashes)
+                {
+                    Description = description, Links = links
+                };
             }).ToArray());
+        }
+
+        // Designs adapted from other authors' work name them and link to the originals.
+        private static readonly OverlayDesignLink[] SlickOverlayLinks =
+        {
+            new OverlayDesignLink(new LocalizedText("OverlayDesignLink_SlickOverlay"),
+                new Uri("https://github.com/HeyOkay/Slick-Overlay-for-RTSS")),
+            new OverlayDesignLink(new LocalizedText("OverlayDesignLink_SlickOverlayAuthor"),
+                new Uri("https://github.com/HeyOkay")),
+            new OverlayDesignLink(new LocalizedText("OverlayDesignLink_SlickOverlayLicense"),
+                new Uri("https://github.com/HeyOkay/Slick-Overlay-for-RTSS/blob/main/LICENSE"))
+        };
+
+        private static (IReadOnlyList<LocalizedText> Description, IReadOnlyList<OverlayDesignLink> Links) About(string presetId)
+        {
+            LocalizedText layout = presetId switch
+            {
+                "Slick-Overlay-Vertical-Panel" => new LocalizedText("OverlayDesignStarter_SlickVerticalPanel"),
+                "Slick-Overlay-Wide-3-Rows" => new LocalizedText("OverlayDesignStarter_SlickWide3Rows"),
+                "Slick-Overlay-Compact-2x2" => new LocalizedText("OverlayDesignStarter_SlickCompact2x2"),
+                "Slick-Overlay-Single-Line" => new LocalizedText("OverlayDesignStarter_SlickSingleLine"),
+                _ => null
+            };
+            if (layout == null)
+                return (Array.Empty<LocalizedText>(), Array.Empty<OverlayDesignLink>());
+            return (new[] { layout, new LocalizedText("OverlayDesignStarter_SlickCredit"), new LocalizedText("OverlayDesignStarter_SlickNotes") },
+                SlickOverlayLinks);
         }
     }
 }
