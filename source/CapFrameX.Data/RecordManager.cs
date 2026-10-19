@@ -2142,10 +2142,13 @@ namespace CapFrameX.Data
             {
                 foreach (var sessionRun in sessionRuns)
                 {
-                    var tmpMeasureTimeArray = new double[sessionRun.SensorData2.BetweenMeasureTimes.Count()];
-                    for (int i = 0; i < sessionRun.SensorData2.BetweenMeasureTimes.Count(); i++)
+                    // BetweenMeasureTimes copies the linked list into a new array on every access, and
+                    // the loop read it twice per sample: O(n²) time and allocations. Read it once.
+                    var betweenMeasureTimes = sessionRun.SensorData2.BetweenMeasureTimes;
+                    var tmpMeasureTimeArray = new double[betweenMeasureTimes.Length];
+                    for (int i = 0; i < betweenMeasureTimes.Length; i++)
                     {
-                        lastSensorMeasureTime += sessionRun.SensorData2.BetweenMeasureTimes[i];
+                        lastSensorMeasureTime += betweenMeasureTimes[i];
                         tmpMeasureTimeArray[i] = lastSensorMeasureTime;
                     }
                     sessionRun.SensorData2.MeasureTime.Values.Clear();

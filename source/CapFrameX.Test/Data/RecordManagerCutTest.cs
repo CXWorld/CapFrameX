@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Prism.Events;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
@@ -79,6 +80,22 @@ namespace CapFrameX.Test.Data
             Assert.IsNotNull(cut, "the cut record was not written");
             CollectionAssert.AreEqual(Enumerable.Range(8, 9).Select(i => (double)i).ToArray(), SensorValues(cut, "CPU Package"));
             Assert.AreEqual(0, SensorValues(cut, "GPU Core").Length);
+        }
+
+        [TestMethod]
+        public async Task LongSensorLog_IsCutInLinearTime()
+        {
+            // 5 h at 250 ms. Copying each kept sample with ElementAt and normalizing the measure times
+            // through BetweenMeasureTimes were both O(n²): together about 150 s here.
+            const int samples = 72000;
+            var session = SessionWithSensors(seconds: samples * SensorInterval, sensorSamples: samples, framesPerSecond: 1);
+
+            var stopwatch = Stopwatch.StartNew();
+            var cut = await Cut(session, inverse: false, startTime: 0, endTime: samples * SensorInterval);
+            stopwatch.Stop();
+
+            Assert.AreEqual(samples, SensorValues(cut, "CPU Package").Length);
+            Assert.IsTrue(stopwatch.Elapsed < TimeSpan.FromSeconds(10), $"cut took {stopwatch.Elapsed}");
         }
 
         private async Task<ISession> Cut(ISession session, bool inverse, double startTime, double endTime)
