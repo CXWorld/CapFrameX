@@ -117,7 +117,7 @@ namespace CapFrameX.ViewModel
         private bool _useDisplayChangeSamplesForComparison;
         private string _comparisonMetricSourceDescription = "Source: Presents";
         private bool _isComparisonMetricSourceFallback;
-        private readonly ISubject<Unit> _rangeSliderUpdate = new Subject<Unit>();
+        private readonly CoalescedUpdate _rangeSliderUpdate;
 
         public Array FirstMetricItems => Enum.GetValues(typeof(EMetric))
             .Cast<EMetric>().Where(metric => metric != EMetric.None && metric != EMetric.GpuActiveAverage && metric != EMetric.GpuActiveOnePercentLowAverage && metric != EMetric.GpuActiveP1)
@@ -447,7 +447,7 @@ namespace CapFrameX.ViewModel
                 SetChartUpdateFlags();
 
                 if (ComparisonRangeSliderRealTime)
-                    _rangeSliderUpdate.OnNext(default);
+                    _rangeSliderUpdate?.Request();
             }
         }
 
@@ -464,7 +464,7 @@ namespace CapFrameX.ViewModel
                 SetChartUpdateFlags();
 
                 if (ComparisonRangeSliderRealTime)
-                    _rangeSliderUpdate.OnNext(default);
+                    _rangeSliderUpdate?.Request();
             }
         }
 
@@ -942,11 +942,12 @@ namespace CapFrameX.ViewModel
             SubscribeToSelectRecord();
             SubscribeToUpdateRecordInfos();
             SubscribeToThemeChanged();
-            _rangeSliderUpdate
-                .Throttle(TimeSpan.FromMilliseconds(75))
-                .ObserveOnDispatcher()
-                .Subscribe(_ => UpdateChartsSafely(), error =>
-                    _logger?.LogError(error, "The comparison chart update pipeline stopped unexpectedly."));
+            // Real time range updates redraw at most every 75 ms while the slider is dragged. Throttle
+            // only redrew after 75 ms without a change, so a drag drew nothing until it stopped.
+            _rangeSliderUpdate = new CoalescedUpdate(TimeSpan.FromMilliseconds(75),
+                new System.Reactive.Concurrency.SynchronizationContextScheduler(
+                    new System.Windows.Threading.DispatcherSynchronizationContext(System.Windows.Threading.Dispatcher.CurrentDispatcher)),
+                UpdateChartsSafely);
 
             var configurationChanges = _appConfiguration.OnValueChanged;
             if (configurationChanges != null)

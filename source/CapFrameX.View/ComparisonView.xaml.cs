@@ -48,11 +48,13 @@ namespace CapFrameX.View
 		{
 			var key = e.Key;
 
+			// The text box commits on focus loss, so before Enter the range is unchanged and a
+			// chart update would only redraw every record for each keystroke.
 			if (key == Key.Enter)
 			{
 				GraphTab.Focus();
+				(DataContext as ComparisonViewModel).OnRangeSliderValuesChanged();
 			}
-			(DataContext as ComparisonViewModel).OnRangeSliderValuesChanged();
 		}
 		
 		private void LastSecondsTextBox_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -62,8 +64,8 @@ namespace CapFrameX.View
 			if (key == Key.Enter)
 			{
 				GraphTab.Focus();
+				(DataContext as ComparisonViewModel).OnRangeSliderValuesChanged();
 			}
-			(DataContext as ComparisonViewModel).OnRangeSliderValuesChanged();
 		}
 
         private void RangeSlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
