@@ -127,6 +127,26 @@
     </Content>
   </ItemGroup>
 
+  <!-- The source checkout's core is only as current as its last CMake build, and MSBuild does not
+       run CMake. After a pull with native changes the old renderer is staged silently: newer widgets
+       and fonts then fail to load or draw, in the app and in the tests. Warn while a source is newer. -->
+  <Target Name="WarnStaleCfxOsdCore" BeforeTargets="Build"
+          Condition="'$(CfxOsdFromSource)' == 'true' And Exists('$(_CfxOsdCoreSourcePath)')">
+    <PropertyGroup>
+      <_CfxOsdCoreTicks>$([System.IO.File]::GetLastWriteTime('$(_CfxOsdCoreSourcePath)').Ticks)</_CfxOsdCoreTicks>
+    </PropertyGroup>
+    <ItemGroup>
+      <_CfxOsdNativeSource Include="$(_CfxOsdSourceDir)CapFrameX.OSD\src\**\*.*;$(_CfxOsdSourceDir)CapFrameX.OSD\include\**\*.*;$(_CfxOsdSourceDir)CapFrameX.OSD\CMakeLists.txt" />
+      <_CfxOsdNewerNativeSource Include="@(_CfxOsdNativeSource)"
+                                Condition="$([System.IO.File]::GetLastWriteTime('%(_CfxOsdNativeSource.FullPath)').Ticks) &gt; $(_CfxOsdCoreTicks)" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_CfxOsdNewerNativeSourceCount>@(_CfxOsdNewerNativeSource->Count())</_CfxOsdNewerNativeSourceCount>
+    </PropertyGroup>
+    <Warning Condition="'$(_CfxOsdNewerNativeSourceCount)' != '0'"
+             Text="CapFrameX: $(_CfxOsdCoreSourcePath) is older than $(_CfxOsdNewerNativeSourceCount) of its source files. Rebuild it (cmake --build build --config RelWithDebInfo in $(_CfxOsdSourceDir)CapFrameX.OSD) or build with /p:CfxOsdFromSource=false to stage the prebuilt core." />
+  </Target>
+
   <!-- CapFrameX.Hwinfo, CapFrameX.IGCL and CapFrameX.ADLX are reached through P/Invoke only, so
        they are solution build dependencies rather than project references and nothing copies
        their output. Stage the DLLs from the native projects' own output directories
