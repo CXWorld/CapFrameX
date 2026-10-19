@@ -130,9 +130,12 @@
 	</UserControl.Resources>
 	<Grid VerticalAlignment="Top" HorizontalAlignment="Center">
 		<Grid>
+			<!-- Both columns take the width of their content. A 5*:4* split gave the process cards
+			     less than their 614 px at the default window size, so the run-history tab covered
+			     the ignore list until the window was widened. -->
 			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="5*"></ColumnDefinition>
-				<ColumnDefinition Width="4*"></ColumnDefinition>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="Auto"/>
 			</Grid.ColumnDefinitions>
 			<!-- Top margin aligns the process cards with the first card of the
 			     run-history tab on the right (tab strip height + card margin). -->
