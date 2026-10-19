@@ -48,16 +48,19 @@ namespace CapFrameX.Test.ViewModel
         }
 
         [TestMethod]
-        public async Task Records_AreLoadedOffTheCallingThread()
+        public void Records_AreLoadedOffTheCallingThread()
         {
             int caller = Thread.CurrentThread.ManagedThreadId;
             var threads = new List<int>();
 
-            await RecordBatchLoader.LoadAsync(Records(4), record =>
+            // Block instead of awaiting: the test runs on a pool thread, and an awaiting thread goes
+            // back to the pool, which may then run a load on it although the loader never used the
+            // calling thread. A blocked caller can only appear here if a load ran inline.
+            RecordBatchLoader.LoadAsync(Records(4), record =>
             {
                 lock (threads) threads.Add(Thread.CurrentThread.ManagedThreadId);
                 return record.FullPath;
-            }, null);
+            }, null).GetAwaiter().GetResult();
 
             Assert.AreEqual(4, threads.Count);
             Assert.IsTrue(threads.All(thread => thread != caller));
