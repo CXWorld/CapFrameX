@@ -220,7 +220,8 @@ namespace CapFrameX.Test.Integration
             classic.Setup(p => p.GetTelemetrySourcesAsync()).ReturnsAsync(defaults.ToArray());
             using var fixture = new Fixture(Array.Empty<ISensorEntry>(), Mock.Of<IOnlineMetricService>(), classic.Object);
             var sources = await fixture.Service.GetSourcesAsync();
-            CollectionAssert.AreEquivalent(defaults.Select(d => d.Identifier).Concat(new[] { "ProcessName", "GraphicsAPI" }).ToArray(),
+            CollectionAssert.AreEquivalent(defaults.Select(d => d.Identifier)
+                    .Concat(new[] { "CustomGPUShort", "CustomCPUShort", "ProcessName", "GraphicsAPI" }).ToArray(),
                 sources.Select(s => s.Identifier).ToArray());
             Assert.IsTrue(sources.All(s => !string.IsNullOrWhiteSpace(s.Category) && !string.IsNullOrWhiteSpace(s.Subcategory)));
             Assert.IsTrue(sources.All(s => s.IsAvailable), "Sources stay selectable while classic features/renderers are disabled.");
@@ -951,6 +952,34 @@ namespace CapFrameX.Test.Integration
             CollectionAssert.AreEquivalent(new[] { "SystemTime", "OnlineAverage" }, requested.ToArray());
             Assert.AreEqual("12:34", snapshot.MetricValues["metric/SystemTime"]);
             classic.Verify(p => p.GetTelemetryValues(), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task ShortHardwareNames_FollowTheFullNamesAndOnlyNeedThem()
+        {
+            var classic = new Mock<IOverlayEntryProvider>();
+            classic.Setup(p => p.GetTelemetrySourcesAsync()).ReturnsAsync(
+                OverlayUtils.GetOverlayEntryDefaults(Mock.Of<IAppConfiguration>()).Cast<IOverlayEntry>().ToArray());
+            IReadOnlySet<string> requested = null;
+            classic.Setup(p => p.GetTelemetryValues(It.IsAny<IReadOnlySet<string>>()))
+                .Callback((IReadOnlySet<string> identifiers) => requested = identifiers)
+                .Returns(new Dictionary<string, object>
+                {
+                    ["CustomGPU"] = "NVIDIA GeForce RTX 5070 Ti", ["CustomCPU"] = "AMD Ryzen 7 9800X3D 8-Core Processor"
+                });
+            using var fixture = new Fixture(Array.Empty<ISensorEntry>(), Mock.Of<IOnlineMetricService>(), classic.Object);
+            var sources = await fixture.Service.GetSourcesAsync();
+            Assert.AreEqual("metric/CustomGPUShort", sources.Single(source => source.SemanticKey == "gpuNameShort").Id);
+            Assert.AreEqual("metric/CustomCPUShort", sources.Single(source => source.SemanticKey == "cpuNameShort").Id);
+            Assert.IsTrue(sources.Where(source => source.SemanticKey is "gpuNameShort" or "cpuNameShort")
+                .All(source => source.IsText && !source.IsProcessSpecific));
+            using var lease = fixture.Service.AcquirePreview(() => new[] { "metric/CustomGPUShort", "metric/CustomCPUShort" });
+
+            var snapshot = await fixture.Next(new Dictionary<ISensorEntry, float>());
+
+            CollectionAssert.AreEquivalent(new[] { "CustomGPU", "CustomCPU" }, requested.ToArray(), "A short name is read from its full name.");
+            Assert.AreEqual("RTX 5070 Ti", snapshot.MetricValues["metric/CustomGPUShort"]);
+            Assert.AreEqual("R7 9800X3D", snapshot.MetricValues["metric/CustomCPUShort"]);
         }
 
         [TestMethod]

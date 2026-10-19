@@ -30,6 +30,8 @@ namespace CapFrameX.OSD.Integration
             RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
         private const string MetricPrefix = "metric/";
+        // Short hardware names, derived from the full ones the classic overlay provides.
+        private const string GpuShortName = "CustomGPUShort", CpuShortName = "CustomCPUShort";
 
         private readonly ISensorService _sensors;
         private readonly ISensorConfig _config;
@@ -87,6 +89,12 @@ namespace CapFrameX.OSD.Integration
                     var known = new HashSet<string>(sources.Select(s => s.Identifier), StringComparer.Ordinal);
                     sources.AddRange(classicEntries.Where(e => e != null && known.Add(e.Identifier))
                         .Select(ClassicSource));
+                    // Narrow layouts show the model only, as RTSS's %GPU% and %CPUShort% do. The short
+                    // names follow the full ones, a custom hardware label included.
+                    if (known.Contains("CustomGPU"))
+                        sources.Add(AdditionalSource(GpuShortName, "GPU name (short)", "Graphics", "Information", "", "gpuNameShort", true));
+                    if (known.Contains("CustomCPU"))
+                        sources.Add(AdditionalSource(CpuShortName, "CPU name (short)", "Processor", "Information", "", "cpuNameShort", true));
                 }
                 if (_metrics != null)
                 {
@@ -608,6 +616,7 @@ namespace CapFrameX.OSD.Integration
                     : _classic.GetTelemetryValues(required
                         .Where(id => id.StartsWith(MetricPrefix, StringComparison.Ordinal))
                         .Select(id => id.Substring(MetricPrefix.Length))
+                        .Select(identifier => identifier == GpuShortName ? "CustomGPU" : identifier == CpuShortName ? "CustomCPU" : identifier)
                         .ToHashSet(StringComparer.Ordinal));
                 foreach (var source in sources.Where(s => !s.IsHardwareSensor))
                 {
@@ -621,6 +630,8 @@ namespace CapFrameX.OSD.Integration
                         NumberStyles.Float, CultureInfo.InvariantCulture, out double scalar))
                         values[source.Id] = Finite(scalar);
                 }
+                SetShortName(GpuShortName, "CustomGPU", HardwareShortNames.Gpu);
+                SetShortName(CpuShortName, "CustomCPU", HardwareShortNames.Cpu);
             }
             if (_overlay != null)
             {
@@ -655,6 +666,13 @@ namespace CapFrameX.OSD.Integration
             }
 
             bool IsRequired(string sourceId) => required == null || required.Contains(sourceId);
+
+            void SetShortName(string identifier, string fullIdentifier, Func<string, string> shorten)
+            {
+                if (IsRequired(MetricPrefix + identifier) && sources.Any(source => source.Id == MetricPrefix + identifier)
+                    && textValues.TryGetValue(MetricPrefix + fullIdentifier, out object full))
+                    textValues[MetricPrefix + identifier] = full is string name ? shorten(name) : null;
+            }
         }
 
         private static double? Finite(double value) => double.IsFinite(value) ? value : (double?)null;
