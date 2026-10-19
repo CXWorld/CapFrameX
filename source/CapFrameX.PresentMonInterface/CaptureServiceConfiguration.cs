@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Capture.Contracts;
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text.RegularExpressions;
 
@@ -47,14 +48,21 @@ namespace CapFrameX.PresentMonInterface
         }
 
         public static string GetCaptureFilename(string processName)
+            => GetCaptureFilename(processName, DateTime.Now);
+
+        public static string GetCaptureFilename(string processName, DateTime time)
         {
             if (processName.Contains("?"))
                 processName = string.Empty;
 
-            DateTime now = DateTime.Now;
-            string dateTimeFormat = $"{now.Year}-{now.Month:d2}-" +
-                $"{now.Day:d2}T{now.Hour}{now.Minute}{now.Second}";
-            return $"CapFrameX-{processName}.exe-{dateTimeFormat}.json";
+            return $"CapFrameX-{processName}.exe-{FormatFileTimestamp(time)}.json";
         }
+
+        /// <summary>
+        /// The time stamp of a capture file name. The time is zero-padded: unpadded, 1:11:11, 11:01:11
+        /// and 11:11:01 all read "T11111", and saving a later capture of that day overwrote the earlier one.
+        /// </summary>
+        public static string FormatFileTimestamp(DateTime time)
+            => time.ToString("yyyy-MM-dd'T'HHmmss", CultureInfo.InvariantCulture);
     }
 }
