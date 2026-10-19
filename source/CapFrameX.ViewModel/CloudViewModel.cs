@@ -397,6 +397,11 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		// The description is user text in a query string: unescaped, "&" or "#" cut it off and "+"
+		// arrived as a space.
+		internal static string GetUploadRequestUri(string description)
+			=> $"SessionCollections?description={Uri.EscapeDataString(description ?? string.Empty)}";
+
 		private async Task UploadRecords()
 		{
 			ShowUploadDescriptionTextBox = false;
@@ -433,7 +438,7 @@ namespace CapFrameX.ViewModel
 				}
 				var content = new StringContent(contentAsJson);
 				content.Headers.ContentType.MediaType = "application/json";
-				var response = await client.PostAsync($@"SessionCollections?description={UploadDescription}", content);
+				var response = await client.PostAsync(GetUploadRequestUri(UploadDescription), content);
 
 				if (response.IsSuccessStatusCode)
 				{
