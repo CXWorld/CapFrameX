@@ -105,6 +105,40 @@ namespace CapFrameX.Test.Localization
         }
 
         [TestMethod]
+        public void InspectorSourceSearchNamesItsPurposeUntilSomethingIsTyped()
+        {
+            var editor = new OsdEditorControl();
+            var surface = Surface(editor);
+            try
+            {
+                var document = new OsdDesignDocument { Name = "Search", Width = 640 };
+                document.Tiles.Add(new OsdDesignTile { Kind = "metric", Label = "FPS", Key = "fps", Unit = "FPS" });
+                editor.SetTemplateJson(document.ToJson());
+                Arrange(surface);
+                editor.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));
+                var search = (TextBox)editor.FindName("InspectorSourceSearch");
+                var hint = (TextBlock)editor.FindName("InspectorSourceSearchHint");
+                DrainBindings();
+
+                // The field filters the source picker; empty, it must not read as a missing tile source.
+                Assert.AreEqual(Visibility.Visible, hint.Visibility);
+                Assert.IsFalse(string.IsNullOrWhiteSpace(hint.Text));
+                Assert.AreEqual(search.ToolTip, hint.Text);
+                search.SetCurrentValue(TextBox.TextProperty, "gpu");
+                DrainBindings();
+                Assert.AreEqual(Visibility.Collapsed, hint.Visibility, "Typed text replaces the hint.");
+                search.SetCurrentValue(TextBox.TextProperty, "");
+                DrainBindings();
+                Assert.AreEqual(Visibility.Visible, hint.Visibility);
+            }
+            finally
+            {
+                editor.RaiseEvent(new RoutedEventArgs(FrameworkElement.UnloadedEvent));
+                surface.Child = null;
+            }
+        }
+
+        [TestMethod]
         public void SwitchingLanguagePreservesPendingTextDocumentAndSourceFilter()
         {
             var editor = new OsdEditorControl();

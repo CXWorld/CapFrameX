@@ -12,6 +12,22 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Inspector source search hint (2026-10-19)
+
+Controls was rebuilt in `Release|x64` for .NET 10 from OSD commit `cf0901b94f823b8fb430c8163eb24f1bb41c19e4`, which follows
+`6955d6c`. The search field under the inspector's "Telemetry source" label filters the source picker
+below it and never shows the tile's own source. While it is empty it now says what it searches
+(`Editor_078`, "Search hardware, sensor or source ID", the field's existing tool tip in all five
+languages), so it no longer reads as a tile without a source. The native DLLs, Interop, both Vulkan
+manifests, the localization files and the template catalogs are unchanged.
+
+Verification: a CapFrameX Release build with `CfxOsdFromSource=false` stages exactly this DLL into the
+test output and passes all 2488 unit tests, among them `InspectorSourceSearchNamesItsPurposeUntilSomethingIsTyped`.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `EA17C6ADADC5CE87F28C27128F41416A9B75A828693D847726CFDBCBD3177963` |
+
 ### 10 s heatmap window default (2026-10-18)
 
 Controls was rebuilt in `Release|x64` for .NET 10 from OSD commit `6955d6c10c649af4791d18d88db27bd4cd988a34`, which follows
