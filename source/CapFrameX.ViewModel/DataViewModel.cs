@@ -1194,43 +1194,7 @@ namespace CapFrameX.ViewModel
             if (RecordInfo == null)
                 return;
 
-
-            var rawSensorInfos = _session.Runs.Select(run => run.SensorData2);
-
-            var propertyInfos = typeof(ISessionSensorData).GetProperties()
-                .Where(pi => pi.GetCustomAttributes(false).OfType<SensorDataExportAttribute>().Any())
-                .Where(pi => rawSensorInfos.All(rsi =>
-                {
-                    var values = pi.GetValue(rsi) as Array;
-                    return values.Length > 0;
-                }));
-
-            StringBuilder builder = new StringBuilder();
-
-            // Header
-            builder.AppendLine(string.Join("\t", propertyInfos.Select(pi =>
-            {
-                var attribute = pi.GetCustomAttributes(false).OfType<SensorDataExportAttribute>().FirstOrDefault();
-                return attribute.Description;
-            })) + "\t" + "Time in GPU limit(%)");
-
-            //Content
-            foreach (var run in rawSensorInfos)
-            {
-                for (int i = 0; i < run.MeasureTime.Values.Count; i++)
-                {
-                    var gpuLoadLimit = SensorReport.GetPercentageInGpuLoadLimit(run.GpuUsage.ToList());
-
-                    var lineValues = propertyInfos.Select(pi =>
-                    {
-                        var array = pi.GetValue(run) as Array;
-                        return array.Length >= run.MeasureTime.Values.Count ? string.Format("{0:0.##}", array.GetValue(i)) : string.Empty;
-                    });
-                    builder.AppendLine(string.Join("\t", lineValues) + "\t" + gpuLoadLimit);
-                }
-            }
-
-            Clipboard.SetDataObject(builder.ToString(), false);
+            Clipboard.SetDataObject(RawSensorInfoExport.BuildText(_session.Runs.Select(run => run.SensorData2)), false);
         }
 
         private void OnChartItemChanged()
