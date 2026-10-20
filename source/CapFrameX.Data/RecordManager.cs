@@ -1248,7 +1248,10 @@ namespace CapFrameX.Data
                         foreach (var collection in sourceSessionRun.SensorData2)
                         {
 
-                            var clonedSensorEntry = new SessionSensorEntry(collection.Value.Name, collection.Value.Type);
+                            var clonedSensorEntry = new SessionSensorEntry(collection.Value.Name, collection.Value.Type)
+                            {
+                                StableIdentifier = collection.Value.StableIdentifier
+                            };
 
                             // Values is a linked list: ElementAt walked it from the start for every kept
                             // sample, O(n²) per sensor, which froze the UI for seconds on long captures.

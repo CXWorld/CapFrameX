@@ -25,6 +25,7 @@ namespace CapFrameX.Test.Data
     {
         private const double SensorInterval = 0.25;
         private const double Tolerance = 1e-9;
+        private const string CpuPackageIdentifier = "cpu/0/power/package";
 
         private string _folder;
 
@@ -67,6 +68,14 @@ namespace CapFrameX.Test.Data
             CollectionAssert.AreEqual(expected, SensorValues(cut, "CPU Package"));
             // The removed range is closed up: the samples keep their spacing across it.
             AssertTimes(Enumerable.Range(0, 31).Select(i => i * SensorInterval).ToArray(), MeasureTimes(cut));
+        }
+
+        [TestMethod]
+        public async Task Cut_KeepsTheStableSensorIdentifier()
+        {
+            var cut = await Cut(SessionWithSensors(seconds: 10, sensorSamples: 40), inverse: false, startTime: 2, endTime: 4);
+
+            Assert.AreEqual(CpuPackageIdentifier, cut.Runs[0].SensorData2["CPU Package"].StableIdentifier);
         }
 
         [TestMethod]
@@ -161,7 +170,7 @@ namespace CapFrameX.Test.Data
             var run = RecordFiles.Run(frametimes);
 
             var sensorData = new SessionSensorData2();
-            var cpuPackage = new SessionSensorEntry("CPU Package", "Power");
+            var cpuPackage = new SessionSensorEntry("CPU Package", "Power") { StableIdentifier = CpuPackageIdentifier };
             sensorData.Add("CPU Package", cpuPackage);
             for (int i = 0; i < sensorSamples; i++)
             {
