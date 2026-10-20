@@ -1241,22 +1241,56 @@ namespace CapFrameX.Data
 
                     if (sourceSessionRun.SensorData2 != null)
                     {
-                        var sensorIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.SensorData2.MeasureTime.Values.ToArray());
-                        clone.Runs[sessionRunIndex].SensorData2 = new SessionSensorData2(initialAdd: false);
+                        var measureTimes = sourceSessionRun.SensorData2.MeasureTime.Values.ToArray();
+                        var sensorIndicesToKeep = DetermineIndicesToKeep(measureTimes);
+                        var clonedSensorData = new SessionSensorData2(initialAdd: false);
+                        clone.Runs[sessionRunIndex].SensorData2 = clonedSensorData;
                         foreach (var collection in sourceSessionRun.SensorData2)
                         {
 
-                            var clonedSensorEntry = new SessionSensorEntry(collection.Value.Name, collection.Value.Type);
+                            var clonedSensorEntry = new SessionSensorEntry(collection.Value.Name, collection.Value.Type)
+                            {
+                                StableIdentifier = collection.Value.StableIdentifier
+                            };
 
-                            if (collection.Value.Values.Count() >= sensorIndicesToKeep.LastOrDefault())
+                            // Values is a linked list: ElementAt walked it from the start for every kept
+                            // sample, O(n²) per sensor, which froze the UI for seconds on long captures.
+                            var values = collection.Value.Values.ToArray();
+                            // A sensor can miss its last slots, e.g. when a capture stopped between
+                            // AddMeasureTime and CompleteMeasure. Those slots become NaN, as
+                            // SessionSensorDataLive logs them, so the series stays aligned with MeasureTime
+                            // and keeps the values it has. A sensor without any value stays empty.
+                            if (values.Length > 0)
                             {
                                 foreach (var indexToKeep in sensorIndicesToKeep)
                                 {
-                                    clonedSensorEntry.Values.AddLast(collection.Value.Values.ElementAt(indexToKeep));
+                                    clonedSensorEntry.Values.AddLast(indexToKeep < values.Length ? values[indexToKeep] : double.NaN);
                                 }
                             }
 
                             clone.Runs[sessionRunIndex].SensorData2.Add(collection.Key, clonedSensorEntry);
+                        }
+
+                        // NormalizeStartTimesOfSessionRuns rebuilds MeasureTime as the running sum of
+                        // BetweenMeasureTime. Copied, a short BetweenMeasureTime left a cut with sensor
+                        // values but no time axis, and its first kept interval put the first sample one
+                        // logging interval after the first frame. The intervals are derived from the kept
+                        // measure times instead, which always cover the kept samples: each is the gap to the
+                        // preceding sample of the source, as SessionSensorDataLive logs it, and the first one
+                        // is the gap to the first kept frame, which the frames' normalization makes 0.
+                        if (!clonedSensorData.ContainsKey(nameof(SessionSensorData2.BetweenMeasureTime)))
+                            clonedSensorData.Add(nameof(SessionSensorData2.BetweenMeasureTime),
+                                new SessionSensorEntry(nameof(SessionSensorData2.BetweenMeasureTime), "Time"));
+                        var keptIntervals = clonedSensorData.BetweenMeasureTime.Values;
+                        keptIntervals.Clear();
+                        double firstFrameTime = dataIndicesToKeep.Length > 0
+                            ? sourceSessionRun.CaptureData.TimeInSeconds[dataIndicesToKeep[0]] : 0;
+                        for (int keptIndex = 0; keptIndex < sensorIndicesToKeep.Length; keptIndex++)
+                        {
+                            int sourceIndex = sensorIndicesToKeep[keptIndex];
+                            keptIntervals.AddLast(keptIndex == 0
+                                ? Math.Max(0, measureTimes[sourceIndex] - firstFrameTime)
+                                : measureTimes[sourceIndex] - (sourceIndex > 0 ? measureTimes[sourceIndex - 1] : 0));
                         }
                     }
 
@@ -2139,10 +2173,13 @@ namespace CapFrameX.Data
             {
                 foreach (var sessionRun in sessionRuns)
                 {
-                    var tmpMeasureTimeArray = new double[sessionRun.SensorData2.BetweenMeasureTimes.Count()];
-                    for (int i = 0; i < sessionRun.SensorData2.BetweenMeasureTimes.Count(); i++)
+                    // BetweenMeasureTimes copies the linked list into a new array on every access, and
+                    // the loop read it twice per sample: O(n²) time and allocations. Read it once.
+                    var betweenMeasureTimes = sessionRun.SensorData2.BetweenMeasureTimes;
+                    var tmpMeasureTimeArray = new double[betweenMeasureTimes.Length];
+                    for (int i = 0; i < betweenMeasureTimes.Length; i++)
                     {
-                        lastSensorMeasureTime += sessionRun.SensorData2.BetweenMeasureTimes[i];
+                        lastSensorMeasureTime += betweenMeasureTimes[i];
                         tmpMeasureTimeArray[i] = lastSensorMeasureTime;
                     }
                     sessionRun.SensorData2.MeasureTime.Values.Clear();
