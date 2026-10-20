@@ -24,6 +24,7 @@ namespace CapFrameX.Test.Data
     public class RecordManagerCutTest
     {
         private const double SensorInterval = 0.25;
+        private const double Tolerance = 1e-9;
 
         private string _folder;
 
@@ -50,7 +51,9 @@ namespace CapFrameX.Test.Data
 
             // Measure times 2.0 to 4.0 s are samples 8 to 16.
             CollectionAssert.AreEqual(Enumerable.Range(8, 9).Select(i => (double)i).ToArray(), SensorValues(cut, "CPU Package"));
-            Assert.AreEqual(9, cut.Runs[0].SensorData2.MeasureTime.Values.Count);
+            // The first kept sample sits at the first kept frame, 2.0 s, which becomes 0 like the frames.
+            Assert.AreEqual(0, cut.Runs[0].CaptureData.TimeInSeconds[0], Tolerance);
+            AssertTimes(Enumerable.Range(0, 9).Select(i => i * SensorInterval).ToArray(), MeasureTimes(cut));
         }
 
         [TestMethod]
@@ -62,6 +65,22 @@ namespace CapFrameX.Test.Data
 
             var expected = Enumerable.Range(0, 40).Where(i => i < 8 || i > 16).Select(i => (double)i).ToArray();
             CollectionAssert.AreEqual(expected, SensorValues(cut, "CPU Package"));
+            // The removed range is closed up: the samples keep their spacing across it.
+            AssertTimes(Enumerable.Range(0, 31).Select(i => i * SensorInterval).ToArray(), MeasureTimes(cut));
+        }
+
+        [TestMethod]
+        public async Task ShortBetweenMeasureTimes_KeepTheTimeAxis()
+        {
+            var session = SessionWithSensors(seconds: 10, sensorSamples: 40);
+            var intervals = session.Runs[0].SensorData2.BetweenMeasureTime.Values;
+            while (intervals.Count > 10)
+                intervals.RemoveLast();
+
+            var cut = await Cut(session, inverse: false, startTime: 2, endTime: 4);
+
+            CollectionAssert.AreEqual(Enumerable.Range(8, 9).Select(i => (double)i).ToArray(), SensorValues(cut, "CPU Package"));
+            AssertTimes(Enumerable.Range(0, 9).Select(i => i * SensorInterval).ToArray(), MeasureTimes(cut));
         }
 
         [TestMethod]
@@ -125,6 +144,16 @@ namespace CapFrameX.Test.Data
 
         private static double[] SensorValues(ISession session, string name)
             => session.Runs[0].SensorData2[name].Values.ToArray();
+
+        private static double[] MeasureTimes(ISession session)
+            => session.Runs[0].SensorData2.MeasureTime.Values.ToArray();
+
+        private static void AssertTimes(double[] expected, double[] actual)
+        {
+            Assert.AreEqual(expected.Length, actual.Length, "number of measure times");
+            for (int i = 0; i < expected.Length; i++)
+                Assert.AreEqual(expected[i], actual[i], Tolerance, $"measure time {i}");
+        }
 
         private static Session SessionWithSensors(double seconds, int sensorSamples, int framesPerSecond = 100)
         {
