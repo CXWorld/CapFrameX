@@ -65,11 +65,11 @@ namespace CapFrameX.Test.Data
         }
 
         [TestMethod]
-        public async Task SensorShorterThanTheMeasureTimes_DoesNotAbortTheCut()
+        public async Task SensorMissingItsLastSlot_KeepsItsValuesAndPadsWithNaN()
         {
             var session = SessionWithSensors(seconds: 10, sensorSamples: 40);
-            // Exactly as many values as the index of the last kept sample: ElementAt threw for it,
-            // and the whole cut was dropped.
+            // A capture that stopped between AddMeasureTime and CompleteMeasure: the sensor misses the
+            // last measure slot. Kept slots 8 to 16 include it.
             var shortSensor = new SessionSensorEntry("GPU Core", "Load");
             foreach (var value in Enumerable.Range(0, 16))
                 shortSensor.Values.AddLast(value);
@@ -79,6 +79,18 @@ namespace CapFrameX.Test.Data
 
             Assert.IsNotNull(cut, "the cut record was not written");
             CollectionAssert.AreEqual(Enumerable.Range(8, 9).Select(i => (double)i).ToArray(), SensorValues(cut, "CPU Package"));
+            var expected = Enumerable.Range(8, 8).Select(i => (double)i).Append(double.NaN).ToArray();
+            CollectionAssert.AreEqual(expected, SensorValues(cut, "GPU Core"));
+        }
+
+        [TestMethod]
+        public async Task SensorWithoutValues_StaysEmpty()
+        {
+            var session = SessionWithSensors(seconds: 10, sensorSamples: 40);
+            ((SessionSensorData2)session.Runs[0].SensorData2).Add("GPU Core", new SessionSensorEntry("GPU Core", "Load"));
+
+            var cut = await Cut(session, inverse: false, startTime: 2, endTime: 4);
+
             Assert.AreEqual(0, SensorValues(cut, "GPU Core").Length);
         }
 

@@ -1251,11 +1251,15 @@ namespace CapFrameX.Data
                             // Values is a linked list: ElementAt walked it from the start for every kept
                             // sample, O(n²) per sensor, which froze the UI for seconds on long captures.
                             var values = collection.Value.Values.ToArray();
-                            if (sensorIndicesToKeep.Length == 0 || values.Length > sensorIndicesToKeep[sensorIndicesToKeep.Length - 1])
+                            // A sensor can miss its last slots, e.g. when a capture stopped between
+                            // AddMeasureTime and CompleteMeasure. Those slots become NaN, as
+                            // SessionSensorDataLive logs them, so the series stays aligned with MeasureTime
+                            // and keeps the values it has. A sensor without any value stays empty.
+                            if (values.Length > 0)
                             {
                                 foreach (var indexToKeep in sensorIndicesToKeep)
                                 {
-                                    clonedSensorEntry.Values.AddLast(values[indexToKeep]);
+                                    clonedSensorEntry.Values.AddLast(indexToKeep < values.Length ? values[indexToKeep] : double.NaN);
                                 }
                             }
 
