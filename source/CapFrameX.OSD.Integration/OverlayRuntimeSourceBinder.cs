@@ -53,11 +53,18 @@ namespace CapFrameX.OSD.Integration
                     }
                     else if (kind == "group" && role?.StartsWith("role:", StringComparison.Ordinal) == true)
                     {
-                        string family = role.Substring(5);
+                        // "role:cpu-loads|P" keeps the P-cores of the family only, as the editor binds it.
+                        string family = role.Substring(5), coreType = null;
+                        int separator = family.LastIndexOf('|');
+                        if (separator >= 0 && CoreType(family.Substring(separator + 1)) is string type)
+                            (family, coreType) = (family.Substring(0, separator), type);
                         var matches = groups.Where(group => group.All(source => source.GroupKey == family
                             || source.GroupKey.EndsWith("/" + family, StringComparison.Ordinal))).Take(2).ToArray();
                         if (matches.Length != 1) continue;
-                        ExpandGroup(canvas, frames, outer, widget, editor, matches[0], scale, gridSize);
+                        var sources = coreType == null ? matches[0]
+                            : matches[0].Where(source => CoreType(source.CoreType) == coreType).ToArray();
+                        if (sources.Length == 0) continue;
+                        ExpandGroup(canvas, frames, outer, widget, editor, sources, scale, gridSize);
                         changed = true;
                     }
                     else if (kind != "group" && kind != "text" && kind != "chart" && kind != "classicRows" && kind != "icon" && kind != "image")

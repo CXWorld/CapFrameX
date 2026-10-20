@@ -76,6 +76,37 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        [DataRow(true, "P", 16)]
+        [DataRow(true, "e", 8)]
+        [DataRow(true, "LPE", 0)]
+        [DataRow(true, "X", 0)]
+        [DataRow(false, "P", 0)]
+        public void CoreTypeRolesBindOneCoreTypeOfTheFamilyLikeTheEditor(bool hybrid, string coreType, int expected)
+        {
+            var document = SizedBarDocument("vertical", 12, 32);
+            var group = document.Tiles.Single(tile => tile.Kind == "group");
+            group.Key = group.GroupKey = "role:cpu-loads|" + coreType;
+            var catalog = hybrid ? HybridLoads() : Sources("cpu-loads", 16);
+            var design = OverlayRuntimeDesign.Parse("profile", document.Name, document.ToJson());
+            AssertEditorParity(document, catalog, coreType + " hybrid=" + hybrid);
+
+            // The editor keeps the type in the bound key; without a matching core the role stays unbound.
+            string type = coreType.ToUpperInvariant();
+            Assert.AreEqual(expected > 0, !group.GroupKey.StartsWith("role:", StringComparison.Ordinal));
+            if (expected > 0)
+            {
+                Assert.IsTrue(group.GroupKey.EndsWith("|" + type, StringComparison.Ordinal), group.GroupKey);
+                Assert.AreEqual(expected, group.GroupMembers.Count);
+                Assert.IsTrue(group.GroupMembers.All(member => member.CoreType == type));
+            }
+            var bound = OverlayRuntimeSourceBinder.Bind(design, catalog);
+            var keys = GroupMembers(bound).Select(member => (string)member["key"]).ToArray();
+            if (expected > 0)
+                CollectionAssert.AreEquivalent(catalog.Where(source => source.CoreType == type).Select(source => source.Id).ToArray(), keys);
+            else Assert.IsTrue(keys.All(key => key.StartsWith("role:", StringComparison.Ordinal)), "The placeholders stay unbound.");
+        }
+
+        [TestMethod]
         [DataRow("bar", "horizontal", true)]
         [DataRow("bar", "vertical", true)]
         [DataRow("bar", "vertical", false)]
