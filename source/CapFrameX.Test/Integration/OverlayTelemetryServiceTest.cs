@@ -369,6 +369,23 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public async Task HybridCpusNameTheFastestCoreOfEachTypeForPortableDesigns()
+        {
+            using var fixture = new Fixture(new[]
+            {
+                Sensor("/intelcpu/0/clock/0", "CPU Max", "Cpu", "Clock", "Intel Core Ultra 7 265K"),
+                Sensor("/intelcpu/0/clock/1", "CPU P Max", "Cpu", "Clock", "Intel Core Ultra 7 265K"),
+                Sensor("/intelcpu/0/clock/2", "CPU E Max", "Cpu", "Clock", "Intel Core Ultra 7 265K"),
+                Sensor("/intelcpu/0/clock/3", "CPU P Max Effective", "Cpu", "Clock", "Intel Core Ultra 7 265K")
+            });
+            var sources = await fixture.Service.GetSourcesAsync();
+            Assert.AreEqual("CPU Max", sources.Single(s => s.SemanticKey == "cpuClock").Name);
+            Assert.AreEqual("CPU P Max", sources.Single(s => s.SemanticKey == "cpuPCoreClock").Name);
+            Assert.AreEqual("CPU E Max", sources.Single(s => s.SemanticKey == "cpuECoreClock").Name);
+            Assert.IsNull(sources.Single(s => s.Name == "CPU P Max Effective").SemanticKey);
+        }
+
+        [TestMethod]
         public async Task ThirtyTwoThreadLoadsFormOneNaturallyOrderedGroupWithoutAggregateReadings()
         {
             var entries = Enumerable.Range(1, 16).SelectMany(core => Enumerable.Range(1, 2)

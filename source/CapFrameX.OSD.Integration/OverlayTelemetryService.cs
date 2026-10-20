@@ -291,6 +291,9 @@ namespace CapFrameX.OSD.Integration
             Assign("gpuFanPercent", "Control", s => IsGpu(s), "GPU Fan", "GPU Fan 1", "GPU");
             Assign("vramLoad", "Load", s => IsGpu(s), "GPU Memory");
             Assign("cpuClock", "Clock", s => s.HardwareType == "Cpu", "CPU Clock", "CPU Max", "CPU Max Clock");
+            // Hybrid CPUs report the fastest core of each type, so designs can name P- and E-cores on any model.
+            Assign("cpuPCoreClock", "Clock", s => s.HardwareType == "Cpu", "CPU P Max");
+            Assign("cpuECoreClock", "Clock", s => s.HardwareType == "Cpu", "CPU E Max");
             Assign("cpuPower", "Power", s => s.HardwareType == "Cpu", "CPU Package");
             Assign("ramLoad", "Load", s => s.HardwareType == "Memory", "RAM Usage", "RAM", "Memory");
 
