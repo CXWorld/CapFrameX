@@ -267,6 +267,22 @@ cell keys (`SavedHeatmapWindow`), so designs saved while the default was 60 s ke
 Controls must contain the heatmap: a Controls build without it rejects FUSION. Block and row rules:
 the OSD repo's CLAUDE.md.
 
+### Generic hardware starters
+
+APEX 3D, REDLINE and the FUSION starters (ARL, RPL, Ryzen) fit a CPU and GPU family, not one model:
+they name the installed hardware with `gpuNameShort`/`cpuNameShort`, show no model-specific graphics
+(`Resources/OverlayGraphics/SOURCES.md`) and bind every sensor portably. FUSION's P-CORES and E-CORES
+tiles are roles of one core type, `role:cpu-loads|P` and `|E`. The runtime binder
+(`OverlayRuntimeSourceBinder`) and the editor (`OsdDesignDocument.BindPresetSources`, which binds an
+unmodified starter when the designer opens it) filter the family alike; keep them in sync, the parity
+tests compare both. The editor keeps the type in the bound key (`device|family|unit|P`), so refreshing
+the members adds that type only. The FUSION bar tiles fix the bar height but not the width (32 columns),
+so their bars spread over the whole tile whatever the core count. Max clocks per core type come from `cpuPCoreClock`/`cpuECoreClock`
+(sensors `CPU P Max`/`CPU E Max`). The former model-specific presets were renamed but keep their
+profile IDs (`idPresetId`); `PreviousNames` lets an upgrade replace an unmodified copy under its old
+name, unless another profile already has the new one. The prebuilt Controls must contain the
+core-type roles: without them the designer leaves FUSION's P/E tiles unbound (the overlay binds them).
+
 ### Hook-free stall diagnostics
 
 Chart pauses/hitches in the hook-free overlay have three unrelated possible causes — the render

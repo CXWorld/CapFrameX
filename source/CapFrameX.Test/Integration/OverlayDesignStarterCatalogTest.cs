@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using CapFrameX.Contracts.Sensor;
 using CapFrameX.OSD.Controls;
 using CapFrameX.OSD.Integration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -101,11 +100,63 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        [DataRow("original", true)]
+        [DataRow("renamed", false)]
+        [DataRow("edited", false)]
+        [DataRow("name-taken", false)]
+        public void CatalogUpgradeRenamesOnlyAnUnmodifiedStarterWhoseNewNameIsFree(string state, bool replaced)
+        {
+            // Version eighteen renamed hardware starters: the corrected design keeps the profile ID of
+            // the former preset and replaces it under its former name only.
+            string originalJson = WithName(Design("minimal", 400), "OLD - Model 1234");
+            var original = new OverlayDesignStarterProfile("old-preset", originalJson, 4);
+            var corrected = new OverlayDesignStarterProfile("new-preset", "old-preset", WithName(Design("minimal", 480), "NEW - Series"), 4,
+                new[] { OverlayDesignStarterProfile.ComputeDesignHash(originalJson) })
+            {
+                PreviousNames = new[] { "OLD - Model 1234" }
+            };
+            Assert.AreEqual(original.Id, corrected.Id);
+            var store = Open();
+            Assert.IsTrue(store.EnsureStarterProfiles(new[] { original }, 4));
+            store.SetActive(original.Id);
+            if (state == "renamed") store.Rename(original.Id, "My model");
+            if (state == "edited") store.Save(original.Id, WithName(Design("minimal", 420), original.Name));
+            if (state == "name-taken") store.Create("new - series", Design("compact", 480));
+            var before = store.Get(original.Id);
+            string selected = store.ActiveProfileId;
+
+            var upgraded = Open();
+            Assert.IsTrue(upgraded.EnsureStarterProfiles(new[] { corrected }, 5));
+            var profile = upgraded.Get(original.Id);
+            Assert.AreEqual(replaced ? corrected.Name : before.Name, profile.Name);
+            Assert.AreEqual(replaced ? corrected.DesignJson : before.DesignJson, profile.DesignJson);
+            Assert.AreEqual(selected, upgraded.ActiveProfileId);
+            Assert.AreEqual(upgraded.Profiles.Count, Open().Profiles.Count, "The upgraded library must load again.");
+        }
+
+        [TestMethod]
+        public void GenericHardwareStartersKeepTheProfilesOfTheModelSpecificDesignsTheyReplace()
+        {
+            foreach (var (presetId, formerPresetId, formerName) in new[]
+            {
+                ("RTX-50-Ryzen-3D-APEX", "RTX-5090-9800X3D-APEX", "APEX - RTX 5090 + 9800X3D"),
+                ("AMD-Ryzen-Radeon-REDLINE", "AMD-Ryzen-Radeon-REDLINE", "REDLINE - Ryzen 7 9800X3D + Radeon"),
+                ("RTX-50-Core-Ultra-FUSION-ARL", "RTX-5090-Core-Ultra-285K-FUSION", "FUSION - RTX 5090 + Core Ultra 9 285K")
+            })
+            {
+                var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
+                Assert.AreEqual(new OverlayDesignStarterProfile(formerPresetId, starter.DesignJson).Id, starter.Id, presetId);
+                CollectionAssert.AreEqual(new[] { formerName }, starter.PreviousNames.ToArray(), presetId);
+            }
+        }
+
+        [TestMethod]
         [DataRow(2, 3)]
         [DataRow(3, 4)]
         [DataRow(5, 6)]
         [DataRow(6, 7)]
         [DataRow(16, 17)]
+        [DataRow(17, 18)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -113,10 +164,11 @@ namespace CapFrameX.Test.Integration
             string[] expectedIds = targetVersion switch
             {
                 3 => new[] { "core-types-overview", "core-types-compact", "core-types-thermal" },
-                4 => new[] { "RTX-5090-9800X3D-APEX", "AMD-Ryzen-Radeon-REDLINE", "RTX-5090-Core-Ultra-285K-FUSION",
+                4 => new[] { "RTX-50-Ryzen-3D-APEX", "AMD-Ryzen-Radeon-REDLINE", "RTX-50-Core-Ultra-FUSION-ARL",
                     "AMD-Ryzen-5-9600X-Badge", "AMD-Ryzen-7-9800X3D-Badge" },
                 6 => new[] { "Panther-Lake-Arc-Aurora", "OLED-Minimal" },
                 17 => SlickPresetIds,
+                18 => new[] { "RTX-50-Core-FUSION-RPL", "RTX-50-Ryzen-FUSION" },
                 _ => new[] { "NVIDIA-GeForce-RTX-GREENLINE", "ICELINE-Vertical" }
             };
             CollectionAssert.AreEquivalent(expectedIds,
@@ -170,9 +222,11 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        [DataRow("RTX-5090-9800X3D-APEX", "APEX - RTX 5090 + 9800X3D", false, 4)]
-        [DataRow("AMD-Ryzen-Radeon-REDLINE", "REDLINE - Ryzen 7 9800X3D + Radeon", true, 4)]
-        [DataRow("RTX-5090-Core-Ultra-285K-FUSION", "FUSION - RTX 5090 + Core Ultra 9 285K", true, 4)]
+        [DataRow("RTX-50-Ryzen-3D-APEX", "APEX 3D - RTX 50 Series + Ryzen 3D", false, 4)]
+        [DataRow("AMD-Ryzen-Radeon-REDLINE", "REDLINE - Ryzen + Radeon", true, 4)]
+        [DataRow("RTX-50-Core-Ultra-FUSION-ARL", "FUSION ARL - RTX 50 Series + Intel Core Ultra", true, 4)]
+        [DataRow("RTX-50-Core-FUSION-RPL", "FUSION RPL - RTX 50 Series + Intel Core", true, 18)]
+        [DataRow("RTX-50-Ryzen-FUSION", "FUSION Ryzen - RTX 50 Series + Ryzen", true, 18)]
         [DataRow("AMD-Ryzen-5-9600X-Badge", "AMD Ryzen 5 9600X Badge", true, 4)]
         [DataRow("AMD-Ryzen-7-9800X3D-Badge", "AMD Ryzen 7 9800X3D Badge", true, 4)]
         [DataRow("Panther-Lake-Arc-Aurora", "Panther Lake - Arc Aurora", false, 6)]
@@ -207,42 +261,30 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void FusionStarterBreaksDownThe285KByCoreType()
+        [DataRow("RTX-50-Core-Ultra-FUSION-ARL", true)]
+        [DataRow("RTX-50-Core-FUSION-RPL", true)]
+        [DataRow("RTX-50-Ryzen-FUSION", false)]
+        public void FusionStartersBreakDownTheCpuOfTheirFamilyByCoreType(string presetId, bool hybrid)
         {
-            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "RTX-5090-Core-Ultra-285K-FUSION");
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
             var document = OsdDesignDocument.FromJson(starter.DesignJson);
-            string Key(string type, string name) => "sensor:" + Uri.EscapeDataString(
-                SensorIdentifierHelper.BuildStableIdentifier("Intel Core Ultra 9 285K", type, name));
-            // Arrow Lake enumerates its P-cores between the E-core clusters.
-            var coreTypes = new[]
-            {
-                (Label: "P-CORES", Type: "P", Cores: new[] { 1, 2, 11, 12, 13, 14, 23, 24 }),
-                (Label: "E-CORES", Type: "E", Cores: Enumerable.Range(3, 8).Concat(Enumerable.Range(15, 8)).ToArray())
-            };
-            foreach (var (label, type, cores) in coreTypes)
-            {
-                var group = document.Tiles.Single(tile => tile.Kind == "group" && tile.Label == label);
-                CollectionAssert.AreEqual(cores.Select(core => Key("Load", $"Core #{core} {type}")).ToArray(),
-                    group.GroupMembers.Select(member => member.Key).ToArray());
-                Assert.IsTrue(group.GroupMembers.All(member => member.IsEnabled && member.CoreType == type));
-                Assert.AreEqual(1, document.GetGroupBarLayout(group).Rows, label + " must remain a single row of bars.");
-            }
-
-            // The heatmap averages every thread over the default ten seconds, P-cores first; the types
-            // set the eight P-cores (4x2) beside the sixteen E-cores (8x2) as blocks of their own.
-            var heatmap = document.Tiles.Single(tile => tile.Kind == "group" && tile.GroupDisplay == "heatmap");
+            // Core loads bind to the CPU's load family on first use, whatever the core count; hybrid
+            // CPUs show their P- and E-cores in tiles of their own.
+            var groups = document.EnumerateTiles().Where(tile => tile.Kind == "group").ToArray();
+            var heatmap = groups.Single(group => group.GroupDisplay == "heatmap");
+            Assert.AreEqual("role:cpu-loads", heatmap.GroupKey);
             Assert.IsNull(heatmap.GroupWindowSeconds, "The heatmap keeps the default window.");
-            var cells = coreTypes.SelectMany(coreType => coreType.Cores.Select(core => Key("Load", $"Core #{core} {coreType.Type}"))).ToArray();
-            var heatmapWidget = JObject.Parse(OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson).TemplateJson)
-                .Descendants().OfType<JObject>().Single(node => (string)node["type"] == "heatmap");
-            CollectionAssert.AreEqual(cells.Select(cell => OverlayMovingAverages.Key(10, cell)).ToArray(),
-                heatmapWidget["keys"].Values<string>().ToArray());
-            CollectionAssert.AreEqual(Enumerable.Repeat("P", 8).Concat(Enumerable.Repeat("E", 16)).ToArray(),
-                heatmapWidget["types"].Values<string>().ToArray());
+            var bars = groups.Where(group => group.GroupDisplay == "bar").ToArray();
+            CollectionAssert.AreEqual(hybrid ? new[] { "role:cpu-loads|P", "role:cpu-loads|E" } : new[] { "role:cpu-loads" },
+                bars.Select(group => group.GroupKey).ToArray());
+            Assert.IsTrue(bars.All(group => group.Key == group.GroupKey && group.GroupBarHeight.HasValue && group.GroupBarWidth == null
+                && group.GroupColumns == 32), "The bars spread over the tile: the layout derives their width from the readings.");
 
+            // Hybrid CPUs name the fastest P- and E-core; one core type needs the CPU's max clock only.
             var keys = OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson).MetricKeys.ToArray();
-            CollectionAssert.IsSubsetOf(new[] { Key("Clock", "CPU P Max"), Key("Clock", "CPU E Max") }, keys);
-            CollectionAssert.DoesNotContain(keys, "cpuClock", "The core-type max clocks replace the combined CPU max clock.");
+            string[] clocks = hybrid ? new[] { "cpuPCoreClock", "cpuECoreClock" } : new[] { "cpuClock" };
+            CollectionAssert.IsSubsetOf(clocks, keys);
+            CollectionAssert.AreEquivalent(clocks, keys.Where(key => key.StartsWith("cpu", StringComparison.Ordinal) && key.EndsWith("Clock", StringComparison.Ordinal)).ToArray());
         }
 
         [TestMethod]
@@ -252,6 +294,11 @@ namespace CapFrameX.Test.Integration
         [DataRow("Slick-Overlay-Wide-3-Rows", new[] { "gpuNameShort", "cpuNameShort", "gpuDriver" })]
         [DataRow("Slick-Overlay-Compact-2x2", new[] { "gpuNameShort", "cpuNameShort", "gpuDriver" })]
         [DataRow("Slick-Overlay-Single-Line", new[] { "gpuNameShort", "cpuNameShort", "gpuDriver" })]
+        [DataRow("RTX-50-Ryzen-3D-APEX", new[] { "gpuNameShort", "cpuNameShort" })]
+        [DataRow("AMD-Ryzen-Radeon-REDLINE", new[] { "gpuNameShort", "cpuNameShort" })]
+        [DataRow("RTX-50-Core-Ultra-FUSION-ARL", new[] { "gpuNameShort", "cpuNameShort" })]
+        [DataRow("RTX-50-Core-FUSION-RPL", new[] { "gpuNameShort", "cpuNameShort" })]
+        [DataRow("RTX-50-Ryzen-FUSION", new[] { "gpuNameShort", "cpuNameShort" })]
         public void GenericStarterNamesTheInstalledHardwareAndStaysPortable(string presetId, string[] nameKeys)
         {
             var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
@@ -264,7 +311,9 @@ namespace CapFrameX.Test.Integration
             foreach (var readout in tiles.Where(tile => tile.Kind == "metric"
                 && new[] { "gpuName", "cpuName", "gpuNameShort", "cpuNameShort", "graphicsApi", "gpuDriver" }.Contains(tile.Key)))
                 Assert.AreEqual(document.TextColor, readout.ValueColor, readout.Key);
-            Assert.IsFalse(tiles.Any(tile => Regex.IsMatch(tile.Label + " " + tile.Text, @"\b(?:[RG]TX|RX)\s*\d{3,4}\b|\bi[3579]-\d{4}|\bRyzen\s+\d")),
+            // Also the bare model numbers the former hardware designs showed: "5090", "9800X3D", "285K", "Ultra 9".
+            Assert.IsFalse(tiles.Any(tile => Regex.IsMatch(tile.Label + " " + tile.Text,
+                    @"\b(?:[RG]TX|RX)\s*\d{3,4}\b|\bi[3579]-\d{4}|\bRyzen\s+\d|\b[2-5]0[5-9]0\b|\b\d{4}X3D\b|\b\d{3}K\b|\bUltra\s+[3579]\b", RegexOptions.IgnoreCase)),
                 "No tile may name a specific CPU or GPU model.");
             var keys = OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson).MetricKeys;
             Assert.IsFalse(keys.Any(key => key.StartsWith("sensor", StringComparison.Ordinal)),
@@ -507,6 +556,10 @@ namespace CapFrameX.Test.Integration
         private static string Design(string preset, double width)
         {
             var document = OsdDesignDocument.CreatePreset(preset); document.Width = width; return document.ToJson();
+        }
+        private static string WithName(string json, string name)
+        {
+            var document = OsdDesignDocument.FromJson(json); document.Name = name; return document.ToJson();
         }
     }
 }

@@ -33,6 +33,7 @@ expanded locally. This lets the offline importer reject external resources.
 | `Intel/Intel-Arc.svg` | [Wikimedia file page](https://commons.wikimedia.org/wiki/File:Intel_Arc_logo_(black).svg), credited there to Intel's xehpg.intel.com site | Original black Arc lockup. Source page marks it PD-textlogo, with trademark restrictions. |
 | `Intel/Intel-Core.svg` | [Wikimedia file page](https://commons.wikimedia.org/wiki/File:Intel_Core_2020_logo.svg), credited there to [Intel Core](https://www.intel.com/content/www/us/en/products/details/processors/core.html) | Original Intel Core 2020 badge. Source page marks it PD-textlogo, with trademark restrictions. |
 | `Intel/Intel-Core-Ultra-9.svg` | [CDRLogo file page](https://www.cdrlogo.com/logo/intel-core-ultra-9-logo), [SVG](https://cdn.cdrlogo.com/separate/intel-core-ultra-9-logo/intel-core-ultra-9-logo.svg) | Original Core Ultra **9** badge reproduced by a public logo archive. This is tier 9, not a generic Core Ultra badge. Source specifies reference and design use. |
+| `Intel/Intel-Core-Ultra.svg` | Same original source as `Intel-Core-Ultra-9.svg` above | Generic variant for every Core Ultra model: only the tier numeral 9 (the last path, class `fil9`) was removed. All other paths, colors and the viewBox are unchanged; the original version is retained. |
 
 Manufacturer brand rules continue to apply independently of a public archive's
 copyright classification: [NVIDIA](https://www.nvidia.com/en-gb/about-nvidia/legal-info/logo-brand-usage/),
@@ -47,6 +48,15 @@ provided instead. No raster image is disguised as an SVG.
 
 The SVG rendering library's BSD-3-Clause license is included separately in
 `THIRD-PARTY-NOTICES.txt`.
+
+## Generic hardware starter profiles
+
+The starter profiles for whole hardware families name no CPU model in their
+graphics. They embed PNGs rendered from the vectors above at 717 x 717 pixels:
+FUSION ARL `Intel/Intel-Core-Ultra.svg` (its full viewBox), FUSION RPL
+`Intel/Intel-Core.svg` with a transparent margin of 7.5% on each edge, so that
+its badge has the size of the Core Ultra badge. REDLINE and FUSION Ryzen show the
+Ryzen badge template described below without its model and tier layers.
 
 ## Ryzen 5 9600X badge components
 

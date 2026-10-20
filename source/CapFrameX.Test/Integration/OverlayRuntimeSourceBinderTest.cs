@@ -107,6 +107,69 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        [DataRow("RTX-50-Core-Ultra-FUSION-ARL", "P8 E16")]
+        [DataRow("RTX-50-Core-Ultra-FUSION-ARL", "P8 E12")]
+        [DataRow("RTX-50-Core-Ultra-FUSION-ARL", "P6 E8")]
+        [DataRow("RTX-50-Core-FUSION-RPL", "P8x2 E16")]
+        [DataRow("RTX-50-Core-FUSION-RPL", "P8x2 E12")]
+        [DataRow("RTX-50-Core-FUSION-RPL", "P6x2 E8")]
+        [DataRow("RTX-50-Ryzen-FUSION", "-6x2")]
+        [DataRow("RTX-50-Ryzen-FUSION", "-8x2")]
+        [DataRow("RTX-50-Ryzen-FUSION", "-12x2")]
+        [DataRow("RTX-50-Ryzen-FUSION", "-16x2")]
+        public void FusionStartersShowEveryCoreOfAnyCpuInTheirFamily(string presetId, string cores)
+        {
+            // Runs of cores per type, "x2" for two threads per core: Core Ultra 9 285K, 7 265K and 5 245K,
+            // Core i9-14900K, i7-14700K and i5-13600K, Ryzen 5 7600X3D to Ryzen 9 9950X3D.
+            var readings = new List<(string Type, int Core, int Thread)>();
+            foreach (string run in cores.Split(' '))
+            {
+                string type = run[0] == '-' ? null : run.Substring(0, 1);
+                string[] counts = run.Substring(1).Split('x');
+                int threads = counts.Length > 1 ? int.Parse(counts[1]) : 0;
+                for (int core = 0, first = readings.Select(reading => reading.Core).DefaultIfEmpty().Max() + 1; core < int.Parse(counts[0]); core++)
+                    readings.AddRange(threads == 0 ? new[] { (type, first + core, 0) }
+                        : Enumerable.Range(1, threads).Select(thread => (type, first + core, thread)));
+            }
+            var catalog = readings.Select((reading, index) => new OverlayTelemetrySource
+            {
+                Id = $"cpu0/cpu-loads/{reading.Core}/{reading.Thread}", DeviceKey = "cpu0", HardwareName = "cpu0",
+                Name = "Core #" + reading.Core + (reading.Type == null ? "" : " " + reading.Type) + (reading.Thread > 0 ? " Thread #" + reading.Thread : ""),
+                GroupKey = "cpu0/cpu-loads", Category = "CPU", Unit = "%", GroupOrder = index, IsAvailable = true,
+                CoreType = reading.Type, CoreIndex = reading.Core, ThreadIndex = reading.Thread > 0 ? reading.Thread : null
+            }).ToArray();
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
+            AssertEditorParity(OsdDesignDocument.FromJson(starter.DesignJson), catalog, presetId + " " + cores);
+
+            var bound = JObject.Parse(OverlayRuntimeSourceBinder.Bind(
+                OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson), catalog).TemplateJson);
+            // One bar per reading, every core type in a tile of its own, and each tile a single row
+            // that spreads over the whole tile, whatever the core count.
+            var bars = bound.Descendants().OfType<JObject>().Where(node => catalog.Any(source => source.Id == (string)node["key"])).ToArray();
+            CollectionAssert.AreEquivalent(catalog.Select(source => source.Id).ToArray(), bars.Select(bar => (string)bar["key"]).ToArray());
+            var sections = readings.GroupBy(reading => reading.Type).ToArray();
+            var tiles = bars.GroupBy(bar => (string)bar.Ancestors().OfType<JObject>().First(node => (string)node["type"] == "panel"
+                && node["children"] is JArray children && (string)children[0]["type"] == "text")["children"][0]["text"]).ToArray();
+            CollectionAssert.AreEqual(sections.Length > 1 ? new[] { "P-CORES", "E-CORES" } : new[] { "CORE / THREAD LOADS" },
+                tiles.Select(tile => tile.Key).ToArray());
+            foreach (var (tile, section) in tiles.Zip(sections))
+            {
+                CollectionAssert.AreEquivalent(section.Select(reading => $"cpu0/cpu-loads/{reading.Core}/{reading.Thread}").ToArray(),
+                    tile.Select(bar => (string)bar["key"]).ToArray(), tile.Key);
+                Assert.AreEqual(1, tile.Select(bar => (double)bar["y"]).Distinct().Count(), presetId + " " + cores + ": " + tile.Key + " must stay one row.");
+                var canvas = tile.First().Ancestors().OfType<JObject>().First();
+                Assert.AreEqual((double)canvas["width"], tile.Max(bar => (double)bar["x"] + (double)bar["frameWidth"]), .01,
+                    presetId + " " + cores + ": " + tile.Key + " must spread its bars over the whole tile.");
+            }
+
+            // The heatmap averages every reading, P-cores first, in blocks per core type on hybrid CPUs.
+            var heatmap = bound.Descendants().OfType<JObject>().Single(node => (string)node["type"] == "heatmap");
+            CollectionAssert.AreEqual(readings.Select(reading => OverlayMovingAverages.Key(10, $"cpu0/cpu-loads/{reading.Core}/{reading.Thread}")).ToArray(),
+                heatmap["keys"].Values<string>().ToArray());
+            Assert.AreEqual(sections.Length > 1, heatmap["types"] != null);
+        }
+
+        [TestMethod]
         [DataRow("bar", "horizontal", true)]
         [DataRow("bar", "vertical", true)]
         [DataRow("bar", "vertical", false)]

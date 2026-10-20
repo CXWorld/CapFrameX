@@ -94,6 +94,10 @@ namespace CapFrameX.OSD.Integration
                         int existingIndex = profiles.FindIndex(profile => profile.Id == starter.Id);
                         if (existingIndex >= 0 && starter.CanUpdate(profiles[existingIndex]))
                         {
+                            // A correction may rename the design. When another profile already uses the
+                            // new name, keep the old design: a library never holds one name twice.
+                            if (profiles.Any(profile => profile.Id != starter.Id && string.Equals(profile.Name, starter.Name, StringComparison.OrdinalIgnoreCase)))
+                                continue;
                             profiles[existingIndex] = new OverlayDesignProfile(starter.Id, starter.Name,
                                 WithName(starter.DesignJson, starter.Name), DateTime.UtcNow);
                             continue;
