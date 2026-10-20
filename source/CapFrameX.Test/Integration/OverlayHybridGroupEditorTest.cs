@@ -181,6 +181,29 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(host.CoreTypes.IsVisible);
         }
 
+        [TestMethod]
+        public void RefreshOfAGroupOfOneCoreTypeAddsOnlyReadingsOfThatType()
+        {
+            using var host = new EditorHost("vertical");
+            var tile = host.Editor.SelectedElement;
+            host.Editor.Sources = Enumerable.Range(1, 16).Select(index => Source(index,
+                index <= 6 ? "P" : index <= 14 ? "E" : "LPE")).ToArray();
+            // A bound "role:cpu-loads|E" keeps its core type behind the family key.
+            tile.GroupKey = OsdSourceGroup.Build(host.Editor.Sources).Single().Key + "|E";
+            tile.GroupMembers = tile.GroupMembers.Where(member => member.CoreType == "E").Take(2).ToList();
+            Assert.IsTrue(host.Editor.TryCommitEdits());
+            Settle();
+
+            typeof(OsdEditorControl).GetMethod("OnRefreshGroupMembers", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(host.Editor, new object[] { null, new RoutedEventArgs() });
+            Assert.IsTrue(host.Editor.TryCommitEdits());
+            Settle();
+
+            CollectionAssert.AreEqual(Enumerable.Range(7, 8).Select(index => "cpu.load." + index).ToArray(),
+                tile.GroupMembers.Select(member => member.Key).ToArray());
+            Assert.IsTrue(tile.GroupMembers.All(member => member.CoreType == "E"));
+        }
+
         private static OsdTelemetrySource Source(int index, string type) => new OsdTelemetrySource
         {
             Key = "cpu.load." + index, Name = "CPU Core #" + index + " Thread #1",
