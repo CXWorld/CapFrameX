@@ -50,6 +50,7 @@ namespace CapFrameX.ViewModel
 
         private bool _useUpdateSession;
         private ISession _session;
+        private bool _isCuttingRecord;
         private ISession _previousSession;
         private SeriesCollection _statisticCollection;
         private SeriesCollection _lShapeCollection;
@@ -1235,7 +1236,24 @@ namespace CapFrameX.ViewModel
 
         private async void OnCutRecord(bool inverse)
         {
-            await _recordManager.DuplicateSession(_localRecordDataServer.CurrentSession, inverse, FirstSeconds, LastSeconds);
+            // The cut clones, filters and writes the whole record, which froze the window while it ran
+            // on the UI thread. It runs in the background now; a second click while it runs is ignored,
+            // as the blocked window ignored it before.
+            if (_isCuttingRecord)
+                return;
+
+            var session = _localRecordDataServer.CurrentSession;
+            double firstSeconds = FirstSeconds;
+            double lastSeconds = LastSeconds;
+            _isCuttingRecord = true;
+            try
+            {
+                await Task.Run(() => _recordManager.DuplicateSession(session, inverse, firstSeconds, lastSeconds));
+            }
+            finally
+            {
+                _isCuttingRecord = false;
+            }
         }
 
         private void UpdateRangeSliderParameter()
