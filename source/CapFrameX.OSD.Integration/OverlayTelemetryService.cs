@@ -6,7 +6,6 @@ using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using CapFrameX.Contracts.Sensor;
@@ -23,12 +22,6 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public sealed class OverlayTelemetryService : IOverlayTelemetryService
     {
-        // Native CPU sensor names are defined by GenericCpu, IntelCpu and Amd17Cpu.
-        // Restrict suffixes so temperatures, effective clocks and aggregates cannot mix.
-        private static readonly Regex CoreSensorName = new Regex(
-            @"^(?:CPU\s+)?Core\s+#(?<core>\d{1,5})(?:\s+(?<type>LPE|LP|P|E|D))?(?:\s+Thread\s+#(?<thread>\d{1,3}))?\s*(?<suffix>\(Effective\)|Distance to TjMax|\(SMU\)|VID)?$",
-            RegexOptions.Compiled | RegexOptions.CultureInvariant);
-
         private const string MetricPrefix = "metric/";
         // Short hardware names, derived from the full ones the classic overlay provides.
         private const string GpuShortName = "CustomGPUShort", CpuShortName = "CustomCPUShort";
@@ -107,7 +100,7 @@ namespace CapFrameX.OSD.Integration
                     sources.Add(AdditionalSource("RunHistoryAggregation", "Aggregated capture result", "Capture", "Results", "", "runAggregation", true));
                     sources.Add(AdditionalSource("RunHistoryOutlierCount", "Outlier runs", "Capture", "Results", "", "runOutlierCount", false));
                 }
-                AssignSemanticKeys(sources);
+                OverlaySemanticKeys.Assign(sources);
                 ThrowIfDisposed();
                 _sources = sources.ToArray();
                 return Array.AsReadOnly(_sources);
@@ -164,15 +157,13 @@ namespace CapFrameX.OSD.Integration
                 var stable = SensorIdentifierHelper.BuildStableIdentifier(entry);
                 bool ambiguous = stable != null && stableCounts[stable] > 1;
                 // Qualify *every* duplicate, never publish an alias pointing to an arbitrary device.
-                string id = stable == null ? "sensor-id:" + Uri.EscapeDataString(entry.Identifier)
-                    : "sensor:" + Uri.EscapeDataString(stable)
-                    + (ambiguous ? ":runtime:" + Uri.EscapeDataString(entry.Identifier) : string.Empty);
+                string id = stable == null ? OverlaySensorSources.UnnamedSensorId(entry.Identifier)
+                    : OverlaySensorSources.SensorId(stable, ambiguous ? entry.Identifier : null);
                 string device = DeviceNameKey(entry);
                 // Hardware names are stable across sensor index changes, but identical devices
                 // must remain separate. Unknown provider identifiers are deliberately isolated.
-                string deviceKey = "device:" + Uri.EscapeDataString(device)
-                    + (deviceCounts[device] > 1 || string.IsNullOrWhiteSpace(entry.HardwareName)
-                        ? ":runtime:" + Uri.EscapeDataString(RuntimeDeviceKey(entry)) : string.Empty);
+                string deviceKey = OverlaySensorSources.DeviceKey(entry.HardwareType, entry.HardwareName,
+                    deviceCounts[device] > 1 || string.IsNullOrWhiteSpace(entry.HardwareName) ? RuntimeDeviceKey(entry) : null);
                 var group = GetRepeatedSensorGroup(entry);
                 yield return new OverlayTelemetrySource
                 {
@@ -218,31 +209,9 @@ namespace CapFrameX.OSD.Integration
         private static (string Family, string Name, int Order, string CoreType, int? CoreIndex, int? ThreadIndex)
             GetRepeatedSensorGroup(ISensorEntry entry)
         {
-            if (entry.HardwareType != "Cpu" || string.IsNullOrWhiteSpace(entry.Name))
+            if (entry.HardwareType != "Cpu" || !OverlaySensorSources.TryGetCoreReading(entry.SensorType, entry.Name, out var reading))
                 return default;
-            var match = CoreSensorName.Match(entry.Name.Trim());
-            if (!match.Success) return default;
-            int core = int.Parse(match.Groups["core"].Value, CultureInfo.InvariantCulture);
-            int thread = match.Groups["thread"].Success
-                ? int.Parse(match.Groups["thread"].Value, CultureInfo.InvariantCulture) : 0;
-            string suffix = match.Groups["suffix"].Value;
-            var family = (entry.SensorType, suffix) switch
-            {
-                ("Load", "") => ("cpu-loads", "CPU core / thread loads"),
-                ("Clock", "") => ("cpu-clocks", "CPU core clocks"),
-                ("Clock", "(Effective)") => ("cpu-effective-clocks", "CPU effective clocks"),
-                ("Temperature", "") => ("cpu-temperatures", "CPU core temperatures"),
-                ("Temperature", "Distance to TjMax") => ("cpu-thermal-headroom", "CPU thermal headroom"),
-                ("Power", "(SMU)") => ("cpu-core-power", "CPU core power"),
-                ("Voltage", "VID") => ("cpu-core-vid", "CPU core VID"),
-                _ => ((string)null, (string)null)
-            };
-            if (family.Item1 == null) return default;
-            // These labels come from native CPU topology. Never infer a core type from
-            // the presence of SMT threads, the model name or a clock reading.
-            string coreType = match.Groups["type"].Success ? match.Groups["type"].Value : null;
-            return (family.Item1, family.Item2, core * 1024 + thread, coreType, core,
-                match.Groups["thread"].Success ? thread : (int?)null);
+            return (reading.Family, reading.GroupName, reading.Order, reading.CoreType, reading.CoreIndex, reading.ThreadIndex);
         }
 
         private static string GetUnit(ISensorEntry entry)
@@ -273,49 +242,6 @@ namespace CapFrameX.OSD.Integration
                 default: return string.Empty;
             }
         }
-
-        private static void AssignSemanticKeys(IList<OverlayTelemetrySource> sources)
-        {
-            Assign("gpuLoad", "Load", s => IsGpu(s), "GPU Core");
-            Assign("gpuTemp", "Temperature", s => IsGpu(s), "GPU Core");
-            Assign("gpuPower", "Power", s => IsGpu(s), "GPU TBP", "GPU Power", "GPU Total", "GPU TDP");
-            Assign("cpuLoad", "Load", s => s.HardwareType == "Cpu", "CPU Total");
-            Assign("cpuTemp", "Temperature", s => s.HardwareType == "Cpu", "CPU Package (Tctl/Tdie)", "CPU Package", "CPU Max Core Temp");
-            Assign("ramUsed", "Data", s => s.HardwareType == "Memory", "RAM Used", "Memory Used");
-            Assign("ramTotal", "Data", s => s.HardwareType == "Memory", "RAM Total", "Memory Total");
-            Assign("vramUsed", "Data", s => IsGpu(s), "GPU Memory Dedicated", "GPU Memory Used", "GPU Memory Allocated");
-            Assign("vramTotal", "Data", s => IsGpu(s), "GPU Memory Total");
-            Assign("gpuClock", "Clock", s => IsGpu(s), "GPU Core");
-            Assign("gpuMemoryClock", "Clock", s => IsGpu(s), "GPU Memory");
-            Assign("gpuFan", "Fan", s => IsGpu(s), "GPU Fan", "GPU Fan 1", "GPU");
-            Assign("gpuFanPercent", "Control", s => IsGpu(s), "GPU Fan", "GPU Fan 1", "GPU");
-            Assign("vramLoad", "Load", s => IsGpu(s), "GPU Memory");
-            Assign("cpuClock", "Clock", s => s.HardwareType == "Cpu", "CPU Clock", "CPU Max", "CPU Max Clock");
-            // Hybrid CPUs report the fastest core of each type, so designs can name P- and E-cores on any model.
-            Assign("cpuPCoreClock", "Clock", s => s.HardwareType == "Cpu", "CPU P Max");
-            Assign("cpuECoreClock", "Clock", s => s.HardwareType == "Cpu", "CPU E Max");
-            Assign("cpuPower", "Power", s => s.HardwareType == "Cpu", "CPU Package");
-            Assign("ramLoad", "Load", s => s.HardwareType == "Memory", "RAM Usage", "RAM", "Memory");
-
-            void Assign(string key, string type, Func<OverlayTelemetrySource, bool> filter, params string[] names)
-            {
-                var matching = sources.Where(s => (s.IsHardwareSensor || s.SumSourceIdA != null) && filter(s)
-                    && s.SensorType == type && names.Contains(s.Name, StringComparer.Ordinal)).ToArray();
-                if (matching.Select(s => s.HardwareName).Distinct(StringComparer.Ordinal).Take(2).Count() > 1)
-                    return;
-                foreach (var name in names)
-                {
-                    var candidates = matching.Where(s => s.Name == name).ToArray();
-                    if (candidates.Length == 0) continue;
-                    if (candidates.Length == 1 && !candidates[0].IsStableIdentifierAmbiguous)
-                        candidates[0].SemanticKey = key;
-                    return;
-                }
-            }
-        }
-
-        private static bool IsGpu(OverlayTelemetrySource source)
-            => source.HardwareType?.StartsWith("Gpu", StringComparison.Ordinal) == true;
 
         private static IEnumerable<OverlayTelemetrySource> CreateMemoryTotals(IReadOnlyList<OverlayTelemetrySource> sources)
         {
