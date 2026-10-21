@@ -12,6 +12,38 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Chart lines past the window end (2026-10-21)
+
+The five native DLLs were built with VS 2026/v145 in `RelWithDebInfo` from OSD commit
+`d958d92d15b6de6f2b70c40289dd914eb9c91b6a`, which follows `28c40f2`. The native sources did not change
+between `6d963d5` and `28c40f2`. The chart-layer hosts (D3D11 external-v2, the
+D3D12 hook's CPU producer, the Vulkan layer) scroll a cached chart by up to ~4 px between two rebuilds
+(5 s on 300 px). The line stopped at the window end, so its last columns opened and closed at the
+plot's right edge, in classic rows and tiles alike. The masks of `RasterizeChartLines` now continue
+the line past the window end by the variant horizon (`RenderContext::chartLineEnd`): the PresentMon
+replay draws the samples it trails, the local graph keeps its last height past the newest present,
+and a line that ends inside the window stays open. Their clip ends at the window's last possible
+column (`floor(plot.x) + ceil(plot.w)`) instead of the stroke's reach. Controls, Interop, both Vulkan
+manifests, the localization files and the template catalogs are unchanged.
+
+Verification: all 16 core CTests pass (`chart_geometry` checks that every pre-scrolled copy covers
+every plot column for replayed and local charts and, as a negative control, that a line ending at
+the window end leaves the scrolled columns open). All 33 hook CTests and all 10 Vulkan CTests pass on
+x64 and x86. A CapFrameX Release build with `CfxOsdFromSource=false` stages exactly these DLLs into
+the test output and passes all 3122 runnable unit tests (6 skipped). The Vulkan layer pair is also
+installed in `C:\Program Files\CapFrameX\vulkan` on the development machine.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `9F6E5A61B993252B7715F3B01B7955D42A82656D4B9191FD1E0220DDCE1ECFFE` |
+| native\cfx_osd_hook.dll | `3B29A8FBB38476EF97EADCE393F235E7C6B98D70E2E191A6F9D45FCAC47FFC85` |
+| native\x86\cfx_osd_hook.dll | `9F51C9A54E5E296B2F7DFB5EF8F8B242570E804D450879D05EDB7A4C61A7EE78` |
+| native\vk\cfx_osd_vklayer.dll | `37B16B440AC0077D7D3D0CF4489A656A8FD4D11935288B7264B9614451F304D5` |
+| native\vk\x86\cfx_osd_vklayer.dll | `4847DBE42715174295EB14A16545A422A506C1921267780A48B1F46EF0128960` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Core-type group roles (2026-10-20)
 
 Controls was rebuilt in `Release|x64` for .NET 10 from OSD commit `28c40f25893fe924d357251dc43fa467e3d61b94`, which follows
