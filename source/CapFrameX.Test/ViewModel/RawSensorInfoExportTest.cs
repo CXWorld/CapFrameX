@@ -49,6 +49,53 @@ namespace CapFrameX.Test.ViewModel
             Assert.AreEqual(72001, export.Result.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length);
         }
 
+        [TestMethod]
+        public void ShortSensor_LeavesOnlyItsMissingCellsEmpty()
+        {
+            // The capture stopped before the last CPU load sample was logged.
+            var run = SensorData(samples: 4, gapAt: -1);
+            run["CPU Total"].Values.RemoveLast();
+
+            var rows = Rows(RawSensorInfoExport.BuildText(new[] { run }));
+            int cpuLoad = Array.IndexOf(rows[0], "CPU load(%)");
+
+            Assert.IsTrue(cpuLoad >= 0);
+            CollectionAssert.AreEqual(new[] { "20", "21", "22", "" },
+                rows.Skip(1).Select(row => row[cpuLoad]).ToArray());
+        }
+
+        [TestMethod]
+        public void RunWithoutSensorData_IsSkipped()
+        {
+            // A record with PC latency but without sensor logging has runs without sensor data.
+            var withSensors = RawSensorInfoExport.BuildText(new[] { SensorData(samples: 3, gapAt: -1) });
+
+            Assert.AreEqual(withSensors, RawSensorInfoExport.BuildText(new[] { null, SensorData(samples: 3, gapAt: -1) }));
+            Assert.AreEqual(string.Empty, RawSensorInfoExport.BuildText(new ISessionSensorData2[] { null }));
+        }
+
+        [TestMethod]
+        public void NoGpuLoad_LeavesTheGpuLimitEmpty()
+        {
+            var data = new SessionSensorData2();
+            var cpuLoad = Add(data, "CPU Total", "Load");
+            for (int i = 0; i < 3; i++)
+            {
+                data.MeasureTime.Values.AddLast((i + 1) * 0.25);
+                data.BetweenMeasureTime.Values.AddLast(0.25);
+                cpuLoad.Values.AddLast(30);
+            }
+
+            var rows = Rows(RawSensorInfoExport.BuildText(new[] { data }));
+
+            Assert.AreEqual("Time in GPU limit(%)", rows[0].Last());
+            Assert.IsTrue(rows.Skip(1).All(row => row.Last() == string.Empty), "0 of 0 GPU load samples is no share");
+        }
+
+        private static string[][] Rows(string text)
+            => text.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries)
+                .Select(line => line.Split('\t')).ToArray();
+
         /// <summary>A sensor log with CPU and GPU load, GPU clock and a NaN slot at <paramref name="gapAt"/>.</summary>
         private static ISessionSensorData2 SensorData(int samples, int gapAt)
         {

@@ -1198,7 +1198,9 @@ namespace CapFrameX.ViewModel
             if (RecordInfo == null)
                 return;
 
-            Clipboard.SetDataObject(RawSensorInfoExport.BuildText(_session.Runs.Select(run => run.SensorData2)), false);
+            var text = RawSensorInfoExport.BuildText(_session.Runs.Select(run => run.SensorData2));
+            if (text.Length > 0)
+                Clipboard.SetDataObject(text, false);
         }
 
         private void OnChartItemChanged()

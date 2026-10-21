@@ -15,7 +15,11 @@ namespace CapFrameX.ViewModel
     {
         public static string BuildText(IEnumerable<ISessionSensorData2> runs)
         {
-            var sensorRuns = runs.ToArray();
+            // A run of a record without sensor logging has no sensor data, e.g. one with PC latency only.
+            var sensorRuns = runs.Where(run => run != null).ToArray();
+            if (sensorRuns.Length == 0)
+                return string.Empty;
+
             var propertyInfos = typeof(ISessionSensorData).GetProperties()
                 .Where(pi => pi.GetCustomAttributes(false).OfType<SensorDataExportAttribute>().Any())
                 .Where(pi => sensorRuns.All(run => (pi.GetValue(run) as Array).Length > 0))
@@ -37,12 +41,18 @@ namespace CapFrameX.ViewModel
             {
                 int measureCount = run.MeasureTime.Values.Count;
                 var columns = propertyInfos.Select(pi => pi.GetValue(run) as Array).ToArray();
-                var gpuLoadLimit = SensorReport.GetPercentageInGpuLoadLimit(run.GpuUsage.ToList());
+                // Without GPU load there is no share to give: 0 of 0 samples is NaN.
+                var gpuUsage = run.GpuUsage;
+                var gpuLoadLimit = gpuUsage.Length > 0
+                    ? SensorReport.GetPercentageInGpuLoadLimit(gpuUsage).ToString()
+                    : string.Empty;
 
                 for (int i = 0; i < measureCount; i++)
                 {
+                    // A sensor can miss its last samples, e.g. when the capture stopped in the middle of
+                    // a measurement; only those cells stay empty, not the whole column.
                     var lineValues = columns.Select(array =>
-                        array.Length >= measureCount ? string.Format("{0:0.##}", array.GetValue(i)) : string.Empty);
+                        i < array.Length ? string.Format("{0:0.##}", array.GetValue(i)) : string.Empty);
                     builder.AppendLine(string.Join("\t", lineValues) + "\t" + gpuLoadLimit);
                 }
             }
