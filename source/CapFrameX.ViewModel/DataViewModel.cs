@@ -1252,10 +1252,10 @@ namespace CapFrameX.ViewModel
         private async void OnCutRecord(bool inverse)
         {
             // The cut clones, filters and writes the whole record, which froze the window while it ran
-            // on the UI thread. It runs on the record write queue now: the app waits for the queue
-            // before it exits, so a cut is never lost or left half written, and the cut runs after the
-            // metadata edits saved before the click and before those saved after it. The cut buttons
-            // are disabled until it is written.
+            // on the UI thread. It runs on the record write queue now: the exit waits for the queue, up
+            // to 10 s as for metadata edits, so closing the app no longer drops a cut that is still being
+            // written, and the cut runs after the metadata edits saved before the click and before those
+            // saved after it. The cut buttons are disabled until it is written.
             if (_isCuttingRecord)
                 return;
 
