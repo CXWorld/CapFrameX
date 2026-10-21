@@ -132,7 +132,9 @@ Kinds:
   or heatmap), groupColumns (1..32), groupBarOrientation (horizontal, vertical), groupShowValues,
   groupShowLabels, groupByCoreType (a row per CPU core type), groupBarWidth, groupBarHeight,
   minimum and maximum (bar range), unit, digits, valueSize. groupMembers lists
-  { ""key"", ""label"", ""isEnabled"" }: rename or hide members there.
+  { ""key"", ""label"", ""isEnabled"" }: rename or hide members there. A template role with
+  placeholder members binds to this machine's family as in a template: role:cpu-loads takes every
+  thread load, role:cpu-loads|P only those of one core type (P, E, LPE, D or LP).
   groupDisplay ""heatmap"" draws one cell per member, shaded from idle to full load in valueColor
   (default the document's textColor) under the title (in color) and an idle..maximum legend. Each
   cell shows its reading averaged over groupWindowSeconds (1..600, default 10). Members are ordered

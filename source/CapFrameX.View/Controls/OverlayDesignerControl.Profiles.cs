@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -11,6 +11,7 @@ using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.OSD.Controls;
 using CapFrameX.OSD.Integration;
+using CapFrameX.View.OverlayDesignAuthoring;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Win32;
 
@@ -406,9 +407,10 @@ namespace CapFrameX.View.Controls
                 : OverlayDesignUnsavedChangesDecision.Cancel;
         }
 
-        private async Task<string> AskProfileNameAsync(Func<string> title, string initialName, string currentId = null)
+        private async Task<string> AskProfileNameAsync(Func<string> title, string initialName, string currentId = null,
+            Func<string> message = null)
         {
-            var prompt = new OverlayDesignPrompt(title, () => CxLang.T("OverlayEditor_ChooseName"), () => CxLang.T("OverlayEditor_Save"), initialName,
+            var prompt = new OverlayDesignPrompt(title, message ?? (() => CxLang.T("OverlayEditor_ChooseName")), () => CxLang.T("OverlayEditor_Save"), initialName,
                 name => name.Length > OverlayDesignProfileStore.MaximumNameLength
                     ? CxLang.Format("OverlayEditor_NameLimit", OverlayDesignProfileStore.MaximumNameLength)
                     : _profileStore.Profiles.Any(profile => profile.Id != currentId && string.Equals(profile.Name, name, StringComparison.OrdinalIgnoreCase))
@@ -594,16 +596,15 @@ namespace CapFrameX.View.Controls
                 {
                     return;
                 }
-                if (new FileInfo(dialog.FileName).Length > OsdDesignDocument.MaximumJsonLength)
-                {
-                    throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_ImportSize"), message => new FormatException(message));
-                }
-                var document = OsdDesignDocument.FromJson(File.ReadAllText(dialog.FileName));
-                string name = await AskProfileNameAsync(() => CxLang.T("OverlayEditor_ImportDesign"), SuggestName(document.Name));
+                // The design is adapted to this machine's hardware; without its sources it stays as it came.
+                var imported = OverlayDesignProfileTransfer.Import(dialog.FileName, await GetImportSourcesAsync());
+                string name = await AskProfileNameAsync(() => CxLang.T("OverlayEditor_ImportDesign"), SuggestName(imported.Name),
+                    message: () => DescribeImport(imported) + Environment.NewLine + Environment.NewLine + CxLang.T("OverlayEditor_ChooseName"));
                 if (name == null)
                 {
                     return;
                 }
+                var document = OsdDesignDocument.FromJson(imported.DesignJson);
                 document.Name = name;
                 if (_profileSession.Create(name, document.ToJson(), await AskUnsavedChangesAsync()))
                 {
@@ -630,24 +631,84 @@ namespace CapFrameX.View.Controls
                 };
                 if (dialog.ShowDialog(Window.GetWindow(this)) == true)
                 {
-                    // A failed export must leave a previous file intact.
-                    string temporary = dialog.FileName + "." + Guid.NewGuid().ToString("N") + ".tmp";
-                    try
-                    {
-                        File.WriteAllText(temporary, json, new UTF8Encoding(false));
-                        File.Move(temporary, dialog.FileName, true);
-                    }
-                    finally
-                    {
-                        if (File.Exists(temporary))
-                        {
-                            File.Delete(temporary);
-                        }
-                    }
+                    OverlayDesignProfileTransfer.Export(json, dialog.FileName);
                 }
                 return Task.CompletedTask;
             });
         }
+
+        private async Task<IReadOnlyList<OverlayTelemetrySource>> GetImportSourcesAsync()
+        {
+            var service = TelemetryService;
+            if (service == null)
+            {
+                return null;
+            }
+            try
+            {
+                return await service.GetSourcesAsync();
+            }
+            catch (Exception error) when (error is not OutOfMemoryException)
+            {
+                // The source status reports the failed discovery; the design is imported unchanged.
+                return null;
+            }
+        }
+
+        private static string DescribeImport(OverlayDesignImportResult imported)
+        {
+            var lines = new List<string>();
+            var adapted = imported.Devices.Where(device => device.TargetDevice != null && device.TargetDevice != device.SourceDevice)
+                .Select(device => device.SourceDevice + " → " + device.TargetDevice).ToArray();
+            if (!imported.IsMapped)
+            {
+                lines.Add(CxLang.T("OverlayEditor_ImportUnmapped"));
+            }
+            else if (imported.IsGeneric)
+            {
+                lines.Add(CxLang.T("OverlayEditor_ImportGeneric"));
+            }
+            else if (adapted.Length > 0)
+            {
+                lines.Add(CxLang.Format("OverlayEditor_ImportAdapted", string.Join(", ", adapted)));
+            }
+            else if (imported.Unresolved.Count == 0)
+            {
+                lines.Add(CxLang.T("OverlayEditor_ImportSameHardware"));
+            }
+            if (imported.IsMapped && imported.Unresolved.Count > 0)
+            {
+                const int listed = 8;
+                var readings = imported.Unresolved.Take(listed)
+                    .Select(reading => DescribeTile(reading) + " (" + DescribeIssue(reading.Issue) + ")").ToList();
+                if (imported.Unresolved.Count > listed)
+                {
+                    readings.Add("…");
+                }
+                lines.Add(CxLang.Format("OverlayEditor_ImportUnresolved", imported.Unresolved.Count, string.Join(", ", readings)));
+            }
+            return string.Join(Environment.NewLine, lines);
+        }
+
+        // A tile without a label is named by its sensor.
+        private static string DescribeTile(OverlayDesignUnresolvedReading reading)
+        {
+            if (!string.IsNullOrWhiteSpace(reading.Tile))
+            {
+                return reading.Tile;
+            }
+            return OverlaySensorSources.TryParseSensorId(reading.Key, out _, out _, out string sensor)
+                ? sensor : CxLang.T("OverlayEditor_ImportUntitledTile");
+        }
+
+        private static string DescribeIssue(OverlayDesignImportIssue issue) => issue switch
+        {
+            OverlayDesignImportIssue.NoMatchingDevice => CxLang.T("OverlayEditor_ImportIssue_NoMatchingDevice"),
+            OverlayDesignImportIssue.AmbiguousDevice => CxLang.T("OverlayEditor_ImportIssue_AmbiguousDevice"),
+            OverlayDesignImportIssue.MissingCoreType => CxLang.T("OverlayEditor_ImportIssue_MissingCoreType"),
+            OverlayDesignImportIssue.UnknownDevice => CxLang.T("OverlayEditor_ImportIssue_UnknownDevice"),
+            _ => CxLang.T("OverlayEditor_ImportIssue_MissingReading")
+        };
 
         /// <summary>Hosts call this before removing the designer or closing its window.</summary>
         public async Task<bool> TryCloseAsync()

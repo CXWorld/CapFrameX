@@ -49,14 +49,17 @@ namespace CapFrameX.Test.Integration
             int checkedGroups = 0, checkedSensorGroups = 0;
             foreach (var document in documents)
             {
-                // Discovery only rebuilds preset roles. Hardware starters bind their groups to
-                // concrete sensors, which keep their authored members whatever the catalog holds.
+                // Discovery only rebuilds preset roles. Panther Lake binds its groups to concrete
+                // sensors, which keep their authored members whatever the catalog holds.
                 var sensorGroups = document.EnumerateTiles()
                     .Where(tile => tile.Kind == "group" && tile.GroupDisplay == "bar" && tile.GroupKey?.StartsWith("role:", StringComparison.Ordinal) != true)
                     .ToDictionary(tile => tile, tile => tile.GroupMembers.Select(member => member.Key).ToArray());
                 var result = BindAndAssertParity(document, catalog);
                 foreach (var group in document.EnumerateTiles().Where(tile => tile.Kind == "group" && tile.GroupDisplay == "bar"))
                 {
+                    // A role of one core type ("role:cpu-loads|P") binds hybrid CPUs only; the FUSION
+                    // starter tests cover them with the core counts of their CPUs.
+                    if (group.GroupKey?.StartsWith("role:", StringComparison.Ordinal) == true && group.GroupKey.Contains('|')) continue;
                     var layout = document.GetGroupBarLayout(group);
                     bool sensorBound = sensorGroups.TryGetValue(group, out var sensorKeys);
                     int bars = sensorBound ? sensorKeys.Length : count;
@@ -79,7 +82,7 @@ namespace CapFrameX.Test.Integration
                 }
             }
             Assert.IsTrue(checkedGroups >= 17, "Both the template gallery and shipped Saved tile profiles must be covered.");
-            Assert.IsTrue(checkedSensorGroups >= 5, "The hardware starters' per-core-type groups must be covered.");
+            Assert.IsTrue(checkedSensorGroups >= 3, "Panther Lake's per-core-type groups must be covered.");
         }
 
         [TestMethod]

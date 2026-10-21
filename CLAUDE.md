@@ -267,6 +267,49 @@ cell keys (`SavedHeatmapWindow`), so designs saved while the default was 60 s ke
 Controls must contain the heatmap: a Controls build without it rejects FUSION. Block and row rules:
 the OSD repo's CLAUDE.md.
 
+### Generic hardware starters
+
+APEX 3D, REDLINE and the FUSION starters (ARL, RPL, Ryzen) fit a CPU and GPU family, not one model:
+they name the installed hardware with `gpuNameShort`/`cpuNameShort`, show no model-specific graphics
+(`Resources/OverlayGraphics/SOURCES.md`) and bind every sensor portably. FUSION's P-CORES and E-CORES
+tiles are roles of one core type, `role:cpu-loads|P` and `|E`. The runtime binder
+(`OverlayRuntimeSourceBinder`) and the editor (`OsdDesignDocument.BindPresetSources`, which binds an
+unmodified starter when the designer opens it) filter the family alike; keep them in sync, the parity
+tests compare both. The editor keeps the type in the bound key (`device|family|unit|P`), so refreshing
+the members adds that type only. The FUSION bar tiles fix the bar height but not the width (32 columns),
+so their bars spread over the whole tile whatever the core count. Max clocks per core type come from `cpuPCoreClock`/`cpuECoreClock`
+(sensors `CPU P Max`/`CPU E Max`). The former model-specific presets were renamed but keep their
+profile IDs (`idPresetId`); `PreviousNames` lets an upgrade replace an unmodified copy under its old
+name, unless another profile already has the new one. The prebuilt Controls must contain the
+core-type roles: without them the designer leaves FUSION's P/E tiles unbound (the overlay binds them).
+
+### Sharing tile designs (import mapping)
+
+`OverlayDesignProfileTransfer` (`CapFrameX.View/OverlayDesignAuthoring`) exports a design as saved
+(validated, UTF-8 without BOM, through a temporary file) and imports at most
+`OsdDesignDocument.MaximumJsonLength`; `OverlayDesignImportMapper` adapts the import to this PC and the
+designer shows what changed before it asks for the name. A design without `sensor:`/`sensor-id:` keys is
+**generic**: its semantic keys and roles bind through `BindPresetSources` as a starter's do, without
+restrictions. A design with hardware keys maps every device its sensor IDs name
+(`OverlaySensorSources.TryParseSensorId`): onto the same model if this PC has it (the card the design
+already reads, also beside an identical twin), else a GPU onto a GPU and a CPU onto a CPU **of the same
+vendor**. Of several candidates the one reporting most of the design's readings of that device wins; a
+tie is `AmbiguousDevice` and never guessed. Memory, drives and other devices only map onto the same
+model. A reading maps onto the sensor of the same type and name, else onto the first sensor of its
+semantic rule (`OverlaySemanticKeys`: "GPU TBP" or "GPU Power"). CPU core readings and core groups map
+onto **the same core types only**, per family as `OverlaySensorSources.TryGetCoreReading` reads the LHM
+names: a group rebinds to this CPU's members of the core types it showed (enabled members), so its size
+follows the CPU; labels and hidden members carry over by sensor name, and a single type stays in the key
+(`|P`). Unmatched keys keep their value, so the design works again on its own hardware, and are listed
+in `OverlayDesignImportResult.Unresolved` with the reason. Semantic keys and roles inside a hardware
+design bind as in a generic one. A foreign device's kind and vendor come from a group's device key, else
+from its sensor names and device name (`InferDeviceKind` checks CPU names first: APUs name their
+Radeon). No GPU semantic key is assigned while two GPUs report the reading (iGPU beside a card), so
+generic GPU tiles stay empty there and the import reports them. `CapFrameX.Test/Integration/OverlayDesignTransferTest`
+exports and imports between 13 simulated PCs (`OverlayDesignTransferHardware`, catalogs built by the real
+`OverlayTelemetryService`): all pairs against an independent oracle of these rules, every starter bound
+on every PC, round trips and focused cases.
+
 ### Hook-free stall diagnostics
 
 Chart pauses/hitches in the hook-free overlay have three unrelated possible causes — the render

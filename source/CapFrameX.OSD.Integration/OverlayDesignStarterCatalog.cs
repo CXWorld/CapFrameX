@@ -16,10 +16,17 @@ namespace CapFrameX.OSD.Integration
 
         internal OverlayDesignStarterProfile(string presetId, string json, int introducedInVersion = 1,
             params string[] previousDesignHashes)
+            : this(presetId, presetId, json, introducedInVersion, previousDesignHashes)
+        {
+        }
+
+        /// <summary>A renamed preset keeps the ID of its former name, so installed copies stay the same profile.</summary>
+        internal OverlayDesignStarterProfile(string presetId, string idPresetId, string json, int introducedInVersion,
+            string[] previousDesignHashes)
         {
             PresetId = presetId;
             IntroducedInVersion = introducedInVersion;
-            Id = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes("CapFrameX.TileOverlay.Starter/" + presetId)))
+            Id = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes("CapFrameX.TileOverlay.Starter/" + idPresetId)))
                 .Substring(0, 32).ToLowerInvariant();
             DesignJson = OverlayRuntimeDesign.Canonicalize(json);
             Name = (string)JObject.Parse(DesignJson)["name"];
@@ -34,10 +41,12 @@ namespace CapFrameX.OSD.Integration
         public IReadOnlyList<LocalizedText> Description { get; internal init; } = Array.Empty<LocalizedText>();
         /// <summary>Web pages of the authors whose work the design is adapted from.</summary>
         public IReadOnlyList<OverlayDesignLink> Links { get; internal init; } = Array.Empty<OverlayDesignLink>();
+        /// <summary>Names the shipped design carried before a catalog upgrade renamed it.</summary>
+        internal IReadOnlyList<string> PreviousNames { get; init; } = Array.Empty<string>();
         internal int IntroducedInVersion { get; }
 
         internal bool CanUpdate(OverlayDesignProfile profile) => _previousDesignHashes.Length > 0
-            && profile.Id == Id && profile.Name == Name
+            && profile.Id == Id && (profile.Name == Name || PreviousNames.Contains(profile.Name, StringComparer.Ordinal))
             && _previousDesignHashes.Contains(ComputeDesignHash(profile.DesignJson), StringComparer.Ordinal);
 
         internal static string ComputeDesignHash(string json) => Convert.ToHexString(
@@ -51,7 +60,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 17;
+        public const int Version = 18;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -91,9 +100,11 @@ namespace CapFrameX.OSD.Integration
                 (Id: "hybrid-benchmark", Version: 1), (Id: "hybrid-compact", Version: 1), (Id: "hybrid-thread-deck", Version: 1),
                 (Id: "turquoise-reference", Version: 2), (Id: "turquoise-compact", Version: 2), (Id: "turquoise-wide", Version: 2),
                 (Id: "core-types-overview", Version: 3), (Id: "core-types-compact", Version: 3), (Id: "core-types-thermal", Version: 3),
-                (Id: "RTX-5090-9800X3D-APEX", Version: 4),
+                (Id: "RTX-50-Ryzen-3D-APEX", Version: 4),
                 (Id: "AMD-Ryzen-Radeon-REDLINE", Version: 4),
-                (Id: "RTX-5090-Core-Ultra-285K-FUSION", Version: 4),
+                (Id: "RTX-50-Core-Ultra-FUSION-ARL", Version: 4),
+                (Id: "RTX-50-Core-FUSION-RPL", Version: 18),
+                (Id: "RTX-50-Ryzen-FUSION", Version: 18),
                 (Id: "AMD-Ryzen-5-9600X-Badge", Version: 4),
                 (Id: "AMD-Ryzen-7-9800X3D-Badge", Version: 4),
                 (Id: "Panther-Lake-Arc-Aurora", Version: 6),
@@ -119,16 +130,23 @@ namespace CapFrameX.OSD.Integration
                 // twelve added its core load heatmap, before version thirteen grouped the heatmap's
                 // core types into blocks, before version fourteen labelled them, before version
                 // fifteen centred "285K" below its logo and before version sixteen averaged its heatmap
-                // over the 10 s default instead of 60 s. Never replace a renamed or edited profile.
+                // over the 10 s default instead of 60 s. Version eighteen made APEX, REDLINE and FUSION
+                // (now FUSION ARL) generic: they name the installed CPU and GPU, show no model-specific
+                // graphics and bind FUSION's cores on any Core Ultra. Never replace a renamed or edited profile.
                 string[] previousDesignHashes = entry.Id switch
                 {
-                    "RTX-5090-9800X3D-APEX" => new[] { "02913A2E04FABDD253EE7FC4D37F6FED8BE06A0E89B15E61C03CBDD52AC6D716" },
+                    "RTX-50-Ryzen-3D-APEX" => new[]
+                    {
+                        "02913A2E04FABDD253EE7FC4D37F6FED8BE06A0E89B15E61C03CBDD52AC6D716",
+                        "F0B27CF3BF6D64A106E14D4BC52B9DB1B55E5343F780CB5FFFC04033C7B3DB42"
+                    },
                     "AMD-Ryzen-Radeon-REDLINE" => new[]
                     {
                         "51A4346D1187B02E4FFE6DA2ECB56F28ACDBEED92F4FEE8B29B44C40BF2F5FBD",
-                        "29F584D14371B202EC0DC2B813EBFB9B3C1BD97E049898EEEF730EB134F75A38"
+                        "29F584D14371B202EC0DC2B813EBFB9B3C1BD97E049898EEEF730EB134F75A38",
+                        "11BD3AAAC5BC84AF1DB602A2123FBA4417F20DB564780B26A83CC2FB2A5CEA69"
                     },
-                    "RTX-5090-Core-Ultra-285K-FUSION" => new[]
+                    "RTX-50-Core-Ultra-FUSION-ARL" => new[]
                     {
                         "CD0BF73BAE3EDC41CDC305D6919B38580040DC3B160E6BE80088045F7E93BB21",
                         "A3F9D621DC0A7E2FCD1AAC0F75EF58B2ADACCD63A38B843761EEAA5CB8BD6AF2",
@@ -136,7 +154,8 @@ namespace CapFrameX.OSD.Integration
                         "338F4F0E7525D2CD5D9B4096612C869DECEE947A3A53204E362304544501E276",
                         "A93FBDED3CDEE2E51EE9D76F12907E2FB0C2CE5629C3175AEC72C0EFD83D8465",
                         "375AD5D0DDF1F923960970412183A0A5A8F5704170BB955235818552608037F0",
-                        "2F2081F41702F0156285B055621F0350AC7FC61514600DA6CBF17FFF3BC4B8F4"
+                        "2F2081F41702F0156285B055621F0350AC7FC61514600DA6CBF17FFF3BC4B8F4",
+                        "D784C960AB557AA56C0CFEFD3D8F04272396B30D34C7B34CA0BD6A541FDE6168"
                     },
                     "Panther-Lake-Arc-Aurora" => new[] { "E717AF2FB7BDDF804AFF1918BA97CC560D251D648134522040A4F7591534C9ED" },
                     "AMD-Ryzen-5-9600X-Badge" => new[] { "09795802837F766CB0350464E82B878EA4A361141F8FEC6CDB9343A314446E40" },
@@ -153,10 +172,18 @@ namespace CapFrameX.OSD.Integration
                     },
                     _ => Array.Empty<string>()
                 };
-                var (description, links) = About(entry.Id);
-                return new OverlayDesignStarterProfile(entry.Id, reader.ReadToEnd(), entry.Version, previousDesignHashes)
+                // The generic designs replaced presets named after one CPU and GPU.
+                var (idPresetId, previousNames) = entry.Id switch
                 {
-                    Description = description, Links = links
+                    "RTX-50-Ryzen-3D-APEX" => ("RTX-5090-9800X3D-APEX", new[] { "APEX - RTX 5090 + 9800X3D" }),
+                    "AMD-Ryzen-Radeon-REDLINE" => (entry.Id, new[] { "REDLINE - Ryzen 7 9800X3D + Radeon" }),
+                    "RTX-50-Core-Ultra-FUSION-ARL" => ("RTX-5090-Core-Ultra-285K-FUSION", new[] { "FUSION - RTX 5090 + Core Ultra 9 285K" }),
+                    _ => (entry.Id, Array.Empty<string>())
+                };
+                var (description, links) = About(entry.Id);
+                return new OverlayDesignStarterProfile(entry.Id, idPresetId, reader.ReadToEnd(), entry.Version, previousDesignHashes)
+                {
+                    Description = description, Links = links, PreviousNames = previousNames
                 };
             }).ToArray());
         }

@@ -12,6 +12,24 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Core-type group roles (2026-10-20)
+
+Controls was rebuilt in `Release|x64` for .NET 10 from OSD commit `28c40f25893fe924d357251dc43fa467e3d61b94`, which follows
+`cf0901b`. A group role may name one CPU core type: `role:cpu-loads|P` binds only the P-cores of the
+family (`OsdDesignDocument.BindPresetSources`, like CapFrameX's `OverlayRuntimeSourceBinder`) and keeps
+the type in the bound key (`device|family|unit|P`), so refreshing the members adds that type only. The
+FUSION ARL and RPL starters use it for their P-CORES and E-CORES tiles; a Controls build without this
+change leaves those tiles unbound in the designer. The native DLLs, Interop, both Vulkan manifests, the
+localization files and the template catalogs are unchanged.
+
+Verification: a CapFrameX Release build with `CfxOsdFromSource=false` stages exactly this DLL into the
+test output and passes all 2543 runnable unit tests (6 skipped), among them
+`CoreTypeRolesBindOneCoreTypeOfTheFamilyLikeTheEditor` and `RefreshOfAGroupOfOneCoreTypeAddsOnlyReadingsOfThatType`.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `ACD87991C11ED0C1639AE797C47A24867252D4544F97B83A57ECCA6CAA2761B1` |
+
 ### Inspector source search hint (2026-10-19)
 
 Controls was rebuilt in `Release|x64` for .NET 10 from OSD commit `cf0901b94f823b8fb430c8163eb24f1bb41c19e4`, which follows
