@@ -198,7 +198,7 @@ namespace CapFrameX.OSD.Integration
                 contentHeight = 13 * 1.4 + 4 + rows * cellHeight + (rows - 1) * 4;
             }
             else contentHeight = 28 + rows * (display == "bar" ? 40 : valueSize * 1.4 + 28);
-            double required = Math.Max(24, Math.Ceiling((contentHeight + 2 * padding / scale) / gridSize) * gridSize) * scale;
+            double required = Math.Max(24, Math.Ceiling((contentHeight + 2 * DesignUnits(padding, scale)) / gridSize) * gridSize) * scale;
             GrowFrame(root, tiles, outer, required, scale, gridSize);
         }
 
@@ -297,7 +297,7 @@ namespace CapFrameX.OSD.Integration
 
             double padding = (double?)outer["padding"] ?? 0;
             double contentHeight = 18.2 + gap + canvasHeight;
-            double required = Math.Max(24, Math.Ceiling((contentHeight + 2 * padding / scale) / gridSize) * gridSize) * scale;
+            double required = Math.Max(24, Math.Ceiling((contentHeight + 2 * DesignUnits(padding, scale)) / gridSize) * gridSize) * scale;
             GrowFrame(root, tiles, outer, required, scale, gridSize);
         }
 
@@ -332,7 +332,7 @@ namespace CapFrameX.OSD.Integration
                 return;
             }
             double padding = (double?)outer["padding"] ?? 0;
-            double required = Math.Max(24, Math.Ceiling((flowHeight + 2 * padding / scale) / gridSize) * gridSize) * scale;
+            double required = Math.Max(24, Math.Ceiling((flowHeight + 2 * DesignUnits(padding, scale)) / gridSize) * gridSize) * scale;
             if (required <= ((double?)outer["frameHeight"] ?? 0)) return;
             GrowFrame(root, tiles, outer, required, scale, gridSize);
             heatmap["height"] = required - 2 * padding;
@@ -364,6 +364,10 @@ namespace CapFrameX.OSD.Integration
             return longest;
         }
 
+        // A scene value is the design value times the scale. Dividing it back leaves rounding noise that
+        // must not push a frame onto the next grid step, which the editor, working in design units, never does.
+        private static double DesignUnits(double sceneValue, double scale) => Math.Round(sceneValue / scale, 6);
+
         private static void GrowFrame(JObject root, JArray tiles, JObject outer, double required, double scale, double gridSize)
         {
             double originalHeight = (double?)outer["frameHeight"] ?? 0;
@@ -375,7 +379,7 @@ namespace CapFrameX.OSD.Integration
                 && (double?)tile["y"] >= y + originalHeight - .001 * scale
                 && (double?)tile["x"] < right && (double?)tile["x"] + (double?)tile["frameWidth"] > x).ToArray();
             double bottom = Math.Max(y + required, following.Select(tile => (double)tile["y"] + (double)tile["frameHeight"] + increase).DefaultIfEmpty().Max());
-            double needed = Math.Ceiling((bottom / scale + gridSize) / gridSize) * gridSize * scale;
+            double needed = Math.Ceiling((DesignUnits(bottom, scale) + gridSize) / gridSize) * gridSize * scale;
             if (needed > 4096 * scale) throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_GroupHeight"), message => new FormatException(message));
             outer["frameHeight"] = required;
             foreach (var next in following) next["y"] = (double)next["y"] + increase;
