@@ -372,21 +372,30 @@ namespace CapFrameX.ViewModel
             if (RecordInfo == null)
                 return;
 
+            // Built once: the query is deferred, and enumerated for each row it aggregated and sorted
+            // every sensor of every run again, O(n²), which froze the UI on long sensor logs.
             var data = SensorReport.GetSensorReportEntries(_session.Runs.Select(s => s.SensorData2))
-                .Where(x => x.Name != "BetweenMeasureTime");
+                .Where(x => x.Name != "BetweenMeasureTime")
+                .ToList();
+            if (data.Count == 0)
+                return;
+
+            var roundingDigits = data.Select(x =>
+            {
+                SensorReport.roundingDictionary.TryGetValue(x.Type, out var roundingDigit);
+                return roundingDigit;
+            }).ToArray();
 
             StringBuilder builder = new StringBuilder();
 
             // Header
             builder.AppendLine(string.Join("\t", data.Select(x => x.DisplayName)));
 
-            for (int i = 0; i < data.First().Values.Count(); i++)
+            int rowCount = data[0].Values.Length;
+            for (int i = 0; i < rowCount; i++)
             {
-                builder.AppendLine(string.Join("\t", data.Select(x =>
-                {
-                    SensorReport.roundingDictionary.TryGetValue(x.Type, out var roundingDigit);
-                    return Math.Round(x.Values.ElementAtOrDefault(i), roundingDigit);
-                })));
+                builder.AppendLine(string.Join("\t", data.Select((x, column) =>
+                    Math.Round(x.Values.ElementAtOrDefault(i), roundingDigits[column]))));
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);

@@ -1172,7 +1172,18 @@ namespace CapFrameX.Data
             }
         }
 
-        public async Task DuplicateSession(ISession session, bool inverse, double startTime = 0, double endTime = double.PositiveInfinity)
+        /// <summary>
+        /// The folder new records are written to now, or null while none is observed.
+        /// </summary>
+        public async Task<string> GetRecordDirectory()
+            => (await _recordObserver.ObservingDirectoryStream.Take(1))?.FullName;
+
+        /// <summary>
+        /// Saves the part of the record inside (or, inverse, outside) the range as a new record, in
+        /// <paramref name="recordDirectory"/> or, without one, in the folder observed when it is written.
+        /// </summary>
+        public async Task DuplicateSession(ISession session, bool inverse, double startTime = 0, double endTime = double.PositiveInfinity,
+            string recordDirectory = null)
         {
             if (session == null)
             {
@@ -1309,7 +1320,7 @@ namespace CapFrameX.Data
                 clone.Info.Id = Guid.NewGuid();
                 NormalizeStartTimesOfSessionRuns(clone.Runs);
                 clone.Info.Comment = $"(Cut) {clone.Info.Comment}";
-                var filePath = await GetOutputFilename(clone.Info.ProcessName.StripExeExtension(), null);
+                var filePath = await GetOutputFilename(clone.Info.ProcessName.StripExeExtension(), recordDirectory);
                 SaveSessionToFile(filePath, clone);
             }
             catch (Exception e)

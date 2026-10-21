@@ -687,6 +687,7 @@
     "DataViewModel_BarPointOnePercentLowIntegral": "0.1% Low Integral",
     "DataViewModel_FrametimesMs": "Frametimes (ms)",
     "DataViewModel_LowFPS01": "Low FPS:  {0}s ({1}%)",
+    "DataViewModel_NoSensorDataToCopy": "This record has no sensor data to copy.",
     "DataViewModel_OutlierCleaned0": "{0} (outlier-cleaned)",
     "DataViewModel_RemoveOutliersIsOnlyASimulation": "Remove outliers is only a function to simulate how the parameters would be like if there were no outliers.\nThis doesn't qualify as a conclusive evaluation of the benchmark run.",
     "DataViewModel_Smooth01": "Smooth:  {0}s ({1}%)",

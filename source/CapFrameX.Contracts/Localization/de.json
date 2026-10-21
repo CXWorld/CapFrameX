@@ -687,6 +687,7 @@
     "DataViewModel_BarPointOnePercentLowIntegral": "0.1%-Low-Integral",
     "DataViewModel_FrametimesMs": "Frametimes (ms)",
     "DataViewModel_LowFPS01": "Low-FPS:  {0}s ({1}%)",
+    "DataViewModel_NoSensorDataToCopy": "Diese Aufnahme enthält keine Sensordaten zum Kopieren.",
     "DataViewModel_OutlierCleaned0": "{0} (ohne Ausreißer)",
     "DataViewModel_RemoveOutliersIsOnlyASimulation": "„Ausreißer entfernen“ simuliert nur, wie die Metriken ohne Ausreißer aussehen würden.\nDas ist keine abschließende Bewertung des Benchmark-Durchlaufs.",
     "DataViewModel_Smooth01": "Flüssig:  {0}s ({1}%)",

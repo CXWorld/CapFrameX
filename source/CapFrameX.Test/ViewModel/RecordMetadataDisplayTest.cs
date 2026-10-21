@@ -26,7 +26,7 @@ namespace CapFrameX.Test.ViewModel
         {
             var events = new EventAggregator();
             var model = new DataViewModel(Mock.Of<IStatisticProvider>(), Mock.Of<IFrametimeAnalyzer>(), events,
-                Configuration(), CreateRecordManager(), NullLogger<DataViewModel>.Instance);
+                Configuration(), CreateRecordManager(), null, NullLogger<DataViewModel>.Instance);
             var record = Record("record");
             Show(events, record);
 
@@ -44,7 +44,7 @@ namespace CapFrameX.Test.ViewModel
         {
             var events = new EventAggregator();
             var model = new DataViewModel(Mock.Of<IStatisticProvider>(), Mock.Of<IFrametimeAnalyzer>(), events,
-                Configuration(), CreateRecordManager(), NullLogger<DataViewModel>.Instance);
+                Configuration(), CreateRecordManager(), null, NullLogger<DataViewModel>.Instance);
             var record = Record("record");
             Show(events, record);
             var other = Record("other");

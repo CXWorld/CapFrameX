@@ -45,11 +45,13 @@ namespace CapFrameX.ViewModel
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
         private readonly RecordManager _recordManager;
+        private readonly RecordWriteQueue _recordWriteQueue;
         private readonly IRecordDataServer _localRecordDataServer;
         private static ILogger<DataViewModel> _logger;
 
         private bool _useUpdateSession;
         private ISession _session;
+        private bool _isCuttingRecord;
         private ISession _previousSession;
         private SeriesCollection _statisticCollection;
         private SeriesCollection _lShapeCollection;
@@ -70,7 +72,7 @@ namespace CapFrameX.ViewModel
         private double _firstSeconds;
         private double _lastSeconds;
         private EChartYAxisSetting _selecetedChartYAxisSetting = EChartYAxisSetting.FullFit;
-        private ConditionalMessageDialog _messageDialogContent;
+        private UserControl _messageDialogContent;
         private bool _messageDialogContentIsOpen;
         private string _messageText;
         private int _barMaxValue = 100;
@@ -374,7 +376,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public ConditionalMessageDialog MessageDialogContent
+        public UserControl MessageDialogContent
         {
             get { return _messageDialogContent; }
             set
@@ -576,9 +578,9 @@ namespace CapFrameX.ViewModel
 
         public ICommand CopyRawSensorInfoCommand { get; }
 
-        public ICommand CutRecordCommand { get; }
+        public DelegateCommand CutRecordCommand { get; }
 
-        public ICommand CutRecordInverseCommand { get; }
+        public DelegateCommand CutRecordInverseCommand { get; }
 
         // Keep the saved selection independent of the current record's metrics.
         // Availability only controls whether the selected graph can be shown.
@@ -746,6 +748,7 @@ namespace CapFrameX.ViewModel
             IEventAggregator eventAggregator,
             IAppConfiguration appConfiguration,
             RecordManager recordManager,
+            RecordWriteQueue recordWriteQueue,
             ILogger<DataViewModel> logger)
         {
             _frametimeStatisticProvider = frametimeStatisticProvider;
@@ -753,6 +756,7 @@ namespace CapFrameX.ViewModel
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
             _recordManager = recordManager;
+            _recordWriteQueue = recordWriteQueue;
             _logger = logger;
 
             CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
@@ -760,8 +764,8 @@ namespace CapFrameX.ViewModel
             CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
             CopySensorInfoCommand = new DelegateCommand(OnCopySensorInfo);
             CopyRawSensorInfoCommand = new DelegateCommand(OnCopyRawSensorInfo);
-            CutRecordCommand = new DelegateCommand(() => OnCutRecord(false));
-            CutRecordInverseCommand = new DelegateCommand(() => OnCutRecord(true));
+            CutRecordCommand = new DelegateCommand(() => OnCutRecord(false), () => !_isCuttingRecord);
+            CutRecordInverseCommand = new DelegateCommand(() => OnCutRecord(true), () => !_isCuttingRecord);
             CopyFPSThresholdDataCommand = new DelegateCommand(OnCopyFPSThresholdData);
             ThresholdCountsCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = false);
             ThresholdTimesCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = true);
@@ -1194,43 +1198,18 @@ namespace CapFrameX.ViewModel
             if (RecordInfo == null)
                 return;
 
-
-            var rawSensorInfos = _session.Runs.Select(run => run.SensorData2);
-
-            var propertyInfos = typeof(ISessionSensorData).GetProperties()
-                .Where(pi => pi.GetCustomAttributes(false).OfType<SensorDataExportAttribute>().Any())
-                .Where(pi => rawSensorInfos.All(rsi =>
-                {
-                    var values = pi.GetValue(rsi) as Array;
-                    return values.Length > 0;
-                }));
-
-            StringBuilder builder = new StringBuilder();
-
-            // Header
-            builder.AppendLine(string.Join("\t", propertyInfos.Select(pi =>
+            var text = RawSensorInfoExport.BuildText(_session.Runs.Select(run => run.SensorData2));
+            if (text.Length == 0)
             {
-                var attribute = pi.GetCustomAttributes(false).OfType<SensorDataExportAttribute>().FirstOrDefault();
-                return attribute.Description;
-            })) + "\t" + "Time in GPU limit(%)");
-
-            //Content
-            foreach (var run in rawSensorInfos)
-            {
-                for (int i = 0; i < run.MeasureTime.Values.Count; i++)
-                {
-                    var gpuLoadLimit = SensorReport.GetPercentageInGpuLoadLimit(run.GpuUsage.ToList());
-
-                    var lineValues = propertyInfos.Select(pi =>
-                    {
-                        var array = pi.GetValue(run) as Array;
-                        return array.Length >= run.MeasureTime.Values.Count ? string.Format("{0:0.##}", array.GetValue(i)) : string.Empty;
-                    });
-                    builder.AppendLine(string.Join("\t", lineValues) + "\t" + gpuLoadLimit);
-                }
+                // Nothing to copy: say so instead of leaving the clipboard as it was without a word. The
+                // plain dialog, since "never show again" of the conditional one hides the outlier warning.
+                MessageDialogContent = new MessageDialog();
+                MessageText = CxLang.T("DataViewModel_NoSensorDataToCopy");
+                MessageDialogContentIsOpen = true;
+                return;
             }
 
-            Clipboard.SetDataObject(builder.ToString(), false);
+            Clipboard.SetDataObject(text, false);
         }
 
         private void OnChartItemChanged()
@@ -1258,6 +1237,7 @@ namespace CapFrameX.ViewModel
 
             if (!NeverShowDialog && RemoveOutliers)
             {
+                MessageDialogContent = new ConditionalMessageDialog();
                 MessageText = CxLang.T("DataViewModel_RemoveOutliersIsOnlyASimulation");
                 MessageDialogContentIsOpen = true;
             }
@@ -1271,7 +1251,37 @@ namespace CapFrameX.ViewModel
 
         private async void OnCutRecord(bool inverse)
         {
-            await _recordManager.DuplicateSession(_localRecordDataServer.CurrentSession, inverse, FirstSeconds, LastSeconds);
+            // The cut clones, filters and writes the whole record, which froze the window while it ran
+            // on the UI thread. It runs on the record write queue now: the exit waits for the queue, up
+            // to 10 s as for metadata edits, so closing the app no longer drops a cut that is still being
+            // written, and the cut runs after the metadata edits saved before the click and before those
+            // saved after it. The cut buttons are disabled until it is written.
+            if (_isCuttingRecord)
+                return;
+
+            var session = _localRecordDataServer.CurrentSession;
+            double firstSeconds = FirstSeconds;
+            double lastSeconds = LastSeconds;
+            SetCuttingRecord(true);
+            try
+            {
+                // Taken at the click: the record folder can be switched while the cut waits or runs.
+                string recordDirectory = await _recordManager.GetRecordDirectory();
+                await _recordWriteQueue.Enqueue(() => _recordManager
+                    .DuplicateSession(session, inverse, firstSeconds, lastSeconds, recordDirectory)
+                    .GetAwaiter().GetResult());
+            }
+            finally
+            {
+                SetCuttingRecord(false);
+            }
+        }
+
+        private void SetCuttingRecord(bool isCutting)
+        {
+            _isCuttingRecord = isCutting;
+            CutRecordCommand.RaiseCanExecuteChanged();
+            CutRecordInverseCommand.RaiseCanExecuteChanged();
         }
 
         private void UpdateRangeSliderParameter()

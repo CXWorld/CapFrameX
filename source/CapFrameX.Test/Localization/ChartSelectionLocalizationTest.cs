@@ -39,7 +39,7 @@ namespace CapFrameX.Test.Localization
             {
                 CxLang.Instance.SetUiLanguage(language);
                 var model = new DataViewModel(Mock.Of<IStatisticProvider>(), Mock.Of<IFrametimeAnalyzer>(),
-                    new EventAggregator(), Configuration(), null, NullLogger<DataViewModel>.Instance);
+                    new EventAggregator(), Configuration(), null, null, NullLogger<DataViewModel>.Instance);
                 var tabs = ReadTabs("DataView.xaml");
                 Assert.AreEqual(4, tabs.Count);
                 var dirtyFields = new Dictionary<EChartTab, string>

@@ -88,7 +88,7 @@ namespace CapFrameX.Test.ViewModel
             var configuration = new Mock<IAppConfiguration>();
             configuration.SetupAllProperties();
             return new DataViewModel(Mock.Of<IStatisticProvider>(), Mock.Of<IFrametimeAnalyzer>(),
-                new EventAggregator(), configuration.Object, null, NullLogger<DataViewModel>.Instance);
+                new EventAggregator(), configuration.Object, null, null, NullLogger<DataViewModel>.Instance);
         }
     }
 }

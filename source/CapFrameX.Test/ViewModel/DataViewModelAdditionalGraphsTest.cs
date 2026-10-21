@@ -135,7 +135,7 @@ namespace CapFrameX.Test.ViewModel
             var configuration = new CapFrameXConfiguration(
                 NullLogger<CapFrameXConfiguration>.Instance, storage);
             return new DataViewModel(Mock.Of<IStatisticProvider>(), Mock.Of<IFrametimeAnalyzer>(),
-                new EventAggregator(), configuration, null, NullLogger<DataViewModel>.Instance);
+                new EventAggregator(), configuration, null, null, NullLogger<DataViewModel>.Instance);
         }
 
         private static bool Get(DataViewModel viewModel, string property)

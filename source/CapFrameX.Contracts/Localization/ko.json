@@ -686,6 +686,7 @@
     "DataViewModel_BarPointOnePercentLowIntegral": "0.1% Low 적분",
     "DataViewModel_FrametimesMs": "프레임 시간 (ms)",
     "DataViewModel_LowFPS01": "낮은 FPS:  {0}s ({1}%)",
+    "DataViewModel_NoSensorDataToCopy": "이 기록에는 복사할 센서 데이터가 없습니다.",
     "DataViewModel_OutlierCleaned0": "{0} (이상값 제거됨)",
     "DataViewModel_RemoveOutliersIsOnlyASimulation": "이상값 제거는 이상값이 없을 때 지표가 어떻게 달라지는지 시뮬레이션하는 기능입니다.\n이 결과만으로 벤치마크 실행을 최종 평가할 수는 없습니다.",
     "DataViewModel_Smooth01": "원활:  {0}s ({1}%)",
