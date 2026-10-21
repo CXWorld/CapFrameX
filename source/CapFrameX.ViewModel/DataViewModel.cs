@@ -45,6 +45,7 @@ namespace CapFrameX.ViewModel
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
         private readonly RecordManager _recordManager;
+        private readonly RecordWriteQueue _recordWriteQueue;
         private readonly IRecordDataServer _localRecordDataServer;
         private static ILogger<DataViewModel> _logger;
 
@@ -577,9 +578,9 @@ namespace CapFrameX.ViewModel
 
         public ICommand CopyRawSensorInfoCommand { get; }
 
-        public ICommand CutRecordCommand { get; }
+        public DelegateCommand CutRecordCommand { get; }
 
-        public ICommand CutRecordInverseCommand { get; }
+        public DelegateCommand CutRecordInverseCommand { get; }
 
         // Keep the saved selection independent of the current record's metrics.
         // Availability only controls whether the selected graph can be shown.
@@ -747,6 +748,7 @@ namespace CapFrameX.ViewModel
             IEventAggregator eventAggregator,
             IAppConfiguration appConfiguration,
             RecordManager recordManager,
+            RecordWriteQueue recordWriteQueue,
             ILogger<DataViewModel> logger)
         {
             _frametimeStatisticProvider = frametimeStatisticProvider;
@@ -754,6 +756,7 @@ namespace CapFrameX.ViewModel
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
             _recordManager = recordManager;
+            _recordWriteQueue = recordWriteQueue;
             _logger = logger;
 
             CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
@@ -761,8 +764,8 @@ namespace CapFrameX.ViewModel
             CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
             CopySensorInfoCommand = new DelegateCommand(OnCopySensorInfo);
             CopyRawSensorInfoCommand = new DelegateCommand(OnCopyRawSensorInfo);
-            CutRecordCommand = new DelegateCommand(() => OnCutRecord(false));
-            CutRecordInverseCommand = new DelegateCommand(() => OnCutRecord(true));
+            CutRecordCommand = new DelegateCommand(() => OnCutRecord(false), () => !_isCuttingRecord);
+            CutRecordInverseCommand = new DelegateCommand(() => OnCutRecord(true), () => !_isCuttingRecord);
             CopyFPSThresholdDataCommand = new DelegateCommand(OnCopyFPSThresholdData);
             ThresholdCountsCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = false);
             ThresholdTimesCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = true);
@@ -1237,23 +1240,36 @@ namespace CapFrameX.ViewModel
         private async void OnCutRecord(bool inverse)
         {
             // The cut clones, filters and writes the whole record, which froze the window while it ran
-            // on the UI thread. It runs in the background now; a second click while it runs is ignored,
-            // as the blocked window ignored it before.
+            // on the UI thread. It runs on the record write queue now: the app waits for the queue
+            // before it exits, so a cut is never lost or left half written, and the cut runs after the
+            // metadata edits saved before the click and before those saved after it. The cut buttons
+            // are disabled until it is written.
             if (_isCuttingRecord)
                 return;
 
             var session = _localRecordDataServer.CurrentSession;
             double firstSeconds = FirstSeconds;
             double lastSeconds = LastSeconds;
-            _isCuttingRecord = true;
+            SetCuttingRecord(true);
             try
             {
-                await Task.Run(() => _recordManager.DuplicateSession(session, inverse, firstSeconds, lastSeconds));
+                // Taken at the click: the record folder can be switched while the cut waits or runs.
+                string recordDirectory = await _recordManager.GetRecordDirectory();
+                await _recordWriteQueue.Enqueue(() => _recordManager
+                    .DuplicateSession(session, inverse, firstSeconds, lastSeconds, recordDirectory)
+                    .GetAwaiter().GetResult());
             }
             finally
             {
-                _isCuttingRecord = false;
+                SetCuttingRecord(false);
             }
+        }
+
+        private void SetCuttingRecord(bool isCutting)
+        {
+            _isCuttingRecord = isCutting;
+            CutRecordCommand.RaiseCanExecuteChanged();
+            CutRecordInverseCommand.RaiseCanExecuteChanged();
         }
 
         private void UpdateRangeSliderParameter()
