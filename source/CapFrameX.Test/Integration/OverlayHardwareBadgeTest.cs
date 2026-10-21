@@ -35,7 +35,9 @@ namespace CapFrameX.Test.Integration
             {
                 var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
                 var document = OsdDesignDocument.FromJson(starter.DesignJson);
-                image = document.EnumerateTiles().First(tile => tile.Kind == "image").DataUri;
+                // The badge starters name the image "Frame and branding"; REDLINE shows its Radeon logo first.
+                image = document.EnumerateTiles().Single(tile => tile.Kind == "image"
+                    && tile.Label is "Frame and branding" or "Ryzen badge").DataUri;
             }
             using var input = new MemoryStream(Convert.FromBase64String(image.Substring(image.IndexOf(',') + 1)));
             var decoder = BitmapDecoder.Create(input, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);

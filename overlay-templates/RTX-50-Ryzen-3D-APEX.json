@@ -13,7 +13,7 @@
     "padding": 10,
     "radius": 3,
     "canvas": true,
-    "canvasHeight": 688,
+    "canvasHeight": 756,
     "gridSize": 4,
     "showGrid": true,
     "snapToGrid": true
@@ -763,7 +763,7 @@
             "title": "FRAME PACING",
             "series": "frametimes",
             "width": 327.6,
-            "height": 33.800000000000004,
+            "height": 78,
             "unit": "ms",
             "color": "#76B900FF",
             "showLabels": true,
@@ -781,7 +781,7 @@
               "x": 0,
               "y": 208,
               "frameWidth": 520,
-              "frameHeight": 68,
+              "frameHeight": 136,
               "kind": "chart",
               "label": "FRAME PACING",
               "key": "frametimes",
@@ -804,7 +804,7 @@
         "x": 0,
         "y": 135.20000000000002,
         "frameWidth": 338,
-        "frameHeight": 44.2,
+        "frameHeight": 88.4,
         "clip": true
       },
       {
@@ -1526,7 +1526,7 @@
                 }
               ],
               "x": 0,
-              "y": 284,
+              "y": 352,
               "frameWidth": 520,
               "frameHeight": 156,
               "kind": "container",
@@ -1549,7 +1549,7 @@
         "borderColor": "#76B90088",
         "borderWidth": 0.65,
         "x": 0,
-        "y": 184.6,
+        "y": 228.8,
         "frameWidth": 338,
         "frameHeight": 101.4,
         "clip": true
@@ -2581,7 +2581,7 @@
                 }
               ],
               "x": 0,
-              "y": 448,
+              "y": 516,
               "frameWidth": 520,
               "frameHeight": 188,
               "kind": "container",
@@ -2604,7 +2604,7 @@
         "borderColor": "#ED1C2488",
         "borderWidth": 0.65,
         "x": 0,
-        "y": 291.2,
+        "y": 335.40000000000003,
         "frameWidth": 338,
         "frameHeight": 122.2,
         "clip": true
@@ -2649,7 +2649,7 @@
               "separator": " / ",
               "secondaryDigits": 0,
               "x": 0,
-              "y": 644,
+              "y": 712,
               "frameWidth": 256,
               "frameHeight": 44,
               "kind": "metric",
@@ -2672,7 +2672,7 @@
         "borderColor": "#58616955",
         "borderWidth": 0.65,
         "x": 0,
-        "y": 418.6,
+        "y": 462.8,
         "frameWidth": 166.4,
         "frameHeight": 28.6,
         "clip": true
@@ -2709,7 +2709,7 @@
               "labelColor": "#A3ABAFFF",
               "unitColor": "#A3ABAFFF",
               "x": 264,
-              "y": 644,
+              "y": 712,
               "frameWidth": 256,
               "frameHeight": 44,
               "kind": "metric",
@@ -2732,12 +2732,12 @@
         "borderColor": "#58616955",
         "borderWidth": 0.65,
         "x": 171.6,
-        "y": 418.6,
+        "y": 462.8,
         "frameWidth": 166.4,
         "frameHeight": 28.6,
         "clip": true
       }
     ],
-    "height": 447.2
+    "height": 491.40000000000003
   }
 }

@@ -60,7 +60,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 18;
+        public const int Version = 20;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -132,19 +132,25 @@ namespace CapFrameX.OSD.Integration
                 // fifteen centred "285K" below its logo and before version sixteen averaged its heatmap
                 // over the 10 s default instead of 60 s. Version eighteen made APEX, REDLINE and FUSION
                 // (now FUSION ARL) generic: they name the installed CPU and GPU, show no model-specific
-                // graphics and bind FUSION's cores on any Core Ultra. Never replace a renamed or edited profile.
+                // graphics and bind FUSION's cores on any Core Ultra. Version nineteen doubled the
+                // FRAME PACING chart of APEX, REDLINE and the three FUSION designs and gave REDLINE the
+                // core load bars and load heatmap of FUSION Ryzen; version twenty moved REDLINE's GPU block
+                // above its CPU tiles, as in FUSION. Never replace a renamed or edited profile.
                 string[] previousDesignHashes = entry.Id switch
                 {
                     "RTX-50-Ryzen-3D-APEX" => new[]
                     {
                         "02913A2E04FABDD253EE7FC4D37F6FED8BE06A0E89B15E61C03CBDD52AC6D716",
-                        "F0B27CF3BF6D64A106E14D4BC52B9DB1B55E5343F780CB5FFFC04033C7B3DB42"
+                        "F0B27CF3BF6D64A106E14D4BC52B9DB1B55E5343F780CB5FFFC04033C7B3DB42",
+                        "01FE6779D668FB83E0849836368829A234356E40E6B281143B29E9220F0DB4E8"
                     },
                     "AMD-Ryzen-Radeon-REDLINE" => new[]
                     {
                         "51A4346D1187B02E4FFE6DA2ECB56F28ACDBEED92F4FEE8B29B44C40BF2F5FBD",
                         "29F584D14371B202EC0DC2B813EBFB9B3C1BD97E049898EEEF730EB134F75A38",
-                        "11BD3AAAC5BC84AF1DB602A2123FBA4417F20DB564780B26A83CC2FB2A5CEA69"
+                        "11BD3AAAC5BC84AF1DB602A2123FBA4417F20DB564780B26A83CC2FB2A5CEA69",
+                        "6E33A0794A24181015C63E99E1294A2CA2415000BB053CE278C107A5A6160819",
+                        "611C240A718B67887AD76A3D0AA7A4FABE613BBBD07FAE063236BABF6B08FF0E"
                     },
                     "RTX-50-Core-Ultra-FUSION-ARL" => new[]
                     {
@@ -155,8 +161,11 @@ namespace CapFrameX.OSD.Integration
                         "A93FBDED3CDEE2E51EE9D76F12907E2FB0C2CE5629C3175AEC72C0EFD83D8465",
                         "375AD5D0DDF1F923960970412183A0A5A8F5704170BB955235818552608037F0",
                         "2F2081F41702F0156285B055621F0350AC7FC61514600DA6CBF17FFF3BC4B8F4",
-                        "D784C960AB557AA56C0CFEFD3D8F04272396B30D34C7B34CA0BD6A541FDE6168"
+                        "D784C960AB557AA56C0CFEFD3D8F04272396B30D34C7B34CA0BD6A541FDE6168",
+                        "C6C444013E2983BBB55C1B8ED0ED3C69B704E98807AF745BE4D744EA9414E91A"
                     },
+                    "RTX-50-Core-FUSION-RPL" => new[] { "9FC5D1D6A8DA1F2D9D51C07158659A39EA9FF14B72399E2CE403BB2BFB986D46" },
+                    "RTX-50-Ryzen-FUSION" => new[] { "9D589B66E0E8FE52B9F46459E792FD1178A561D26254A323BEDD974CB8832BB9" },
                     "Panther-Lake-Arc-Aurora" => new[] { "E717AF2FB7BDDF804AFF1918BA97CC560D251D648134522040A4F7591534C9ED" },
                     "AMD-Ryzen-5-9600X-Badge" => new[] { "09795802837F766CB0350464E82B878EA4A361141F8FEC6CDB9343A314446E40" },
                     "AMD-Ryzen-7-9800X3D-Badge" => new[] { "2B9D493E89D1A3CAFAE4B4CED21BF25D85BF3025FDA82E96893A24BD09A204A0" },

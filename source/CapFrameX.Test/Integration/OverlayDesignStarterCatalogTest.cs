@@ -157,6 +157,8 @@ namespace CapFrameX.Test.Integration
         [DataRow(6, 7)]
         [DataRow(16, 17)]
         [DataRow(17, 18)]
+        [DataRow(18, 19)]
+        [DataRow(19, 20)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -169,6 +171,7 @@ namespace CapFrameX.Test.Integration
                 6 => new[] { "Panther-Lake-Arc-Aurora", "OLED-Minimal" },
                 17 => SlickPresetIds,
                 18 => new[] { "RTX-50-Core-FUSION-RPL", "RTX-50-Ryzen-FUSION" },
+                19 or 20 => Array.Empty<string>(),
                 _ => new[] { "NVIDIA-GeForce-RTX-GREENLINE", "ICELINE-Vertical" }
             };
             CollectionAssert.AreEquivalent(expectedIds,
@@ -261,10 +264,69 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        [DataRow("RTX-50-Ryzen-3D-APEX", 136.0)]
+        [DataRow("AMD-Ryzen-Radeon-REDLINE", 144.0)]
+        [DataRow("RTX-50-Core-Ultra-FUSION-ARL", 144.0)]
+        [DataRow("RTX-50-Core-FUSION-RPL", 144.0)]
+        [DataRow("RTX-50-Ryzen-FUSION", 144.0)]
+        public void FramePacingChartIsTwiceAsHighAndReplacesTheUnmodifiedEarlierCopy(string presetId, double height)
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
+            var document = OsdDesignDocument.FromJson(starter.DesignJson);
+            var chart = document.Tiles.Single(tile => tile.Kind == "chart" && tile.Label == "FRAME PACING");
+            Assert.AreEqual(height, chart.FrameHeight);
+
+            if (presetId == "AMD-Ryzen-Radeon-REDLINE")
+            {
+                // Version nineteen: the GPU block below the CPU tiles, not above them as in version twenty.
+                var gpu = document.Tiles.Single(tile => tile.Label == "AMD Radeon GPU");
+                var cpuTiles = new[] { "AMD Ryzen CPU", "CORE / THREAD LOADS", "CPU Load Heatmap" }
+                    .Select(label => document.Tiles.Single(tile => tile.Label == label)).ToArray();
+                foreach (var tile in cpuTiles) tile.Y -= gpu.FrameHeight + document.Gap;
+                gpu.Y = cpuTiles[^1].Y + cpuTiles[^1].FrameHeight + document.Gap;
+                document.Tiles.Remove(gpu);
+                document.Tiles.Insert(document.Tiles.IndexOf(cpuTiles[^1]) + 1, gpu);
+                Assert.IsTrue(starter.CanUpdate(new OverlayDesignProfile(starter.Id, starter.Name, document.ToJson(), DateTime.UtcNow)),
+                    "An unmodified version-nineteen REDLINE gets the GPU block above its CPU tiles.");
+                // Version nineteen also gave REDLINE the core loads below its CPU block.
+                var loads = document.Tiles.Where(tile => tile.Label is "CORE / THREAD LOADS" or "CPU Load Heatmap").ToArray();
+                Assert.AreEqual(2, loads.Length);
+                double top = loads.Min(tile => tile.Y.Value);
+                double space = loads.Max(tile => tile.Y.Value + tile.FrameHeight.Value) + document.Gap - top;
+                foreach (var tile in loads) document.Tiles.Remove(tile);
+                foreach (var tile in document.Tiles.Where(tile => tile.Y >= top)) tile.Y -= space;
+                document.CanvasHeight -= space;
+                // Its badge image sat in a container of its own, which stored the image four times.
+                var cpu = document.Tiles.Single(tile => tile.Label == "AMD Ryzen CPU");
+                var image = cpu.Children.Single(tile => tile.Label == "Ryzen badge");
+                var container = new OsdDesignTile
+                {
+                    Kind = "container", Label = "Ryzen badge", Key = null, Padding = 0, BorderWidth = 0, BackgroundColor = "#00000000",
+                    X = image.X, Y = image.Y, FrameWidth = image.FrameWidth, FrameHeight = image.FrameHeight
+                };
+                cpu.Children[cpu.Children.IndexOf(image)] = container;
+                image.Label = "Frame and branding";
+                image.X = 0;
+                image.Y = 0;
+                container.Children.Add(image);
+            }
+            // Version eighteen: the chart half as high, every tile below it higher up by the difference.
+            double bottom = chart.Y.Value + chart.FrameHeight.Value, half = height / 2;
+            foreach (var tile in document.Tiles.Where(tile => tile.Y >= bottom - .001)) tile.Y -= half;
+            chart.FrameHeight = half;
+            document.CanvasHeight -= half;
+            var earlier = new OverlayDesignProfile(starter.Id, starter.Name, document.ToJson(), DateTime.UtcNow);
+            Assert.IsTrue(starter.CanUpdate(earlier), "An unmodified version-eighteen copy gets the higher chart.");
+            Assert.IsFalse(starter.CanUpdate(new OverlayDesignProfile(starter.Id, starter.Name, starter.DesignJson, DateTime.UtcNow)),
+                "The current design is never replaced.");
+        }
+
+        [TestMethod]
         [DataRow("RTX-50-Core-Ultra-FUSION-ARL", true)]
         [DataRow("RTX-50-Core-FUSION-RPL", true)]
         [DataRow("RTX-50-Ryzen-FUSION", false)]
-        public void FusionStartersBreakDownTheCpuOfTheirFamilyByCoreType(string presetId, bool hybrid)
+        [DataRow("AMD-Ryzen-Radeon-REDLINE", false)]
+        public void CoreLoadStartersBreakDownTheCpuOfTheirFamilyByCoreType(string presetId, bool hybrid)
         {
             var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
             var document = OsdDesignDocument.FromJson(starter.DesignJson);
