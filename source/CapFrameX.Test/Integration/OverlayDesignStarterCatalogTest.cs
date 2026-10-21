@@ -225,6 +225,50 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void CatalogUpgradeListsShippedDesignsInCatalogOrderAndKeepsTheUsersOwnProfilesInPlace()
+        {
+            // A library that grew with the catalog: every version appended its designs, so FUSION RPL
+            // and FUSION Ryzen ended up behind the Slick Overlay designs instead of beside FUSION ARL.
+            var catalog = OverlayDesignStarterCatalog.Profiles;
+            var store = Open();
+            var grown = catalog.Where(profile => profile.IntroducedInVersion <= 18).OrderBy(profile => profile.IntroducedInVersion).ToArray();
+            Assert.IsTrue(store.EnsureStarterProfiles(grown, 18));
+            CollectionAssert.AreEqual(grown.Select(profile => profile.Id).ToArray(), store.Profiles.Select(profile => profile.Id).ToArray());
+            var deleted = catalog.Single(profile => profile.PresetId == "compact");
+            store.Delete(deleted.Id);
+            var custom = store.Create("My capture", Design("minimal", 520));
+            var renamed = catalog.Single(profile => profile.PresetId == "turquoise-wide");
+            store.Rename(renamed.Id, "My turquoise");
+
+            var upgraded = Open();
+            Assert.IsTrue(OverlayDesignStarterCatalog.EnsureProfiles(upgraded));
+
+            var ids = upgraded.Profiles.Select(profile => profile.Id).ToList();
+            Assert.AreEqual(ids.Count - 1, ids.IndexOf(custom.Id), "The user's own profile keeps its place.");
+            CollectionAssert.AreEqual(catalog.Where(profile => profile.Id != deleted.Id).Select(profile => profile.Id).ToArray(),
+                ids.Where(id => id != custom.Id).ToArray(), "The shipped designs follow the catalog order, renamed ones included.");
+            Assert.AreEqual("My turquoise", upgraded.Get(renamed.Id).Name);
+            int fusion = ids.IndexOf(catalog.Single(profile => profile.PresetId == "RTX-50-Core-Ultra-FUSION-ARL").Id);
+            CollectionAssert.AreEqual(new[] { "RTX-50-Core-FUSION-RPL", "RTX-50-Ryzen-FUSION" },
+                ids.Skip(fusion + 1).Take(2).Select(id => catalog.Single(profile => profile.Id == id).PresetId).ToArray());
+        }
+
+        [TestMethod]
+        public void NewShippedDesignJoinsItsGroupBeforeTheUsersOwnProfiles()
+        {
+            // An upgrade adds a design beside the designs listed around it in the catalog, not at the end.
+            var oldStarter = new OverlayDesignStarterProfile("first-fixture", Design("minimal", 400), 1);
+            var newStarter = new OverlayDesignStarterProfile("second-fixture", Design("compact", 480), 2);
+            var lastStarter = new OverlayDesignStarterProfile("third-fixture", Design("benchmark", 560), 1);
+            var store = Open();
+            Assert.IsTrue(store.EnsureStarterProfiles(new[] { oldStarter, lastStarter }, 1));
+            var custom = store.Create("My design", Design("benchmark", 640));
+            Assert.IsTrue(store.EnsureStarterProfiles(new[] { oldStarter, newStarter, lastStarter }, 2));
+            CollectionAssert.AreEqual(new[] { oldStarter.Id, newStarter.Id, lastStarter.Id, custom.Id },
+                store.Profiles.Select(profile => profile.Id).ToArray());
+        }
+
+        [TestMethod]
         [DataRow("RTX-50-Ryzen-3D-APEX", "APEX 3D - RTX 50 Series + Ryzen 3D", false, 4)]
         [DataRow("AMD-Ryzen-Radeon-REDLINE", "REDLINE - Ryzen + Radeon", true, 4)]
         [DataRow("RTX-50-Core-Ultra-FUSION-ARL", "FUSION ARL - RTX 50 Series + Intel Core Ultra", true, 4)]

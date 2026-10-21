@@ -110,9 +110,10 @@ namespace CapFrameX.OSD.Integration
                         // or contents differ from the shipped design. Never rename or replace it.
                         if (profiles.Any(profile => profile.Id == starter.Id || string.Equals(profile.Name, starter.Name, StringComparison.OrdinalIgnoreCase)))
                             continue;
-                        profiles.Add(new OverlayDesignProfile(starter.Id, starter.Name,
+                        profiles.Insert(CatalogPosition(profiles, starters, starter), new OverlayDesignProfile(starter.Id, starter.Name,
                             WithName(starter.DesignJson, starter.Name), DateTime.UtcNow));
                     }
+                    SortStarters(profiles, starters);
                     Persist(profiles, ActiveProfileId ?? profiles.FirstOrDefault()?.Id, catalogVersion);
                     return true;
                 }
@@ -125,6 +126,39 @@ namespace CapFrameX.OSD.Integration
                     return false;
                 }
             }
+        }
+
+        // A new shipped design joins the shipped designs listed around it in the catalog instead of the
+        // end of the library: after the last one listed before it, else before the first listed after it.
+        private static int CatalogPosition(List<OverlayDesignProfile> profiles, IReadOnlyList<OverlayDesignStarterProfile> starters,
+            OverlayDesignStarterProfile starter)
+        {
+            int catalogIndex = IndexOf(starters, starter);
+            var before = starters.Take(catalogIndex).Select(item => item.Id).ToHashSet(StringComparer.Ordinal);
+            int previous = profiles.FindLastIndex(profile => before.Contains(profile.Id));
+            if (previous >= 0) return previous + 1;
+            var after = starters.Skip(catalogIndex + 1).Select(item => item.Id).ToHashSet(StringComparer.Ordinal);
+            int next = profiles.FindIndex(profile => after.Contains(profile.Id));
+            return next >= 0 ? next : profiles.Count;
+        }
+
+        private static int IndexOf(IReadOnlyList<OverlayDesignStarterProfile> starters, OverlayDesignStarterProfile starter)
+        {
+            for (int index = 0; index < starters.Count; index++)
+                if (ReferenceEquals(starters[index], starter)) return index;
+            return starters.Count;
+        }
+
+        // The shipped designs keep the places they hold in the library but follow the catalog order
+        // among them, so designs a later version added stand with their group; the user's own profiles
+        // stay where they are.
+        private static void SortStarters(List<OverlayDesignProfile> profiles, IReadOnlyList<OverlayDesignStarterProfile> starters)
+        {
+            var order = new Dictionary<string, int>(StringComparer.Ordinal);
+            for (int index = 0; index < starters.Count; index++) order.TryAdd(starters[index].Id, index);
+            int[] slots = Enumerable.Range(0, profiles.Count).Where(index => order.ContainsKey(profiles[index].Id)).ToArray();
+            var sorted = slots.Select(index => profiles[index]).OrderBy(profile => order[profile.Id]).ToArray();
+            for (int slot = 0; slot < slots.Length; slot++) profiles[slots[slot]] = sorted[slot];
         }
 
         private void Reload()

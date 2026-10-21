@@ -92,25 +92,34 @@ namespace CapFrameX.OSD.Integration
         private static IReadOnlyList<OverlayDesignStarterProfile> Load()
         {
             var assembly = typeof(OverlayDesignStarterCatalog).Assembly;
+            // The order of the profile lists, grouped by theme. Every catalog upgrade puts the shipped
+            // designs of a library into this order, whatever version added them
+            // (OverlayDesignProfileStore.EnsureStarterProfiles).
             return Array.AsReadOnly(new[]
             {
+                // Everyday layouts
                 (Id: "benchmark", Version: 1), (Id: "compact", Version: 1), (Id: "minimal", Version: 1),
+                (Id: "OLED-Minimal", Version: 6),
                 (Id: "frame-pacing", Version: 1), (Id: "gpu-dashboard", Version: 1), (Id: "memory-watch", Version: 1),
+                // Vertical strips
                 (Id: "vertical-thread-strip", Version: 1), (Id: "vertical-clock-deck", Version: 1), (Id: "vertical-thermal-panel", Version: 1),
+                // Hybrid CPUs and core types
                 (Id: "hybrid-benchmark", Version: 1), (Id: "hybrid-compact", Version: 1), (Id: "hybrid-thread-deck", Version: 1),
-                (Id: "turquoise-reference", Version: 2), (Id: "turquoise-compact", Version: 2), (Id: "turquoise-wide", Version: 2),
                 (Id: "core-types-overview", Version: 3), (Id: "core-types-compact", Version: 3), (Id: "core-types-thermal", Version: 3),
+                // Turquoise theme
+                (Id: "turquoise-reference", Version: 2), (Id: "turquoise-compact", Version: 2), (Id: "turquoise-wide", Version: 2),
+                // Hardware designs
                 (Id: "RTX-50-Ryzen-3D-APEX", Version: 4),
                 (Id: "AMD-Ryzen-Radeon-REDLINE", Version: 4),
                 (Id: "RTX-50-Core-Ultra-FUSION-ARL", Version: 4),
                 (Id: "RTX-50-Core-FUSION-RPL", Version: 18),
                 (Id: "RTX-50-Ryzen-FUSION", Version: 18),
-                (Id: "AMD-Ryzen-5-9600X-Badge", Version: 4),
-                (Id: "AMD-Ryzen-7-9800X3D-Badge", Version: 4),
-                (Id: "Panther-Lake-Arc-Aurora", Version: 6),
-                (Id: "OLED-Minimal", Version: 6),
                 (Id: "NVIDIA-GeForce-RTX-GREENLINE", Version: 7),
                 (Id: "ICELINE-Vertical", Version: 7),
+                (Id: "Panther-Lake-Arc-Aurora", Version: 6),
+                (Id: "AMD-Ryzen-5-9600X-Badge", Version: 4),
+                (Id: "AMD-Ryzen-7-9800X3D-Badge", Version: 4),
+                // Adapted from other authors
                 (Id: "Slick-Overlay-Vertical-Panel", Version: 17),
                 (Id: "Slick-Overlay-Wide-3-Rows", Version: 17),
                 (Id: "Slick-Overlay-Compact-2x2", Version: 17),
