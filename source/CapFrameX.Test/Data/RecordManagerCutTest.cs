@@ -11,6 +11,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Reactive.Subjects;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Test.Data
@@ -136,12 +137,36 @@ namespace CapFrameX.Test.Data
             Assert.AreEqual(samples, SensorValues(await cut, "CPU Package").Length);
         }
 
-        private async Task<ISession> Cut(ISession session, bool inverse, double startTime, double endTime)
+        [TestMethod]
+        public async Task Cut_IsWrittenToTheFolderTakenAtTheClick()
+        {
+            // The Analysis page takes the record folder at the click: the cut waits for the record write
+            // queue, and the folder can be switched meanwhile.
+            var folders = new BehaviorSubject<DirectoryInfo>(new DirectoryInfo(_folder));
+            var manager = Manager(folders);
+            string folderAtTheClick = await manager.GetRecordDirectory();
+            var switchedFolder = Directory.CreateDirectory(Path.Combine(_folder, "switched")).FullName;
+            folders.OnNext(new DirectoryInfo(switchedFolder));
+
+            await manager.DuplicateSession(SessionWithSensors(seconds: 10, sensorSamples: 40), inverse: false,
+                startTime: 2, endTime: 4, folderAtTheClick);
+
+            Assert.AreEqual(_folder, folderAtTheClick);
+            Assert.AreEqual(1, Directory.GetFiles(_folder, "*.json").Length);
+            Assert.AreEqual(0, Directory.GetFiles(switchedFolder, "*.json").Length);
+        }
+
+        private static RecordManager Manager(IObservable<DirectoryInfo> recordFolders)
         {
             var observer = new Mock<IRecordDirectoryObserver>();
-            observer.SetupGet(o => o.ObservingDirectoryStream).Returns(Observable.Return(new DirectoryInfo(_folder)));
-            var manager = new RecordManager(new Mock<ILogger<RecordManager>>().Object,
+            observer.SetupGet(o => o.ObservingDirectoryStream).Returns(recordFolders);
+            return new RecordManager(new Mock<ILogger<RecordManager>>().Object,
                 null, observer.Object, null, null, null, null, null, new EventAggregator(), null, null);
+        }
+
+        private async Task<ISession> Cut(ISession session, bool inverse, double startTime, double endTime)
+        {
+            var manager = Manager(Observable.Return(new DirectoryInfo(_folder)));
 
             await manager.DuplicateSession(session, inverse, startTime, endTime);
 
