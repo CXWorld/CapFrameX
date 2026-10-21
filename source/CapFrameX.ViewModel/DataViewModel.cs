@@ -72,7 +72,7 @@ namespace CapFrameX.ViewModel
         private double _firstSeconds;
         private double _lastSeconds;
         private EChartYAxisSetting _selecetedChartYAxisSetting = EChartYAxisSetting.FullFit;
-        private ConditionalMessageDialog _messageDialogContent;
+        private UserControl _messageDialogContent;
         private bool _messageDialogContentIsOpen;
         private string _messageText;
         private int _barMaxValue = 100;
@@ -376,7 +376,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public ConditionalMessageDialog MessageDialogContent
+        public UserControl MessageDialogContent
         {
             get { return _messageDialogContent; }
             set
@@ -1199,8 +1199,17 @@ namespace CapFrameX.ViewModel
                 return;
 
             var text = RawSensorInfoExport.BuildText(_session.Runs.Select(run => run.SensorData2));
-            if (text.Length > 0)
-                Clipboard.SetDataObject(text, false);
+            if (text.Length == 0)
+            {
+                // Nothing to copy: say so instead of leaving the clipboard as it was without a word. The
+                // plain dialog, since "never show again" of the conditional one hides the outlier warning.
+                MessageDialogContent = new MessageDialog();
+                MessageText = CxLang.T("DataViewModel_NoSensorDataToCopy");
+                MessageDialogContentIsOpen = true;
+                return;
+            }
+
+            Clipboard.SetDataObject(text, false);
         }
 
         private void OnChartItemChanged()
@@ -1228,6 +1237,7 @@ namespace CapFrameX.ViewModel
 
             if (!NeverShowDialog && RemoveOutliers)
             {
+                MessageDialogContent = new ConditionalMessageDialog();
                 MessageText = CxLang.T("DataViewModel_RemoveOutliersIsOnlyASimulation");
                 MessageDialogContentIsOpen = true;
             }

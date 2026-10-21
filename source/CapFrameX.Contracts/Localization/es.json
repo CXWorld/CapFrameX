@@ -687,6 +687,7 @@
     "DataViewModel_BarPointOnePercentLowIntegral": "Integral 0.1% low",
     "DataViewModel_FrametimesMs": "Frametimes (ms)",
     "DataViewModel_LowFPS01": "FPS bajos:  {0}s ({1}%)",
+    "DataViewModel_NoSensorDataToCopy": "Este registro no tiene datos de sensores para copiar.",
     "DataViewModel_OutlierCleaned0": "{0} (sin valores atípicos)",
     "DataViewModel_RemoveOutliersIsOnlyASimulation": "Quitar valores atípicos solo simula cómo serían los parámetros si no hubiera valores atípicos.\nNo sirve como evaluación concluyente de la pasada del benchmark.",
     "DataViewModel_Smooth01": "Fluido:  {0}s ({1}%)",

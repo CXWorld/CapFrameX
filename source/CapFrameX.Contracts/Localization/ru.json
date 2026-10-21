@@ -626,6 +626,7 @@
     "DataViewModel_BarPointOnePercentLowIntegral": "Интеграл нижнего 0,1%",
     "DataViewModel_FrametimesMs": "Время кадров (мс)",
     "DataViewModel_LowFPS01": "Низкий FPS:  {0} с ({1}%)",
+    "DataViewModel_NoSensorDataToCopy": "В этой записи нет данных датчиков для копирования.",
     "DataViewModel_OutlierCleaned0": "{0} (без выбросов)",
     "DataViewModel_RemoveOutliersIsOnlyASimulation": "Удаление выбросов лишь моделирует, какими были бы параметры без выбросов.\nЭто не является окончательной оценкой прогона бенчмарка.",
     "DataViewModel_Smooth01": "Плавно:  {0} с ({1}%)",
