@@ -62,7 +62,7 @@
     "OverlayEditor_InvalidChanges": "저장하지 않은 변경 내용 · 저장하기 전에 강조 표시된 값을 수정하세요.",
     "OverlayEditor_UnsavedChanges": "저장하지 않은 변경 내용 · Ctrl+S로 저장하세요.",
     "OverlayEditor_Saved": "저장됨 · 다음에 이 디자인이 다시 열립니다.",
-    "OverlayEditor_TileActive": "타일 오버레이 활성화됨",
+    "OverlayEditor_ShownThisProfile": "이 프로필",
     "OverlayEditor_RtssInactive": "RTSS: 타일 오버레이가 꺼져 있습니다. 디자인을 활성화하려면 ‘게임 내’ 또는 ‘후킹 없음’을 선택하세요.",
     "OverlayEditor_SaveChangesTitle": "변경 내용을 저장하시겠습니까?",
     "OverlayEditor_SaveChangesMessage": "“{0}”에 저장하지 않은 변경 내용이 있습니다. 계속하기 전에 저장하시겠습니까?",
@@ -173,6 +173,8 @@
     "OverlayDesigns_InGame": "게임 내 오버레이",
     "OverlayDesigns_HookFree": "후킹 없는 오버레이",
     "OverlayDesigns_Visible": "오버레이 표시",
+    "OverlayDesigns_Shown": "오버레이에 표시 중",
+    "OverlayDesigns_ShownBadge": "표시 중",
 
     // =========================================================================
     // AGGREGATION VIEW - Merging and averaging multiple benchmark sessions

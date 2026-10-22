@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Media;
 using System.Windows.Threading;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.OSD.Controls;
 using CapFrameX.OSD.Integration;
@@ -203,12 +204,21 @@ namespace CapFrameX.Test.Integration
             var host = fixture.Host;
             var service = new DesignService();
             host.ConfigureDesignService(service);
-            var status = (TextBlock)host.FindName("ProfileStatus");
-            service.Activate(host.ProfileSession.ActiveProfile.Id);
-            StringAssert.Contains(status.Text, "Tile overlay active");
+            var shown = (TextBlock)host.FindName("ShownOverlayName");
+            var thisProfile = (FrameworkElement)host.FindName("ShownOverlayThisProfile");
+            var selector = (ComboBox)host.FindName("ProfileSelector");
+            string id = host.ProfileSession.ActiveProfile.Id;
+            Assert.AreEqual(Visibility.Visible, ((FrameworkElement)host.FindName("ShownOverlayPanel")).Visibility);
+            Assert.AreEqual(CxLang.T("OverlayDesignStatus_Row"), shown.Text);
+            service.Activate(id);
+            Assert.AreEqual(host.ProfileSession.ActiveProfile.Name, shown.Text);
+            Assert.AreEqual(Visibility.Visible, thisProfile.Visibility, "The edited profile is the one the overlay shows.");
+            Assert.AreEqual(id, selector.Tag, "The profile list marks the shown profile.");
             Task.Run(service.Deactivate).GetAwaiter().GetResult();
             DrainDispatcher();
-            Assert.IsFalse(status.Text.Contains("Tile overlay active"));
+            Assert.AreEqual(CxLang.T("OverlayDesignStatus_Row"), shown.Text);
+            Assert.AreEqual(Visibility.Collapsed, thisProfile.Visibility);
+            Assert.IsNull(selector.Tag);
             Assert.IsFalse(host.HasUnsavedChanges, "Runtime selection changes must not mutate the working design.");
         }
 
@@ -255,13 +265,15 @@ namespace CapFrameX.Test.Integration
             host.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));
             host.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));
             Assert.AreEqual(1, second.Subscribers);
-            StringAssert.Contains(((TextBlock)host.FindName("ProfileStatus")).Text, "Tile overlay active");
+            Assert.AreEqual(Visibility.Visible, ((FrameworkElement)host.FindName("ShownOverlayThisProfile")).Visibility);
             host.ConfigureDesignService(first);
             Assert.AreEqual(0, second.Subscribers);
             Assert.AreEqual(1, first.Subscribers);
             host.ConfigureDesignService(null);
             Assert.AreEqual(0, first.Subscribers);
             Assert.AreEqual(Visibility.Collapsed, fixture.Button("UseDesignButton").Visibility);
+            Assert.AreEqual(Visibility.Collapsed, ((FrameworkElement)host.FindName("ShownOverlayPanel")).Visibility,
+                "Without a runtime the designer cannot tell what the overlay shows.");
         }
 
         [TestMethod]

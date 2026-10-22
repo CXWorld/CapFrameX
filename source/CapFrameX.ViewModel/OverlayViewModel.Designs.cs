@@ -26,6 +26,9 @@ namespace CapFrameX.ViewModel
             : OverlayDesignText.ExceptionMessage(_designActionError);
         public bool HasActiveDesign => _designService?.IsEnabled == true;
         public bool IsTileOverlayAvailable => OverlayModeHook || OverlayModeHookFree;
+        // The tile profile the overlay shows right now, whatever the list has selected: the active profile
+        // while a CapFrameX renderer draws it, none for the row overlay (RTSS always draws rows).
+        public string ShownDesignId => HasActiveDesign && IsTileOverlayAvailable ? _designService.ActiveProfileId : null;
         public bool IsTileOverlayTabVisible => IsTileOverlayAvailable && IsTileOverlayEnabled;
         public bool CanUseDesign => IsTileOverlayAvailable && _designService?.CanActivate == true;
         public bool HasSavedDesigns => SavedDesigns.Count > 0;
@@ -219,6 +222,7 @@ namespace CapFrameX.ViewModel
             if (!IsTileOverlayTabVisible) IsDeleteDesignDialogOpen = false;
             RaisePropertyChanged(nameof(IsTileOverlayAvailable));
             RaisePropertyChanged(nameof(IsTileOverlayTabVisible));
+            RaisePropertyChanged(nameof(ShownDesignId));
             RaisePropertyChanged(nameof(ShowDesignRecoveryActions));
             RaiseOverlayModeToggleProperties();
             UpdateSavedDesignCommands();

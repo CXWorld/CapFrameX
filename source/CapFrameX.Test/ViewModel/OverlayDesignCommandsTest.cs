@@ -85,6 +85,63 @@ namespace CapFrameX.Test.ViewModel
         }
 
         [TestMethod]
+        public void ShownDesignFollowsTheActiveProfileAndRendererNotTheListSelection()
+        {
+            var designs = new DesignService();
+            var model = Create(designs, Configuration());
+            Assert.IsNull(model.ShownDesignId, "The row overlay shows no tile profile.");
+
+            var raised = new List<string>();
+            model.PropertyChanged += (_, e) => raised.Add(e.PropertyName);
+            designs.Activate("first");
+            model.SelectedDesign = designs.Profiles[1];
+            Assert.AreEqual("first", model.ShownDesignId, "Browsing the list does not change what the overlay shows.");
+            CollectionAssert.Contains(raised, nameof(OverlayViewModel.ShownDesignId));
+
+            model.OverlayModeHookFree = true;
+            Assert.AreEqual("first", model.ShownDesignId);
+            // RTSS draws the row overlay, whatever tile profile is active.
+            model.OverlayModeRtss = true;
+            Assert.IsNull(model.ShownDesignId);
+
+            model.OverlayModeHook = true;
+            Assert.AreEqual("first", model.ShownDesignId);
+            designs.Deactivate();
+            Assert.IsNull(model.ShownDesignId);
+        }
+
+        [TestMethod]
+        public void ProfileListMarksTheShownProfileWithItsBadge()
+        {
+            var designs = new DesignService();
+            designs.Activate("second");
+            var model = Create(designs, Configuration());
+            var (view, list) = CreateProfileList(model);
+            Visibility Badge(int index)
+            {
+                var container = (ListBoxItem)list.ItemContainerGenerator.ContainerFromIndex(index);
+                var presenter = FindChild<ContentPresenter>(container);
+                return ((FrameworkElement)list.ItemTemplate.FindName("ShownBadge", presenter)).Visibility;
+            }
+            Assert.AreEqual(Visibility.Collapsed, Badge(0));
+            Assert.AreEqual(Visibility.Visible, Badge(1));
+
+            list.SetCurrentValue(Selector.SelectedItemProperty, designs.Profiles[0]);
+            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
+            Assert.AreEqual(Visibility.Collapsed, Badge(0), "The selection is not what the overlay shows.");
+            Assert.AreEqual(Visibility.Visible, Badge(1));
+
+            designs.Activate("first");
+            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
+            Assert.AreEqual(Visibility.Visible, Badge(0));
+            Assert.AreEqual(Visibility.Collapsed, Badge(1));
+            designs.Deactivate();
+            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
+            Assert.AreEqual(Visibility.Collapsed, Badge(0), "The row overlay has no profile badge.");
+            view.DataContext = null;
+        }
+
+        [TestMethod]
         public void ProfileListBrowsingRefreshAndContextTargetsDoNotActivateProfiles()
         {
             var designs = new DesignService();
@@ -773,7 +830,7 @@ namespace CapFrameX.Test.ViewModel
                 new XElement(wpf + "Button", new XAttribute(sourceButton.Attribute("Command")),
                     new XAttribute(sourceButton.Attribute("CommandParameter"))),
                 new XElement(wpf + "ListBox", new XAttribute(sourceList.Attribute("ItemsSource")),
-                    new XAttribute(sourceList.Attribute("SelectedItem")), new XAttribute(sourceList.Attribute("DisplayMemberPath"))));
+                    new XAttribute(sourceList.Attribute("SelectedItem"))));
             var view = (StackPanel)XamlReader.Parse(fragment.ToString());
             view.DataContext = model;
             // Complete item, selection and command bindings before simulating user input.
@@ -782,6 +839,46 @@ namespace CapFrameX.Test.ViewModel
             view.UpdateLayout();
             Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
             return (view, (ListBox)view.Children[1], (Button)view.Children[0]);
+        }
+
+        // The production profile list with its item template, its converter and its namespaces.
+        private static (Border View, ListBox Profiles) CreateProfileList(OverlayViewModel model)
+        {
+            XNamespace wpf = "http://schemas.microsoft.com/winfx/2006/xaml/presentation";
+            XNamespace xaml = "http://schemas.microsoft.com/winfx/2006/xaml";
+            var root = new DirectoryInfo(AppContext.BaseDirectory);
+            while (root != null && !File.Exists(Path.Combine(root.FullName, "CapFrameX.sln"))) root = root.Parent;
+            Assert.IsNotNull(root);
+            var document = XDocument.Load(Path.Combine(root.FullName, "source", "CapFrameX.View", "OverlayView.xaml"));
+            var sourceList = document.Descendants(wpf + "ListBox")
+                .Single(element => (string)element.Attribute(xaml + "Name") == "SavedTileProfiles");
+            var list = new XElement(wpf + "ListBox", sourceList.Attribute("ItemsSource"), sourceList.Attribute("SelectedItem"),
+                sourceList.Element(wpf + "ListBox.ItemTemplate"));
+            var fragment = new XElement(wpf + "Border",
+                document.Root.Attributes().Where(attribute => attribute.IsNamespaceDeclaration),
+                new XElement(wpf + "Border.Resources",
+                    new XElement(XName.Get("EqualValuesConverter", "clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"),
+                        new XAttribute(xaml + "Key", "EqualValuesConverter"))),
+                list);
+            var view = (Border)XamlReader.Parse(fragment.ToString());
+            view.DataContext = model;
+            view.Measure(new Size(440, 240));
+            view.Arrange(new Rect(0, 0, 440, 240));
+            view.UpdateLayout();
+            Dispatcher.CurrentDispatcher.Invoke(DispatcherPriority.DataBind, new Action(() => { }));
+            return (view, (ListBox)view.Child);
+        }
+
+        private static T FindChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+                if (child is T match) return match;
+                var nested = FindChild<T>(child);
+                if (nested != null) return nested;
+            }
+            return null;
         }
 
         private static Mock<IAppConfiguration> Configuration()

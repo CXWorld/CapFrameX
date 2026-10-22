@@ -63,7 +63,7 @@
     "OverlayEditor_InvalidChanges": "Ungespeicherte Änderungen · Korrigiere die markierten Werte vor dem Speichern.",
     "OverlayEditor_UnsavedChanges": "Ungespeicherte Änderungen · Strg+S zum Speichern.",
     "OverlayEditor_Saved": "Gespeichert · Dieses Design wird beim nächsten Mal wieder geöffnet.",
-    "OverlayEditor_TileActive": "Kachel-Overlay aktiv",
+    "OverlayEditor_ShownThisProfile": "Dieses Profil",
     "OverlayEditor_RtssInactive": "RTSS: Kachel-Overlay ist aus. Wähle „Im Spiel“ oder „Ohne Hook“, um ein Design zu aktivieren.",
     "OverlayEditor_SaveChangesTitle": "Änderungen speichern?",
     "OverlayEditor_SaveChangesMessage": "„{0}“ enthält ungespeicherte Änderungen. Vor dem Fortfahren speichern?",
@@ -174,6 +174,8 @@
     "OverlayDesigns_InGame": "In-Game-Overlay",
     "OverlayDesigns_HookFree": "Hook-freies Overlay",
     "OverlayDesigns_Visible": "Overlay sichtbar",
+    "OverlayDesigns_Shown": "Im Overlay angezeigt",
+    "OverlayDesigns_ShownBadge": "Im Overlay",
 
     // =========================================================================
     // AGGREGATION VIEW - Merging and averaging multiple benchmark sessions

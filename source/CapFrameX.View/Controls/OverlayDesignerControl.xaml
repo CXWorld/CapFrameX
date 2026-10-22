@@ -5,6 +5,7 @@
              xmlns:osd="clr-namespace:CapFrameX.OSD.Controls;assembly=CapFrameX.OSD.Controls"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:CapFrameX.View.Controls"
+             xmlns:mvvm="clr-namespace:CapFrameX.MVVM.Converter;assembly=CapFrameX.MVVM"
              Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
              Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
              Loaded="OnLoaded" Unloaded="OnUnloaded" IsVisibleChanged="OnIsVisibleChanged">
@@ -15,10 +16,37 @@
             <StackPanel>
                 <WrapPanel x:Name="ProfileToolbar" VerticalAlignment="Center" IsEnabled="False">
                     <TextBlock Text="{loc:Tr OverlayEditor_Profile}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0" />
-                    <ComboBox x:Name="ProfileSelector" Width="220" MaxDropDownHeight="320"
-                              DisplayMemberPath="Name" SelectedValuePath="Id" Margin="0,0,12,0"
+                    <!--Tag holds the ID of the profile the overlay shows; that entry carries the overlay icon.-->
+                    <ComboBox x:Name="ProfileSelector" Width="260" MaxDropDownHeight="320"
+                              SelectedValuePath="Id" Margin="0,0,12,0"
                               ToolTip="{loc:Tr OverlayEditor_ProfileHint}"
-                              SelectionChanged="OnProfileSelectionChanged" />
+                              SelectionChanged="OnProfileSelectionChanged">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel>
+                                    <materialDesign:PackIcon x:Name="ShownIcon" Kind="MonitorEye" Width="16" Height="16" DockPanel.Dock="Right"
+                                                             Margin="8,0,0,0" VerticalAlignment="Center" Visibility="Collapsed"
+                                                             Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                                                             ToolTip="{loc:Tr OverlayDesigns_ShownBadge}" />
+                                    <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+                                </DockPanel>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Value="True">
+                                        <DataTrigger.Binding>
+                                            <MultiBinding>
+                                                <MultiBinding.Converter>
+                                                    <mvvm:EqualValuesConverter />
+                                                </MultiBinding.Converter>
+                                                <Binding Path="Id" />
+                                                <Binding Path="Tag" RelativeSource="{RelativeSource AncestorType=ComboBox}" />
+                                            </MultiBinding>
+                                        </DataTrigger.Binding>
+                                        <Setter TargetName="ShownIcon" Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
                     <Button Content="{loc:Tr OverlayEditor_New}" Click="OnNewProfile" Padding="10,4" Margin="0,0,6,0" />
                     <Button x:Name="DuplicateProfileButton" Content="{loc:Tr OverlayEditor_Duplicate}" Click="OnDuplicateProfile" Padding="10,4" Margin="0,0,6,0" />
                     <Button Content="{loc:Tr OverlayEditor_Rename}" Click="OnRenameProfile" Padding="10,4" Margin="0,0,6,0" />
@@ -29,6 +57,19 @@
                     <Button Content="{loc:Tr OverlayEditor_Import}" Click="OnImportProfile" Padding="10,4" Margin="0,0,6,0" ToolTip="{loc:Tr OverlayEditor_ImportHint}" />
                     <Button x:Name="ExportProfileButton" Content="{loc:Tr OverlayEditor_Export}" Click="OnExportProfile" Padding="10,4" ToolTip="{loc:Tr OverlayEditor_ExportHint}" />
                 </WrapPanel>
+                <!--What the overlay shows, which need not be the profile being edited.-->
+                <StackPanel x:Name="ShownOverlayPanel" Orientation="Horizontal" Margin="0,8,0,0" Visibility="Collapsed">
+                    <materialDesign:PackIcon Kind="MonitorEye" Width="18" Height="18" VerticalAlignment="Center" Margin="0,0,8,0"
+                                             Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+                    <TextBlock Text="{loc:Tr OverlayDesigns_Shown}" VerticalAlignment="Center" Margin="0,0,8,0"
+                               Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
+                    <TextBlock x:Name="ShownOverlayName" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"
+                               Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+                    <Border x:Name="ShownOverlayThisProfile" Margin="10,0,0,0" Padding="8,2" CornerRadius="10" VerticalAlignment="Center"
+                            Background="{DynamicResource MaterialDesign.Brush.Primary}" Visibility="Collapsed">
+                        <TextBlock Text="{loc:Tr OverlayEditor_ShownThisProfile}" FontSize="11" FontWeight="SemiBold" Foreground="White" />
+                    </Border>
+                </StackPanel>
                 <TextBlock x:Name="ProfileStatus" Text="{loc:Tr OverlayEditor_Loading}" Margin="0,6,0,0" FontSize="11" TextWrapping="Wrap"
                            Foreground="{DynamicResource MaterialDesign.Brush.ForegroundLight}" />
                 <TextBlock x:Name="ProfileError" Margin="0,6,0,0" FontSize="12" TextWrapping="Wrap" Visibility="Collapsed"

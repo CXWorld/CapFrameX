@@ -349,15 +349,28 @@ namespace CapFrameX.View.Controls
                     ? CxLang.T("OverlayEditor_InvalidChanges")
                     : _profileSession.IsDirty ? CxLang.T("OverlayEditor_UnsavedChanges")
                     : CxLang.T("OverlayEditor_Saved");
-                if (_designService?.IsEnabled == true && _designService.ActiveProfileId == _profileSession.ActiveProfile.Id)
-                    ProfileStatus.Text += " · " + CxLang.T("OverlayEditor_TileActive");
                 if (_designService != null && !_designService.CanActivate)
                     ProfileStatus.Text += " · " + CxLang.T("OverlayEditor_RtssInactive");
+                UpdateShownOverlay();
             }
             finally
             {
                 _updatingProfileUi = false;
             }
+        }
+
+        // What the overlay shows, which need not be the profile being edited: the active tile profile
+        // while a CapFrameX renderer draws it, else the row overlay.
+        private void UpdateShownOverlay()
+        {
+            string shownId = _designService?.IsEnabled == true && _designService.CanActivate ? _designService.ActiveProfileId : null;
+            ProfileSelector.Tag = shownId;
+            ShownOverlayPanel.Visibility = _designService == null ? Visibility.Collapsed : Visibility.Visible;
+            ShownOverlayName.Text = shownId == null
+                ? CxLang.T("OverlayDesignStatus_Row")
+                : _profileStore.Profiles.FirstOrDefault(profile => profile.Id == shownId)?.Name ?? CxLang.T("OverlayDesigns_Tab");
+            ShownOverlayThisProfile.Visibility = shownId != null && shownId == _profileSession.ActiveProfile.Id
+                ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private async Task RunProfileActionAsync(Func<Task> action, bool closing = false)
