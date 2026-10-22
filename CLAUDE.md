@@ -78,6 +78,17 @@ The run takes about a minute, opens vkcube windows and starts PresentMon. Frame-
 tolerate occasional stalls: vkcube shares the desktop, and a window losing the foreground or being
 occluded stalls its presents.
 
+### Measure CPU load
+`scripts\Measure-CpuLoad.ps1` (elevated, no CapFrameX running) measures the CPU time and cycles of
+CapFrameX.exe and its PresentMon process without capturing: `Idle`, `PresentMon` (game running,
+renderer `Off`), and per renderer `-Hidden`, `-NoSensors`, `-Sensors` (optionally `-Design`). It runs
+the app output in a portable sandbox under `temp\cpu-load`, one fresh start per scenario with vkcube
+as target, primes the configuration once (the `NoSensors` overlay profile is saved by the app through
+MCP), breaks CapFrameX's CPU down by thread name and compares with `-BaselineReport`. Keep it in step
+with the settings it writes (`OverlayRenderer` and its mirror flags, `IsOverlayActive`,
+`ActiveOverlayDesignProfileId`) and the endpoints it reads (`/api/version`, `/api/processes`,
+`/api/metrics`, MCP `cfx_get_overlay_entries`/`cfx_set_overlay_entry`). Details: `scripts\CPU_LOAD_TEST.md`.
+
 ## Architecture
 
 ### Solution Structure
