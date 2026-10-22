@@ -267,6 +267,23 @@ cell keys (`SavedHeatmapWindow`), so designs saved while the default was 60 s ke
 Controls must contain the heatmap: a Controls build without it rejects FUSION. Block and row rules:
 the OSD repo's CLAUDE.md.
 
+### Multi-line charts and stutter thresholds
+
+A chart tile may carry `chartLines` (`OsdChartLine`, 1..4), the renderer's `lines`, drawn in order on
+one Y axis. `kind` `value` draws a frame series, `stutter` its adaptive stutter threshold: `factor`
+(1..10, default 2.5, per line) x the moving average of the analysis chart
+(`FrametimeStatisticProvider.GetMovingAverage`); the live chart takes N from the mean of its visible
+window instead of the capture. Lines are all in ms or all in FPS, a threshold needs frametimes or
+display times, and the tile's `key` is the series of its first value line (unit, value badge and feed
+follow it). The editor (`OsdDesignDocument.ValidateChartLines`) and the native parser apply the same
+rules; `OverlayRuntimeDesign.Parse` requests the feed of every line's series, and `OverlayTileDocument`
+checks the fields of each line. The editor keeps each line's `label` (the legend) on its localized
+default unless it was set elsewhere. The palette's "Stutter charts" (`OsdChartPresets`) adds frametimes
+and display times with their thresholds: a container on a canvas, two tiles in a grid.
+`OverlayChartLinesTest` covers export, round trips, validation and the feeds. The prebuilt Controls
+must contain this change: a Controls build without it rejects designs with `chartLines`. Native
+details: the OSD repo's CLAUDE.md.
+
 ### Generic hardware starters
 
 APEX 3D, REDLINE and the FUSION starters (ARL, RPL, Ryzen) fit a CPU and GPU family, not one model:

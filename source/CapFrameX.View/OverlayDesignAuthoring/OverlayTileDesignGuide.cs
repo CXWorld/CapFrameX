@@ -120,7 +120,15 @@ Kinds:
   sweepAngle (1..360), thickness, showValue. In a grid, height (24..240) is the diameter.
 - chart: live line chart. key is the series: {SERIES} (frametimes in ms, framerates in FPS,
   displaytimes in ms). label is the title, unit the axis unit. showBackground, showBorder,
-  showLabels (axis labels), currentValue (badge with the latest value). In a grid, height 24..240.
+  showLabels (axis labels and, with several lines, a legend), currentValue (badge with the latest
+  value of key). In a grid, height 24..240.
+  chartLines (optional, 1..4) draws several lines on one axis instead of the single line of key:
+  [{""series"": ""frametimes"", ""kind"": ""value""}, {""series"": ""frametimes"", ""kind"": ""stutter"",
+  ""factor"": 2.5, ""color"": ""#E5534BFF""}]. kind ""value"" draws the series, ""stutter"" its adaptive
+  stutter threshold: factor (1..10, default 2.5) x the moving average of the analysis chart. A
+  threshold needs frametimes or displaytimes; the lines are all in ms or all framerates; key must be
+  the series of the first value line. color (default accent, threshold red) and label (legend text,
+  up to 64 characters) are optional.
 - text: static text. text (up to 500 characters, ""\n"" for a line break), valueSize (font size),
   color (default accent), align (left, center, right).
 - icon: one glyph. glyph (1..16 characters, e.g. """" from Segoe MDL2 Assets or Segoe Fluent

@@ -12,6 +12,39 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Multi-line charts and stutter thresholds (2026-10-22)
+
+The five native DLLs (VS 2026/v145, `RelWithDebInfo`) and Controls (`Release|x64`, .NET 10) were built
+from OSD commit `c84f7679bb8398da3ce1db40e018ab1a4787ab28`, which follows `d958d92`; the build tree
+differed from it only in the OSD repo's CLAUDE.md. A chart may carry `lines` (1..4 on one Y axis): the values of a
+frame series or its adaptive stutter threshold, factor x the moving average of the analysis chart
+(`StutterThreshold.h`). A chart with a threshold gets its own scale that keeps the threshold in view,
+the CPU producer composes one copy set per chart from all its lines, and the editor gains the line
+list (`chartLines`), the "Stutter charts" palette entry and 20 strings per catalog (`Editor.en.json`
+and `Editor.ko.json` copied here). Interop (still the signed build), both Vulkan manifests and the
+template catalogs are unchanged. A Controls build without this change rejects designs with
+`chartLines`; an older native renderer ignores `lines` and draws the chart's single series.
+
+Verification: all 16 core CTests pass, with multi-mask composition and the moving average's parity
+with the analysis chart in `chart_geometry` and the `lines` schema, shared range and one CPU copy set
+per two-line chart in `design` (415 checks). All 33 hook CTests and all 10 Vulkan CTests pass on x64
+and x86. CapFrameX built against these sources (`CfxOsdFromSource`) passes all 3177 runnable unit
+tests (6 skipped), among them `OverlayChartLinesTest`, `OverlayTileDocumentTest` and
+`OverlayDesignRuntimeTest`; a build with `CfxOsdFromSource=false` was not run. The Vulkan layer in
+`C:\Program Files\CapFrameX\vulkan` was not updated.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `1B2E72108A2B4808316F9F6B00367D43C2A2D0A25796F8956096932BD02428C8` |
+| native\cfx_osd_hook.dll | `D7338D1C0F1FE76C3B6CDEDE45335D678EE66E93EC0391EED462440C622084DB` |
+| native\x86\cfx_osd_hook.dll | `F9EAFD885C7539A291AC84848589D7B221853D9EE649395EBAD5555DB5909661` |
+| native\vk\cfx_osd_vklayer.dll | `DFDAB9497B5D4F82B742C439BE91C0340A4F744C1E409A395E9140A6FB8E4992` |
+| native\vk\x86\cfx_osd_vklayer.dll | `08D4EF36798F97FE1779F0DC55382C77784410191F724EE2CB7B0EB9209D6002` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `B63EC525A3EF73DC9CC2CA6673194C542715342214BB1F9963E7BF766B597FD9` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Chart lines past the window end (2026-10-21)
 
 The five native DLLs were built with VS 2026/v145 in `RelWithDebInfo` from OSD commit

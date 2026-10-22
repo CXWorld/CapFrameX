@@ -38,6 +38,8 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             new Lazy<IReadOnlyDictionary<string, string>>(() => FieldsOf(typeof(OsdDesignTile)));
         private static readonly Lazy<IReadOnlyDictionary<string, string>> MemberFields =
             new Lazy<IReadOnlyDictionary<string, string>>(() => FieldsOf(typeof(OsdGroupMember)));
+        private static readonly Lazy<IReadOnlyDictionary<string, string>> ChartLineFields =
+            new Lazy<IReadOnlyDictionary<string, string>>(() => FieldsOf(typeof(OsdChartLine)));
 
         /// <summary>Every field a tile accepts, in the editor's spelling.</summary>
         public static IEnumerable<string> TileFieldNames => TileFields.Value.Values.OrderBy(name => name, StringComparer.Ordinal);
@@ -486,6 +488,11 @@ namespace CapFrameX.View.OverlayDesignAuthoring
                     members[index] = members[index] is JObject member
                         ? Normalize(member, MemberFields.Value, $"Tile {path} group member {index}")
                         : throw Error($"Tile {path}: group member {index} must be an object.");
+            if (json["chartLines"] is JArray lines)
+                for (int index = 0; index < lines.Count; index++)
+                    lines[index] = lines[index] is JObject line
+                        ? Normalize(line, ChartLineFields.Value, $"Tile {path} chart line {index}")
+                        : throw Error($"Tile {path}: chart line {index} must be an object.");
             if (kind == "group") json = ExpandGroup(json, path, groups);
             ApplyKindDefaults(json, kind, sources);
 

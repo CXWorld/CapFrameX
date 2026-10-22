@@ -47,9 +47,14 @@ namespace CapFrameX.OSD.Integration
                 if (string.IsNullOrWhiteSpace(type)) throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_WidgetType"), message => new InvalidDataException(message));
                 if (type == "chart")
                 {
-                    string series = (string)node["series"];
-                    frame |= series == "frametimes" || series == "framerates";
-                    display |= series == "displaytimes";
+                    // A chart draws its series and the series of its lines; a stutter threshold
+                    // derives from the series it names.
+                    var series = new List<string> { node["series"]?.Type == JTokenType.String ? (string)node["series"] : null };
+                    if (node["lines"] is JArray lines)
+                        series.AddRange(lines.OfType<JObject>()
+                            .Select(line => line["series"]?.Type == JTokenType.String ? (string)line["series"] : null));
+                    frame |= series.Any(name => name == "frametimes" || name == "framerates");
+                    display |= series.Contains("displaytimes");
                 }
                 // Group members are already expanded into native child widgets; disabled
                 // members exist only in editor metadata and must never request sensor values.
