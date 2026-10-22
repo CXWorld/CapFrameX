@@ -36,7 +36,7 @@ Measures all scenarios once with vkcube, 30 s warm-up and 60 s measurement each.
 .EXAMPLE
 .\scripts\Measure-CpuLoad.ps1 -Scenario Idle,PresentMon,HookFree-* -Repetitions 3
 .EXAMPLE
-.\scripts\Measure-CpuLoad.ps1 -Renderer HookFree -OverlayDesign 'FUSION*' -Settings @{ OSDRefreshPeriod = 250 }
+.\scripts\Measure-CpuLoad.ps1 -Renderer HookFree -OverlayDesign 'FUSION ARL*' -Settings @{ OSDRefreshPeriod = 250 }
 .EXAMPLE
 .\scripts\Measure-CpuLoad.ps1 -BaselineReport temp\cpu-load\20261022-101500\report.json
 Compares the new results with an earlier report.
@@ -529,6 +529,30 @@ function Get-PropertyValue
     $property = $Object.PSObject.Properties[$Name]
     if ($null -eq $property) { return $null }
     return $property.Value
+}
+
+# .NET resolves relative paths against the process directory, which PowerShell does not keep in
+# step with the current location (an elevated shell often runs in System32).
+function Resolve-UserPath
+{
+    param([string]$Path)
+
+    if ([string]::IsNullOrWhiteSpace($Path)) { return $null }
+    return $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+}
+
+# Windows PowerShell 5.1 parses JSON with JavaScriptSerializer, whose default length limit the
+# tile design library (several MB) can exceed.
+function ConvertFrom-LargeJson
+{
+    param([string]$Json)
+
+    if ($PSVersionTable.PSVersion.Major -ge 6) { return $Json | ConvertFrom-Json }
+
+    Add-Type -AssemblyName System.Web.Extensions
+    $serializer = New-Object System.Web.Script.Serialization.JavaScriptSerializer
+    $serializer.MaxJsonLength = [int]::MaxValue
+    return $serializer.DeserializeObject($Json)
 }
 
 # Get-Content attaches provider properties to the string; the files are read plainly instead.
@@ -1212,16 +1236,46 @@ function Get-RtssInstallPath
     return $null
 }
 
+# The 64-bit registrations of the CapFrameX layer. A 64-bit game loads the DLL they point at, which
+# is usually the installed one, not the layer of the build under test.
 function Get-VulkanLayerRegistrations
 {
-    $layers = @()
+    $layers = New-Object 'System.Collections.Generic.List[object]'
     try
     {
         $key = Get-Item -LiteralPath 'HKLM:\SOFTWARE\Khronos\Vulkan\ImplicitLayers' -ErrorAction Stop
-        $layers = @($key.GetValueNames() | Where-Object { $_ -like '*cfx_osd_vklayer*' })
+        foreach ($manifest in @($key.GetValueNames() | Where-Object { $_ -like '*cfx_osd_vklayer*' }))
+        {
+            $library = $null
+            $version = $null
+            try
+            {
+                $relative = (Read-TextFile $manifest | ConvertFrom-Json).layer.library_path
+                $library = [IO.Path]::GetFullPath([IO.Path]::Combine([IO.Path]::GetDirectoryName($manifest), $relative))
+                $version = [Diagnostics.FileVersionInfo]::GetVersionInfo($library).FileVersion
+            }
+            catch { }
+            $layers.Add([pscustomobject][ordered]@{ Manifest = $manifest; Library = $library; Version = $version })
+        }
     }
     catch { }
-    return ,$layers
+    return ,$layers.ToArray()
+}
+
+# Extended OSD logging is read from roaming AppData even in portable mode, by CapFrameX at startup
+# and by the native modules inside the game, so it also applies to the sandboxed runs.
+function Test-ExtendedOsdLogging
+{
+    $path = [IO.Path]::Combine([Environment]::GetFolderPath('ApplicationData'), 'CapFrameX\Configuration\OsdDebug.json')
+    try
+    {
+        $configuration = Read-TextFile $path | ConvertFrom-Json
+        return [bool](Get-PropertyValue $configuration 'verboseLog') -or [bool](Get-PropertyValue $configuration 'presentStats')
+    }
+    catch
+    {
+        return $false
+    }
 }
 
 function Get-EnvironmentInfo
@@ -1243,6 +1297,7 @@ function Get-EnvironmentInfo
         RtssPath = $null
         RtssVersion = $null
         VulkanLayers = @()
+        ExtendedOsdLogging = $false
         PowerShell = $PSVersionTable.PSVersion.ToString()
     }
     try
@@ -1280,6 +1335,7 @@ function Get-EnvironmentInfo
         try { $info.RtssVersion = [Diagnostics.FileVersionInfo]::GetVersionInfo($rtssPath).ProductVersion } catch { }
     }
     $info.VulkanLayers = Get-VulkanLayerRegistrations
+    $info.ExtendedOsdLogging = Test-ExtendedOsdLogging
     return [pscustomobject]$info
 }
 
@@ -1341,8 +1397,10 @@ function Invoke-Priming
 
     $settingsPath = [IO.Path]::Combine($configDirectory, 'AppSettings.json')
     $templateJson = Read-TextFile $settingsPath
-    # Any renderer but Rtss (which would launch RTSS) and Off (no overlay rows) will do.
-    $primeScenario = [pscustomobject]@{ Overlay = $true; Renderer = 'InGame' }
+    # The overlay must be on for the rows to be published. HookFree injects nothing and launches
+    # nothing: with no game running, the in-game renderer could inject into whatever else presents
+    # frames, and Rtss would launch RTSS.
+    $primeScenario = [pscustomobject]@{ Overlay = $true; Renderer = 'HookFree' }
     $json = Merge-AppSettings -TemplateJson $templateJson -Layers @(
         (Get-BaseSettings -ShowMainWindow $false),
         $Context.UserSettings,
@@ -1437,14 +1495,20 @@ function Resolve-OverlayDesign
     $libraryPath = [IO.Path]::Combine($ConfigDirectory, 'OverlayDesigns\profiles.json')
     if (-not (Test-Path -LiteralPath $libraryPath)) { throw "No tile design library at $libraryPath." }
 
-    $profiles = @((Read-TextFile $libraryPath | ConvertFrom-Json).Profiles)
+    $library = ConvertFrom-LargeJson (Read-TextFile $libraryPath)
+    $profiles = @(@(Get-PropertyValue $library 'Profiles') | ForEach-Object {
+        [pscustomobject]@{ Id = [string](Get-PropertyValue $_ 'Id'); Name = [string](Get-PropertyValue $_ 'Name') }
+    })
+
+    # The ID, then the exact name, then a wildcard; 'FUSION*' alone matches three designs.
     $found = @($profiles | Where-Object { $_.Id -eq $Design })
+    if ($found.Count -eq 0) { $found = @($profiles | Where-Object { $_.Name -eq $Design }) }
     if ($found.Count -eq 0) { $found = @($profiles | Where-Object { $_.Name -like $Design }) }
     if ($found.Count -ne 1)
     {
         throw "-OverlayDesign '$Design' matches $($found.Count) tile designs. Available: $(($profiles | ForEach-Object Name) -join ', ')"
     }
-    return [pscustomobject]@{ Id = $found[0].Id; Name = $found[0].Name }
+    return $found[0]
 }
 
 function Invoke-ScenarioRun
@@ -1515,12 +1579,14 @@ function Invoke-ScenarioRun
             if (-not (Test-ProcessRunning -Patterns @('RTSS'))) { $warnings.Add('RTSS did not start; the RTSS overlay is not drawn.') }
         }
 
+        # An explicit -TargetProcessName names the process to sample, which may be a child of the
+        # started executable (a launcher); without it the started process itself is sampled.
         $targetPatterns = @()
         if ($ScenarioDefinition.Target)
         {
+            if ($Context.TargetNameGiven) { $targetPatterns = @($Context.TargetName) }
             if ($Context.AttachToTarget)
             {
-                $targetPatterns = @($Context.TargetName)
                 if (-not (Test-ProcessRunning -Patterns $targetPatterns)) { throw "The target process '$($Context.TargetName)' is not running." }
             }
             else
@@ -1560,14 +1626,29 @@ function Invoke-ScenarioRun
                 Rtss = $byPattern.Rtss.ToArray()
                 Target = @()
             }
-            if ($null -ne $target) { $ids.Target = @($target.Id) }
-            elseif ($patterns.ContainsKey('Target')) { $ids.Target = $byPattern.Target.ToArray() }
+            if ($patterns.ContainsKey('Target')) { $ids.Target = $byPattern.Target.ToArray() }
+            elseif ($null -ne $target) { $ids.Target = @($target.Id) }
             $ids
+        }
+
+        # Without its game, an overlay scenario would measure an idle CapFrameX under its name.
+        $assertTargetAlive = {
+            param($ProcessIds)
+            if (-not $ScenarioDefinition.Target) { return }
+            if ($patterns.ContainsKey('Target'))
+            {
+                if (@($ProcessIds.Target).Count -eq 0) { throw "The target process '$($Context.TargetName)' ended during the run." }
+            }
+            elseif ($target.HasExited)
+            {
+                throw "The target exited during the run (exit code $($target.ExitCode))."
+            }
         }
 
         Write-Host ("  measuring {0} s ..." -f $Context.DurationSeconds)
         $intervalCount = [Math]::Max(1, [int][Math]::Round($Context.DurationSeconds * 1000.0 / $Context.SampleIntervalMilliseconds))
         $ids = & $resolveIds
+        & $assertTargetAlive $ids
         $windowStartFileTime = [DateTime]::UtcNow.ToFileTimeUtc()
         foreach ($key in $groups.Keys) { Update-GroupState -State $groups[$key] -ProcessIds $ids[$key] -IntervalStartFileTime $windowStartFileTime -IntervalSeconds 0 -Record $false }
         $systemPrevious = [CapFrameXCpuLoad.NativeMethods]::GetSystemTimesSnapshot()
@@ -1591,6 +1672,7 @@ function Invoke-ScenarioRun
             $lastElapsed = $elapsed
             $nowFileTime = [DateTime]::UtcNow.ToFileTimeUtc()
             $ids = & $resolveIds
+            & $assertTargetAlive $ids
             foreach ($key in $groups.Keys)
             {
                 Update-GroupState -State $groups[$key] -ProcessIds $ids[$key] -IntervalStartFileTime $intervalStartFileTime -IntervalSeconds $intervalSeconds -Record $true
@@ -1655,7 +1737,12 @@ function Invoke-ScenarioRun
     }
     finally
     {
-        if ($null -ne $target) { Stop-Target -Process $target }
+        if ($null -ne $target)
+        {
+            Stop-Target -Process $target
+            # A game the started launcher spawned ends with the run as well.
+            if ($Context.TargetNameGiven) { Stop-ProcessesByPattern -Patterns @($Context.TargetName) }
+        }
         if ($null -ne $app) { $run.Shutdown = Stop-CapFrameX -Process $app }
         # An RTSS that CapFrameX launched would hook the targets of the following scenarios.
         Stop-ProcessesByPattern -Patterns $rtssProcessPatterns -Keep $Context.PreexistingRtssIds
@@ -1885,6 +1972,9 @@ function New-MarkdownReport
     $lines.Add("- GPU: $(@($environment.Gpus) -join '; ')")
     $lines.Add("- OS: $($environment.OperatingSystem); power plan: $($environment.PowerPlan)")
     $lines.Add("- PresentMon: $(@($environment.PresentMon) -join ', '); RTSS: $(if ($environment.RtssPath) { "$($environment.RtssVersion) at $($environment.RtssPath)" } else { 'not installed' })")
+    $layers = @(Get-PropertyValue $environment 'VulkanLayers')
+    if ($layers.Count -gt 0) { $lines.Add("- Vulkan layer: $(@($layers | ForEach-Object { "$($_.Library) $($_.Version)" }) -join ', ')") }
+    if (Get-PropertyValue $environment 'ExtendedOsdLogging') { $lines.Add('- Extended OSD logging: **on**') }
     $lines.Add("- Target: $($parameters.Target) $($parameters.TargetArguments)")
     $lines.Add("- Per run: $($parameters.WarmupSeconds) s warm-up, $($parameters.DurationSeconds) s measurement, sampled every $($parameters.SampleIntervalMilliseconds) ms; $($parameters.Repetitions) repetition(s); main window $(if ($parameters.ShowWindow) { 'shown' } else { 'in the tray' })")
     if (@($parameters.Settings.Keys).Count -gt 0)
@@ -2012,12 +2102,12 @@ function Invoke-CpuLoadMeasurement
     Initialize-NativeMethods
 
     if (-not $AppDirectory) { $AppDirectory = [IO.Path]::Combine($repositoryRoot, 'source\CapFrameX\bin\x64\Release\net10.0-windows') }
-    $sourceApp = (Resolve-Path -LiteralPath $AppDirectory -ErrorAction SilentlyContinue)
-    if (-not $sourceApp -or -not (Test-Path -LiteralPath ([IO.Path]::Combine($sourceApp.Path, 'CapFrameX.exe'))))
+    $sourceApp = Resolve-UserPath $AppDirectory
+    if (-not (Test-Path -LiteralPath ([IO.Path]::Combine($sourceApp, 'CapFrameX.exe')) -PathType Leaf))
     {
-        throw "CapFrameX.exe not found in '$AppDirectory'. Build the application (Release|x64) or pass -AppDirectory."
+        throw "CapFrameX.exe not found in '$sourceApp'. Build the application (Release|x64) or pass -AppDirectory."
     }
-    $sourceApp = $sourceApp.Path
+    $sourceApp = [IO.Path]::GetFullPath($sourceApp).TrimEnd('\')
     if (-not (Get-ChildItem -LiteralPath ([IO.Path]::Combine($sourceApp, 'PresentMon')) -Filter 'CX-PresentMon*.exe' -ErrorAction SilentlyContinue))
     {
         throw "No PresentMon in '$sourceApp\PresentMon'."
@@ -2025,16 +2115,27 @@ function Invoke-CpuLoadMeasurement
 
     if (Test-ProcessRunning -Patterns @('CapFrameX')) { throw 'CapFrameX is running. Close it first: only one instance can run.' }
     if (Test-ProcessRunning -Patterns @($presentMonProcessPattern)) { throw 'A CapFrameX PresentMon process is still running. End it first.' }
+    $ConfigurationSource = Resolve-UserPath $ConfigurationSource
     if ($ConfigurationSource -and -not (Test-Path -LiteralPath $ConfigurationSource -PathType Container))
     {
         throw "-ConfigurationSource '$ConfigurationSource' is not a folder."
+    }
+
+    # Read now: a broken baseline must not cost a complete measurement.
+    $baselineData = $null
+    $BaselineReport = Resolve-UserPath $BaselineReport
+    if ($BaselineReport)
+    {
+        if (-not (Test-Path -LiteralPath $BaselineReport -PathType Leaf)) { throw "-BaselineReport '$BaselineReport' not found." }
+        $baselineData = Read-TextFile $BaselineReport | ConvertFrom-Json
+        if ($null -eq (Get-PropertyValue $baselineData 'Scenarios')) { throw "-BaselineReport '$BaselineReport' is no report.json of this script." }
     }
     $listener = [System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties().GetActiveTcpListeners() |
         Where-Object { $_.Port -eq $Port }
     if ($listener) { Write-Warning "Port $Port is in use; CapFrameX will fall back to a random port, which this script reads from its settings." }
 
     if (-not $OutputDirectory) { $OutputDirectory = [IO.Path]::Combine($repositoryRoot, 'temp\cpu-load') }
-    $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
+    $OutputDirectory = [IO.Path]::GetFullPath((Resolve-UserPath $OutputDirectory))
     $reportDirectory = [IO.Path]::Combine($OutputDirectory, (Get-Date -Format 'yyyyMMdd-HHmmss'))
     $null = New-Item -ItemType Directory -Path $reportDirectory -Force
     $appPath = [IO.Path]::Combine($OutputDirectory, 'sandbox\app')
@@ -2053,8 +2154,8 @@ function Invoke-CpuLoadMeasurement
     else
     {
         if (-not $TargetPath) { $TargetPath = [IO.Path]::Combine($appPath, '3d-test-app\vkcube.exe') }
-        if (-not (Test-Path -LiteralPath $TargetPath)) { throw "Target '$TargetPath' not found." }
-        $resolvedTarget = (Resolve-Path -LiteralPath $TargetPath).Path
+        $resolvedTarget = Resolve-UserPath $TargetPath
+        if (-not (Test-Path -LiteralPath $resolvedTarget -PathType Leaf)) { throw "Target '$resolvedTarget' not found." }
         $targetName = if ($TargetProcessName) { $TargetProcessName } else { [IO.Path]::GetFileNameWithoutExtension($resolvedTarget) }
     }
 
@@ -2070,9 +2171,21 @@ function Invoke-CpuLoadMeasurement
         $warnings.Add('RTSS is not installed: the Rtss scenarios are skipped.')
         $selected = @($selected | Where-Object { -not ($_.Renderer -eq 'Rtss' -and $_.Overlay) })
     }
-    if (@($environment.VulkanLayers).Count -eq 0 -and @($selected | Where-Object { $_.Renderer -eq 'InGame' -and $_.Overlay }).Count -gt 0)
+    if (@($selected | Where-Object { $_.Renderer -eq 'InGame' -and $_.Overlay }).Count -gt 0)
     {
-        $warnings.Add('No CapFrameX Vulkan layer is registered (HKLM): the InGame overlay cannot draw into Vulkan targets such as vkcube.')
+        $layers = @($environment.VulkanLayers)
+        if ($layers.Count -eq 0)
+        {
+            $warnings.Add('No CapFrameX Vulkan layer is registered (HKLM): the InGame overlay cannot draw into Vulkan targets such as vkcube.')
+        }
+        elseif (@($layers | Where-Object { $_.Library -and $_.Library.StartsWith($sourceApp + '\', [StringComparison]::OrdinalIgnoreCase) }).Count -eq 0)
+        {
+            $warnings.Add("Vulkan targets load the registered layer $(@($layers | ForEach-Object { "$($_.Library) $($_.Version)" }) -join ', '), not the one of the measured build.")
+        }
+    }
+    if ($environment.ExtendedOsdLogging)
+    {
+        $warnings.Add('Extended OSD logging is on (OsdDebug.json in roaming AppData, also used by the sandbox): every run includes its logging. Switch it off on the Overlay tab for representative numbers.')
     }
     if ($selected.Count -eq 0) { throw 'No scenario left to measure.' }
 
@@ -2097,6 +2210,7 @@ function Invoke-CpuLoadMeasurement
         TargetPath = $resolvedTarget
         TargetArguments = $TargetArguments
         TargetName = $targetName
+        TargetNameGiven = [bool]$TargetProcessName
         AttachToTarget = $attach
         WarmupSeconds = $WarmupSeconds
         DurationSeconds = $DurationSeconds
@@ -2146,9 +2260,9 @@ function Invoke-CpuLoadMeasurement
     $designName = if ($context.Design) { $context.Design.Name } else { $OverlayDesign }
     $contributions = Get-Contributions -Summaries $summaries -Renderers $Renderer -DesignName $designName
     $baseline = @()
-    if ($BaselineReport)
+    if ($null -ne $baselineData)
     {
-        $baseline = Compare-WithBaseline -Summaries $summaries -Baseline (Read-TextFile $BaselineReport | ConvertFrom-Json)
+        $baseline = Compare-WithBaseline -Summaries $summaries -Baseline $baselineData
     }
 
     $report = [pscustomobject][ordered]@{

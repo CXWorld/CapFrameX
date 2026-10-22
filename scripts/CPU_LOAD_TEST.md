@@ -29,7 +29,7 @@ pick one of them as the overlay target.
 ```powershell
 .\scripts\Measure-CpuLoad.ps1 -ListScenarios                    # what can be measured
 .\scripts\Measure-CpuLoad.ps1 -Scenario Idle,PresentMon,HookFree-* -Repetitions 3
-.\scripts\Measure-CpuLoad.ps1 -Renderer HookFree -OverlayDesign 'FUSION*'
+.\scripts\Measure-CpuLoad.ps1 -Renderer HookFree -OverlayDesign 'FUSION ARL*'
 .\scripts\Measure-CpuLoad.ps1 -Settings @{ OSDRefreshPeriod = 250; HookFreeRefreshRate = 60 }
 ```
 
@@ -58,14 +58,19 @@ sensor reading = `<R>-Sensors - <R>-NoSensors`, tile design = `<R>-Design - <R>-
 
 1. The app output is mirrored into `temp\cpu-load\sandbox\app` and runs there in portable mode;
    `portable.json` points every folder at the run's own directory. Nothing in `%APPDATA%`, the
-   documents folder or the build output is touched.
-2. **Priming**: one start creates the configuration every run copies (defaults, or the copy of
-   `-ConfigurationSource`). Through CapFrameX's MCP endpoint it hides the hardware sensor rows of
-   the overlay profile and lets CapFrameX save that profile: that is the `NoSensors` variant.
+   documents folder or the build output is written. Two things outside the sandbox still apply:
+   the extended OSD logging switch (`OsdDebug.json` in roaming AppData, read even in portable mode;
+   the report warns when it is on) and the Vulkan layer registered in HKLM, which is usually the
+   installed one rather than the build under test (the report names it).
+2. **Priming**: one start with the HookFree renderer (it injects nothing while no game runs)
+   creates the configuration every run copies (defaults, or the copy of `-ConfigurationSource`).
+   Through CapFrameX's MCP endpoint it hides the hardware sensor rows of the overlay profile and
+   lets CapFrameX save that profile: that is the `NoSensors` variant.
 3. **Each run** gets a fresh copy of that configuration plus its scenario settings (renderer, overlay
    on/off, design; no update check, tray start), starts CapFrameX, starts the target only once
    CapFrameX is up (RTSS and the Vulkan layer must be in place before the game creates its
    swapchain), waits until `/api/processes` lists it, warms up and measures.
+   A run fails when CapFrameX or the target exits before the measurement ends.
 4. CapFrameX is closed with `WM_CLOSE` (killed after 30 s), the target is closed, and an RTSS that
    CapFrameX launched is stopped so it does not hook the next scenario's game.
 
@@ -122,14 +127,14 @@ mains power on laptops, no other load, the same display refresh rate (vkcube run
 | `-AppDirectory` | `source\CapFrameX\bin\x64\Release\net10.0-windows` | any CapFrameX folder, e.g. an installation |
 | `-Scenario` | `*` | wildcards on scenario names |
 | `-Renderer` | `InGame, HookFree, Rtss` | renderers to measure |
-| `-OverlayDesign` | | tile design name (wildcards) or profile ID for the `-Design` scenarios |
+| `-OverlayDesign` | | tile design: profile ID, exact name or a wildcard that matches one design (`'FUSION ARL*'`) |
 | `-Repetitions` | 1 | runs per scenario |
 | `-WarmupSeconds` / `-DurationSeconds` | 30 / 60 | per run |
 | `-SampleIntervalMilliseconds` | 1000 | |
 | `-CooldownSeconds` | 5 | pause between runs |
 | `-TargetPath` / `-TargetArguments` | vkcube, `--present_mode 2 --width 640 --height 480` | the game; `--present_mode 0` renders uncapped and stresses PresentMon reading |
-| `-TargetProcessName` | target file name | without `-TargetPath`: attach to a running game instead of starting one; it keeps running |
-| `-ConfigurationSource` | | a configuration folder to start from, e.g. `%APPDATA%\CapFrameX\Configuration` (only read) |
+| `-TargetProcessName` | target file name | the process to sample and detect, e.g. the game a launcher (`-TargetPath`) starts; without `-TargetPath` the script attaches to a running game and leaves it running |
+| `-ConfigurationSource` | | a configuration folder to start from, e.g. `$env:APPDATA\CapFrameX\Configuration` (only read) |
 | `-Settings` | | AppSettings.json values for every run; the keys that define the scenarios are ignored |
 | `-ShowWindow` | off | keep the main window open instead of the tray |
 | `-Port` | 1337 | web service port |
