@@ -60,7 +60,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 20;
+        public const int Version = 21;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -144,7 +144,9 @@ namespace CapFrameX.OSD.Integration
                 // graphics and bind FUSION's cores on any Core Ultra. Version nineteen doubled the
                 // FRAME PACING chart of APEX, REDLINE and the three FUSION designs and gave REDLINE the
                 // core load bars and load heatmap of FUSION Ryzen; version twenty moved REDLINE's GPU block
-                // above its CPU tiles, as in FUSION. Never replace a renamed or edited profile.
+                // above its CPU tiles, as in FUSION. Version twenty-one put the Slick designs' current FPS
+                // and hardware names on the baseline of their rows and gave the driver version room.
+                // Never replace a renamed or edited profile.
                 string[] previousDesignHashes = entry.Id switch
                 {
                     "RTX-50-Ryzen-3D-APEX" => new[]
@@ -188,6 +190,10 @@ namespace CapFrameX.OSD.Integration
                         "2236C31C8D68F5CDBA90CFBE894398DA0A23B08D48D0760C1DAB6E7516F7E2C5",
                         "15BF2A0A4109D67A91B23A1B8E6AFB2EEADEA4FCCFA79265A6E1B110D0419143"
                     },
+                    "Slick-Overlay-Vertical-Panel" => new[] { "9A30110C438204C115A22A0EFDC2D3F4F1758E8E6C4EAEF51283DEEB6B0C52D6" },
+                    "Slick-Overlay-Wide-3-Rows" => new[] { "C3CC520265BAD7EA85707F9DFA1D94E27996FE84FDF0F322B423756B019F6C18" },
+                    "Slick-Overlay-Compact-2x2" => new[] { "91184A06DADEE4782C7ABEE4E7B691FFAC0AA51E07AE44A6D1156A1ED6527276" },
+                    "Slick-Overlay-Single-Line" => new[] { "84B344FF29DC86F8B318FEDEB12C47BF75897B4709659AC288F2482300D0E08A" },
                     _ => Array.Empty<string>()
                 };
                 // The generic designs replaced presets named after one CPU and GPU.

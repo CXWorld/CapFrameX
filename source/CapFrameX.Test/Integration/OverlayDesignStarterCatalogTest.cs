@@ -159,6 +159,7 @@ namespace CapFrameX.Test.Integration
         [DataRow(17, 18)]
         [DataRow(18, 19)]
         [DataRow(19, 20)]
+        [DataRow(20, 21)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -171,7 +172,7 @@ namespace CapFrameX.Test.Integration
                 6 => new[] { "Panther-Lake-Arc-Aurora", "OLED-Minimal" },
                 17 => SlickPresetIds,
                 18 => new[] { "RTX-50-Core-FUSION-RPL", "RTX-50-Ryzen-FUSION" },
-                19 or 20 => Array.Empty<string>(),
+                19 or 20 or 21 => Array.Empty<string>(),
                 _ => new[] { "NVIDIA-GeForce-RTX-GREENLINE", "ICELINE-Vertical" }
             };
             CollectionAssert.AreEquivalent(expectedIds,
