@@ -4,9 +4,12 @@
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
 // All Rights Reserved.
 
+using System;
 using System.Collections.Generic;
+using System.Threading;
 using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Hardware.Memory.Sensors;
+using RAMSPDToolkit.I2CSMBus;
 using RAMSPDToolkit.SPD;
 using RAMSPDToolkit.SPD.Interfaces;
 using RAMSPDToolkit.SPD.Interop.Shared;
@@ -15,11 +18,24 @@ namespace LibreHardwareMonitor.Hardware.Memory;
 
 internal sealed class DimmMemory : Hardware
 {
+    /// <summary>
+    /// Minimum time between two temperature reads of one module.
+    /// </summary>
+    internal static readonly TimeSpan TemperatureRefreshInterval = TimeSpan.FromSeconds(2);
+
+    // SPD5118 hub registers MR49/MR50: the current temperature, read as one word.
+    private const byte Ddr5TemperatureRegister = 0x31;
+
+    // The toolkit's retry policy for a busy bus (EBUSY, ETIMEDOUT, ERROR_SEM_TIMEOUT of the SMBus mutex).
+    private const int BusBusyRetries = 12;
+
     private readonly SpdThermalSensor _thermalSensor;
     private readonly string _manufacturer;
     private readonly string _partNumber;
 
-    public DimmMemory(SPDAccessor accessor, string name, string manufacturer, string partNumber, Identifier identifier, ISettings settings, ISensorConfig sensorConfig = null)
+    // bus and address: where the module was detected. temperatureRefreshPhase offsets this module's
+    // temperature reads from those of the other modules.
+    public DimmMemory(SPDAccessor accessor, SMBusInterface bus, byte address, TimeSpan temperatureRefreshPhase, string name, string manufacturer, string partNumber, Identifier identifier, ISettings settings, ISensorConfig sensorConfig = null)
         : base(name, identifier, settings)
     {
         _manufacturer = manufacturer;
@@ -42,7 +58,8 @@ internal sealed class DimmMemory : Hardware
                         SensorType.Temperature,
                         this,
                         settings,
-                        accessor as IThermalSensor,
+                        CreateTemperatureReader(ts, bus, address),
+                        new RefreshThrottle(TemperatureRefreshInterval, temperatureRefreshPhase),
                         sensorConfig)
                     { PresentationSortKey = $"1_{accessor.Index}"};
                     break;
@@ -81,6 +98,46 @@ internal sealed class DimmMemory : Hardware
     public override void Update()
     {
         _thermalSensor?.UpdateSensor();
+    }
+
+    private static Func<float?> CreateTemperatureReader(IThermalSensor thermalSensor, SMBusInterface bus, byte address)
+    {
+        // DDR5: one word read of MR49/MR50. The toolkit's UpdateTemperature first reads the page
+        // register MR11 to select page 0, a second SMBus transaction of about 0.5 ms, but the page
+        // only applies to the NVM; the hub registers do not depend on it. MemoryGroup leaves page 0
+        // selected after discovery anyway.
+        if (thermalSensor is DDR5Accessor ddr5 && bus != null)
+        {
+            return () =>
+            {
+                if (!ddr5.ThermalSensorEnabled)
+                    return null;
+
+                int raw = bus.i2c_smbus_read_word_data(address, Ddr5TemperatureRegister);
+                for (int retry = 0; retry < BusBusyRetries && IsBusBusy(raw); retry++)
+                {
+                    Thread.Sleep(1);
+                    raw = bus.i2c_smbus_read_word_data(address, Ddr5TemperatureRegister);
+                }
+
+                return raw < 0 ? null : ConvertTemperature((ushort)raw);
+            };
+        }
+
+        return () => thermalSensor.UpdateTemperature() ? thermalSensor.Temperature : null;
+    }
+
+    // The conversion of the toolkit's internal SPDTemperatureConverter: 1/16 °C per bit, bit 12 is the sign.
+    internal static float ConvertTemperature(ushort raw)
+    {
+        return (raw & 0x1000) != 0
+            ? (raw & ~0x1000) * 0.0625f - 256f
+            : raw * 0.0625f;
+    }
+
+    private static bool IsBusBusy(int result)
+    {
+        return result is -16 or -138 or unchecked((int)0x80070079);
     }
 
     private void CreateSensors(SPDAccessor accessor, bool hasThermalSensor)
