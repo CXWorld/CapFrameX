@@ -92,7 +92,11 @@
                 VerticalAlignment="Center" Click="OnRefreshSources" Padding="12,6"
                 ToolTip="{loc:Tr OverlayEditor_RefreshSourcesHint}" />
         </Grid>
+        <!--MaterialDesign indents expander headers by 24 px. The inherited padding lets every section header
+            of the editor start where its fields start and keeps its chevron at the right edge, like the
+            combo boxes' arrows.-->
         <osd:OsdEditorControl x:Name="Editor" LivePreviewChanged="OnLivePreviewChanged"
+            materialDesign:ExpanderAssist.HorizontalHeaderPadding="0,12,0,12"
             SurfaceBrush="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}"
             AccentBrush="{DynamicResource MaterialDesign.Brush.Primary}"
             Background="{DynamicResource MaterialDesign.Brush.Card.Background}"

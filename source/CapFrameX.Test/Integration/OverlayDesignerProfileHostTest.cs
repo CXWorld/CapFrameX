@@ -49,6 +49,66 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        [DataRow(BaseTheme.Dark, 1120, 780)]
+        [DataRow(BaseTheme.Light, 1500, 920)]
+        public void InspectorSectionHeadersStartWhereTheFieldsStart(BaseTheme theme, int width, int height)
+        {
+            using var fixture = new HostFixture(theme: theme, width: width, height: height);
+            var editor = fixture.Host.Designer;
+            // A tile of every kind with sections of its own.
+            var design = new OsdDesignDocument { Name = "Sections", IsCanvas = true, Width = 640, CanvasHeight = 480, GridSize = 4 };
+            design.Tiles.Add(new OsdDesignTile { Kind = "metric", Label = "FPS", Key = "fps", Unit = "FPS", X = 0, Y = 0, FrameWidth = 200, FrameHeight = 90 });
+            design.Tiles.Add(new OsdDesignTile { Kind = "gauge", Label = "GPU", Key = "gpuLoad", Unit = "%", X = 210, Y = 0, FrameWidth = 200, FrameHeight = 150 });
+            design.Tiles.Add(new OsdDesignTile { Kind = "chart", Label = "FRAME TIME", Key = "frametimes", Unit = "ms", X = 0, Y = 160, FrameWidth = 620, FrameHeight = 120 });
+            design.Tiles.Add(new OsdDesignTile
+            {
+                Kind = "group", Label = "LOADS", Key = "cpu-loads", GroupKey = "cpu-loads", GroupDisplay = "metric", GroupColumns = 2,
+                Unit = "%", X = 0, Y = 290, FrameWidth = 620, FrameHeight = 180,
+                GroupMembers = new List<OsdGroupMember>
+                {
+                    new OsdGroupMember { Key = "load0", Label = "C0", IsEnabled = true },
+                    new OsdGroupMember { Key = "load1", Label = "C1", IsEnabled = true }
+                }
+            });
+            editor.SetTemplateJson(design.ToJson());
+            var tabs = (TabControl)editor.FindName("InspectorTabs");
+            tabs.SelectedItem = tabs.Items.Cast<TabItem>().Single(tab => Equals(tab.Header, "Tile"));
+            var form = (FrameworkElement)editor.FindName("ElementProperties");
+            // Without a window IsVisible stays false; a section shows when it and its parents are visible.
+            bool Shown(FrameworkElement element)
+            {
+                for (DependencyObject node = element; node != null && node != form; node = VisualTreeHelper.GetParent(node))
+                    if (node is UIElement ui && ui.Visibility != Visibility.Visible) return false;
+                return true;
+            }
+
+            var checkedHeaders = new HashSet<string>();
+            foreach (var tile in editor.Document.Tiles.ToArray())
+            {
+                Assert.IsTrue(editor.SelectElement(tile));
+                fixture.Arrange();
+                var label = Descendants<TextBox>(form).Single(input =>
+                    BindingOperations.GetBinding(input, TextBox.TextProperty)?.Path?.Path == "SelectedTile.Label");
+                double fields = label.TransformToAncestor(form).Transform(label.GetRectFromCharacterIndex(0).TopLeft).X;
+                var offsets = Descendants<Expander>(form).Where(Shown).Select(section =>
+                {
+                    var header = Descendants<TextBlock>(section).First(text => text.Text == (string)section.Header);
+                    Rect bounds = section.TransformToAncestor(form).TransformBounds(new Rect(section.RenderSize));
+                    Rect title = header.TransformToAncestor(form).TransformBounds(new Rect(header.RenderSize));
+                    Assert.IsTrue(title.Right <= bounds.Right + 0.5, $"The '{section.Header}' header leaves its section.");
+                    checkedHeaders.Add((string)section.Header);
+                    return (Header: (string)section.Header, Offset: title.Left - fields);
+                }).ToArray();
+                Assert.IsTrue(offsets.Length >= 2, $"A {tile.Kind} tile shows at least its spacing and style sections.");
+                Assert.IsTrue(offsets.All(section => Math.Abs(section.Offset) <= 0.5),
+                    $"The section headers of a {tile.Kind} tile must start where its fields start: "
+                    + string.Join(", ", offsets.Select(section => $"'{section.Header}' {section.Offset:F1} px")));
+            }
+            // Typography, spacing, number formatting, tile style, gauge, chart and the group's members.
+            Assert.IsTrue(checkedHeaders.Count >= 7, "Not every section was checked: " + string.Join(", ", checkedHeaders));
+        }
+
+        [TestMethod]
         public void StarterCatalogIsAvailableImmediatelyAndBindingASavedGroupStartsClean()
         {
             using var fixture = new HostFixture();

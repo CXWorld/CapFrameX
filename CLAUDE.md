@@ -569,6 +569,14 @@ once the localization removed the fixed `TabItem` widths. A header is as wide as
 it is cut off. **Do not give a `TabItem` a `Width` or `MinWidth` to make a translation fit.** Tab
 content starts at the left edge of the headers.
 
+## Overlay editor section headers
+
+MDIX indents every expander header by 24 px (`ExpanderAssist.HorizontalHeaderPadding`, default
+`24,12,24,12`). The property is inherited, so `OverlayDesignerControl.xaml` sets `0,12,0,12` once
+on the `OsdEditorControl`: every section header of the editor starts where its fields start and
+keeps its chevron at the right edge, like the combo boxes. The OSD Controls stay free of MDIX; do
+not align these headers with margins. Test: `InspectorSectionHeadersStartWhereTheFieldsStart`.
+
 ## Configuration Files
 - User settings: `%appdata%/CapFrameX/Configuration/AppSettings.json`
 - Overlay config: `%appdata%/CapFrameX/Configuration/OverlayEntryConfiguration_(0/1/2).json`
