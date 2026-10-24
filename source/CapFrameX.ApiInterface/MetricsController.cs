@@ -22,17 +22,17 @@ namespace CapFrameX.ApiInterface
         {
             try
             {
-                return metricNames
-                    .Split(',')
-                    .Select(GetMetricValue)
-                    .ToArray();
+                return metricNames?
+                    .Split(',')?
+                    .Select(GetMetricValue)?
+                    .ToArray() ?? [];
 
                 // example: http://localhost:1337/api/metrics?metricNames=P95,Average,GPUBusy,GPUBusyDeviation,CPUBusy
             }
             catch (ArgumentException)
             {
                 Response.StatusCode = 400;
-                return Array.Empty<double>();
+                return [];
             }
         }
 
