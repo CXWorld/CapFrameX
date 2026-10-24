@@ -12,6 +12,45 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Widget colors and tile styles (2026-10-24)
+
+All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`) and
+Controls in `Release|x64`, .NET 10 (`dotnet build CapFrameX.OSD.sln -c Release --no-incremental`),
+from OSD commit `c84f7679bb8398da3ce1db40e018ab1a4787ab28` plus the working tree that was not committed
+yet: `src/core/Config.cpp`, `Widget.cpp` and `Widget.h`, the Controls sources (`OsdDesignDocument*`,
+`OsdDesignPresets.Composite`, `OsdEditorControl`, `OsdEditorState*` with the new
+`OsdEditorState.Styles.cs`, `OsdTemplateThumbnail`), the five `Editor.*.json` catalogs and the OSD
+repo's CLAUDE.md. Widgets take per-element colors, each with a theme default: `bar` and `gauge`
+`labelColor`/`valueColor` (the gauge also `trackColor`), `chart` `labelColor`, `valueColor`,
+`backgroundColor` and `borderColor`, `heatmap` `labelColor` (legend and core type labels). The editor
+lists per tile kind which of them it draws (the Tile style rows), fades panel colors by the design's
+tile opacity and writes the design font as `theme.fontFamily` (Style tab, one font per design;
+designs saved with tile fonts are migrated by `FromJson`). `Editor.en.json` and `Editor.ko.json` are
+copied here. Interop (still the signed build), both Vulkan manifests and the template catalogs are
+unchanged. Older hooks and layers ignore the new keys and draw the theme color.
+
+Verification: all 33 hook CTests pass on x64 and x86, and all 10 Vulkan CTests pass on x64 and x86.
+15 of the 16 core CTests pass. `chart_gpu_raster` ("retracing a line must not accumulate opacity")
+fails on this machine (RTX 5090, driver 32.0.16.2101) and fails the same way on a clean export of
+`c84f767`, so it does not come from this change; `chart_gpu_raster_warp` passes.
+CapFrameX built against these sources (`CfxOsdFromSource`, Release) passes all 3206 runnable unit
+tests (6 skipped), among them `OverlayTileStyleTest` and `OverlayTileDocumentTest`; a build with
+`CfxOsdFromSource=false` was not run.
+The Vulkan layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` were updated to the two
+`vk` hashes below, the previous ones are in `vulkan\backup-pre-widget-colors-*`.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `2F7F182A7D29E7B979B6EF9ED82C99557933A6E05DB47F659572C62617F0A128` |
+| native\cfx_osd_hook.dll | `3EB6B3637F7FFDB8CE3EA2AC0BEFD4AD8A09983AB44F961E64B1041E328B44AE` |
+| native\x86\cfx_osd_hook.dll | `DF121CE631093C3758B191AA341F428A4F85BBB50B43CE20BBA1EE5482D9FC2B` |
+| native\vk\cfx_osd_vklayer.dll | `EEFF5E853EBCDCE0DD82CC2543728F4C05867A09D7AFC69BB28A646651386C32` |
+| native\vk\x86\cfx_osd_vklayer.dll | `2D9098552F2DA45F1B630AF86783E5A49AC09189B9C390AA71857BC82B11F411` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `C0CFAAFB704E3CE636667BF53D0C2CB7F6E609CAF68F3F2F10AF97561D820038` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Multi-line charts and stutter thresholds (2026-10-22)
 
 The five native DLLs (VS 2026/v145, `RelWithDebInfo`) and Controls (`Release|x64`, .NET 10) were built
