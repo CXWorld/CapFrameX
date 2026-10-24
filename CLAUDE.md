@@ -315,7 +315,9 @@ follow it). The editor (`OsdDesignDocument.ValidateChartLines`) and the native p
 rules; `OverlayRuntimeDesign.Parse` requests the feed of every line's series, and `OverlayTileDocument`
 checks the fields of each line. The editor keeps each line's `label` (the legend) on its localized
 default unless it was set elsewhere. The palette's "Stutter charts" (`OsdChartPresets`) adds frametimes
-and display times with their thresholds: a container on a canvas, two tiles in a grid.
+and display times with their thresholds: a container on a canvas, two tiles in a grid. The FRAME
+PACING chart of the three FUSION starters draws the frametimes in the design's color and their
+threshold (x2.5, legend "Stutter Threshold"; catalog version 23).
 `OverlayChartLinesTest` covers export, round trips, validation and the feeds. The prebuilt Controls
 must contain this change: a Controls build without it rejects designs with `chartLines`. Native
 details: the OSD repo's CLAUDE.md.

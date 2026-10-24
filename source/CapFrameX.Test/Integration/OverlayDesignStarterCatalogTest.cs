@@ -161,6 +161,7 @@ namespace CapFrameX.Test.Integration
         [DataRow(19, 20)]
         [DataRow(20, 21)]
         [DataRow(21, 22)]
+        [DataRow(22, 23)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -173,7 +174,7 @@ namespace CapFrameX.Test.Integration
                 6 => new[] { "Panther-Lake-Arc-Aurora", "OLED-Minimal" },
                 17 => SlickPresetIds,
                 18 => new[] { "RTX-50-Core-FUSION-RPL", "RTX-50-Ryzen-FUSION" },
-                19 or 20 or 21 or 22 => Array.Empty<string>(),
+                19 or 20 or 21 or 22 or 23 => Array.Empty<string>(),
                 _ => new[] { "NVIDIA-GeForce-RTX-GREENLINE", "ICELINE-Vertical" }
             };
             CollectionAssert.AreEquivalent(expectedIds,
@@ -356,6 +357,8 @@ namespace CapFrameX.Test.Integration
                 image.Y = 0;
                 container.Children.Add(image);
             }
+            // Before version twenty-three no chart drew the stutter threshold.
+            chart.ChartLines = null;
             // Version eighteen: the chart half as high, every tile below it higher up by the difference.
             double bottom = chart.Y.Value + chart.FrameHeight.Value, half = height / 2;
             foreach (var tile in document.Tiles.Where(tile => tile.Y >= bottom - .001)) tile.Y -= half;
@@ -365,6 +368,37 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(starter.CanUpdate(earlier), "An unmodified version-eighteen copy gets the higher chart.");
             Assert.IsFalse(starter.CanUpdate(new OverlayDesignProfile(starter.Id, starter.Name, starter.DesignJson, DateTime.UtcNow)),
                 "The current design is never replaced.");
+        }
+
+        [TestMethod]
+        [DataRow("RTX-50-Core-Ultra-FUSION-ARL", "#6DDBFEFF")]
+        [DataRow("RTX-50-Core-FUSION-RPL", "#6DDBFEFF")]
+        [DataRow("RTX-50-Ryzen-FUSION", "#ED7618FF")]
+        public void FusionFramePacingChartDrawsTheStutterThresholdAndReplacesTheUnmodifiedEarlierCopy(string presetId, string color)
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
+            var document = OsdDesignDocument.FromJson(starter.DesignJson);
+            document.Validate();
+            Assert.AreEqual(starter.DesignJson, OverlayRuntimeDesign.Canonicalize(document.ToJson()), "The starter is stored as the editor saves it.");
+            // The frametimes in the design's color under the stutter threshold of the analysis chart.
+            var chart = document.Tiles.Single(tile => tile.Kind == "chart" && tile.Label == "FRAME PACING");
+            Assert.AreEqual("frametimes", chart.Key);
+            Assert.AreEqual(2, chart.ChartLines.Count);
+            var values = chart.ChartLines[0];
+            Assert.AreEqual(OsdChartLine.ValueKind, values.Kind);
+            Assert.AreEqual("frametimes", values.Series);
+            Assert.AreEqual(color, values.Color);
+            var threshold = chart.ChartLines[1];
+            Assert.AreEqual(OsdChartLine.StutterKind, threshold.Kind);
+            Assert.AreEqual("frametimes", threshold.Series);
+            Assert.AreEqual(OsdChartLine.DefaultStutterFactor, threshold.Factor);
+            Assert.AreEqual(OsdChartLine.DefaultStutterColor, threshold.Color);
+            Assert.AreEqual("Stutter Threshold", threshold.Label);
+
+            // Version twenty-two: the same chart with the frametimes alone.
+            chart.ChartLines = null;
+            Assert.IsTrue(starter.CanUpdate(new OverlayDesignProfile(starter.Id, starter.Name, document.ToJson(), DateTime.UtcNow)),
+                "An unmodified version-twenty-two copy gets the stutter threshold.");
         }
 
         [TestMethod]

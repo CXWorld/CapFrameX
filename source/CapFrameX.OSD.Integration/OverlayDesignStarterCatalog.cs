@@ -60,7 +60,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 22;
+        public const int Version = 23;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -147,7 +147,8 @@ namespace CapFrameX.OSD.Integration
                 // above its CPU tiles, as in FUSION. Version twenty-one put the Slick designs' current FPS
                 // and hardware names on the baseline of their rows and gave the driver version room.
                 // Version twenty-two gave GREENLINE, ICELINE and Turquoise Reference one font, the
-                // Bahnschrift their readings and captions had used tile by tile.
+                // Bahnschrift their readings and captions had used tile by tile. Version twenty-three
+                // drew the stutter threshold into the FRAME PACING chart of the three FUSION designs.
                 // Never replace a renamed or edited profile.
                 string[] previousDesignHashes = entry.Id switch
                 {
@@ -175,10 +176,19 @@ namespace CapFrameX.OSD.Integration
                         "375AD5D0DDF1F923960970412183A0A5A8F5704170BB955235818552608037F0",
                         "2F2081F41702F0156285B055621F0350AC7FC61514600DA6CBF17FFF3BC4B8F4",
                         "D784C960AB557AA56C0CFEFD3D8F04272396B30D34C7B34CA0BD6A541FDE6168",
-                        "C6C444013E2983BBB55C1B8ED0ED3C69B704E98807AF745BE4D744EA9414E91A"
+                        "C6C444013E2983BBB55C1B8ED0ED3C69B704E98807AF745BE4D744EA9414E91A",
+                        "882398087B2B7F390D72C62C20122B5FB1D9AD1FC4F0D730178F044B1CC79379"
                     },
-                    "RTX-50-Core-FUSION-RPL" => new[] { "9FC5D1D6A8DA1F2D9D51C07158659A39EA9FF14B72399E2CE403BB2BFB986D46" },
-                    "RTX-50-Ryzen-FUSION" => new[] { "9D589B66E0E8FE52B9F46459E792FD1178A561D26254A323BEDD974CB8832BB9" },
+                    "RTX-50-Core-FUSION-RPL" => new[]
+                    {
+                        "9FC5D1D6A8DA1F2D9D51C07158659A39EA9FF14B72399E2CE403BB2BFB986D46",
+                        "423C3AC6914E24634EB1E2B886B311CECE4CA2221FB624E9F6F510A661BCC59A"
+                    },
+                    "RTX-50-Ryzen-FUSION" => new[]
+                    {
+                        "9D589B66E0E8FE52B9F46459E792FD1178A561D26254A323BEDD974CB8832BB9",
+                        "3246FFCF349F20977C404E787CA35449679879DE1E25C2CDCF519A1D37A76F65"
+                    },
                     "Panther-Lake-Arc-Aurora" => new[] { "E717AF2FB7BDDF804AFF1918BA97CC560D251D648134522040A4F7591534C9ED" },
                     "AMD-Ryzen-5-9600X-Badge" => new[] { "09795802837F766CB0350464E82B878EA4A361141F8FEC6CDB9343A314446E40" },
                     "AMD-Ryzen-7-9800X3D-Badge" => new[] { "2B9D493E89D1A3CAFAE4B4CED21BF25D85BF3025FDA82E96893A24BD09A204A0" },

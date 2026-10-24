@@ -771,6 +771,20 @@
             "width": 327.6,
             "height": 83.2,
             "unit": "ms",
+            "lines": [
+              {
+                "series": "frametimes",
+                "kind": "value",
+                "color": "#6DDBFEFF"
+              },
+              {
+                "series": "frametimes",
+                "kind": "stutter",
+                "factor": 2.5,
+                "color": "#E5534BFF",
+                "label": "Stutter Threshold"
+              }
+            ],
             "color": "#6DDBFEFF",
             "showLabels": true,
             "currentValue": false,
@@ -788,6 +802,20 @@
               "y": 200,
               "frameWidth": 520,
               "frameHeight": 144,
+              "chartLines": [
+                {
+                  "series": "frametimes",
+                  "kind": "value",
+                  "color": "#6DDBFEFF"
+                },
+                {
+                  "series": "frametimes",
+                  "kind": "stutter",
+                  "factor": 2.5,
+                  "color": "#E5534BFF",
+                  "label": "Stutter Threshold"
+                }
+              ],
               "kind": "chart",
               "label": "FRAME PACING",
               "key": "frametimes",
