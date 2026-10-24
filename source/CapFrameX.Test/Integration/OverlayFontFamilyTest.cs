@@ -16,9 +16,9 @@ using Moq;
 namespace CapFrameX.Test.Integration
 {
     /// <summary>
-    /// Fonts of the CapFrameX renderers: a design carries one font for all of its text and every
-    /// tile that draws text may override it; the classic layout takes the font from the Overlay
-    /// tab. RTSS is not involved.
+    /// Fonts of the CapFrameX renderers: a design carries one font for all of its text, and only an
+    /// icon names its glyph font; the classic layout takes the font from the Overlay tab. RTSS is
+    /// not involved.
     /// </summary>
     [STATestClass]
     [DoNotParallelize]
@@ -48,72 +48,104 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void TileFont_ReachesEveryWidgetThatDrawsText()
+        public void DesignFont_IsTheOnlyTextFont_OnlyAnIconNamesItsOwn()
         {
-            var document = Design(tileFamily: Monospace);
-            var group = new OsdDesignTile
+            var document = Design(designFont: Monospace);
+            document.Tiles.Add(new OsdDesignTile
             {
-                Kind = "group", Key = "cpu-clocks", GroupKey = "cpu-clocks", GroupDisplay = "metric", GroupColumns = 2,
-                Label = "CLOCKS", Unit = "MHz", Family = Monospace, X = 0, Y = 370, FrameWidth = 400, FrameHeight = 140,
-                GroupMembers = new List<OsdGroupMember>
-                {
-                    new OsdGroupMember { Key = "clock0", Label = "C0", IsEnabled = true },
-                    new OsdGroupMember { Key = "clock1", Label = "C1", IsEnabled = true }
-                }
-            };
-            document.CanvasHeight = 520;
-            document.Tiles.Add(group);
-            var root = JsonNode.Parse(document.ToJson())["root"]["children"].AsArray();
+                Kind = "icon", Label = "Icon", Glyph = "", Family = "Segoe MDL2 Assets", ValueSize = 20,
+                X = 0, Y = 300, FrameWidth = 40, FrameHeight = 40, Padding = 0
+            });
+            var scene = JsonNode.Parse(document.ToJson());
 
-            foreach (var panel in root.Take(4))
+            Assert.AreEqual(Monospace, scene["theme"]["fontFamily"].GetValue<string>());
+            foreach (var panel in scene["root"]["children"].AsArray())
             {
                 var widget = panel["children"][0];
-                Assert.AreEqual(Monospace, widget["family"]?.GetValue<string>(),
-                    $"The {widget["type"]} widget must carry the tile font.");
+                string type = widget["type"].GetValue<string>();
+                Assert.AreEqual(type == "icon" ? "Segoe MDL2 Assets" : null, widget["family"]?.GetValue<string>(),
+                    $"The {type} widget draws its text in the design font; only an icon names its glyph font.");
             }
-            var groupWidget = root[4]["children"][0];
-            Assert.AreEqual(Monospace, groupWidget["children"][0]["family"]?.GetValue<string>(), "group title");
-            foreach (var reading in groupWidget["children"][1]["children"].AsArray())
-                Assert.AreEqual(Monospace, reading["family"]?.GetValue<string>(), "group reading");
-            Assert.AreEqual(document.ToJson(), OsdDesignDocument.FromJson(document.ToJson()).ToJson());
+
+            foreach (var kind in OsdDesignDocument.TextFontKinds)
+            {
+                var tile = Design().Tiles.First().Copy();
+                var single = Design();
+                single.Tiles.Clear();
+                tile.Kind = kind;
+                if (kind == "group")
+                {
+                    tile.Key = tile.GroupKey = "cpu-clocks"; tile.GroupDisplay = "metric"; tile.GroupColumns = 2;
+                    tile.GroupMembers = new List<OsdGroupMember> { new OsdGroupMember { Key = "clock0", Label = "C0", IsEnabled = true } };
+                }
+                else if (kind == "chart") tile.Key = "frametimes";
+                tile.Family = Monospace;
+                single.Tiles.Add(tile);
+                var error = Assert.ThrowsExactly<FormatException>(() => single.Validate(), $"A {kind} tile cannot take its own font.");
+                Assert.AreEqual(OsdLocalization.T("Editor_TileFontRemoved"), error.Message);
+            }
         }
 
         [TestMethod]
         public void LegacyDesign_WithAFontItNeverDrew_StillLoadsWithoutIt()
         {
-            // Editors before this change kept a family a tile had as text, but exported none for
+            // Editors before text fonts kept a family a tile had as text, but exported none for
             // bars, gauges, charts, linked classic rows and groups.
-            var node = JsonNode.Parse(Design(tileFamily: Monospace).ToJson());
-            foreach (var panel in node["root"]["children"].AsArray())
-                panel["children"][0].AsObject().Remove("family");
-            string legacy = node.ToJsonString();
+            string legacy = WithTileFonts(Design().ToJson(), Monospace, drawn: false);
 
             var loaded = OsdDesignDocument.FromJson(legacy);
 
             Assert.IsTrue(loaded.Tiles.All(tile => tile.Family == null), "A font the design never drew must not appear now.");
+            Assert.AreEqual(OsdDesignDocument.DefaultFontFamily, loaded.FontFamily, "An undrawn font never becomes the design font.");
             Assert.IsTrue(JsonNode.DeepEquals(WithoutEditorMetadata(JsonNode.Parse(legacy)), WithoutEditorMetadata(JsonNode.Parse(loaded.ToJson()))),
                 "The loaded design must draw exactly what the saved one drew.");
 
+            var node = JsonNode.Parse(legacy);
             node["root"]["children"][0]["children"][0]["label"] = "TAMPERED";
             Assert.ThrowsExactly<FormatException>(() => OsdDesignDocument.FromJson(node.ToJsonString()),
                 "Dropping old fonts must not let any other mismatch through.");
         }
 
         [TestMethod]
-        public void NativePreview_DrawsTheDesignFontLikeATileFontOnEveryWidget()
+        [DataRow(4, "Consolas")]
+        [DataRow(3, "Consolas")]
+        [DataRow(2, "Segoe UI")]
+        [DataRow(1, "Segoe UI")]
+        public void LegacyDesign_WithTileFonts_TakesTheFontMostOfItsTilesDrew(int tilesWithFont, string expected)
+        {
+            // Editors before one font per design let every text tile draw a font of its own.
+            string legacy = WithTileFonts(Design().ToJson(), Monospace, drawn: true, count: tilesWithFont);
+
+            var loaded = OsdDesignDocument.FromJson(legacy);
+
+            Assert.AreEqual(expected, loaded.FontFamily, "The font most tiles drew wins; a tie keeps the design font.");
+            Assert.IsTrue(loaded.EnumerateTiles().All(tile => tile.Family == null), "No text tile keeps a font of its own.");
+            string json = loaded.ToJson();
+            Assert.AreEqual(json, OsdDesignDocument.FromJson(json).ToJson(), "The unified design loads as it is.");
+            Assert.IsFalse(json.Contains("\"family\"", StringComparison.Ordinal), "The unified design names its font once, in the theme.");
+            if (tilesWithFont == 4)
+            {
+                var (before, after) = RenderBoth(legacy, json);
+                CollectionAssert.AreEqual(before, after, "A design whose tiles all drew one font draws exactly as before.");
+            }
+        }
+
+        [TestMethod]
+        public void NativePreview_DrawsTheDesignFontOnEveryWidget()
         {
             byte[] segoe = Render(Design());
-            byte[] tileFonts = Render(Design(tileFamily: Monospace));
-            byte[] designFont = Render(Design(designFont: Monospace));
+            var (tileFonts, designFont) = RenderBoth(WithTileFonts(Design().ToJson(), Monospace, drawn: true), Design(designFont: Monospace).ToJson());
 
-            Assert.IsFalse(segoe.SequenceEqual(tileFonts), "Tile fonts must change the rendered text.");
+            Assert.IsFalse(segoe.SequenceEqual(designFont), "The design font must change the rendered text.");
             CollectionAssert.AreEqual(tileFonts, designFont,
-                "The design font must reach the bar, gauge, chart and linked classic rows exactly like a tile font.");
+                "The design font must reach the bar, gauge, chart and linked classic rows exactly like the tile fonts did.");
             foreach (var kind in new[] { "bar", "gauge", "chart", "classicRows" })
             {
-                var single = Design();
-                single.Tiles.First(tile => tile.Kind == kind).Family = Monospace;
-                Assert.IsFalse(segoe.SequenceEqual(Render(single)), $"A {kind} tile must draw its own font.");
+                var segoeSingle = Design();
+                var monoSingle = Design(designFont: Monospace);
+                foreach (var single in new[] { segoeSingle, monoSingle })
+                    foreach (var other in single.Tiles.Where(tile => tile.Kind != kind).ToArray()) single.Tiles.Remove(other);
+                Assert.IsFalse(Render(segoeSingle).SequenceEqual(Render(monoSingle)), $"A {kind} tile must draw the design font.");
             }
         }
 
@@ -143,7 +175,7 @@ namespace CapFrameX.Test.Integration
         }
 
         // Bar, gauge, chart and a linked classic block, each with a caption, on one canvas.
-        private static OsdDesignDocument Design(string tileFamily = null, string designFont = null)
+        private static OsdDesignDocument Design(string designFont = null)
         {
             var document = new OsdDesignDocument
             {
@@ -153,7 +185,7 @@ namespace CapFrameX.Test.Integration
             if (designFont != null) document.FontFamily = designFont;
             void Add(OsdDesignTile tile, double x, double y, double width, double height)
             {
-                tile.X = x; tile.Y = y; tile.FrameWidth = width; tile.FrameHeight = height; tile.Family = tileFamily;
+                tile.X = x; tile.Y = y; tile.FrameWidth = width; tile.FrameHeight = height;
                 document.Tiles.Add(tile);
             }
             Add(new OsdDesignTile { Kind = "bar", Key = "load", Label = "LOAD", Unit = "%" }, 0, 0, 240, 70);
@@ -163,18 +195,55 @@ namespace CapFrameX.Test.Integration
             return document;
         }
 
-        private static byte[] Render(OsdDesignDocument document)
+        // A file as an editor before one font per design saved it: the first `count` tiles carry the
+        // family in their metadata and, when it was drawn, on their widget.
+        private static string WithTileFonts(string json, string family, bool drawn, int count = int.MaxValue)
         {
-            const int width = 480, height = 640, stride = width * 4;
-            using var preview = new OsdPreview();
-            Assert.IsTrue(preview.CreateBitmap(width, height), "Native bitmap renderer did not initialize.");
-            Assert.IsTrue(preview.LoadTemplateJson(document.ToJson()), "Native renderer rejected the design.");
+            var node = JsonNode.Parse(json);
+            foreach (var panel in node["root"]["children"].AsArray().Take(count))
+            {
+                var widget = panel["children"][0].AsObject();
+                widget["editor"]["family"] = family;
+                if (drawn) widget["family"] = family;
+            }
+            return node.ToJsonString();
+        }
+
+        private static byte[] Render(OsdDesignDocument document) => Render(document.ToJson());
+
+        private static byte[] Render(string json)
+        {
+            using var preview = CreatePreview();
+            return Render(preview, json);
+        }
+
+        // Pixel-exact comparisons render both scenes in one renderer: separate instances in a long
+        // test run may differ in single anti-aliased pixels.
+        private static (byte[] First, byte[] Second) RenderBoth(string first, string second)
+        {
+            using var preview = CreatePreview();
+            return (Render(preview, first), Render(preview, second));
+        }
+
+        private const int RenderWidth = 480, RenderHeight = 640;
+
+        private static OsdPreview CreatePreview()
+        {
+            var preview = new OsdPreview();
+            Assert.IsTrue(preview.CreateBitmap(RenderWidth, RenderHeight), "Native bitmap renderer did not initialize.");
+            return preview;
+        }
+
+        private static byte[] Render(OsdPreview preview, string json)
+        {
+            const int stride = RenderWidth * 4;
+            Assert.IsTrue(preview.LoadTemplateJson(json), "Native renderer rejected the design.");
             Assert.IsTrue(preview.SetMetricsJson("{\"load\":64}"));
             preview.UpdateEntries(new[]
             {
                 new OsdEntry { Identifier = "Framerate", Group = "FPS", Label = "Framerate", IsNumeric = true, Value = 144, Unit = "FPS", Color = 0xFFFFFFFF }
             });
-            var pixels = new byte[stride * height];
+            var pixels = new byte[stride * RenderHeight];
             var handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);
             try
             {

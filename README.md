@@ -108,7 +108,15 @@ A tile design can carry its own orbit: in the designer, enable it under **Layout
 
 ### Overlay fonts
 
-**Overlay font** in **Overlay → OSD options** sets the font of the row overlay in the CapFrameX in-game and hook-free renderers. A tile design keeps its own fonts: in the designer, **Layout → Font** sets the font of the whole design, and **Typography and alignment** gives every tile that shows text its own font (leave it empty to use the design font). A font that is not installed falls back to a system font. RTSS uses its own font settings.
+**Overlay font** in **Overlay → OSD options** sets the font of the row overlay in the CapFrameX in-game and hook-free renderers. A tile design has one font of its own: in the designer, **Style → Font** sets it for every text of the design. A font that is not installed falls back to a system font. RTSS uses its own font settings.
+
+Designs saved by earlier versions could give single tiles a font of their own. When the designer opens such a design, the font most of its tiles used becomes the design font.
+
+### Tile styles
+
+Every tile has its own colors. Select a tile and open **Tile style** on the **Tile** tab: it lists the colors this kind of tile draws, for example label, value and unit for a reading, fill and track for a bar, or chart area and outline for a chart, plus the background and the border of every tile. An empty field keeps the default it shows in gray. **Apply to all tiles of this kind** gives the same colors and border to every tile of that kind on the same level, and **Reset colors** returns the tile to its defaults.
+
+The **Style** tab holds what all tiles share: **Tile opacity** fades the background of every tile (at 100 % each tile shows its background as chosen, and transparent tiles stay transparent) and the design font.
 
 [`overlay-templates/OLED-Minimal.json`](overlay-templates/OLED-Minimal.json) is a ready-made OLED design that you can add in the designer with **Import…**. It shows FPS, 1% low and frame time in dimmed colors, plus a frame-time line, without panels, frames, labels or images, and it has the orbit enabled.
 

@@ -32,7 +32,7 @@ namespace CapFrameX.View.OverlayDesignAuthoring
         private static readonly string[] DocumentFields =
         {
             "name", "layout", "width", "canvasHeight", "columns", "gap", "padding", "radius", "scale",
-            "gridSize", "showGrid", "snapToGrid", "accent", "tileColor", "textColor", "fontFamily", "pixelShift", "tiles"
+            "gridSize", "showGrid", "snapToGrid", "accent", "tileColor", "textColor", "tileOpacity", "fontFamily", "pixelShift", "tiles"
         };
         private static readonly Lazy<IReadOnlyDictionary<string, string>> TileFields =
             new Lazy<IReadOnlyDictionary<string, string>>(() => FieldsOf(typeof(OsdDesignTile)));
@@ -68,6 +68,7 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             result["accent"] = document.Accent;
             result["tileColor"] = document.TileColor;
             result["textColor"] = document.TextColor;
+            result["tileOpacity"] = document.TileOpacity;
             result["fontFamily"] = document.FontFamily;
             if (document.PixelShiftEnabled)
                 result["pixelShift"] = new JObject
@@ -89,6 +90,11 @@ namespace CapFrameX.View.OverlayDesignAuthoring
                     : parentPath + "/" + index.ToString(CultureInfo.InvariantCulture);
                 var serialized = JObject.Parse(JsonSerializer.Serialize(tile, TileJsonOptions));
                 serialized.Remove("children");
+                // A design saved before tiles had styles may keep colors it never drew. The document
+                // shows what the tile draws, so rebuilding it from the document never brings them back.
+                foreach (string field in OsdTileStyle.Fields)
+                    if (OsdTileStyle.GetColor(tile, field) != null && OsdTileStyle.DrawnColor(tile, field) == null)
+                        serialized.Remove(field);
                 var item = new JObject { ["path"] = path };
                 foreach (var property in serialized.Properties()) item.Add(property.Name, property.Value);
                 if (tile.Children.Count > 0) item["children"] = TilesToJson(tile.Children, path);
@@ -130,6 +136,7 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             document.Accent = ReadString(json, "accent", "document") ?? document.Accent;
             document.TileColor = ReadString(json, "tileColor", "document") ?? document.TileColor;
             document.TextColor = ReadString(json, "textColor", "document") ?? document.TextColor;
+            document.TileOpacity = ReadDouble(json, "tileOpacity", "document") ?? 1;
             document.FontFamily = ReadString(json, "fontFamily", "document") ?? document.FontFamily;
             if (json["pixelShift"] is JObject pixelShift)
             {
@@ -227,7 +234,7 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             Radius = document.Radius, Scale = document.Scale, IsCanvas = document.IsCanvas, CanvasHeight = document.CanvasHeight,
             GridSize = document.GridSize, ShowGrid = document.ShowGrid, SnapToGrid = document.SnapToGrid,
             PixelShiftEnabled = document.PixelShiftEnabled, PixelShiftInterval = document.PixelShiftInterval,
-            PixelShiftRadius = document.PixelShiftRadius, FontFamily = document.FontFamily
+            PixelShiftRadius = document.PixelShiftRadius, FontFamily = document.FontFamily, TileOpacity = document.TileOpacity
         };
 
         /// <summary>Resolves a tile path such as "2" or "2/0" (container 2, its first child).</summary>
@@ -719,6 +726,7 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             Range(document.Scale, .5, 2, "scale");
             Range(document.GridSize, 1, 128, "gridSize");
             Range(document.CanvasHeight, 64, 4096, "canvasHeight");
+            Range(document.TileOpacity, 0, 1, "tileOpacity");
             if (document.FontFamily.Length > OsdDesignDocument.MaximumFontFamilyLength)
                 throw Error($"The document field 'fontFamily' holds at most {OsdDesignDocument.MaximumFontFamilyLength} characters.");
             if (document.PixelShiftEnabled)

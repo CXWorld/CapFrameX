@@ -25,7 +25,14 @@ namespace CapFrameX.Test.Integration
 
                 var rebuilt = OverlayTileDocument.FromJson(exchanged, original.Name, NoSources);
 
+                // Colors a starter kept without drawing them (saved before tiles had styles) are no
+                // part of the exchange; everything else, and all it draws, has to come back.
+                foreach (var tile in original.EnumerateTiles())
+                    foreach (string field in OsdTileStyle.Fields)
+                        if (OsdTileStyle.DrawnColor(tile, field) == null) OsdTileStyle.SetColor(tile, field, null);
                 Assert.AreEqual(original.ToJson(), rebuilt.ToJson(), $"Starter '{starter.PresetId}' changed in the tile document.");
+                Assert.IsTrue(JToken.DeepEquals(Drawn(JObject.Parse(starter.DesignJson)), Drawn(JObject.Parse(rebuilt.ToJson()))),
+                    $"Starter '{starter.PresetId}' draws differently after the tile document.");
             }
         }
 
@@ -215,6 +222,14 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(176, document.CanvasHeight);
             Assert.AreEqual(1, warnings.Count);
             StringAssert.Contains(warnings[0], "canvas height grew");
+        }
+
+        // The scene as the renderer reads it: every widget without the editor metadata.
+        private static JToken Drawn(JToken scene)
+        {
+            var copy = scene.DeepClone();
+            foreach (var metadata in copy.SelectTokens("$..editor").ToArray()) metadata.Parent.Remove();
+            return copy;
         }
     }
 }

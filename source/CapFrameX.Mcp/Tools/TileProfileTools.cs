@@ -130,7 +130,7 @@ namespace CapFrameX.Mcp.Tools
                 "cfx_render_tile_profile to check the result.")]
         public async Task<JObject> CreateTileProfile(
             [Description("Name of the new profile, unique, up to 80 characters.")] string name,
-            [Description("Tile document: {layout, width, accent, tileColor, textColor, tiles: [...]}. See cfx_get_tile_design_guide.")] JObject document = null,
+            [Description("Tile document: {layout, width, tileOpacity, fontFamily, tiles: [...]}; every tile carries its own colors. See cfx_get_tile_design_guide.")] JObject document = null,
             [Description("Gallery template id or name to start from.")] string templateId = null,
             [Description("Id or name of a saved profile to copy.")] string copyFromProfile = null,
             [Description("Show the new profile on the CapFrameX OSD right away (needs the in-game or hook-free renderer).")] bool activate = false,

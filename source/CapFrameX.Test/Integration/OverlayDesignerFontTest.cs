@@ -13,32 +13,39 @@ using Newtonsoft.Json.Linq;
 
 namespace CapFrameX.Test.Integration
 {
-    /// <summary>The overlay editor offers a font for the design and for every tile that draws text.</summary>
+    /// <summary>The overlay editor offers one font for the whole design, on its Style tab.</summary>
     [STATestClass]
     [DoNotParallelize]
     public class OverlayDesignerFontTest
     {
         [TestMethod]
-        public void TextFontsCarryOverBetweenTextKindsAndEveryTextTileOffersTheFontPicker()
+        public void TextTilesDrawTheDesignFontAndOnlyAnIconNamesItsOwn()
         {
             using var host = new EditorHost();
             var tile = host.Editor.SelectedElement;
             var typography = (Expander)host.Editor.FindName("TypographyExpander");
-            Assert.AreEqual("Consolas", tile.Family);
-            Assert.AreEqual(Visibility.Visible, typography.Visibility);
+            Assert.IsNull(tile.Family);
+            Assert.IsFalse(LogicalDescendants<ComboBox>(host.Editor).Any(combo =>
+                BindingOperations.GetBindingExpression(combo, ComboBox.TextProperty)?.ParentBinding.Path.Path == "SelectedTile.Family"),
+                "A tile offers no font of its own.");
 
             foreach (var kind in new[] { "metric", "bar", "gauge", "chart", "classicRows", "text" })
             {
                 tile.Kind = kind;
                 Settle();
-                Assert.AreEqual("Consolas", tile.Family, $"A text font must survive the switch to {kind}.");
-                Assert.AreEqual(Visibility.Visible, typography.Visibility, $"A {kind} tile must offer its font.");
+                Assert.IsNull(tile.Family, $"A {kind} tile draws the design font.");
+                Assert.AreEqual(kind is "metric" or "text" ? Visibility.Visible : Visibility.Collapsed, typography.Visibility,
+                    $"Only metrics and texts align and size their text; a {kind} tile has nothing to set there.");
             }
 
             tile.Kind = "icon";
             Settle();
-            Assert.AreNotEqual("Consolas", tile.Family, "A text font draws no icon glyphs.");
+            tile.Family = "Segoe Fluent Icons";
+            Settle();
             Assert.AreEqual(Visibility.Collapsed, typography.Visibility, "An icon takes its font from the icon picker.");
+            Assert.IsTrue(host.Editor.TryCommitEdits());
+            Assert.AreEqual("Segoe Fluent Icons", JObject.Parse(host.Editor.GetTemplateJson())["root"]["children"][0]["children"][0]["family"].Value<string>(),
+                "An icon keeps its glyph font.");
 
             tile.Kind = "text";
             Settle();
@@ -46,12 +53,16 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void LayoutTabFontBecomesTheDesignThemeAndUndoRestoresIt()
+        public void StyleTabFontBecomesTheDesignThemeAndUndoRestoresIt()
         {
             using var host = new EditorHost();
-            var picker = LogicalDescendants<ComboBox>(host.Editor).SingleOrDefault(combo =>
+            var styleTab = (TabItem)host.Editor.FindName("StyleTab");
+            var picker = LogicalDescendants<ComboBox>(styleTab).SingleOrDefault(combo =>
                 BindingOperations.GetBindingExpression(combo, ComboBox.TextProperty)?.ParentBinding.Path.Path == "Document.FontFamily");
-            Assert.IsNotNull(picker, "The layout tab must offer the design font.");
+            Assert.IsNotNull(picker, "The style tab must offer the design font.");
+            Assert.AreEqual(1, LogicalDescendants<ComboBox>(host.Editor).Count(combo =>
+                BindingOperations.GetBindingExpression(combo, ComboBox.TextProperty)?.ParentBinding.Path.Path == "Document.FontFamily"),
+                "The design font has one place, the style tab.");
             Assert.IsTrue(picker.IsEditable, "Fonts that are not listed can be typed.");
             string before = host.Editor.GetTemplateJson();
 
@@ -84,7 +95,7 @@ namespace CapFrameX.Test.Integration
             Dispatcher.PushFrame(frame);
         }
 
-        // One text tile with its own font, selected.
+        // One text tile, selected.
         private sealed class EditorHost : IDisposable
         {
             public OsdEditorControl Editor { get; }
@@ -115,7 +126,7 @@ namespace CapFrameX.Test.Integration
                 var document = new OsdDesignDocument { Width = 640, CanvasHeight = 480, IsCanvas = true, GridSize = 4 };
                 document.Tiles.Add(new OsdDesignTile
                 {
-                    Kind = "text", Label = "Heading", Text = "Font fixture", Family = "Consolas",
+                    Kind = "text", Label = "Heading", Text = "Font fixture",
                     X = 200, Y = 200, FrameWidth = 240, FrameHeight = 140
                 });
                 Editor.SetTemplateJson(document.ToJson());

@@ -168,12 +168,12 @@ namespace CapFrameX.Test.Integration
         public void EditableFontPickerDefersTypedTextAndCommitsOnEnter()
         {
             using var host = new EditorHost();
-            var typography = (Expander)host.Editor.FindName("TypographyExpander");
-            typography.IsExpanded = true;
+            var tabs = (TabControl)host.Editor.FindName("InspectorTabs");
+            tabs.SelectedItem = host.Editor.FindName("StyleTab");
             Settle(450);
             host.Window.UpdateLayout();
-            var font = LogicalDescendants<ComboBox>(typography).Single(combo =>
-                combo.GetBindingExpression(ComboBox.TextProperty)?.ParentBinding.Path?.Path == "SelectedTile.Family");
+            var font = (ComboBox)host.Editor.FindName("DesignFontPicker");
+            Assert.AreEqual("Document.FontFamily", font.GetBindingExpression(ComboBox.TextProperty)?.ParentBinding.Path?.Path);
             font.ApplyTemplate();
             var input = (TextBox)font.Template.FindName("PART_EditableTextBox", font);
             Assert.IsNotNull(input);
@@ -183,11 +183,11 @@ namespace CapFrameX.Test.Integration
             Settle(400);
 
             Assert.AreEqual("Consolas", font.Text);
-            Assert.IsNull(host.Editor.SelectedElement.Family);
+            Assert.AreEqual(OsdDesignDocument.DefaultFontFamily, host.Editor.Document.FontFamily);
             Assert.AreEqual(before, host.Editor.GetTemplateJson());
             Assert.IsTrue(host.Editor.HasPendingTextEdits);
             Assert.IsTrue(Enter(input).Handled);
-            Assert.AreEqual("Consolas", host.Editor.SelectedElement.Family);
+            Assert.AreEqual("Consolas", host.Editor.Document.FontFamily);
             Assert.IsFalse(host.Editor.HasPendingTextEdits);
         }
 

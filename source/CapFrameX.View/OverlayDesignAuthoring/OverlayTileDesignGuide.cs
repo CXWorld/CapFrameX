@@ -51,11 +51,11 @@ save or discard them. Tell the user; never ask them to lose their work.
     {
       ""layout"": ""canvas"",
       ""width"": 320,
-      ""accent"": ""#00C8FFFF"", ""tileColor"": ""#101820D9"", ""textColor"": ""#F2F4F8FF"",
+      ""tileOpacity"": 0.9, ""fontFamily"": ""Bahnschrift"",
       ""tiles"": [
-        { ""kind"": ""metric"", ""key"": ""fps"", ""label"": ""FPS"", ""valueSize"": 36 },
+        { ""kind"": ""metric"", ""key"": ""fps"", ""label"": ""FPS"", ""valueSize"": 36, ""valueColor"": ""#00C8FFFF"" },
         { ""kind"": ""metric"", ""key"": ""frametime"", ""label"": ""Frame time"", ""unit"": ""ms"", ""digits"": 1 },
-        { ""kind"": ""chart"", ""key"": ""frametimes"", ""columnSpan"": 2, ""frameHeight"": 120 }
+        { ""kind"": ""chart"", ""key"": ""frametimes"", ""columnSpan"": 2, ""frameHeight"": 120, ""color"": ""#00C8FFFF"" }
       ]
     }
 
@@ -72,11 +72,15 @@ Document fields (all optional except tiles):
   radius (0..32, corner radius of tile backgrounds), scale (0.5..2, scales the whole design).
 - gridSize (1..128, default 8), showGrid, snapToGrid: editor canvas helpers; auto placement snaps to
   gridSize.
-- accent: default color of text tiles, icons, charts, bars and gauges. tileColor: default tile
-  background. textColor: default color of values and labels.
-- fontFamily: font of every text in the design (default Segoe UI), an installed font family such as
-  Bahnschrift or Consolas. A tile's own family overrides it. Fonts that are not installed fall back
-  to a system font.
+- tileOpacity (0..1, default 1): scales the background opacity of every tile. At 1 each tile shows
+  its backgroundColor as given; a transparent tile stays transparent at any value.
+- fontFamily: the one font of every text in the design (default Segoe UI), an installed font family
+  such as Bahnschrift or Consolas. Tiles have no text font of their own; only an icon names its glyph
+  font. Fonts that are not installed fall back to a system font.
+- accent, tileColor, textColor: the defaults for every tile color left unset (see Tile colors):
+  accent for titles, text, icons, bars, arcs and chart lines, tileColor for backgrounds, textColor
+  for labels and values. Colors belong to the tiles: the tile editor edits them per tile and no
+  longer shows these defaults, so prefer setting a tile's own colors.
 - pixelShift: { ""intervalSeconds"": 10..3600, ""radius"": 1..32 } moves the overlay by one pixel per
   interval (OLED burn-in protection). Omit or null for none.
 - tiles: the tiles, at most {MAXTILES} including nested ones.
@@ -98,19 +102,37 @@ by all kinds:
   images and container children); minimum frameHeight 24.
 - columnSpan (1..columns): grid columns the tile spans; on a canvas it sets the default width.
 - padding (0..40), backgroundColor, borderColor, borderWidth (0..32): the panel. Omitted values use
-  the document's padding and tileColor.
-- color: the widget's main color (metric: label, value and unit; bar, gauge and chart: the accent;
-  text and icon: the glyphs). Omitted: theme colors.
-- family: the font of everything a metric, text, bar, gauge, chart, group or classicRows tile writes
-  (labels, values, units, titles, axis labels). Omitted: the document's fontFamily. On an icon it
-  names the icon font instead.
+  the document's padding and tileColor; the border is drawn while borderWidth is above 0.
+- The colors of the widget inside: see Tile colors.
+- family: an icon's glyph font. Text tiles take the document's fontFamily; a family on them is
+  rejected.
 - locked: editor-only, prevents moving the tile with the mouse.
+
+## Tile colors
+
+Every tile owns its colors. A field left out draws the default named after it.
+- every kind: backgroundColor (tileColor), borderColor (#3A3A4A80).
+- metric: labelColor (textColor), valueColor (color, then textColor), unitColor (the value's color).
+  color is an older shared value color; prefer valueColor.
+- text: color, the text (accent). icon: color, the glyph (accent).
+- bar: color, the fill (accent); trackColor, the empty track (#3A3A4A80); labelColor (textColor);
+  valueColor (textColor).
+- gauge: color, the arc (accent); trackColor; labelColor; valueColor; defaults as for a bar.
+- chart: color, the line (accent; with chartLines each line has its own color); labelColor, the title,
+  scale and legend (textColor); valueColor, the currentValue badge (textColor); chartBackgroundColor,
+  the plot area while showBackground is on (#0E0E16EE); chartBorderColor, its outline while
+  showBorder is on (#3A3A4A80).
+- group: titleColor (color, then accent); labelColor, the member labels (textColor). As metrics:
+  valueColor (color, then textColor) and unitColor. As bars: color, the fill (accent), trackColor and
+  valueColor (textColor). As a heatmap: valueColor, the fully loaded cells (textColor), and
+  labelColor, the legend and core type labels (textColor).
+- classicRows, image and container: backgroundColor and borderColor only; the classic rows keep the
+  colors of the Overlay tab.
 
 Kinds:
 - metric: one reading. key (a source key, see Keys), unit, digits (0..3 decimals), valueSize (10..72,
   value font size), labelPosition (top, left, bottom, none), labelSize and unitSize (6..72),
-  valueColor, labelColor, unitColor, align (left, center, right), valueLines (1..16, for
-  multi-line text readings), showValue.
+  align (left, center, right), valueLines (1..16, for multi-line text readings), showValue.
   valueScale multiplies the value (0.001 turns MB into GB; then set unit). valueFormat ""duration""
   shows seconds as a clock (h:mm:ss) instead of ""number"".
   A second reading in the same tile: secondaryKey, secondaryUnit, secondaryScale,
@@ -130,9 +152,9 @@ Kinds:
   the series of the first value line. color (default accent, threshold red) and label (legend text,
   up to 64 characters) are optional.
 - text: static text. text (up to 500 characters, ""\n"" for a line break), valueSize (font size),
-  color (default accent), align (left, center, right).
+  align (left, center, right).
 - icon: one glyph. glyph (1..16 characters, e.g. """" from Segoe MDL2 Assets or Segoe Fluent
-  Icons), family (default Segoe MDL2 Assets), valueSize (glyph size), color.
+  Icons), family (default Segoe MDL2 Assets), valueSize (glyph size).
 - image: PNG or JPEG. dataUri (""data:image/png;base64,..."", at most 512 KB and 2048 x 2048 px),
   fit (contain, cover, stretch), opacity (0..1).
 - group: many readings of one sensor family, e.g. every CPU core clock or thread load. Set groupKey to
@@ -144,7 +166,7 @@ Kinds:
   placeholder members binds to this machine's family as in a template: role:cpu-loads takes every
   thread load, role:cpu-loads|P only those of one core type (P, E, LPE, D or LP).
   groupDisplay ""heatmap"" draws one cell per member, shaded from idle to full load in valueColor
-  (default the document's textColor) under the title (in color) and an idle..maximum legend. Each
+  under the title and an idle..maximum legend. Each
   cell shows its reading averaged over groupWindowSeconds (1..600, default 10). Members are ordered
   P-cores first with each core's threads together, and every core type forms a block of its own,
   labelled (P-Cores, E-Cores, ...) and side by side. Up to 16 cells share one row; more take the
@@ -176,7 +198,7 @@ An array, applied in order, saved only if all succeed. Paths are tile indices jo
 previous one, so removing tile 1 shifts later paths.
 
     [
-      { ""op"": ""setDocument"", ""values"": { ""accent"": ""#FF6A00FF"", ""canvasHeight"": null } },
+      { ""op"": ""setDocument"", ""values"": { ""tileOpacity"": 0.8, ""canvasHeight"": null } },
       { ""op"": ""addTile"", ""tile"": { ""kind"": ""gauge"", ""key"": ""gpuTemp"", ""label"": ""GPU"" } },
       { ""op"": ""addTile"", ""parent"": ""3"", ""index"": 0, ""tile"": { ""kind"": ""text"", ""text"": ""CPU"" } },
       { ""op"": ""updateTile"", ""path"": ""0"", ""values"": { ""valueSize"": 40, ""frameWidth"": null, ""frameHeight"": null } },
@@ -194,8 +216,8 @@ Later tiles draw over earlier ones: index order is the layer order.
 ## Design advice
 
 - An overlay sits over a game: keep it compact (a corner overlay is often 240..420 px wide), use
-  semi-transparent dark tiles (alpha around CC..EB) or transparent ones, one accent color, high
-  contrast for values and two or three font sizes.
+  semi-transparent dark tiles (alpha around CC..EB, or tileOpacity) or transparent ones, one accent
+  color for titles, bars and lines, high contrast for values and two or three font sizes.
 - Typical sizes at the default padding of 12: a metric tile with valueSize 28 and the label on top is
   about 90 px high; a chart needs 100..200 px.
 - Render after every change. A clipped value means the frame is too small: enlarge it or set

@@ -151,15 +151,15 @@ namespace CapFrameX.Test.Integration
                 var sidebar = (Border)inspector.Parent;
                 var columns = (Grid)sidebar.Parent;
                 columns.ColumnDefinitions[4].Width = new GridLength(width == 1080 ? 270 : 340);
-                foreach (string name in new[] { "TypographyExpander", "FrameSpacingExpander", "TileColorsExpander" })
+                foreach (string name in new[] { "TypographyExpander", "FrameSpacingExpander", "TileStyleExpander" })
                 {
                     ((Expander)editor.FindName(name)).IsExpanded = true;
                 }
                 SettlePresentation();
                 Arrange(host, width, height);
 
-                var background = (TextBox)editor.FindName("TileBackgroundColorField");
-                var accent = (TextBox)editor.FindName("TileAccentColorField");
+                var background = (TextBox)editor.FindName("TileStyleBackgroundColor");
+                var accent = (TextBox)editor.FindName("TileStyleValueColor");
                 var reset = (Button)editor.FindName("ResetTileColorsButton");
                 var padding = Field(inspector, "SelectedTile.Padding");
                 var labelSize = Field(inspector, "SelectedTile.LabelSize");
@@ -195,7 +195,7 @@ namespace CapFrameX.Test.Integration
 
                 double emptyHeight = background.ActualHeight;
                 editor.SelectedElement.BackgroundColor = "#11223344";
-                editor.SelectedElement.Color = "#3399FF";
+                editor.SelectedElement.ValueColor = "#3399FF";
                 editor.SelectedElement.Padding = 8;
                 editor.SelectedElement.LabelSize = 13;
                 Arrange(host, width, height);
@@ -205,8 +205,8 @@ namespace CapFrameX.Test.Integration
                 AssertColorRows(inspector, background, accent, reset);
                 foreach (var field in horizontalFields) AssertTextStartsUnderLabel(field);
 
-                var labelColor = Field(inspector, "SelectedTile.LabelColor");
-                var borderColor = Field(inspector, "SelectedTile.BorderColor");
+                var labelColor = Field(inspector, "TileStyle[labelColor].Value");
+                var borderColor = Field(inspector, "TileStyle[borderColor].Value");
                 SetText(labelColor, "#55AA88");
                 SetText(borderColor, "#112233");
                 Assert.IsTrue(editor.TryCommitEdits(), "Explicit optional colors must be editable through their bindings.");
@@ -223,7 +223,7 @@ namespace CapFrameX.Test.Integration
                 reset.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
                 Arrange(host, width, height);
                 Assert.IsNull(editor.SelectedElement.BackgroundColor);
-                Assert.IsNull(editor.SelectedElement.Color);
+                Assert.IsNull(editor.SelectedElement.ValueColor);
                 Assert.AreEqual(string.Empty, background.Text);
                 Assert.AreEqual(emptyHeight, background.ActualHeight, 0.5,
                     "Returning to inherited colors must keep the field and reset action in separate rows.");
@@ -335,7 +335,7 @@ namespace CapFrameX.Test.Integration
             Rect resetBounds = Bounds(reset, form);
             Assert.IsTrue(backgroundBounds.Top >= accentBounds.Bottom + 4, "The color fields overlap.");
             Assert.IsTrue(resetBounds.Top >= backgroundBounds.Bottom + 12 - 0.5,
-                "Use design colors overlaps the background field or its reserved spacing.");
+                "Reset colors overlaps the background field or its reserved spacing.");
             foreach (TextBox field in new[] { background, accent })
             {
                 var swatch = ((Grid)field.Parent).Children.OfType<Button>().Single();

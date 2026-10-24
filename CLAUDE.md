@@ -245,9 +245,13 @@ the margins, so its steps scale too. RTSS is not affected. Details: the OSD repo
 
 ### Overlay fonts
 
-Two sources, RTSS untouched. A tile design carries its own fonts: the design font
-(`OsdDesignDocument.FontFamily`, the editor's Layout tab, `fontFamily` in the MCP tile document)
-and a `family` on every tile that draws text (metric, text, bar, gauge, chart, group, classicRows).
+Two sources, RTSS untouched. A tile design carries one font: the design font
+(`OsdDesignDocument.FontFamily`, the editor's Style tab, `fontFamily` in the MCP tile document).
+Text tiles have no font of their own; `Validate` rejects a `family` on them (`Editor_TileFontRemoved`),
+only an icon names its glyph font. `FromJson` reads designs whose tiles drew fonts of their own as
+saved and then gives the design the font most text tiles drew (a tie keeps the design font,
+`UnifyTileFonts`); the GREENLINE, ICELINE and Turquoise Reference starters were regenerated so
+(catalog version 22).
 The classic layout takes `IAppConfiguration.OsdFontFamily` ("Overlay font", Overlay tab, default
 Segoe UI, MCP `fontFamily` option); it never overrides a design. `OsdOverlayBridge` forwards it
 through `OsdHost.SetFontFamily` (retained across renderer restarts); `HookMetricsPublisher` hands it
@@ -256,6 +260,27 @@ UTF-8 into the 128-byte field at `OffFontFamily` (0x18000), behind the records, 
 5 and older hooks ignore it. `TruncateUtf8` keeps the name on a character boundary. The prebuilt
 Controls must contain this change: a Controls build without it rejects designs whose theme font is
 not Segoe UI. Details: the OSD repo's CLAUDE.md.
+
+### Tile styles
+
+Every tile owns its colors; the design shares only `TileOpacity` and the font (the editor's Style
+tab). `OsdTileStyle` (OSD Controls) is the one catalog: `PartsOf(tile)` lists the colors a tile
+draws as it is set up (a bar: fill, label, value, track; a chart without its badge: line, captions,
+area, outline; ...), `Resolve` the color the renderer draws for an unset one (the document's
+`Accent`/`TileColor`/`TextColor` are only these defaults and no longer editable), `Set` changes one
+color (a group's title keeps its color when the bars change), `CopyToSameKind` and `Reset` back
+the Tile style buttons. The inspector's rows (`OsdTileStyleRow`, `TileStyle[field]`) are fixed XAML
+rows bound to the catalog, so `DesignTextBindings` sees their text boxes.
+
+Unset colors stay off the scene, so every saved design exports byte for byte as before; the native
+widgets gained the keys they need (bar/gauge `labelColor`, `valueColor`, gauge `trackColor`, chart
+`labelColor`, `valueColor`, `backgroundColor`, `borderColor`, heatmap `labelColor`), which older
+hooks ignore. Designs saved before tile styles may hold label, value and unit colors on kinds that
+never drew them (the hardware templates carry them on charts and groups): `MarkUndrawnColors`
+reads per tile from the saved scene which colors were drawn, the others stay in the metadata and
+off the scene until set (`OsdTileStyle.DrawnColor`), and the MCP tile document leaves them out.
+`TileOpacity` (0..1, `editor.tileOpacity`, omitted at 1) scales the alpha of every tile background
+at export (`DrawnBackground`); transparent tiles stay transparent. Tests: `OverlayTileStyleTest`.
 
 ### Heatmap tiles
 
