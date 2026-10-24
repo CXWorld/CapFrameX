@@ -570,6 +570,42 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void HasRecentTargetFrames_FollowsThePresentMonRowsOfTheSelectedPid()
+        {
+            int pid = Process.GetCurrentProcess().Id;
+            using var changes = new Subject<(string key, object value)>();
+            using var pids = new BehaviorSubject<int>(0);
+            using var rows = new Subject<string[]>();
+            var configuration = new Mock<IAppConfiguration>();
+            configuration.SetupGet(x => x.OnValueChanged).Returns(changes);
+            // Not selected: rows are tracked for the probe but nothing is injected.
+            configuration.SetupGet(x => x.EnableHookOverlay).Returns(false);
+            configuration.SetupGet(x => x.IsOverlayActive).Returns(true);
+            using var manager = new HookOverlayManager(configuration.Object, pids, rows,
+                processIdColumnIndex: 0, runtimeColumnIndex: 1,
+                dllPathOverride: @"C:\missing\cfx_osd_hook.dll");
+            ulong now() => HookStatusProbe.CurrentTickCount;
+
+            pids.OnNext(pid);
+            Assert.IsFalse(manager.HasRecentTargetFrames(now()), "no row delivered yet");
+
+            rows.OnNext(new[] { (pid + 1).ToString(), "DXGI" });
+            Assert.IsFalse(manager.HasRecentTargetFrames(now()), "a row of another process does not count");
+
+            rows.OnNext(new[] { pid.ToString(), "DXGI" });
+            Assert.IsTrue(manager.HasRecentTargetFrames(now()));
+            Assert.IsFalse(manager.HasRecentTargetFrames(
+                now() + HookCompatibilityVerdictClassifier.ProbeTargetPresentRecentMs + 1000),
+                "PresentMon went quiet");
+
+            rows.OnNext(new[] { pid.ToString(), "DXGI" });
+            pids.OnNext(0);
+            pids.OnNext(pid);
+            Assert.IsFalse(manager.HasRecentTargetFrames(now()),
+                "a newly selected process does not inherit the rows of the previous selection");
+        }
+
+        [TestMethod]
         public void IsInGameUnavailable_ForD3D9()
         {
             bool unavailable = HookOverlayManager.IsInGameUnavailable(

@@ -108,6 +108,61 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void Classify_NoPresentIsInconclusiveWhilePresentMonSeesNoPresents()
+        {
+            // A title that is still loading presents nothing the hook could have missed.
+            var waiting = new NativeHookStatusSnapshot { Flags = Armed };
+            HookProbeTimings timings = Timings(now: 90000, waitingSince: 1000);
+            timings.ActiveElapsedMs = HookCompatibilityVerdictClassifier.ProbeStageBudgetMs * 3;
+
+            Assert.AreEqual(HookCompatibilityVerdict.NoPresent,
+                HookCompatibilityVerdictClassifier.Classify(Vendor, true, waiting, EHookOverlayStatus.Waiting, in timings));
+
+            timings.TargetNotPresenting = true;
+            Assert.AreEqual(HookCompatibilityVerdict.Inconclusive,
+                HookCompatibilityVerdictClassifier.Classify(Vendor, true, waiting, EHookOverlayStatus.Waiting, in timings),
+                "neither NoPresent nor the stage budget may decide while the title does not present");
+        }
+
+        [TestMethod]
+        public void Classify_APresentMonSilenceOnlyExcusesAHookThatSawNoPresent()
+        {
+            var initializing = new NativeHookStatusSnapshot
+            {
+                Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.Visible
+            };
+            var early = new NativeHookStatusSnapshot { Flags = Armed | NativeHookStatusFlags.EarlyInjectionRequired };
+            var foreign = new NativeHookStatusSnapshot { Flags = Armed | NativeHookStatusFlags.ForeignPresenter };
+            HookProbeTimings timings = Timings(now: 30000);
+            timings.TargetNotPresenting = true;
+            timings.ActiveElapsedMs = HookCompatibilityVerdictClassifier.ProbeStageBudgetMs;
+
+            Assert.AreEqual(HookCompatibilityVerdict.RendererStalled,
+                HookCompatibilityVerdictClassifier.Classify(Vendor, true, initializing,
+                    EHookOverlayStatus.Initializing, in timings));
+            Assert.AreEqual(HookCompatibilityVerdict.EarlyInjectionRequired,
+                HookCompatibilityVerdictClassifier.Classify(Vendor, true, early,
+                    EHookOverlayStatus.Initializing, in timings));
+            Assert.AreEqual(HookCompatibilityVerdict.ForeignPresenter,
+                HookCompatibilityVerdictClassifier.Classify(Vendor, true, foreign,
+                    EHookOverlayStatus.Initializing, in timings));
+        }
+
+        [TestMethod]
+        public void IsTargetPresenting_FollowsThePresentMonRows()
+        {
+            const ulong recent = HookCompatibilityVerdictClassifier.ProbeTargetPresentRecentMs;
+
+            Assert.IsFalse(HookCompatibilityVerdictClassifier.IsTargetPresenting(0, 5000),
+                "PresentMon never delivered a row");
+            Assert.IsTrue(HookCompatibilityVerdictClassifier.IsTargetPresenting(5000, 5000));
+            Assert.IsTrue(HookCompatibilityVerdictClassifier.IsTargetPresenting(5000, 5000 + recent));
+            Assert.IsFalse(HookCompatibilityVerdictClassifier.IsTargetPresenting(5000, 5000 + recent + 1));
+            Assert.IsTrue(HookCompatibilityVerdictClassifier.IsTargetPresenting(5100, 5000),
+                "a row stamped while the status was read is current");
+        }
+
+        [TestMethod]
         public void Classify_SuccessNeedsConfirmationAndCoverageOnTheGenericRoute()
         {
             var active = new NativeHookStatusSnapshot

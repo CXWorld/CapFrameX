@@ -16,7 +16,10 @@ namespace CapFrameX.OSD.Integration
         NoQueue,
         RendererStalled,
         OsdCreateFailed,
-        /// <summary>Paused / minimized / host dormant: the stage clock stops.</summary>
+        /// <summary>
+        /// Paused / minimized / host dormant, or a title PresentMon sees no Present from before the
+        /// hook saw its first: the stage clock stops.
+        /// </summary>
         Inconclusive,
         /// <summary>A replacement swapchain has no proven presentation queue yet.</summary>
         QueueRebinding
@@ -41,6 +44,12 @@ namespace CapFrameX.OSD.Integration
         public ulong ActiveElapsedMs;
         /// <summary>Wall time since the stage started observing, pauses included.</summary>
         public ulong TotalElapsedMs;
+        /// <summary>
+        /// PresentMon sees no recent Present from the target. Only read while the hook has not
+        /// seen its first Present: a title that is loading or showing an intro presents nothing
+        /// the hook could have missed. The default (false) keeps the clocks running.
+        /// </summary>
+        public bool TargetNotPresenting;
     }
 
     /// <summary>
@@ -54,6 +63,19 @@ namespace CapFrameX.OSD.Integration
         internal const ulong ProbeNoQueueMs = 5000;
         internal const ulong ProbeStageBudgetMs = 20000;
         internal const ulong ProbeInconclusiveMaxMs = 60000;
+        // A target counts as presenting while PresentMon delivered one of its frame rows within
+        // this window. Generous on purpose: a wrong "not presenting" only delays a verdict,
+        // while a wrong "presenting" brings back the false NoPresent of a slow-loading title.
+        internal const ulong ProbeTargetPresentRecentMs = 3000;
+
+        /// <summary>
+        /// True while PresentMon still sees Presents from the target. <paramref name="lastRowTickMs"/>
+        /// is the tick of its latest frame row, zero if it never delivered one; a row stamped just
+        /// after <paramref name="nowTickMs"/> was read counts as current.
+        /// </summary>
+        internal static bool IsTargetPresenting(ulong lastRowTickMs, ulong nowTickMs)
+            => lastRowTickMs != 0 &&
+               (nowTickMs <= lastRowTickMs || nowTickMs - lastRowTickMs <= ProbeTargetPresentRecentMs);
 
         internal static HookCompatibilityVerdict Classify(HookCompatibilityStage stage,
             bool hasStatus, NativeHookStatusSnapshot snapshot, EHookOverlayStatus? nativeState,
@@ -93,6 +115,11 @@ namespace CapFrameX.OSD.Integration
 
             if (nativeState == EHookOverlayStatus.Idle || nativeState == EHookOverlayStatus.Hidden ||
                 (flags & NativeHookStatusFlags.Dormant) != 0)
+                return HookCompatibilityVerdict.Inconclusive;
+
+            // The hook cannot miss a Present nobody makes: while PresentMon sees none either (a
+            // title that is still loading), "no Present observed" is no verdict and no clock runs.
+            if ((flags & NativeHookStatusFlags.PresentSeen) == 0 && timings.TargetNotPresenting)
                 return HookCompatibilityVerdict.Inconclusive;
 
             if (snapshot.Version >= HookStatusProbe.Version2 &&

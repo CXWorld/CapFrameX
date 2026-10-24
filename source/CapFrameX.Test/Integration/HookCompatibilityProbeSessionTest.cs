@@ -301,6 +301,88 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void TitleThatIsStillLoading_KeepsItsStageWhilePresentMonSeesNoPresents()
+        {
+            // Metro 2033 Redux: the hook is armed 11 s into the process, the first Present follows
+            // 42 s later. Neither the 15 s first-Present timeout nor the 20 s stage budget may
+            // fail the stage while the title presents nothing the hook could have missed.
+            HookCompatibilityProbeSession session = Session(streamline: true);
+            session.OnInjectionSucceeded(1000);
+            var waiting = new NativeHookStatusSnapshot { Version = 2, Flags = Armed };
+
+            foreach (ulong now in new ulong[] { 2000, 17000, 30000, 70000 })
+            {
+                Assert.AreEqual(0, session.Observe(true, waiting, EHookOverlayStatus.Waiting, now,
+                    targetPresenting: false).Count, $"at {now} ms");
+                Assert.AreEqual(HookCompatibilityVerdict.Inconclusive, session.LastVerdict);
+            }
+            Assert.IsTrue(session.Observing);
+            Assert.AreEqual(HookProbeSettlement.None, session.Settlement);
+            Assert.AreEqual(HookCompatibilityStageId.VendorAware, session.CurrentStage.Id);
+            Assert.AreEqual((long)HookCompatibilityVerdictClassifier.ProbeStageBudgetMs,
+                session.RemainingBudgetMs(70000), "the UI budget stays paused");
+
+            // The title finally presents and the unchanged first stage renders: it is the verified one.
+            var ready = new NativeHookStatusSnapshot { Version = 2, Flags = Ready };
+            Assert.AreEqual(0, ObserveRendering(session, true, ready, EHookOverlayStatus.Active, 71000).Count);
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, ready,
+                EHookOverlayStatus.Active, 71000 + HookCompatibilityVerdictClassifier.ProbeSuccessConfirmMs);
+            Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
+            Assert.IsTrue(actions.Any(a => a.Kind == HookProbeActionKind.Learn &&
+                a.Stage.Id == HookCompatibilityStageId.VendorAware));
+        }
+
+        [TestMethod]
+        public void NoPresent_StillEscalatesWhilePresentMonSeesThePresents()
+        {
+            // The case the timeout exists for: the title presents, the hook sees nothing.
+            HookCompatibilityProbeSession session = Session(streamline: true);
+            session.OnInjectionSucceeded(1000);
+            var waiting = new NativeHookStatusSnapshot { Version = 2, Flags = Armed };
+
+            Assert.AreEqual(0, session.Observe(true, waiting, EHookOverlayStatus.Waiting, 2000,
+                targetPresenting: true).Count);
+            Assert.AreEqual(0, session.Observe(true, waiting, EHookOverlayStatus.Waiting,
+                2000 + HookOverlayManager.HookFirstPresentTimeoutMs - 1, targetPresenting: true).Count);
+            IReadOnlyList<HookProbeAction> actions = session.Observe(true, waiting,
+                EHookOverlayStatus.Waiting, 2000 + HookOverlayManager.HookFirstPresentTimeoutMs,
+                targetPresenting: true);
+
+            Assert.AreEqual(HookCompatibilityVerdict.NoPresent, session.LastVerdict);
+            Assert.IsTrue(session.RestartPending);
+            Assert.IsTrue(actions.Any(a => a.Kind == HookProbeActionKind.ScheduleRestart));
+            StringAssert.Contains(session.FallbackReason, "did not observe a DXGI Present");
+        }
+
+        [TestMethod]
+        public void FirstPresentWait_OnlyCountsTheTimeTheTitlePresents()
+        {
+            HookCompatibilityProbeSession session = Session(streamline: true);
+            session.OnInjectionSucceeded(1000);
+            var waiting = new NativeHookStatusSnapshot { Version = 2, Flags = Armed };
+            IReadOnlyList<HookProbeAction> Observe(ulong now, bool presenting)
+                => session.Observe(true, waiting, EHookOverlayStatus.Waiting, now, presenting);
+
+            // 11 s of presenting, then a loading screen without a single Present for 47 s.
+            Assert.AreEqual(0, Observe(2000, true).Count);
+            Assert.AreEqual(0, Observe(12000, true).Count);
+            Assert.AreEqual(0, Observe(13000, false).Count);
+            Assert.AreEqual(0, Observe(60000, false).Count);
+            Assert.AreEqual(HookCompatibilityVerdict.Inconclusive, session.LastVerdict);
+
+            // Presenting again: the earlier 11 s still count (4 s of the 15 s remain), the pause
+            // does not, and the stage budget cannot overtake the wait (NoPresent, not a stall).
+            Assert.AreEqual(0, Observe(61000, true).Count);
+            Assert.AreEqual(0, Observe(64999, true).Count);
+            Assert.AreNotEqual(HookCompatibilityVerdict.NoPresent, session.LastVerdict);
+            IReadOnlyList<HookProbeAction> actions = Observe(65000, true);
+
+            Assert.AreEqual(HookCompatibilityVerdict.NoPresent, session.LastVerdict);
+            Assert.IsTrue(session.RestartPending);
+            Assert.IsTrue(actions.Any(a => a.Kind == HookProbeActionKind.ScheduleRestart));
+        }
+
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public void HiddenSamples_PauseBothTheBudgetAndQueueTimeout(bool generic)

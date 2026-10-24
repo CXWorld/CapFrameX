@@ -167,8 +167,13 @@ namespace CapFrameX.OSD.Integration
                     pollIntervalMs: ProbePollIntervalMs) };
         }
 
+        /// <param name="targetPresenting">
+        /// PresentMon still sees Presents from the target (<see cref="HookCompatibilityVerdictClassifier.IsTargetPresenting"/>).
+        /// While it does not and the hook has seen no Present either, the stage clock is paused.
+        /// </param>
         internal IReadOnlyList<HookProbeAction> Observe(bool hasStatus,
-            NativeHookStatusSnapshot snapshot, EHookOverlayStatus? nativeState, ulong nowTickMs)
+            NativeHookStatusSnapshot snapshot, EHookOverlayStatus? nativeState, ulong nowTickMs,
+            bool targetPresenting = true)
         {
             if (Plan.IsEmpty || !_timings.InjectionSucceeded)
                 return Array.Empty<HookProbeAction>();
@@ -229,6 +234,7 @@ namespace CapFrameX.OSD.Integration
                         HookCompatibilityVerdict.Pending);
                 }
             }
+            _timings.TargetNotPresenting = !targetPresenting;
             UpdateClocks(hasStatus, snapshot, nativeState, nowTickMs);
             _timings.NowTickMs = nowTickMs;
             _timings.RenderProgressConfirmed = !ProbingEnabled || _renderProgress.Observe(snapshot,
@@ -499,22 +505,36 @@ namespace CapFrameX.OSD.Integration
         private void UpdateClocks(bool hasStatus, NativeHookStatusSnapshot snapshot,
             EHookOverlayStatus? nativeState, ulong nowTickMs)
         {
-            ulong delta = !_stageClockPaused && nowTickMs > _lastObservationTickMs
+            bool wasPaused = _stageClockPaused;
+            ulong interval = nowTickMs > _lastObservationTickMs
                 ? nowTickMs - _lastObservationTickMs
                 : 0;
+            ulong delta = !wasPaused ? interval : 0;
             _lastObservationTickMs = nowTickMs;
             _timings.TotalElapsedMs = nowTickMs > _observingSinceTickMs
                 ? nowTickMs - _observingSinceTickMs
                 : 0;
+            // The first-Present wait is paused like the budget while the title does not present:
+            // the paused interval moves its start along instead of resetting it, so the wait
+            // stays comparable to the budget (NoPresent has to come before RendererStalled).
+            if (wasPaused && _timings.WaitingSinceTickMs != 0)
+                _timings.WaitingSinceTickMs += interval;
 
-            bool inconclusive = hasStatus &&
+            bool statusPause = hasStatus &&
                 (nativeState == EHookOverlayStatus.Idle || nativeState == EHookOverlayStatus.Hidden ||
                  (snapshot.Flags & NativeHookStatusFlags.Dormant) != 0);
+            // An armed hook that has seen no Present is only at fault while the title presents:
+            // one that is still loading gives it nothing to see, and its budget must not run.
+            bool presentPause = !statusPause && _timings.TargetNotPresenting && hasStatus &&
+                (snapshot.Flags & NativeHookStatusFlags.HooksArmed) != 0 &&
+                (snapshot.Flags & NativeHookStatusFlags.PresentSeen) == 0;
+            bool inconclusive = statusPause || presentPause;
             _stageClockPaused = inconclusive;
             if (inconclusive)
             {
                 // Paused, deliberately hidden or dormant: the phase clocks restart afterwards.
-                _timings.WaitingSinceTickMs = 0;
+                // A title that is not presenting only pauses the first-Present wait (see above).
+                if (!presentPause) _timings.WaitingSinceTickMs = 0;
                 _timings.InitializingSinceTickMs = 0;
                 _timings.NoQueueSinceTickMs = 0;
                 _timings.SuccessSinceTickMs = 0;

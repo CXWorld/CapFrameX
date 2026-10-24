@@ -129,6 +129,9 @@ namespace CapFrameX.OSD.Integration
         private bool _inGameUnavailable;
         private ulong _injectionSucceededTickMs;
         private ulong _lastNativeStatusTickMs;
+        // Tick of the latest PresentMon frame row of the selected PID; zero until it delivered one.
+        // Guarded by _stateGate, like the PID it belongs to.
+        private ulong _lastTargetFrameRowTickMs;
         private bool _foreignPresenterActive;
         private bool _earlyInjectionRequired;
         // The compatibility stage ladder under observation for the selected PID. Planned when
@@ -303,6 +306,7 @@ namespace CapFrameX.OSD.Integration
                 _injectionSucceeded = false;
                 _injectionSucceededTickMs = 0;
                 _lastNativeStatusTickMs = 0;
+                _lastTargetFrameRowTickMs = 0;
                 _foreignPresenterActive = false;
                 _earlyInjectionRequired = false;
                 // An early injection plans its session before PresentMon selects the process;
@@ -392,6 +396,7 @@ namespace CapFrameX.OSD.Integration
             lock (_stateGate)
             {
                 if (pid != _currentPid) return;
+                _lastTargetFrameRowTickMs = HookStatusProbe.CurrentTickCount;
                 runtimeChanged = !string.Equals(runtime, _currentRuntime,
                     StringComparison.OrdinalIgnoreCase);
                 if (runtimeChanged) _currentRuntime = runtime;
@@ -418,6 +423,17 @@ namespace CapFrameX.OSD.Integration
                 Log.Information("HookOverlay: target PID {pid} runtime {runtime} -> no DXGI injection", pid, runtime);
             }
             if (runtimeChanged) PublishStatus();
+        }
+
+        /// <summary>
+        /// True while PresentMon delivered a frame row of the selected PID within
+        /// <see cref="HookCompatibilityVerdictClassifier.ProbeTargetPresentRecentMs"/>.
+        /// </summary>
+        internal bool HasRecentTargetFrames(ulong nowTickMs)
+        {
+            lock (_stateGate)
+                return HookCompatibilityVerdictClassifier.IsTargetPresenting(
+                    _lastTargetFrameRowTickMs, nowTickMs);
         }
 
         internal static bool IsDxgiRuntime(string runtime)
@@ -1804,7 +1820,10 @@ namespace CapFrameX.OSD.Integration
                     // The session owns the stage clocks and every verdict; it hands back the
                     // fallback reason, the store writes and the poll cadence as actions.
                     session = _probeSession;
-                    actions = session.Observe(hasNativeStatus, native, nativeState, nowTickMs);
+                    // A title PresentMon sees no frames from (still loading) gives an armed hook
+                    // nothing to observe: the session pauses its clocks instead of failing the stage.
+                    actions = session.Observe(hasNativeStatus, native, nativeState, nowTickMs,
+                        HasRecentTargetFrames(nowTickMs));
                 }
                 else if (!hasNativeStatus && HasHookStatusTimedOut(_injectionSucceeded,
                     _injectionSucceededTickMs, _lastNativeStatusTickMs,

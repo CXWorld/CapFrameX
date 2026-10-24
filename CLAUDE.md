@@ -406,6 +406,13 @@ settings are ignored. All of it is pure and unit-tested; the manager only execut
 - **Verdicts** read status block V2 (`HookStatusProbe`: install phase + FidelityFX module/export detail,
   present coverage, queue state, decline reason, FG telemetry): success confirmed after 2 s, install hung
   after 6 s, no queue after 5 s, stage budget 20 s; idle/dormant samples pause the clocks.
+  A hook that is armed but has seen no Present is only judged while PresentMon still delivers frame
+  rows of the target (within 3 s, `HookCompatibilityVerdictClassifier.IsTargetPresenting`, fed by
+  `HookOverlayManager.OnFrameRow`): a title that is still loading (Metro 2033 Redux presents its
+  first frame 42 s after the hook is armed) gives the hook nothing to see, so the verdict is
+  `Inconclusive` and both the 15 s first-Present wait and the stage budget stand still. The wait
+  keeps what it already counted (`HookCompatibilityProbeSession.UpdateClocks` moves its start
+  along), so NoPresent still precedes the budget when the title presents and the hook sees nothing.
   A verified route that pauses, hides or loses its draw progress (a resize, a swapchain replacement)
   leaves `Learned` and is confirmed again within the session (`Reconfirmation` actions). The stored entry
   keeps `verified` until a real failure revokes it, because an unverified entry is not reused on the next
