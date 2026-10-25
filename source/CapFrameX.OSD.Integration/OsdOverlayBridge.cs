@@ -19,10 +19,12 @@ namespace CapFrameX.OSD.Integration
     ///    OnDictionaryUpdated fires once that list has been refreshed,
     ///  - per-present frametimes and display times (MsBetweenDisplayChange) from the
     ///    capture service's frame-data stream → batched PushSample,
-    ///  - runs only while the user selected the hook-free overlay
-    ///    (<c>IAppConfiguration.EnableHookFreeOverlay</c>) and the overlay is active. It never
-    ///    stands in for an in-game overlay that cannot draw; RTSS is gated off in OverlayService
-    ///    for both hook modes, so the renderers never overlap,
+    ///  - runs while the user selected the hook-free overlay
+    ///    (<c>IAppConfiguration.EnableHookFreeOverlay</c>) and the overlay is active. It stands in
+    ///    for the in-game overlay only when the target policy asks for it (Ricochet, see
+    ///    <c>HookOverlayManager.HookFreeFallbackStream</c>), never for an in-game overlay that
+    ///    merely failed; RTSS is gated off in OverlayService for both hook modes, so the
+    ///    renderers never overlap,
     ///  - is only VISIBLE while the capture process list has at least one entry: a desktop
     ///    overlay with nothing to measure would otherwise sit on an empty desktop. The overlay
     ///    hotkey keeps toggling <c>IsOverlayActive</c>, which can hide the overlay at any time
@@ -36,6 +38,7 @@ namespace CapFrameX.OSD.Integration
         private readonly IDisposable _entriesSub;
         private IDisposable _frameSub;
         private readonly IDisposable _enabledSub;
+        private readonly IDisposable _fallbackSub;
         private readonly IDisposable _valueSmoothingSub;
         private readonly IDisposable _replayBufferSub;
         private readonly IDisposable _hookFreeRefreshRateSub;
@@ -66,6 +69,7 @@ namespace CapFrameX.OSD.Integration
         private readonly Func<int> _startTimeIndexProvider;
         private volatile bool _active;
         private volatile bool _enabled;
+        private volatile bool _fallbackEnabled;
         private volatile bool _hasProcesses;
         private volatile bool _started;
         private int _targetPid;
@@ -103,7 +107,8 @@ namespace CapFrameX.OSD.Integration
                                 int frameTypeColumnIndex = -1,
                                 IObservable<int> processCountStream = null,
                                 OverlayDesignRuntimePublisher designRuntime = null,
-                                OverlayPixelOrbitResolver pixelOrbit = null)
+                                OverlayPixelOrbitResolver pixelOrbit = null,
+                                IObservable<bool> hookFreeFallbackStream = null)
         {
             if (overlayService == null) throw new ArgumentNullException(nameof(overlayService));
             if (appConfiguration == null) throw new ArgumentNullException(nameof(appConfiguration));
@@ -169,6 +174,10 @@ namespace CapFrameX.OSD.Integration
             _enabledSub = appConfiguration.OnValueChanged
                 .Where(x => x.key == nameof(IAppConfiguration.EnableHookFreeOverlay))
                 .Subscribe(x => OnEnabledChanged((bool)x.value));
+            if (hookFreeFallbackStream != null)
+                _fallbackSub = hookFreeFallbackStream
+                    .DistinctUntilChanged()
+                    .Subscribe(OnFallbackChanged);
             _valueSmoothingSub = appConfiguration.OnValueChanged
                 .Where(x => x.key == nameof(IAppConfiguration.UseOsdValueSmoothing))
                 .Subscribe(x => _osd.SetValueSmoothing((bool)x.value));
@@ -207,10 +216,18 @@ namespace CapFrameX.OSD.Integration
 
         private void OnActiveChanged(bool active) { _active = active; UpdateRunState(); }
         private void OnEnabledChanged(bool enabled) { _enabled = enabled; UpdateRunState(); }
+        private void OnFallbackChanged(bool fallback) { _fallbackEnabled = fallback; UpdateRunState(); }
         private void OnHasProcessesChanged(bool hasProcesses) { _hasProcesses = hasProcesses; UpdateRunState(); }
 
+        private bool IsVisible => IsShown(_enabled, _fallbackEnabled, _active, _hasProcesses);
+
+        // The renderer exists while the hook-free mode is selected or stands in for the in-game
+        // renderer (Ricochet).
+        internal static bool Exists(bool enabled, bool fallback) => enabled || fallback;
+
         // An empty process list hides exactly like the overlay hotkey does: a soft-hide.
-        private bool IsVisible => _active && _hasProcesses && _enabled;
+        internal static bool IsShown(bool enabled, bool fallback, bool active, bool hasProcesses)
+            => active && hasProcesses && Exists(enabled, fallback);
 
         private void OnTargetPidChanged(int processId)
         {
@@ -227,13 +244,13 @@ namespace CapFrameX.OSD.Integration
 
         private void UpdateRunState()
         {
-            // Two-level lifecycle: the renderer EXISTS while the hook-free mode is selected,
-            // and mere visibility toggles (IsOverlayActive — capture auto-disable, overlay
-            // hotkey — or an empty process list) are soft-hides via DWM cloaking. Tearing the
-            // window down instead stalls the game's presentation path (measured 20-70 ms
+            // Two-level lifecycle: the renderer EXISTS while the hook-free mode is selected or
+            // stands in, and mere visibility toggles (IsOverlayActive — capture auto-disable,
+            // overlay hotkey — or an empty process list) are soft-hides via DWM cloaking. Tearing
+            // the window down instead stalls the game's presentation path (measured 20-70 ms
             // display hitches from the multi-stage DWM re-evaluation, including a delayed one
             // seconds later) — cloaking is the only hide method that stays completely stall-free.
-            bool exist = _enabled;
+            bool exist = Exists(_enabled, _fallbackEnabled);
             bool visible = IsVisible;
 
             if (exist && !_started)
@@ -610,6 +627,7 @@ namespace CapFrameX.OSD.Integration
             _entriesSub?.Dispose();
             UpdateFrameSubscription(false);
             _enabledSub?.Dispose();
+            _fallbackSub?.Dispose();
             _valueSmoothingSub?.Dispose();
             _replayBufferSub?.Dispose();
             _hookFreeRefreshRateSub?.Dispose();

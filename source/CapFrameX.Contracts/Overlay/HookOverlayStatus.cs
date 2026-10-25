@@ -33,7 +33,8 @@ namespace CapFrameX.Contracts.Overlay
         /// <summary>
         /// Injection was deliberately not attempted and will not be retried for this process.
         /// Unlike <see cref="Waiting"/> this never resolves on its own — the game has to be
-        /// restarted. Detail carries the reason.
+        /// restarted. Detail carries the reason. For a Ricochet title, which refuses the hook for
+        /// good, the hook-free overlay stands in for the in-game one.
         /// </summary>
         [Description("Blocked")]
         Blocked,

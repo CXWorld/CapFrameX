@@ -154,7 +154,8 @@ namespace CapFrameX
                 // detected. The PID flows through IRTSSService.ProcessIdStream (IProcessService),
                 // the same stream the overlay/capture pipeline uses — so we address the process
                 // directly, no manual injector. When injection is unsafe, fails its handshake, or the
-                // runtime is unsupported, its status reports the in-game overlay as unavailable.
+                // runtime is unsupported, its status reports the in-game overlay as unavailable. A
+                // Ricochet title publishes HookFreeFallbackStream instead (see below).
                 using (StartupPerformanceLogger.Measure("Hook overlay manager initialization"))
                 {
                     _hookOverlayManager = new OSD.Integration.HookOverlayManager(
@@ -171,8 +172,9 @@ namespace CapFrameX
 
                 // CapFrameX.OSD: hook-free DWM/DirectComposition overlay. Scalars come from the
                 // same IOverlayEntry[] stream RTSS uses; per-present frametimes from the capture
-                // service. It runs only in the hook-free mode: an in-game overlay that cannot draw
-                // is never replaced by it, so the overlay shown is always the one selected.
+                // service. It runs in the hook-free mode, and in the in-game mode only while the
+                // target policy refuses the hook for Ricochet (HookFreeFallbackStream). Any other
+                // in-game overlay that cannot draw is not replaced by it.
                 using (StartupPerformanceLogger.Measure("OSD overlay bridge initialization"))
                 {
                     _overlayDesignRuntime = new OSD.Integration.OverlayDesignRuntimePublisher(
@@ -200,7 +202,8 @@ namespace CapFrameX
                             PresentMonCaptureService.FrameType_INDEX,
                         processCountStream: rtssService.ProcessCountStream,
                         designRuntime: _overlayDesignRuntime,
-                        pixelOrbit: _pixelOrbit);
+                        pixelOrbit: _pixelOrbit,
+                        hookFreeFallbackStream: _hookOverlayManager.HookFreeFallbackStream);
                 }
 
                 // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries

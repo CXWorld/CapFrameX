@@ -101,6 +101,9 @@
          nothing instead of polling the full process list 40x per second. Same version the
          app already ships through CapFrameX.SystemInfo.NetStandard and LibreHardwareMonitorLib. -->
     <PackageReference Include="System.Management" />
+    <!-- HookTargetPolicy asks whether Ricochet's kernel driver runs (atvi-randgrid_*). Same
+         package and version as CapFrameX.PMD's BENCHLAB service check. -->
+    <PackageReference Include="System.ServiceProcess.ServiceController" />
   </ItemGroup>
 
   <!-- Stage the in-game hook renderer (cfx_osd_hook.dll) into a 'hook' SUBFOLDER of the

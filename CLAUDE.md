@@ -220,6 +220,24 @@ auto-hide ("Auto hide while capture", `AutoDisableOverlay`) hides every renderer
 clients) is only toggled when RTSS renders at the start, and given back at the stop even after a
 renderer switch. Tests: `CaptureManagerTest` (`AutoDisableOverlay_*`), `OverlayProfileRefreshTest`.
 
+### Ricochet: the hook-free overlay stands in
+
+Only the selected renderer draws: an in-game overlay that cannot run leaves the game without an
+overlay (`Unavailable`). The one exception is Ricochet, Call of Duty's kernel anti-cheat. It denies
+the module scan even to an elevated CapFrameX (`module scan failed (5)`), so `HookTargetPolicy`
+recognizes it from outside: `Randgrid.sys` in the executable's folder or up to two folders above
+(`FindRicochetDriver`; COD HQ from the Xbox app keeps it in `Content\`, beside `cod.exe` and above
+`sp26\sp26-cod.exe`), or a denied scan while a kernel driver service `atvi-randgrid*` runs
+(`atvi-randgrid_msstore` for the Store build, read without administrator rights). The path comes
+from `QueryFullProcessImageName` with `PROCESS_QUERY_LIMITED_INFORMATION`, which Ricochet grants;
+`MainModule` needs the module access it denies. The block reason starts with `Ricochet anti-cheat`,
+and `RequestsHookFreeFallback` lets that reason, and no other, bring in the hook-free renderer while
+the in-game one is selected: `HookOverlayManager.HookFreeFallbackStream` (transient, the stored
+selection stays `InGame`) feeds `OsdOverlayBridge` (`Exists`/`IsShown`, the usual soft-hides apply),
+and the status reads `Blocked` with "…; the hook-free overlay is shown instead." The design publisher
+keeps its telemetry for the in-game mode anyway, so the stand-in draws the active design. RTSS stays
+off. Tests: `RicochetDetectionTest`.
+
 ### Graphics API label (`<APP>`)
 
 RTSS resolves its `<APP>` macro itself. For the CapFrameX renderers and the remote API,

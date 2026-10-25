@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.ServiceProcess;
+using System.Text;
 
 namespace CapFrameX.OSD.Integration
 {
@@ -11,14 +13,27 @@ namespace CapFrameX.OSD.Integration
     /// Shared renderer eligibility policy for both DXGI injection and Vulkan TargetPid publication.
     /// A failed or suspicious module scan disables the in-game renderer while leaving the
     /// hook-free overlay available. Clean results are cached briefly so startup races can recover.
+    /// Ricochet hides the module list even from an elevated CapFrameX, so it is recognized from
+    /// outside (<see cref="GetRicochetReason"/>), and its reason lets the hook-free renderer stand
+    /// in for the in-game one (<see cref="RequestsHookFreeFallback"/>).
     /// </summary>
     internal static class HookTargetPolicy
     {
         private const uint Th32csSnapModule = 0x00000008;
         private const uint Th32csSnapModule32 = 0x00000010;
+        private const uint ProcessQueryLimitedInformation = 0x00001000;
+        private const int ErrorAccessDenied = 5;
         private const int ErrorNoMoreFiles = 18;
         private const int ErrorBadLength = 24;
         private static readonly IntPtr InvalidHandleValue = new IntPtr(-1);
+        // Ricochet, the kernel anti-cheat of Call of Duty, denied the module scan to an elevated
+        // CapFrameX on 2026-10-25 (Xbox app: cod.exe, then sp26-cod.exe). Its driver ships with the
+        // game (Content\Randgrid.sys beside cod.exe, one folder above sp26\sp26-cod.exe), and the
+        // game starts it as a kernel driver service (atvi-randgrid_msstore for the Store build).
+        internal const string RicochetReasonPrefix = "Ricochet anti-cheat";
+        internal const string RicochetDriverFileName = "Randgrid.sys";
+        internal const string RicochetDriverServicePrefix = "atvi-randgrid";
+        internal const int RicochetDriverFolderLevels = 2;
         private static readonly string[] AntiCheatMarkers =
         {
             "easyanticheat",
@@ -98,6 +113,14 @@ namespace CapFrameX.OSD.Integration
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool CloseHandle(IntPtr handle);
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr OpenProcess(uint access, bool inheritHandle, int processId);
+
+        [DllImport("kernel32.dll", EntryPoint = "QueryFullProcessImageNameW",
+            CharSet = CharSet.Unicode, SetLastError = true)]
+        private static extern bool QueryFullProcessImageName(IntPtr process, int flags,
+            StringBuilder name, ref int size);
+
         internal static bool IsAllowed(int pid, out string reason)
         {
             if (pid <= 0)
@@ -146,6 +169,53 @@ namespace CapFrameX.OSD.Integration
                 reason.StartsWith("module scan returned no modules", StringComparison.Ordinal) ||
                 reason.StartsWith("module enumeration failed", StringComparison.Ordinal);
         }
+
+        /// <summary>
+        /// True for block reasons that let the hook-free renderer stand in for the selected in-game
+        /// renderer: an anti-cheat that refuses the hook for good while a desktop window is fine.
+        /// Only Ricochet so far; every other block leaves the game without an overlay.
+        /// </summary>
+        internal static bool RequestsHookFreeFallback(string reason)
+            => !string.IsNullOrEmpty(reason) &&
+               reason.StartsWith(RicochetReasonPrefix, StringComparison.Ordinal);
+
+        /// <summary>
+        /// The block reason of a Ricochet title, or null: its driver ships with the game, or the
+        /// game denies the module scan while a Ricochet driver service runs. A denied scan alone
+        /// stays a plain failure, other protected processes deny it as well.
+        /// </summary>
+        internal static string GetRicochetReason(string driverBesideGame, int moduleScanError,
+            string runningDriverService)
+        {
+            if (!string.IsNullOrEmpty(driverBesideGame))
+                return $"{RicochetReasonPrefix} ({Path.GetFileName(driverBesideGame)} ships with the game)";
+            if (moduleScanError == ErrorAccessDenied && !string.IsNullOrEmpty(runningDriverService))
+                return $"{RicochetReasonPrefix} (driver service '{runningDriverService}' runs and " +
+                    "the game denied the module scan)";
+            return null;
+        }
+
+        /// <summary>
+        /// Ricochet's driver in the executable's folder or up to
+        /// <see cref="RicochetDriverFolderLevels"/> folders above it, else null. COD HQ starts each
+        /// title from a subfolder of the install that holds the driver.
+        /// </summary>
+        internal static string FindRicochetDriver(string executablePath, Func<string, bool> fileExists)
+        {
+            if (string.IsNullOrWhiteSpace(executablePath) || fileExists == null) return null;
+            string folder = Path.GetDirectoryName(executablePath);
+            for (int level = 0; level <= RicochetDriverFolderLevels && !string.IsNullOrEmpty(folder); level++)
+            {
+                string candidate = Path.Combine(folder, RicochetDriverFileName);
+                if (fileExists(candidate)) return candidate;
+                folder = Path.GetDirectoryName(folder);
+            }
+            return null;
+        }
+
+        internal static bool IsRicochetDriverService(string serviceName)
+            => !string.IsNullOrEmpty(serviceName) &&
+               serviceName.StartsWith(RicochetDriverServicePrefix, StringComparison.OrdinalIgnoreCase);
 
         internal static bool HasAntiCheatMarker(string moduleName, string path, out string marker)
         {
@@ -368,25 +438,95 @@ namespace CapFrameX.OSD.Integration
                 return false;
             }
 
-            return ScanModules(pid, out reason);
+            // Ahead of the scan, which Ricochet denies: the reason has to name it.
+            string driverBesideGame = TryReadImagePath(pid, out string imagePath)
+                ? FindRicochetDriver(imagePath, File.Exists)
+                : null;
+            if (driverBesideGame != null)
+            {
+                reason = GetRicochetReason(driverBesideGame, 0, null);
+                return false;
+            }
+
+            if (ScanModules(pid, out reason, out int scanError)) return true;
+            if (scanError == ErrorAccessDenied)
+                reason = GetRicochetReason(null, scanError, FindRunningRicochetDriverService()) ?? reason;
+            return false;
         }
 
-        private static bool ScanModules(int pid, out string reason)
+        // Process.MainModule needs the module access Ricochet denies; the image name only needs
+        // PROCESS_QUERY_LIMITED_INFORMATION, which it grants.
+        internal static bool TryReadImagePath(int pid, out string imagePath)
+        {
+            imagePath = null;
+            IntPtr process = OpenProcess(ProcessQueryLimitedInformation, false, pid);
+            if (process == IntPtr.Zero) return false;
+            try
+            {
+                var buffer = new StringBuilder(1024);
+                int length = buffer.Capacity;
+                if (!QueryFullProcessImageName(process, 0, buffer, ref length)) return false;
+                imagePath = buffer.ToString(0, length);
+                return true;
+            }
+            finally
+            {
+                CloseHandle(process);
+            }
+        }
+
+        // Only asked after a game denied the module scan. The driver list is one SCM call that
+        // needs no administrator rights.
+        private static string FindRunningRicochetDriverService()
+        {
+            ServiceController[] drivers;
+            try
+            {
+                drivers = ServiceController.GetDevices();
+            }
+            catch (Exception ex) when (ex is InvalidOperationException ||
+                                       ex is System.ComponentModel.Win32Exception)
+            {
+                return null;
+            }
+
+            try
+            {
+                foreach (ServiceController driver in drivers)
+                {
+                    if (!IsRicochetDriverService(driver.ServiceName)) continue;
+                    try
+                    {
+                        if (driver.Status == ServiceControllerStatus.Running) return driver.ServiceName;
+                    }
+                    catch (InvalidOperationException)
+                    {
+                    }
+                }
+                return null;
+            }
+            finally
+            {
+                foreach (ServiceController driver in drivers) driver.Dispose();
+            }
+        }
+
+        private static bool ScanModules(int pid, out string reason, out int snapshotError)
         {
             IntPtr snapshot = InvalidHandleValue;
-            int error = 0;
+            snapshotError = 0;
             for (int attempt = 0; attempt < 3; attempt++)
             {
                 snapshot = CreateToolhelp32Snapshot(Th32csSnapModule | Th32csSnapModule32,
                     unchecked((uint)pid));
                 if (snapshot != InvalidHandleValue) break;
-                error = Marshal.GetLastWin32Error();
-                if (error != ErrorBadLength) break;
+                snapshotError = Marshal.GetLastWin32Error();
+                if (snapshotError != ErrorBadLength) break;
             }
 
             if (snapshot == InvalidHandleValue)
             {
-                reason = $"module scan failed ({error})";
+                reason = $"module scan failed ({snapshotError})";
                 return false;
             }
 

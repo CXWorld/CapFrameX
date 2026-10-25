@@ -336,6 +336,7 @@ These cases are not routing problems, and no profile changes them. Check `CapFra
 | Message template (`@mt`) | Meaning | What to do |
 | --- | --- | --- |
 | `HookOverlay: target PID {pid} blocked by target policy ({reason})`, with a `reason` such as `anti-cheat module '…' matched '…'` or `process '…' is on the in-game injection blacklist` | Injection is refused for this game. | Use the **CapFrameX hook-free** or **RTSS** renderer for this game. |
+| `HookOverlay: target PID {pid} blocked by target policy ({reason})`, with a `reason` starting with `Ricochet anti-cheat`, followed by `HookOverlay: the hook-free overlay stands in for pid {pid}` | Call of Duty's Ricochet anti-cheat refuses the in-game hook. The hook-free overlay is shown instead while the in-game renderer stays selected; the status reads *Blocked*. | Nothing; switch to RTSS if you prefer it. |
 | `HookOverlay: injection into pid {pid} ('{process}') blocked — {reason}`, with a `reason` starting with `the game was already running when the in-game overlay was enabled` | Safety gate when the renderer is switched on while the game already runs with other overlays. | Restart the game. |
 | `HookOverlay: target PID {pid} runtime {runtime} -> no DXGI injection` | The game does not present through DXGI (for example OpenGL or Direct3D 9). | Use hook-free or RTSS. |
 | `HookOverlay: DXGI injection into pid {pid} ('{process}') suppressed ({reason})` | A Vulkan game. Vulkan is served by the CapFrameX Vulkan layer, not by the hook. | Profiles do not apply. |
