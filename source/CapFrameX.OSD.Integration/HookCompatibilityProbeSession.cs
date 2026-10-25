@@ -97,10 +97,10 @@ namespace CapFrameX.OSD.Integration
         private readonly HookRenderProgressVerifier _renderProgress = new HookRenderProgressVerifier();
 
         internal HookCompatibilityProbeSession(int processId, HookCompatibilityStagePlan plan,
-            bool hasRendered = false)
+            bool hasRenderedD3D12 = false)
         {
             ProcessId = processId;
-            HasRendered = hasRendered;
+            HasRenderedD3D12 = hasRenderedD3D12;
             Plan = plan ?? throw new ArgumentNullException(nameof(plan));
             StageIndex = plan.StartIndex;
             if (!plan.IsEmpty) _tried.Add(CurrentStage.Key);
@@ -121,7 +121,8 @@ namespace CapFrameX.OSD.Integration
         internal HookCompatibilityVerdict LastVerdict { get; private set; }
         internal NativeHookStatusSnapshot LastSnapshot { get; private set; }
         internal bool HasStatusSample { get; private set; }
-        internal bool HasRendered { get; private set; }
+        /// <summary>The route drew on a D3D12 swapchain in this process (see <see cref="Observe"/>).</summary>
+        internal bool HasRenderedD3D12 { get; private set; }
         internal bool Observing =>
             Settlement == HookProbeSettlement.None && _timings.InjectionSucceeded &&
             !Plan.IsEmpty;
@@ -165,6 +166,33 @@ namespace CapFrameX.OSD.Integration
                 ? Array.Empty<HookProbeAction>()
                 : new[] { new HookProbeAction(HookProbeActionKind.SetPollInterval,
                     pollIntervalMs: ProbePollIntervalMs) };
+        }
+
+        /// <summary>
+        /// The manager selects this session's process again after another process was the
+        /// overlay target (<see cref="HookProbeSessionShelf"/>). Nothing was observed in between,
+        /// so that interval counts as a pause, as hidden samples do: the phase clocks restart,
+        /// the first-Present wait keeps what it counted, the hook gets a fresh status handshake
+        /// window and a live stage change a fresh echo grace.
+        /// </summary>
+        internal IReadOnlyList<HookProbeAction> ResumeAfterParking(ulong nowTickMs)
+        {
+            if (Plan.IsEmpty || !_timings.InjectionSucceeded) return Array.Empty<HookProbeAction>();
+            if (_timings.WaitingSinceTickMs != 0 && nowTickMs > _lastObservationTickMs)
+                _timings.WaitingSinceTickMs += nowTickMs - _lastObservationTickMs;
+            _timings.InitializingSinceTickMs = 0;
+            _timings.NoQueueSinceTickMs = 0;
+            _timings.SuccessSinceTickMs = 0;
+            _timings.LastNativeStatusTickMs = nowTickMs;
+            _lastObservationTickMs = nowTickMs;
+            _renderProgress.Reset();
+            if (_awaitingLiveApplyUntilTickMs != 0)
+                _awaitingLiveApplyUntilTickMs = nowTickMs + LiveApplyGraceMs;
+            return new[]
+            {
+                new HookProbeAction(HookProbeActionKind.SetPollInterval,
+                    pollIntervalMs: Observing ? ProbePollIntervalMs : IdlePollIntervalMs)
+            };
         }
 
         /// <param name="targetPresenting">
@@ -241,10 +269,13 @@ namespace CapFrameX.OSD.Integration
                 hasStatus && nativeState == EHookOverlayStatus.Active, (uint)stage.Flags, nowTickMs);
             HookCompatibilityVerdict verdict = HookCompatibilityVerdictClassifier.Classify(
                 stage, hasStatus, snapshot, nativeState, in _timings);
+            // Only a D3D12 draw says anything about the queue binding that NoQueue questions; a D3D11
+            // splash or launcher in the same process is drawn without one.
             if (hasStatus && nativeState == EHookOverlayStatus.Active &&
                 (snapshot.Flags & NativeHookStatusFlags.Rendered) != 0 &&
+                snapshot.Api == NativeHookApi.D3D12 &&
                 snapshot.QueueState != NativeHookQueueState.BindingUnavailable)
-                HasRendered = true;
+                HasRenderedD3D12 = true;
             // Coverage is cumulative for the process. Old draws before an FG switch cannot
             // verify the recovery; require submissions after the fallback was lifted.
             if (verdict == HookCompatibilityVerdict.Success && _recoveryCoverageBaseline.HasValue &&
@@ -372,7 +403,7 @@ namespace CapFrameX.OSD.Integration
             // injection should happen earlier at the next launch. Keep this stage and
             // never persist an early-injection retry or exhaust the learned profile.
             if (verdict == HookCompatibilityVerdict.QueueRebinding ||
-                (verdict == HookCompatibilityVerdict.NoQueue && HasRendered))
+                (verdict == HookCompatibilityVerdict.NoQueue && HasRenderedD3D12))
             {
                 Settlement = HookProbeSettlement.QueueRecovery;
                 LastVerdict = HookCompatibilityVerdict.QueueRebinding;
@@ -556,7 +587,10 @@ namespace CapFrameX.OSD.Integration
             _timings.InitializingSinceTickMs = nativeState == EHookOverlayStatus.Initializing
                 ? (_timings.InitializingSinceTickMs == 0 ? nowTickMs : _timings.InitializingSinceTickMs)
                 : 0;
+            // A D3D11 swapchain needs no queue: a D3D11 splash before the game's D3D12 swapchain
+            // must not have used up the D3D12 swapchain's queue window.
             bool noQueue = presentSeen && snapshot.Version >= HookStatusProbe.Version2 &&
+                snapshot.Api != NativeHookApi.D3D11 &&
                 snapshot.QueueState == NativeHookQueueState.None;
             _timings.NoQueueSinceTickMs = noQueue
                 ? (_timings.NoQueueSinceTickMs == 0 ? nowTickMs : _timings.NoQueueSinceTickMs)

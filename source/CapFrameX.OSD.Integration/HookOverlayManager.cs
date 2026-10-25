@@ -144,6 +144,8 @@ namespace CapFrameX.OSD.Integration
         private ulong _probeStandDownSinceTickMs;
         private ulong _nextEvidenceRescanTickMs;
         private int _probeRearmCount;
+        // The sessions of injected processes that are not the selected PID (guarded by _stateGate).
+        private readonly HookProbeSessionShelf _parkedProbeSessions = new HookProbeSessionShelf();
         private readonly IHookLearnedProfileStore _learnedStore;
         private readonly IReadOnlyDictionary<string, HookCompatibilityProfile> _compatibilityProfiles;
         private readonly HookProfileReportService _profileReports;
@@ -294,6 +296,8 @@ namespace CapFrameX.OSD.Integration
         {
             int previousPid;
             string processName = ResolveProcessName(pid);
+            HookCompatibilityProbeSession resumed = null;
+            IReadOnlyList<HookProbeAction> resumeActions = null;
             lock (_stateGate)
             {
                 previousPid = _currentPid;
@@ -310,15 +314,29 @@ namespace CapFrameX.OSD.Integration
                 _foreignPresenterActive = false;
                 _earlyInjectionRequired = false;
                 // An early injection plans its session before PresentMon selects the process;
-                // keep that one, drop anything that belonged to a different PID.
+                // keep that one. The session of another process is parked, not dropped: its hook
+                // stays injected and gets no second plan, so switching the target away and back
+                // keeps its stage, verdicts and pending restart.
+                int rearmCount = 0;
                 if (_probeSession != null && _probeSession.ProcessId != pid)
+                {
+                    _parkedProbeSessions.Park(_probeSession, _probeRearmCount);
                     _probeSession = null;
+                }
+                _parkedProbeSessions.Prune(IsProcessAlive);
+                if (_probeSession == null && pid > 0 &&
+                    _parkedProbeSessions.TryTake(pid, out HookCompatibilityProbeSession parked,
+                        out rearmCount))
+                {
+                    _probeSession = resumed = parked;
+                    resumeActions = parked.ResumeAfterParking(HookStatusProbe.CurrentTickCount);
+                }
                 _probeEvidenceSignature = _probeSession?.Evidence?.Signature;
                 _probeStandDownSinceTickMs = 0;
                 _nextEvidenceRescanTickMs = 0;
-                _probeRearmCount = 0;
+                _probeRearmCount = rearmCount;
                 _lastInjectionError = null;
-                _nativeFallbackReason = null;
+                _nativeFallbackReason = _probeSession?.FallbackReason;
                 _inGameUnavailableReason = null;
                 _targetBlockReason = null;
                 _vulkanBlockReason = null;
@@ -369,6 +387,14 @@ namespace CapFrameX.OSD.Integration
                 // Rehydrate the selected-PID state so handshake timeout and status reporting do
                 // not treat the already resident hook as an injection that never started.
                 SetInjectionStatus(pid, inProgress: false, succeeded: true, error: null);
+            }
+            if (resumed != null)
+            {
+                Log.Information(
+                    "HookOverlay: resumed the compatibility probe of pid {pid} ('{process}') at stage {index}/{count} ({stage}) after another process was the overlay target",
+                    pid, processName ?? "unknown", resumed.StageNumber, resumed.StageCount,
+                    resumed.CurrentStage?.DisplayName ?? "none");
+                ExecuteProbeActions(pid, resumed, resumeActions);
             }
             if (pid <= 0)
                 ArmEarlyInjectionProbe();
@@ -795,7 +821,11 @@ namespace CapFrameX.OSD.Integration
         /// </summary>
         private HookCompatibilityStage ResolveStage(int pid, HookAttachMode attachMode)
         {
-            string runtime = attachMode == HookAttachMode.Late ? _currentRuntime : null;
+            // PresentMon's runtime belongs to the overlay target; a late attach through the early
+            // path may reach another process.
+            string runtime = attachMode == HookAttachMode.Late && pid == _currentPid
+                ? _currentRuntime
+                : null;
             HookTargetEvidence evidence = HookTargetEvidenceProbe.Probe(pid, runtime, attachMode);
             HookCompatibilityProfileCatalog.TryGetForProcess(pid,
                 out HookCompatibilityProfile catalog, _compatibilityProfiles);
@@ -821,10 +851,22 @@ namespace CapFrameX.OSD.Integration
             }
             lock (_stateGate)
             {
-                _probeSession = session;
-                _probeEvidenceSignature = evidence.Signature;
-                _probeStandDownSinceTickMs = 0;
-                _nextEvidenceRescanTickMs = 0;
+                _parkedProbeSessions.Remove(pid);
+                if (pid != _currentPid && _currentPid > 0)
+                {
+                    // An early injection while another process is selected: the selected one
+                    // keeps its session, this one waits until its process is selected.
+                    _parkedProbeSessions.Park(session, 0);
+                }
+                else
+                {
+                    if (_probeSession != null && _probeSession.ProcessId != pid)
+                        _parkedProbeSessions.Park(_probeSession, _probeRearmCount);
+                    _probeSession = session;
+                    _probeEvidenceSignature = evidence.Signature;
+                    _probeStandDownSinceTickMs = 0;
+                    _nextEvidenceRescanTickMs = 0;
+                }
             }
 
             HookCompatibilityStage stage = plan.StartStage;
@@ -1063,14 +1105,15 @@ namespace CapFrameX.OSD.Integration
                             profile.EarlyInjectionModule));
                     added = true;
                 }
-                // Learned entries whose next (or verified) stage needs the early path.
+                // Learned entries whose next (or verified) stage needs the early path. The planner
+                // re-verifies an entry of an older hook build from its stage, so a hook update
+                // must keep the target as well.
                 if (_autoCompatibility)
                 {
                     foreach (HookLearnedProfileEntry entry in _learnedStore.Snapshot())
                     {
-                        if (!entry.MatchesHookBuild(_hookBuildHash.Value)) continue;
-                        HookCompatibilityStage stage = entry.PendingStage() ??
-                            (entry.Verified ? entry.ToStage() : null);
+                        HookCompatibilityStage stage = HookCompatibilityStagePlanner
+                            .LearnedStartStage(entry, _hookBuildHash.Value);
                         if (stage == null || !stage.RequiresEarlyInjection) continue;
                         string key = $"learned:{entry.ExecutableName}";
                         if (_earlyInjectionTargets.ContainsKey(key)) continue;
@@ -1391,7 +1434,9 @@ namespace CapFrameX.OSD.Integration
                         return;
                     }
 
-                    HookCompatibilityStage stage = ResolveStage(pid, HookAttachMode.Early);
+                    HookAttachMode attach = ResolveEarlyPathAttachMode(TryReadProcessStartUtc(pid),
+                        target.WatchedSinceUtc, _hookEnabledAtUtc);
+                    HookCompatibilityStage stage = ResolveStage(pid, attach);
                     if (stage == null)
                     {
                         ReleaseEarlyInjectionReservation(pid);
@@ -1468,10 +1513,15 @@ namespace CapFrameX.OSD.Integration
                     {
                         RegisterInjectionSuccess(pid);
                         ArmEarlyInjectionProbeAfterExit(pid);
-                        Log.Information(
-                            "HookOverlay: EARLY injected {dll} ({arch}) into pid {pid} ('{process}') after '{module}' was mapped and before runtime detection",
-                            HookDllName, arch, pid, target.ProcessName,
-                            target.RequiredModuleName);
+                        if (attach == HookAttachMode.Early)
+                            Log.Information(
+                                "HookOverlay: EARLY injected {dll} ({arch}) into pid {pid} ('{process}') after '{module}' was mapped and before runtime detection",
+                                HookDllName, arch, pid, target.ProcessName,
+                                target.RequiredModuleName);
+                        else
+                            Log.Information(
+                                "HookOverlay: injected {dll} ({arch}) into the already running pid {pid} ('{process}') through the early path; it started before CapFrameX watched for it, so this is a late attach",
+                                HookDllName, arch, pid, target.ProcessName);
                     }
                     else
                     {
@@ -1724,6 +1774,8 @@ namespace CapFrameX.OSD.Integration
                 _injected.Remove(pid);
                 _successfulInjections.Remove(pid);
             }
+            // The retry plans a new session; a parked one describes no resident hook.
+            lock (_stateGate) _parkedProbeSessions.Remove(pid);
             SetInjectionStatus(pid, inProgress: false, succeeded: false,
                 error: string.IsNullOrWhiteSpace(error) ? "injection failed" : error);
             return retryDelay;
@@ -1748,8 +1800,10 @@ namespace CapFrameX.OSD.Integration
             IReadOnlyList<HookProbeAction> actions = null;
             lock (_stateGate)
             {
-                session = _probeSession;
-                if (session != null && session.ProcessId == pid)
+                session = _probeSession != null && _probeSession.ProcessId == pid
+                    ? _probeSession
+                    : _parkedProbeSessions.Find(pid);
+                if (session != null)
                     actions = session.OnInjectionSucceeded(HookStatusProbe.CurrentTickCount);
             }
             ExecuteProbeActions(pid, session, actions);
@@ -1904,7 +1958,7 @@ namespace CapFrameX.OSD.Integration
                 catalog, learned, _hookBuildHash.Value, _autoCompatibility, applied);
             if (plan.IsEmpty) return;
 
-            var rearmed = new HookCompatibilityProbeSession(pid, plan, session.HasRendered);
+            var rearmed = new HookCompatibilityProbeSession(pid, plan, session.HasRenderedD3D12);
             IReadOnlyList<HookProbeAction> actions;
             int rearmCount;
             lock (_stateGate)
@@ -2617,12 +2671,50 @@ namespace CapFrameX.OSD.Integration
                 ExecutablePath = executablePath;
                 RequiredModuleName = requiredModuleName;
                 RequiredModuleNames = new[] { requiredModuleName };
+                WatchedSinceUtc = DateTime.UtcNow;
             }
 
             internal string ProcessName { get; }
             internal string ExecutablePath { get; }
             internal string RequiredModuleName { get; }
             internal string[] RequiredModuleNames { get; }
+            /// <summary>Since when CapFrameX can see this target start (see <see cref="ResolveEarlyPathAttachMode"/>).</summary>
+            internal DateTime WatchedSinceUtc { get; }
+        }
+
+        /// <summary>
+        /// The attach an injection through the early path really is. The path watches process
+        /// starts, but its probe also finds a target that already ran when CapFrameX started
+        /// watching for it (CapFrameX started next to the game, or the in-game renderer was
+        /// switched on): such a game may long have created its swapchain and queues, so the
+        /// injection is a late attach and its stage is planned and judged as one. An unreadable
+        /// start time counts as late too: a late attach wrongly called early can exhaust an early
+        /// stage that never ran, the other mistake only defers early injection by one launch.
+        /// </summary>
+        internal static HookAttachMode ResolveEarlyPathAttachMode(DateTime? processStartUtc,
+            DateTime targetWatchedSinceUtc, DateTime hookEnabledAtUtc)
+        {
+            if (!processStartUtc.HasValue) return HookAttachMode.Late;
+            DateTime watchedSince = hookEnabledAtUtc > targetWatchedSinceUtc
+                ? hookEnabledAtUtc
+                : targetWatchedSinceUtc;
+            return processStartUtc.Value >= watchedSince ? HookAttachMode.Early : HookAttachMode.Late;
+        }
+
+        private static DateTime? TryReadProcessStartUtc(int pid)
+        {
+            try
+            {
+                using (var process = Process.GetProcessById(pid))
+                    return process.StartTime.ToUniversalTime();
+            }
+            catch (Exception ex) when (ex is ArgumentException ||
+                                       ex is InvalidOperationException ||
+                                       ex is System.ComponentModel.Win32Exception ||
+                                       ex is NotSupportedException)
+            {
+                return null;
+            }
         }
 
         // Resolve a staged hook DLL relative to the app-output 'hook' folder: the x64 DLL

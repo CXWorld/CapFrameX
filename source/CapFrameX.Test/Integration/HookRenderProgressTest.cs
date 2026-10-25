@@ -91,10 +91,12 @@ namespace CapFrameX.Test.Integration
             var session = Session();
             var sample = Sample(1250, 1);
             sample.Progress = null;
+            // HasRenderedD3D12 records D3D12 draws only (the queue rules are D3D12's).
+            sample.Api = NativeHookApi.D3D12;
             session.Observe(true, sample, EHookOverlayStatus.Active, 1250);
             Assert.IsFalse(session.Observe(true, sample, EHookOverlayStatus.Active, 3250)
                 .Any(a => a.Kind == HookProbeActionKind.Learn));
-            Assert.IsTrue(session.HasRendered);
+            Assert.IsTrue(session.HasRenderedD3D12);
         }
 
         [TestMethod]

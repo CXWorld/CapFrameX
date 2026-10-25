@@ -429,8 +429,29 @@ settings are ignored. All of it is pure and unit-tested; the manager only execut
 
 - **Stages**: vendor-aware (flags None) → vendor-aware + XeSS-FG native queue → generic D3D12 (RTSS model)
   → generic without FidelityFX lifecycle hooks, each optionally with early injection (gate `d3d12.dll`, or
-  `sl.interposer.dll` for Streamline-only evidence). Generic stages exist only when `d3d12.dll` is loaded:
-  under the generic route the hook never draws on a D3D11 swapchain (`overlay.cpp`, `knownD3D12Route`).
+  `sl.interposer.dll` for Streamline-only evidence). Generic stages exist only when `d3d12.dll` is loaded.
+  The module is only a hint: a D3D11 title may load it for other work, so the generic route also draws
+  D3D11 swapchains with the D3D11 renderer, as RTSS does (see "Generic route on a D3D11 title" below).
+  A stage with early injection on a launch the hook joins late runs its routing without it
+  (`HookCompatibilityStagePlanner.Plan`, the reason ends "...without early injection"): that verdict
+  neither verifies nor exhausts the early stage, which NoQueue, NoPresent and EarlyInjectionRequired
+  still reach. Early-injection targets come from `LearnedStartStage`, the stage Plan starts an entry
+  with, so an entry of an older hook build keeps its target after a hook update. The early path's
+  probe also finds targets that were running before CapFrameX watched for them (CapFrameX started
+  next to the game, or the renderer was switched on): `ResolveEarlyPathAttachMode` makes those a late
+  attach, from the process start time against the target's `WatchedSinceUtc` and
+  `_hookEnabledAtUtc` (an unreadable start time counts as late). The log then reads "injected …
+  into the already running pid … through the early path" instead of "EARLY injected".
+- **Sessions survive a target switch**: the manager observes only the selected PID, and a resident
+  hook gets no second plan. `HookProbeSessionShelf` parks the session of a process that stops being
+  the target (also one planned by the early path while another process is selected) with its
+  re-plan count, and `OnProcessId` takes it back when the process is selected again; exited
+  processes and failed injections drop theirs. `HookCompatibilityProbeSession.ResumeAfterParking`
+  counts the unobserved interval as a pause (phase clocks restart, the first-Present wait keeps
+  its count, fresh status handshake and live-apply grace), and the fallback reason comes back
+  with the session. Log: `resumed the compatibility probe of pid … after another process was the
+  overlay target`. Before, a second candidate (on 2026-10-25 the test suite's testhost) cost the
+  verdict, the learning and the live escalation for the rest of the game's process life.
 - **Evidence** (`HookTargetEvidenceProbe`, ToolHelp scan *with paths*): Streamline / DLSS-G / XeSS-FG /
   FSR-FG modules, a `dxgi.dll` outside System32/SysWOW64 (OptiScaler), duplicate FidelityFX loader copies.
   Late attach with FG evidence starts on generic; loader duplicates or a dxgi proxy start on generic-without-FFX;
@@ -455,6 +476,23 @@ settings are ignored. All of it is pure and unit-tested; the manager only execut
   keeps `verified` until a real failure revokes it, because an unverified entry is not reused on the next
   launch and quitting a game passes through exactly such a moment. A reconfirmation that changes nothing
   is not written (`HookLearnedProfileEntry.RecordsVerifiedOutcome`) and logs its verdict at Debug.
+- **Generic route on a D3D11 title**: Metro 2033 Redux imports `amd_fidelityfx_dx12.dll` (evidence
+  `FSR-FG`) and presents D3D11. On a Radeon with FSR selected it also had `d3d12.dll` loaded, so a
+  late attach starts on the generic route. The hook picks the renderer per swapchain like RTSS: under
+  the generic route a native swapchain that exposes an `ID3D11Device` keeps the D3D11 renderer (OSD
+  `PresentTakesD3D12OnlyRoute`, log `generic D3D11 profile Present draw #1 submitted`), so the stage
+  succeeds in the running game. Both renderers record the device in the status block's `Api` before
+  anything can fail (`OverlayD3D11OnPresent`, and `OverlayD3D12OnPresent` before its queue lookup).
+  The queue rules are D3D12's: with `Api = D3D11` neither the NoQueue window runs nor the queue verdicts
+  apply, and `HookCompatibilityProbeSession.HasRenderedD3D12` (the QueueRecovery rule's "has
+  rendered") counts D3D12 draws only, so a
+  D3D11 splash in a D3D12 title neither uses up the game swapchain's queue window nor turns its NoQueue
+  into a rebinding. 5 s of Presents without a queue then split by `Api`: `D3D12` is `NoQueue` (a D3D12
+  swapchain whose queue the hook missed, the case early injection exists for); no device at all is
+  `NoD3D12Swapchain`, which only a hook from before 2026-10-25 produces (it skipped D3D11 under the
+  route). That verdict moves to the first untried stage without the generic route, in ladder order
+  (vendor-aware, then vendor-aware + early injection), and takes a restart. Tests: CapFrameX.Test's
+  `verify-osd-generic-d3d11.ps1` (hook, x64/x86) and `verify-osd-generic-d3d11-learning.ps1` (real app).
 - **Escalation** runs **live** for every bit the hook advertises in `liveReloadCapabilities` (`0xE`: the
   XeSS-FG queue bit, the generic route, the FidelityFX lifecycle switch). `HookCompatibilityChannel` always
   creates the 64-byte V2 mapping (`Local\CfxOsdHookCompatibilityV2_{pid}`, plus the 16-byte V1 one for older

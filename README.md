@@ -152,8 +152,9 @@ Restart CapFrameX and the affected game after editing. A malformed or unreadable
 The in-game overlay always learns which hook route works for each game; this cannot be switched off, and an older `HookOverlayAutoCompatibility` setting is ignored. When CapFrameX injects into a game, it starts with the matching compatibility profile, or with a route chosen from the modules the game has loaded, and moves on to the next route if the overlay does not work. The result is stored per game executable and set of loaded upscaling or frame-generation modules in `HookCompatibilityProfiles.learned.json`, in the same configuration folder as the user profiles. **Overlay → OSD options** shows the stored state for the selected game below **CapFrameX in-game**.
 
 - Some routes only take effect when the game starts. The in-game overlay then stays off for the rest of the session, and the next launch starts on the new route.
+- A route with early injection only takes effect when CapFrameX is already running when the game starts. If the game was already running, CapFrameX uses the same route without early injection for that session and keeps the early-injection route for the next launch.
 - If no route works, the session runs without an overlay. The game is not excluded from the in-game overlay: the next game launch probes again.
-- After an update that changes the in-game hook, CapFrameX verifies the stored route again.
+- After an update that changes the in-game hook, CapFrameX verifies the stored route again, early injection included.
 - Pausing, resizing or switching the game's display mode only makes CapFrameX confirm the route again during the session; a stored route stays verified unless it actually stops working.
 
 To discard everything CapFrameX has learned, close CapFrameX and delete `HookCompatibilityProfiles.learned.json`; the next start begins with an empty cache. Deleting the file while CapFrameX is running does not reset anything, because CapFrameX keeps the learned profiles in memory and writes them back with the next result.
@@ -374,7 +375,7 @@ By default the hook is *vendor-aware*: when Streamline (DLSS-G) or XeSS-FG are l
 
 Use it when Streamline, DLSS-G or XeSS-FG are loaded and the overlay never appears, stays in `Initializing`, stands down for a frame-generation runtime, or the game crashes in vendor proxy code.
 
-**Never use it for D3D11 games.** On the generic route the hook does not draw on D3D11 swapchains, so the overlay disappears completely. The evidence in the `compatibility plan` log message contains `no d3d12` for such games.
+D3D11 games do not need it. Like RTSS, the hook picks its renderer per swapchain, so on the generic route it still draws D3D11 swapchains with its D3D11 renderer. That matters for D3D11 games that load `d3d12.dll` anyway, for example Metro 2033 Redux with FSR: their evidence reads `d3d12`, and the automatic probing starts on the generic route. In-game hooks before 2026-10-25 did not draw D3D11 there; the probing detected it (`NoD3D12Swapchain`) and returned to `vendor-aware` after a game restart.
 
 ### `disableFidelityFxSwapchainLifecycleHooks`
 
@@ -393,8 +394,9 @@ Use it when the verdict is `EarlyInjectionRequired`, or when the hook declines t
 Normally the hook is injected after PresentMon has reported the game's first frames, when the swapchain already exists. With early injection, CapFrameX watches for the game process to start and injects the hook as soon as the named module is loaded, before the first frame. The hook then observes swapchain and command-queue creation and the initialization of frame-generation runtimes.
 
 - Use `d3d12.dll`. It is loaded before upscalers and frame-generation runtimes. The automatic probing uses `sl.interposer.dll` only for Streamline games without a loaded `d3d12.dll`.
-- CapFrameX must already be running with the in-game renderer selected **before the game starts**. If the game is already running, the hook is injected late with the profile's other settings.
+- CapFrameX must already be running with the in-game renderer selected **before the game starts**. If the game is already running, the hook is injected late with the profile's other settings. Probing judges that session as the same route without early injection and keeps the early-injection stage for the next launch.
 - The log confirms it with `HookOverlay: EARLY injected {dll} ({arch}) into pid {pid} ('{process}') after '{module}' was mapped and before runtime detection`, and the `attach` value of the `compatibility plan` message is `Early`.
+- A game that was already running when CapFrameX started, or when the in-game renderer was switched on, is a late attach even when CapFrameX reaches it this way: the log reads `HookOverlay: injected {dll} ({arch}) into the already running pid {pid} ('{process}') through the early path; …`, `attach` is `Late`, and the plan runs the route without early injection.
 
 Use it when the generic route finds no command queue (`NoQueue`), when the hook sees no Present although frame generation is loaded (`NoPresent`), and for XeSS-FG (`EarlyInjectionRequired`). Do not use it to cure a crash during startup: it places the hook in the game even earlier. Use a delay instead.
 
@@ -418,6 +420,8 @@ The hook understands four routes. Each can additionally use early injection and 
 
 A delay adds `+ <n> s delay` to the name. In `CapFrameX.log` the `flags` value names the same bits: `None`, `EnableXeFgNativePresentQueueRoute`, `EnableGenericD3D12PresentRoute`, `DisableFidelityFxSwapchainLifecycleHooks`. Without a profile, only the stages the evidence supports are tried: stage 2 only for XeSS-FG when the hook attached early, the generic stages only when `d3d12.dll` is loaded, stage 4 only with FidelityFX evidence, and the early-injection stages only when a frame-generation runtime is loaded (Streamline games without `d3d12.dll` use `sl.interposer.dll` as the early-injection module).
 
+A loaded `d3d12.dll` does not prove that the game presents through D3D12. The generic stages still draw D3D11 swapchains, with the D3D11 renderer. Only an in-game hook from before 2026-10-25 did not: when a generic stage sees the game present but proves neither a D3D12 nor a D3D11 device (`NoD3D12Swapchain`), probing continues with the first untried stage of the list above that does not use the generic route, usually `vendor-aware`. Leaving the generic route needs a game restart.
+
 With a profile:
 
 - The profile is always the first stage, with exactly its flags, module and delay. The log marks it `[catalog]`.
@@ -431,7 +435,8 @@ A stage is judged by the hook's status. Paused, minimized or idle periods do not
 | --- | --- |
 | `Success` | The overlay rendered for 2 s. |
 | `InstallHung` | The hook did not finish installing within 6 s. |
-| `NoQueue` | Generic route: no compatible D3D12 command queue within 5 s. |
+| `NoQueue` | Generic route: the game presents through D3D12, but no compatible D3D12 command queue was found within 5 s. |
+| `NoD3D12Swapchain` | Generic route of an in-game hook from before 2026-10-25: for 5 s the game presented, but the hook proved no D3D12 or D3D11 device (a D3D11 game with `d3d12.dll` loaded). Probing continues without the generic route after a game restart. |
 | `NoPresent` | No DXGI Present within 15 s after the hook was armed. |
 | `RendererStalled` | The renderer stayed in `Initializing` for 10 s, or the 20 s stage budget ran out. |
 | `ForeignPresenter` | A frame-generation runtime presents the game and the hook stands down. |
@@ -471,9 +476,10 @@ The relevant messages start with `HookOverlay:`. Follow them per process ID in c
 | `HookOverlay: target PID {pid} is '{process}'` | The executable name for `executable`. |
 | `HookOverlay: compatibility plan for pid {pid} …` | Attach mode, evidence, signature, starting stage with its origin (`[catalog]` = profile, `[learned]`, `[evidence]`) and the reason. |
 | `HookOverlay: compatibility stage {index}/{count} {stage} [{source}] published flags {flags} …` | The flags handed to the hook. |
-| `HookOverlay: injected {dll} ({arch}) into pid {pid}` / `HookOverlay: EARLY injected …` | The injection time. Compare it with the time of a crash. |
+| `HookOverlay: injected {dll} ({arch}) into pid {pid}` / `HookOverlay: EARLY injected …` / `HookOverlay: injected … into the already running pid …` | The injection time. Compare it with the time of a crash. The last one is a late attach through the early-injection watcher. |
 | `HookOverlay: compatibility stage … ended with {verdict}: {detail}` | The verdict and its explanation, including the install phase or the reason the hook declined to draw. |
 | `HookOverlay: escalating pid … live to compatibility stage …` | A route was switched inside the running game. |
+| `HookOverlay: resumed the compatibility probe of pid …` | Another process was the overlay target for a while; probing of this game continues where it stopped. |
 | `HookOverlay: learned profile for '{process}' ({signature}) is now stage {stage}, verified {verified}, exhausted {exhausted}, pending {pending}` | What was stored for the next launch. |
 | `HookOverlay: in-game renderer unusable for pid {pid} ('{process}', {reason}); the in-game overlay stays off` | Why the in-game overlay stays off for this game process. |
 | `HookOverlay: compatibility evidence for pid … changed from … to … while the in-game overlay was standing down — re-probing …` | Frame generation was switched inside the game and probing started again. |
@@ -527,7 +533,7 @@ Start from the symptom, take the first matching row, and change only one thing p
 | Crash only on a stage with early injection (`attach` is `Early` in the plan message) | The same flags without `earlyInjectionModule` | Add `injectionDelayMilliseconds`. |
 | The faulting module in the Application Error event is unrelated to the overlay, or the game also crashes with the hook-free renderer or with **Off** | No profile; the crash is not caused by the hook. | – |
 
-The routing settings require D3D12. For a D3D11 game (`no d3d12` in the evidence), only `injectionDelayMilliseconds` applies.
+The routing settings only change how the hook draws on D3D12. For a D3D11 game, even one with `d3d12` in the evidence, only `injectionDelayMilliseconds` makes a difference.
 
 **The overlay does not appear, flickers, or stays off:**
 
@@ -538,6 +544,7 @@ The routing settings require D3D12. For a D3D11 game (`no d3d12` in the evidence
 | `InstallHung` in phase `FidelityFxExports` | `enableGenericD3D12PresentRoute="true"` + `disableFidelityFxSwapchainLifecycleHooks="true"` |
 | `InstallHung` in phase `StreamlineProxy` or `XeFgProxy`, or `InstallFailed` | `enableGenericD3D12PresentRoute="true"` |
 | `NoQueue` on a generic stage | The same generic settings + `earlyInjectionModule="d3d12.dll"` |
+| `NoD3D12Swapchain` | No profile: the game presents through D3D11 and the in-game hook predates 2026-10-25; probing returns to `vendor-aware` after one game restart. With a current hook the verdict does not occur. |
 | `EarlyInjectionRequired` | `enableXeFgNativePresentQueueRoute="true"` + `earlyInjectionModule="d3d12.dll"` |
 | `NoPresent` with frame-generation evidence | The current stage's settings + `earlyInjectionModule="d3d12.dll"` |
 | `NoPresent` without frame-generation evidence | No profile. Check that the captured process is the one that renders. |

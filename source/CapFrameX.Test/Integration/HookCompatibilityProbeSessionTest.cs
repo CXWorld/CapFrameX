@@ -624,14 +624,14 @@ namespace CapFrameX.Test.Integration
             session.OnInjectionSucceeded(1000);
             var active = new NativeHookStatusSnapshot
             {
-                Version = 2, Flags = Ready, QueueState = NativeHookQueueState.Observed,
-                CoverageSubmitted = 10
+                Version = 2, Flags = Ready, Api = NativeHookApi.D3D12,
+                QueueState = NativeHookQueueState.Observed, CoverageSubmitted = 10
             };
             ObserveRendering(session, true, active, EHookOverlayStatus.Active, 2000);
             ObserveRendering(session, true, active, EHookOverlayStatus.Active, 4000);
             if (replan)
             {
-                session = new HookCompatibilityProbeSession(42, session.Plan, session.HasRendered);
+                session = new HookCompatibilityProbeSession(42, session.Plan, session.HasRenderedD3D12);
                 session.OnInjectionSucceeded(5000);
             }
             var missing = active;
@@ -650,16 +650,192 @@ namespace CapFrameX.Test.Integration
         {
             HookCompatibilityProbeSession session = GenericLateSession();
             session.OnInjectionSucceeded(1000);
+            // A D3D12 swapchain (its Present proved the device) whose queue the hook never saw.
             var missing = new NativeHookStatusSnapshot
             {
                 Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen,
-                QueueState = NativeHookQueueState.None
+                Api = NativeHookApi.D3D12, QueueState = NativeHookQueueState.None
             };
             ObserveRendering(session, true, missing, EHookOverlayStatus.Initializing, 2000);
             ObserveRendering(session, true, missing, EHookOverlayStatus.Initializing,
                 2000 + HookCompatibilityVerdictClassifier.ProbeNoQueueMs);
+            Assert.AreEqual(HookCompatibilityVerdict.NoQueue, session.LastVerdict);
             Assert.IsTrue(session.RestartPending);
             Assert.IsTrue(session.PendingStage.RequiresEarlyInjection);
+        }
+
+        [TestMethod]
+        public void GenericRoute_DrawsAD3D11SwapchainWithoutARestart()
+        {
+            // Metro 2033 Redux with FSR (2026-10-25): amd_fidelityfx_dx12.dll and d3d12.dll are
+            // resident, so the late attach starts generic, and the swapchain is D3D11. The hook
+            // draws it with the D3D11 renderer like RTSS: no queue, no restart.
+            HookTargetEvidence evidence = HookCompatibilityStagePlannerTest.Evidence(ffxFg: true,
+                d3d12: true, attach: HookAttachMode.Late);
+            var session = new HookCompatibilityProbeSession(42,
+                HookCompatibilityStagePlanner.Plan(evidence, null, null, "hash", true));
+            Assert.AreEqual(HookCompatibilityStageId.Generic, session.CurrentStage.Id);
+            session.OnInjectionSucceeded(1000);
+            var drawing = new NativeHookStatusSnapshot
+            {
+                Version = 2, Flags = Ready, Api = NativeHookApi.D3D11,
+                AppliedFlags = (uint)session.CurrentStage.Flags,
+                QueueState = NativeHookQueueState.None, CoverageSubmitted = 10
+            };
+
+            ObserveRendering(session, true, drawing, EHookOverlayStatus.Active, 2000);
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, drawing,
+                EHookOverlayStatus.Active, 4000);
+            Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
+            Assert.IsTrue(actions.Any(a => a.Kind == HookProbeActionKind.Learn &&
+                a.Stage.Id == HookCompatibilityStageId.Generic));
+
+            // Long past the queue window the route still holds.
+            Assert.AreEqual(0, ObserveRendering(session, true, drawing, EHookOverlayStatus.Active,
+                4000 + HookCompatibilityVerdictClassifier.ProbeNoQueueMs + 1000).Count);
+            Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
+            Assert.IsFalse(session.RestartPending);
+        }
+
+        [TestMethod]
+        public void ParkedSession_ResumesWithoutChargingTheParkedInterval()
+        {
+            // Metro 2033 Redux on 2026-10-25, 12:29: the overlay target went to a second process
+            // (testhost) and back while the hook stayed injected. The minute in between was never
+            // observed; charging it would end the stage on its budget at the first sample.
+            HookTargetEvidence evidence = HookCompatibilityStagePlannerTest.Evidence(ffxFg: true,
+                d3d12: true, attach: HookAttachMode.Late);
+            var session = new HookCompatibilityProbeSession(42,
+                HookCompatibilityStagePlanner.Plan(evidence, null, null, "hash", true));
+            session.OnInjectionSucceeded(1000);
+            var starting = new NativeHookStatusSnapshot
+            {
+                Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen,
+                Api = NativeHookApi.D3D11, AppliedFlags = (uint)session.CurrentStage.Flags
+            };
+            Assert.AreEqual(0, ObserveRendering(session, true, starting,
+                EHookOverlayStatus.Initializing, 2000).Count);
+
+            IReadOnlyList<HookProbeAction> resumed = session.ResumeAfterParking(62000);
+            Assert.IsTrue(resumed.Any(a => a.Kind == HookProbeActionKind.SetPollInterval &&
+                a.PollIntervalMs == HookCompatibilityProbeSession.ProbePollIntervalMs));
+            Assert.AreEqual((long)(HookCompatibilityVerdictClassifier.ProbeStageBudgetMs - 1000),
+                session.RemainingBudgetMs(62000), "the parked minute is not part of the budget");
+
+            var drawing = starting;
+            drawing.Flags = Ready;
+            drawing.CoverageSubmitted = 10;
+            ObserveRendering(session, true, drawing, EHookOverlayStatus.Active, 62000);
+            Assert.AreNotEqual(HookCompatibilityVerdict.RendererStalled, session.LastVerdict);
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, drawing,
+                EHookOverlayStatus.Active, 64000);
+            Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
+            Assert.IsTrue(actions.Any(a => a.Kind == HookProbeActionKind.Learn));
+        }
+
+        [TestMethod]
+        public void ParkedSession_GetsAFreshStatusHandshakeWindow()
+        {
+            HookCompatibilityProbeSession session = GenericLateSession();
+            session.OnInjectionSucceeded(1000);
+            var presenting = new NativeHookStatusSnapshot
+            {
+                Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen,
+                Api = NativeHookApi.D3D12, QueueState = NativeHookQueueState.Observed
+            };
+            ObserveRendering(session, true, presenting, EHookOverlayStatus.Initializing, 2000);
+
+            session.ResumeAfterParking(60000);
+            // The first polls after the switch may come before the status block is read again.
+            Assert.AreEqual(0, session.Observe(false, default, null, 60000 +
+                HookOverlayManager.HookHandshakeTimeoutMs - 1).Count);
+            Assert.AreNotEqual(HookCompatibilityVerdict.StatusTimeout, session.LastVerdict);
+            Assert.IsTrue(session.Observing);
+        }
+
+        [TestMethod]
+        public void ResumeAfterParking_IsInertBeforeTheInjection()
+        {
+            HookCompatibilityProbeSession session = GenericLateSession();
+
+            Assert.AreEqual(0, session.ResumeAfterParking(5000).Count);
+            Assert.IsFalse(session.Observing);
+        }
+
+        [TestMethod]
+        public void D3D11Draws_LeaveTheD3D12QueueRulesToTheGameSwapchain()
+        {
+            // A D3D11 splash or launcher inside a D3D12 title: the generic route draws it, which
+            // says nothing about the game's D3D12 queue. A queue that then stays missing is the
+            // early-injection case, not a rebinding, and its window starts with the D3D12 swapchain.
+            HookCompatibilityProbeSession session = GenericLateSession();
+            session.OnInjectionSucceeded(1000);
+            var splash = new NativeHookStatusSnapshot
+            {
+                Version = 2, Flags = Ready, Api = NativeHookApi.D3D11,
+                AppliedFlags = (uint)session.CurrentStage.Flags,
+                QueueState = NativeHookQueueState.None, CoverageSubmitted = 10
+            };
+            ObserveRendering(session, true, splash, EHookOverlayStatus.Active, 2000);
+            ObserveRendering(session, true, splash, EHookOverlayStatus.Active, 4000);
+            ObserveRendering(session, true, splash, EHookOverlayStatus.Active, 12000);
+            Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
+            Assert.IsFalse(session.HasRenderedD3D12, "a D3D11 draw proves no D3D12 queue binding");
+
+            var game = splash;
+            game.Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.Visible;
+            game.Api = NativeHookApi.D3D12;
+            ObserveRendering(session, true, game, EHookOverlayStatus.Initializing, 13000);
+            ObserveRendering(session, true, game, EHookOverlayStatus.Initializing,
+                13000 + HookCompatibilityVerdictClassifier.ProbeNoQueueMs - 1);
+            Assert.AreNotEqual(HookCompatibilityVerdict.NoQueue, session.LastVerdict,
+                "the splash used up the D3D12 swapchain's queue window");
+            ObserveRendering(session, true, game, EHookOverlayStatus.Initializing,
+                13000 + HookCompatibilityVerdictClassifier.ProbeNoQueueMs);
+
+            Assert.AreEqual(HookCompatibilityVerdict.NoQueue, session.LastVerdict);
+            Assert.AreNotEqual(HookProbeSettlement.QueueRecovery, session.Settlement);
+            Assert.IsTrue(session.RestartPending);
+            Assert.IsTrue(session.PendingStage.RequiresEarlyInjection);
+        }
+
+        [TestMethod]
+        public void NoD3D12Swapchain_RestartsOnVendorAwareInsteadOfEarlyInjection()
+        {
+            // Metro 2033 Redux with FSR (2026-10-25) on a hook that still refused D3D11 under the
+            // generic route: amd_fidelityfx_dx12.dll and d3d12.dll are resident, so the late attach
+            // starts generic, the swapchain is D3D11, and the hook proves no device at all.
+            HookTargetEvidence evidence = HookCompatibilityStagePlannerTest.Evidence(ffxFg: true,
+                d3d12: true, attach: HookAttachMode.Late);
+            var session = new HookCompatibilityProbeSession(42,
+                HookCompatibilityStagePlanner.Plan(evidence, null, null, "hash", true));
+            Assert.AreEqual(HookCompatibilityStageId.Generic, session.CurrentStage.Id);
+            session.OnInjectionSucceeded(1000);
+            var presenting = new NativeHookStatusSnapshot
+            {
+                Version = 2,
+                Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.Visible,
+                LiveReloadCapabilities = 0xE, AppliedFlags = (uint)session.CurrentStage.Flags,
+                QueueState = NativeHookQueueState.None
+            };
+
+            Assert.AreEqual(0, ObserveRendering(session, true, presenting,
+                EHookOverlayStatus.Initializing, 2000).Count);
+            IReadOnlyList<HookProbeAction> actions = ObserveRendering(session, true, presenting,
+                EHookOverlayStatus.Initializing, 2000 + HookCompatibilityVerdictClassifier.ProbeNoQueueMs);
+
+            Assert.AreEqual(HookCompatibilityVerdict.NoD3D12Swapchain, session.LastVerdict);
+            // Leaving the generic route takes a fresh process, also for a hook with live reload.
+            Assert.IsTrue(session.RestartPending);
+            Assert.AreEqual(HookCompatibilityStageId.VendorAware, session.PendingStage.Id);
+            Assert.IsFalse(session.PendingStage.RequiresEarlyInjection);
+            Assert.IsFalse(actions.Any(a => a.Kind == HookProbeActionKind.EscalateLive));
+            Assert.IsTrue(actions.Any(a => a.Kind == HookProbeActionKind.ScheduleRestart &&
+                a.Stage.Id == HookCompatibilityStageId.VendorAware &&
+                a.Verdict == HookCompatibilityVerdict.NoD3D12Swapchain));
+            StringAssert.Contains(session.FallbackReason, "without a D3D12 swapchain");
+            StringAssert.Contains(session.FallbackReason,
+                "restart the game to apply compatibility stage 1/6 (vendor-aware)");
         }
 
         private static HookCompatibilityProbeSession GenericLateSession()

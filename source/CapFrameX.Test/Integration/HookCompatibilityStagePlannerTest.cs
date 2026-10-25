@@ -204,11 +204,113 @@ namespace CapFrameX.Test.Integration
             else
                 learned.SetStage(escalation);
 
+            // Early attach: a late one runs the early stage without early injection.
             HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(
-                Evidence(streamline: true, ffxFg: true, d3d12: true), catalog, learned, Hash, true);
+                Evidence(streamline: true, ffxFg: true, d3d12: true, attach: HookAttachMode.Early),
+                catalog, learned, Hash, true);
 
             Assert.IsTrue(escalation.SameRouting(plan.StartStage));
             Assert.IsTrue(plan.StartIndex > 0);
+        }
+
+        [TestMethod]
+        public void Plan_LateAttachRunsALearnedEarlyStageWithoutEarlyInjection()
+        {
+            // Metro 2033 Redux on 2026-10-25, 09:55: the game was already running when CapFrameX
+            // started, the learned generic + early injection stage ran late, ended with NoQueue and
+            // exhausted the entry although early injection never happened. A late launch now runs
+            // the same routing without it, and the early stage stays reachable.
+            HookCompatibilityStage genericEarly = HookCompatibilityStage.Create(
+                HookCompatibilityStageId.Generic, HookCompatibilityStagePlanner.GateModuleD3D12);
+            HookLearnedProfileEntry pending = Entry(HookCompatibilityStageId.Generic,
+                verified: false, hash: Hash);
+            pending.SetPending(genericEarly, "restart");
+            HookLearnedProfileEntry verified = Entry(HookCompatibilityStageId.Generic,
+                verified: true, hash: Hash);
+            verified.SetStage(genericEarly);
+
+            foreach (HookLearnedProfileEntry entry in new[] { pending, verified })
+            {
+                HookCompatibilityStagePlan late = HookCompatibilityStagePlanner.Plan(
+                    Evidence(ffxFg: true, d3d12: true), null, entry, Hash, true);
+                Assert.AreEqual("Generic", late.StartStage.Key);
+                Assert.AreEqual("learned", late.StartStage.Source);
+                StringAssert.Contains(late.Reason, "without early injection");
+                AssertNoQueueLeadsBackTo("Generic+early", late);
+
+                HookCompatibilityStagePlan early = HookCompatibilityStagePlanner.Plan(
+                    Evidence(ffxFg: true, d3d12: true, attach: HookAttachMode.Early), null, entry,
+                    Hash, true);
+                Assert.AreEqual("Generic+early", early.StartStage.Key);
+            }
+        }
+
+        [TestMethod]
+        public void Plan_LateAttachRunsAnEarlyProfileWithoutEarlyInjection()
+        {
+            // A profile with early injection keeps only early stages on its ladder; a game that
+            // already runs gets the profile's other settings and no exhaustion.
+            var catalog = new HookCompatibilityProfile("JediSurvivor.exe",
+                enableXeFgNativePresentQueueRoute: false, enableGenericD3D12PresentRoute: true,
+                disableFidelityFxSwapchainLifecycleHooks: false, TimeSpan.Zero,
+                earlyInjectionModule: "d3d12.dll", source: "test");
+
+            HookCompatibilityStagePlan late = HookCompatibilityStagePlanner.Plan(
+                Evidence(streamline: true, d3d12: true), catalog, null, Hash, true);
+
+            Assert.IsFalse(late.StartStage.RequiresEarlyInjection);
+            Assert.AreEqual(catalog.NativeFlags, late.StartStage.Flags);
+            Assert.AreEqual("catalog", late.StartStage.Source);
+            AssertNoQueueLeadsBackTo("Generic+early", late);
+        }
+
+        [TestMethod]
+        public void LearnedStartStage_IsTheStagePlanStartsTheEntryWith()
+        {
+            // The manager registers early-injection targets from LearnedStartStage; an entry from
+            // an older hook build used to drop its target although Plan re-verifies from its stage.
+            HookCompatibilityStage genericEarly = HookCompatibilityStage.Create(
+                HookCompatibilityStageId.Generic, HookCompatibilityStagePlanner.GateModuleD3D12);
+            HookLearnedProfileEntry pending = Entry(HookCompatibilityStageId.Generic, false, Hash);
+            pending.SetPending(genericEarly, "restart");
+            HookLearnedProfileEntry verified = Entry(HookCompatibilityStageId.Generic, true, Hash);
+            verified.SetStage(genericEarly);
+            HookLearnedProfileEntry unverified = Entry(HookCompatibilityStageId.Generic, false, Hash);
+            HookLearnedProfileEntry olderBuild = Entry(HookCompatibilityStageId.Generic, true, "old");
+            olderBuild.SetStage(genericEarly);
+            HookLearnedProfileEntry olderPending = Entry(HookCompatibilityStageId.Generic, false, "old");
+            olderPending.SetPending(genericEarly, "restart");
+
+            var expected = new (HookLearnedProfileEntry entry, string key)[]
+            {
+                (pending, "Generic+early"), (verified, "Generic+early"), (unverified, null),
+                (olderBuild, "Generic+early"), (olderPending, "Generic")
+            };
+            foreach (var (entry, key) in expected)
+            {
+                Assert.AreEqual(key,
+                    HookCompatibilityStagePlanner.LearnedStartStage(entry, Hash)?.Key);
+                HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(
+                    Evidence(ffxFg: true, d3d12: true, attach: HookAttachMode.Early), null, entry,
+                    Hash, true);
+                if (key == null)
+                    Assert.AreNotEqual("learned", plan.StartStage.Source);
+                else
+                    Assert.AreEqual(key, plan.StartStage.Key);
+            }
+            Assert.IsNull(HookCompatibilityStagePlanner.LearnedStartStage(null, Hash));
+        }
+
+        private static void AssertNoQueueLeadsBackTo(string expectedKey,
+            HookCompatibilityStagePlan plan)
+        {
+            var tried = new HashSet<string>(StringComparer.Ordinal) { plan.StartStage.Key };
+            HookCompatibilityStage next = HookCompatibilityStagePlanner.ResolveEscalation(
+                plan.StartStage, HookCompatibilityVerdict.NoQueue,
+                new NativeHookStatusSnapshot { Version = 2, Api = NativeHookApi.D3D12 },
+                plan.Evidence, plan.Ladder, tried, out bool exhausted);
+            Assert.AreEqual(expectedKey, next?.Key);
+            Assert.IsFalse(exhausted);
         }
 
         [TestMethod]
@@ -436,6 +538,62 @@ namespace CapFrameX.Test.Integration
             string Next(HookCompatibilityStage from, HookCompatibilityVerdict verdict)
                 => HookCompatibilityStagePlanner.ResolveEscalation(from, verdict, snapshot,
                     evidence, ladder, tried, out _)?.Key;
+        }
+
+        [TestMethod]
+        public void ResolveEscalation_NoD3D12SwapchainContinuesOnTheRoutesThatDrawOnD3D11()
+        {
+            // Metro 2033 Redux with FSR: amd_fidelityfx_dx12.dll (FSR-FG) and d3d12.dll are
+            // resident, so a late attach starts on the generic route of a 6-stage ladder, but the
+            // game presents D3D11.
+            HookTargetEvidence evidence = Evidence(ffxFg: true, d3d12: true);
+            HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(evidence, null,
+                null, Hash, true);
+            Assert.AreEqual(6, plan.Ladder.Count);
+            Assert.AreEqual("Generic", plan.StartStage.Key);
+            var snapshot = new NativeHookStatusSnapshot { Version = 2 };
+            var tried = new HashSet<string>(StringComparer.Ordinal) { plan.StartStage.Key };
+
+            // Every generic stage is passed over, an early one too: vendor-aware comes first...
+            Assert.AreEqual("VendorAware", Next(plan.StartStage, plan.Ladder));
+            Assert.AreEqual("VendorAware",
+                Next(plan.Ladder.Single(stage => stage.Key == "Generic+early"), plan.Ladder));
+            // ...then its early injection, and after that the ladder is exhausted.
+            tried.Add("VendorAware");
+            Assert.AreEqual("VendorAware+early", Next(plan.StartStage, plan.Ladder));
+            tried.Add("VendorAware+early");
+            Assert.IsNull(HookCompatibilityStagePlanner.ResolveEscalation(plan.StartStage,
+                HookCompatibilityVerdict.NoD3D12Swapchain, snapshot, evidence, plan.Ladder, tried,
+                out bool exhausted));
+            Assert.IsTrue(exhausted);
+
+            // A profile that names the generic route dropped vendor-aware from its ladder; only
+            // the early vendor-aware stage is left to try.
+            var catalog = new HookCompatibilityProfile("metro.exe",
+                enableXeFgNativePresentQueueRoute: false, enableGenericD3D12PresentRoute: true,
+                disableFidelityFxSwapchainLifecycleHooks: false, TimeSpan.Zero,
+                earlyInjectionModule: null, source: "test");
+            HookCompatibilityStagePlan profiled = HookCompatibilityStagePlanner.Plan(evidence,
+                catalog, null, Hash, true);
+            tried.Clear();
+            tried.Add(profiled.StartStage.Key);
+            Assert.AreEqual("VendorAware+early", Next(profiled.StartStage, profiled.Ladder));
+
+            // The restart scheduled for vendor-aware applies on the next launch.
+            HookLearnedProfileEntry learned = Entry(HookCompatibilityStageId.Generic,
+                verified: false, hash: Hash);
+            learned.SetPending(HookCompatibilityStage.Create(HookCompatibilityStageId.VendorAware),
+                "restart");
+            HookCompatibilityStagePlan next = HookCompatibilityStagePlanner.Plan(evidence, null,
+                learned, Hash, true);
+            Assert.AreEqual(0, next.StartIndex);
+            Assert.AreEqual(HookCompatibilityStageId.VendorAware, next.StartStage.Id);
+            StringAssert.Contains(next.Reason, "scheduled stage 1/6 (vendor-aware)");
+
+            string Next(HookCompatibilityStage from, IReadOnlyList<HookCompatibilityStage> ladder)
+                => HookCompatibilityStagePlanner.ResolveEscalation(from,
+                    HookCompatibilityVerdict.NoD3D12Swapchain, snapshot, evidence, ladder, tried,
+                    out _)?.Key;
         }
 
         [TestMethod]

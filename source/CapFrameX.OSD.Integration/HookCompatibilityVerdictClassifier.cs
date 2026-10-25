@@ -14,6 +14,13 @@ namespace CapFrameX.OSD.Integration
         StatusTimeout,
         NoPresent,
         NoQueue,
+        /// <summary>
+        /// Generic route: Presents arrived, but none proved a D3D12 or a D3D11 device. The title
+        /// presents through D3D11 and loaded d3d12.dll for other work, and the hook still refuses
+        /// D3D11 under the generic route (builds before it drew D3D11 there like RTSS), so no
+        /// generic stage can draw on it.
+        /// </summary>
+        NoD3D12Swapchain,
         RendererStalled,
         OsdCreateFailed,
         /// <summary>
@@ -127,11 +134,19 @@ namespace CapFrameX.OSD.Integration
                 snapshot.QueueState == NativeHookQueueState.BindingUnavailable)
                 return HookCompatibilityVerdict.QueueRebinding;
 
+            // Only a D3D12 swapchain needs a queue. The generic route proves the device (Api) on
+            // every Present it handles: a D3D12 one before the queue lookup, a D3D11 one in the D3D11
+            // renderer, which the route uses like RTSS. Presents that proved neither come from a hook
+            // that still refuses D3D11 there, and the d3d12.dll that put the generic stages on the
+            // ladder was loaded for other work (Metro 2033 Redux with FSR presents D3D11).
             if (stage != null && stage.IsGeneric && snapshot.Version >= HookStatusProbe.Version2 &&
+                snapshot.Api != NativeHookApi.D3D11 &&
                 (flags & NativeHookStatusFlags.PresentSeen) != 0 &&
                 snapshot.QueueState == NativeHookQueueState.None &&
                 Elapsed(timings.NoQueueSinceTickMs, timings.NowTickMs) >= ProbeNoQueueMs)
-                return HookCompatibilityVerdict.NoQueue;
+                return snapshot.Api == NativeHookApi.D3D12
+                    ? HookCompatibilityVerdict.NoQueue
+                    : HookCompatibilityVerdict.NoD3D12Swapchain;
 
             if ((flags & NativeHookStatusFlags.PresentSeen) == 0 &&
                 HookOverlayManager.HasFirstPresentTimedOut(timings.WaitingSinceTickMs,
@@ -207,6 +222,10 @@ namespace CapFrameX.OSD.Integration
                 case HookCompatibilityVerdict.NoQueue:
                     return "no compatible D3D12 command queue was observed within " +
                         $"{ProbeNoQueueMs / 1000} seconds";
+                case HookCompatibilityVerdict.NoD3D12Swapchain:
+                    return "the game presents without a D3D12 swapchain (no D3D12 Present " +
+                        $"within {ProbeNoQueueMs / 1000} seconds); the generic D3D12 route " +
+                        "cannot draw on it";
                 case HookCompatibilityVerdict.QueueRebinding:
                     return "waiting for the replacement swapchain's presentation queue; " +
                         "live recovery remains enabled";

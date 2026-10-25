@@ -79,6 +79,7 @@ namespace CapFrameX.Test.Integration
             {
                 Version = 2,
                 Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.Visible,
+                Api = NativeHookApi.D3D12,
                 QueueState = NativeHookQueueState.None
             };
             HookProbeTimings timings = Timings(now: 10000, noQueueSince: 10000 - HookCompatibilityVerdictClassifier.ProbeNoQueueMs);
@@ -90,6 +91,61 @@ namespace CapFrameX.Test.Integration
             snapshot.Version = 1;
             Assert.AreNotEqual(HookCompatibilityVerdict.NoQueue,
                 HookCompatibilityVerdictClassifier.Classify(Generic, true, snapshot, EHookOverlayStatus.Initializing, in timings));
+        }
+
+        [TestMethod]
+        public void Classify_GenericPresentsThatProveNoDeviceAreNoD3D12Swapchain()
+        {
+            // Metro 2033 Redux with FSR: d3d12.dll is loaded, the swapchain is D3D11. A hook that
+            // still refuses D3D11 under the generic route never reaches a device there, so neither
+            // the API nor a queue is ever proven.
+            var snapshot = new NativeHookStatusSnapshot
+            {
+                Version = 2,
+                Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.Visible,
+                QueueState = NativeHookQueueState.None
+            };
+            HookProbeTimings before = Timings(now: 10000, noQueueSince: 10000 - HookCompatibilityVerdictClassifier.ProbeNoQueueMs + 1);
+            HookProbeTimings after = Timings(now: 10000, noQueueSince: 10000 - HookCompatibilityVerdictClassifier.ProbeNoQueueMs);
+
+            Assert.AreEqual(HookCompatibilityVerdict.Pending,
+                HookCompatibilityVerdictClassifier.Classify(Generic, true, snapshot, EHookOverlayStatus.Initializing, in before));
+            Assert.AreEqual(HookCompatibilityVerdict.NoD3D12Swapchain,
+                HookCompatibilityVerdictClassifier.Classify(Generic, true, snapshot, EHookOverlayStatus.Initializing, in after));
+            // A proven D3D12 device without a queue is the case early injection exists for.
+            snapshot.Api = NativeHookApi.D3D12;
+            Assert.AreEqual(HookCompatibilityVerdict.NoQueue,
+                HookCompatibilityVerdictClassifier.Classify(Generic, true, snapshot, EHookOverlayStatus.Initializing, in after));
+            // A D3D11 swapchain needs no queue: the generic route draws it with the D3D11 renderer.
+            snapshot.Api = NativeHookApi.D3D11;
+            Assert.AreEqual(HookCompatibilityVerdict.Pending,
+                HookCompatibilityVerdictClassifier.Classify(Generic, true, snapshot, EHookOverlayStatus.Initializing, in after));
+            // Vendor-aware draws on D3D11 itself; the rule belongs to the generic route.
+            snapshot.Api = NativeHookApi.Unknown;
+            Assert.AreEqual(HookCompatibilityVerdict.Pending,
+                HookCompatibilityVerdictClassifier.Classify(Vendor, true, snapshot, EHookOverlayStatus.Initializing, in after));
+        }
+
+        [TestMethod]
+        public void Classify_GenericRouteSucceedsOnAD3D11SwapchainWithoutAQueue()
+        {
+            // The generic route draws a D3D11 swapchain like RTSS: no queue, but drawn coverage.
+            var active = new NativeHookStatusSnapshot
+            {
+                Version = 2,
+                Api = NativeHookApi.D3D11,
+                Flags = Armed | NativeHookStatusFlags.PresentSeen | NativeHookStatusFlags.Visible |
+                        NativeHookStatusFlags.RendererReady | NativeHookStatusFlags.MetricsConnected |
+                        NativeHookStatusFlags.Rendered,
+                QueueState = NativeHookQueueState.None,
+                CoverageSubmitted = 1
+            };
+            HookProbeTimings confirmed = Timings(now: 60000, noQueueSince: 1000,
+                successSince: 60000 - HookCompatibilityVerdictClassifier.ProbeSuccessConfirmMs);
+            confirmed.RenderProgressConfirmed = true;
+
+            Assert.AreEqual(HookCompatibilityVerdict.Success,
+                HookCompatibilityVerdictClassifier.Classify(Generic, true, active, EHookOverlayStatus.Active, in confirmed));
         }
 
         [TestMethod]

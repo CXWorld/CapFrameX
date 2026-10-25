@@ -35,6 +35,56 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void ResolveEarlyPathAttachMode_AGameRunningBeforeCapFrameXWatchedIsALateAttach()
+        {
+            // Metro 2033 Redux on 2026-10-25: running since 12:03:28 when CapFrameX restarted at
+            // 12:08:48. The early probe found it with d3d12.dll mapped and called it an early
+            // attach, so the learned early stage was judged as if the hook had seen the swapchain
+            // and queue creation.
+            var watched = new DateTime(2026, 10, 25, 11, 8, 48, DateTimeKind.Utc);
+            var running = new DateTime(2026, 10, 25, 11, 3, 28, DateTimeKind.Utc);
+
+            Assert.AreEqual(HookAttachMode.Late,
+                HookOverlayManager.ResolveEarlyPathAttachMode(running, watched, DateTime.MinValue));
+            Assert.AreEqual(HookAttachMode.Early, HookOverlayManager.ResolveEarlyPathAttachMode(
+                watched.AddSeconds(30), watched, DateTime.MinValue), "a launch after the watch began");
+            Assert.AreEqual(HookAttachMode.Early,
+                HookOverlayManager.ResolveEarlyPathAttachMode(watched, watched, DateTime.MinValue));
+            // Unknown age: late, which can only defer early injection, never exhaust it falsely.
+            Assert.AreEqual(HookAttachMode.Late,
+                HookOverlayManager.ResolveEarlyPathAttachMode(null, watched, DateTime.MinValue));
+
+            // The planner then runs the learned early stage without early injection.
+            HookLearnedProfileEntry learned = HookCompatibilityStagePlannerTest.Entry(
+                HookCompatibilityStageId.Generic, verified: true, hash: "hash");
+            learned.SetStage(HookCompatibilityStage.Create(HookCompatibilityStageId.Generic,
+                HookCompatibilityStagePlanner.GateModuleD3D12));
+            HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(
+                HookCompatibilityStagePlannerTest.Evidence(ffxFg: true, d3d12: true,
+                    attach: HookOverlayManager.ResolveEarlyPathAttachMode(running, watched,
+                        DateTime.MinValue)),
+                null, learned, "hash", true);
+            Assert.AreEqual("Generic", plan.StartStage.Key);
+            StringAssert.Contains(plan.Reason, "without early injection");
+        }
+
+        [TestMethod]
+        public void ResolveEarlyPathAttachMode_SwitchingTheRendererOnMovesTheWatchStart()
+        {
+            // While the in-game renderer is off nothing watches for process starts.
+            var registered = new DateTime(2026, 10, 25, 9, 0, 0, DateTimeKind.Utc);
+            var switchedOn = registered.AddHours(1);
+
+            Assert.AreEqual(HookAttachMode.Late, HookOverlayManager.ResolveEarlyPathAttachMode(
+                switchedOn.AddMinutes(-10), registered, switchedOn));
+            Assert.AreEqual(HookAttachMode.Early, HookOverlayManager.ResolveEarlyPathAttachMode(
+                switchedOn.AddSeconds(1), registered, switchedOn));
+            // A target registered after the switch (a learned restart) counts from then.
+            Assert.AreEqual(HookAttachMode.Late, HookOverlayManager.ResolveEarlyPathAttachMode(
+                switchedOn.AddMinutes(1), switchedOn.AddMinutes(2), switchedOn));
+        }
+
+        [TestMethod]
         public void SelectEarlyInjectionCandidates_KeepsTargetThatIsNotInjectedYet()
         {
             var game = new FakeProcess(GameName, 100);
