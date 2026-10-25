@@ -754,6 +754,33 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void SessionPlannedBeforeItsProcessWasSelected_DoesNotChargeTheWait()
+        {
+            // Metro 2033 Redux on 2026-10-25, 14:31: CapFrameX started after the game and
+            // minimized it. The early path injected at once, but PresentMon selected the game only
+            // 100 s later, when it presented again. The manager parks such a session until the
+            // selection; observed straight away, the wait failed vendor-aware at the first sample.
+            var starting = new NativeHookStatusSnapshot
+            {
+                Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen,
+                Api = NativeHookApi.D3D11
+            };
+
+            HookCompatibilityProbeSession charged = VendorAwareLateSession();
+            charged.OnInjectionSucceeded(1000);
+            ObserveRendering(charged, true, starting, EHookOverlayStatus.Initializing, 101000);
+            Assert.AreEqual(HookCompatibilityVerdict.RendererStalled, charged.LastVerdict);
+
+            HookCompatibilityProbeSession parked = VendorAwareLateSession();
+            parked.OnInjectionSucceeded(1000);
+            parked.ResumeAfterParking(101000);
+            ObserveRendering(parked, true, starting, EHookOverlayStatus.Initializing, 101000);
+            Assert.AreEqual(HookCompatibilityVerdict.Pending, parked.LastVerdict);
+            Assert.AreEqual((long)HookCompatibilityVerdictClassifier.ProbeStageBudgetMs,
+                parked.RemainingBudgetMs(101000), "the wait is not part of the budget");
+        }
+
+        [TestMethod]
         public void ResumeAfterParking_IsInertBeforeTheInjection()
         {
             HookCompatibilityProbeSession session = GenericLateSession();
@@ -837,6 +864,11 @@ namespace CapFrameX.Test.Integration
             StringAssert.Contains(session.FallbackReason,
                 "restart the game to apply compatibility stage 1/6 (vendor-aware)");
         }
+
+        private static HookCompatibilityProbeSession VendorAwareLateSession()
+            => new HookCompatibilityProbeSession(42, HookCompatibilityStagePlanner.Plan(
+                HookCompatibilityStagePlannerTest.Evidence(attach: HookAttachMode.Late),
+                null, null, "hash", true));
 
         private static HookCompatibilityProbeSession GenericLateSession()
         {

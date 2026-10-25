@@ -313,10 +313,10 @@ namespace CapFrameX.OSD.Integration
                 _lastTargetFrameRowTickMs = 0;
                 _foreignPresenterActive = false;
                 _earlyInjectionRequired = false;
-                // An early injection plans its session before PresentMon selects the process;
-                // keep that one. The session of another process is parked, not dropped: its hook
-                // stays injected and gets no second plan, so switching the target away and back
-                // keeps its stage, verdicts and pending restart.
+                // The session of another process is parked, not dropped: its hook stays injected
+                // and gets no second plan, so switching the target away and back keeps its stage,
+                // verdicts and pending restart. A session planned before its process was selected
+                // (every early injection, see ResolveStage) waits on the shelf as well.
                 int rearmCount = 0;
                 if (_probeSession != null && _probeSession.ProcessId != pid)
                 {
@@ -390,10 +390,18 @@ namespace CapFrameX.OSD.Integration
             }
             if (resumed != null)
             {
-                Log.Information(
-                    "HookOverlay: resumed the compatibility probe of pid {pid} ('{process}') at stage {index}/{count} ({stage}) after another process was the overlay target",
-                    pid, processName ?? "unknown", resumed.StageNumber, resumed.StageCount,
-                    resumed.CurrentStage?.DisplayName ?? "none");
+                // A session that never saw a status sample was planned before its process was
+                // selected (an early injection, see ResolveStage) and only starts now.
+                if (resumed.HasStatusSample)
+                    Log.Information(
+                        "HookOverlay: resumed the compatibility probe of pid {pid} ('{process}') at stage {index}/{count} ({stage}) after another process was the overlay target",
+                        pid, processName ?? "unknown", resumed.StageNumber, resumed.StageCount,
+                        resumed.CurrentStage?.DisplayName ?? "none");
+                else
+                    Log.Information(
+                        "HookOverlay: the compatibility probe of pid {pid} ('{process}') at stage {index}/{count} ({stage}) starts now that the process is the overlay target; it was injected before",
+                        pid, processName ?? "unknown", resumed.StageNumber, resumed.StageCount,
+                        resumed.CurrentStage?.DisplayName ?? "none");
                 ExecuteProbeActions(pid, resumed, resumeActions);
             }
             if (pid <= 0)
@@ -852,10 +860,12 @@ namespace CapFrameX.OSD.Integration
             lock (_stateGate)
             {
                 _parkedProbeSessions.Remove(pid);
-                if (pid != _currentPid && _currentPid > 0)
+                if (WaitsForSelection(pid, _currentPid))
                 {
-                    // An early injection while another process is selected: the selected one
-                    // keeps its session, this one waits until its process is selected.
+                    // An early injection while another process is selected, and every injection
+                    // before PresentMon selected anything. The early path reaches games that ran
+                    // before CapFrameX started, and starting it often minimizes them; on
+                    // 2026-10-25 Metro presented 100 s later and its first sample failed the stage.
                     _parkedProbeSessions.Park(session, 0);
                 }
                 else
@@ -2700,6 +2710,14 @@ namespace CapFrameX.OSD.Integration
                 : targetWatchedSinceUtc;
             return processStartUtc.Value >= watchedSince ? HookAttachMode.Early : HookAttachMode.Late;
         }
+
+        /// <summary>
+        /// A planned session waits on the shelf unless its process is the overlay target, also
+        /// while no process is selected: only the target is observed, and a session taken from
+        /// the shelf resumes without charging the time it was not observed.
+        /// </summary>
+        internal static bool WaitsForSelection(int processId, int selectedProcessId)
+            => processId != selectedProcessId;
 
         private static DateTime? TryReadProcessStartUtc(int pid)
         {

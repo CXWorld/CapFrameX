@@ -85,6 +85,17 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void WaitsForSelection_AlsoWhileNoProcessIsSelected()
+        {
+            // Metro 2033 Redux on 2026-10-25: started before CapFrameX, injected through the early
+            // path while PresentMon had selected nothing. Its session was observed only 100 s
+            // later and charged that wait (HookCompatibilityProbeSessionTest covers the resume).
+            Assert.IsTrue(HookOverlayManager.WaitsForSelection(4242, 0));
+            Assert.IsTrue(HookOverlayManager.WaitsForSelection(4242, 77), "another process is selected");
+            Assert.IsFalse(HookOverlayManager.WaitsForSelection(4242, 4242));
+        }
+
+        [TestMethod]
         public void SelectEarlyInjectionCandidates_KeepsTargetThatIsNotInjectedYet()
         {
             var game = new FakeProcess(GameName, 100);

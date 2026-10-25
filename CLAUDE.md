@@ -465,14 +465,20 @@ settings are ignored. All of it is pure and unit-tested; the manager only execut
   into the already running pid … through the early path" instead of "EARLY injected".
 - **Sessions survive a target switch**: the manager observes only the selected PID, and a resident
   hook gets no second plan. `HookProbeSessionShelf` parks the session of a process that stops being
-  the target (also one planned by the early path while another process is selected) with its
-  re-plan count, and `OnProcessId` takes it back when the process is selected again; exited
+  the target with its re-plan count, and every session planned for a process that is not selected
+  (`WaitsForSelection`): an early injection while another process or none is selected. A game
+  running before CapFrameX started is often minimized by the start and presents again minutes
+  later; observed from the injection, that wait failed its stage at the first sample (Metro on
+  2026-10-25: `RendererStalled` 0.13 s after the selection). `OnProcessId` takes a session back
+  when its process is selected; exited
   processes and failed injections drop theirs. `HookCompatibilityProbeSession.ResumeAfterParking`
   counts the unobserved interval as a pause (phase clocks restart, the first-Present wait keeps
   its count, fresh status handshake and live-apply grace), and the fallback reason comes back
   with the session. Log: `resumed the compatibility probe of pid … after another process was the
-  overlay target`. Before, a second candidate (on 2026-10-25 the test suite's testhost) cost the
-  verdict, the learning and the live escalation for the rest of the game's process life.
+  overlay target`, or `… starts now that the process is the overlay target; it was injected
+  before` for a session that was never observed. Before, a second candidate (on 2026-10-25 the
+  test suite's testhost) cost the verdict, the learning and the live escalation for the rest of
+  the game's process life.
 - **Evidence** (`HookTargetEvidenceProbe`, ToolHelp scan *with paths*): Streamline / DLSS-G / XeSS-FG /
   FSR-FG modules, a `dxgi.dll` outside System32/SysWOW64 (OptiScaler), duplicate FidelityFX loader copies.
   Late attach with FG evidence starts on generic; loader duplicates or a dxgi proxy start on generic-without-FFX;
