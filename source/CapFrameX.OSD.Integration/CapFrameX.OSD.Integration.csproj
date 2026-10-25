@@ -47,6 +47,13 @@
                       Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\overlay-templates\ICELINE-Vertical.json"
                       Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
+    <!-- Original artwork rendered by scripts\New-AnimeOverlayArt.py. -->
+    <EmbeddedResource Include="..\..\overlay-templates\Anime-Cherry-Blossom.json"
+                      Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\overlay-templates\Anime-Neon-Night.json"
+                      Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\overlay-templates\Anime-Lunar.json"
+                      Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
     <!-- Adapted from Slick Overlay for RTSS by HeyOkay (MIT License, overlay-templates\Slick-Overlay-LICENSE.txt). -->
     <EmbeddedResource Include="..\..\overlay-templates\Slick-Overlay-Vertical-Panel.json"
                       Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />

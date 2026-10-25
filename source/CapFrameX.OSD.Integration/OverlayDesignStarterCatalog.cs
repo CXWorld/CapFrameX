@@ -60,7 +60,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 23;
+        public const int Version = 24;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -119,6 +119,10 @@ namespace CapFrameX.OSD.Integration
                 (Id: "Panther-Lake-Arc-Aurora", Version: 6),
                 (Id: "AMD-Ryzen-5-9600X-Badge", Version: 4),
                 (Id: "AMD-Ryzen-7-9800X3D-Badge", Version: 4),
+                // Anime artwork
+                (Id: "Anime-Cherry-Blossom", Version: 24),
+                (Id: "Anime-Neon-Night", Version: 24),
+                (Id: "Anime-Lunar", Version: 24),
                 // Adapted from other authors
                 (Id: "Slick-Overlay-Vertical-Panel", Version: 17),
                 (Id: "Slick-Overlay-Wide-3-Rows", Version: 17),

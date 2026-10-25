@@ -338,6 +338,16 @@ profile IDs (`idPresetId`); `PreviousNames` lets an upgrade replace an unmodifie
 name, unless another profile already has the new one. The prebuilt Controls must contain the
 core-type roles: without them the designer leaves FUSION's P/E tiles unbound (the overlay binds them).
 
+### Anime starters
+
+CHERRY BLOSSOM, NEON NIGHT and LUNAR (`overlay-templates/Anime-*.json`, catalog version 24) embed
+original artwork from `scripts/New-AnimeOverlayArt.py`: a banner and a character image whose head rises
+above it (provenance: `Resources/OverlayGraphics/SOURCES.md`). The channel name is a text tile with the
+placeholder `@channel_name`. Labels use CxLang's source spelling (`Framerate`, `1% Low`, `Frametime`,
+`GPU Load`, ...), never hand-written translations; tile labels keep their text and do not follow the
+overlay language. A design saved through the editor or MCP is bound to the PC (`sensor:`/`metric/`
+keys): map them back to semantic keys before shipping it as a starter.
+
 ### Sharing tile designs (import mapping)
 
 `OverlayDesignProfileTransfer` (`CapFrameX.View/OverlayDesignAuthoring`) exports a design as saved

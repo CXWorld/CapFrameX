@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.OSD.Controls;
 using CapFrameX.OSD.Integration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -18,6 +19,7 @@ namespace CapFrameX.Test.Integration
         {
             "Slick-Overlay-Vertical-Panel", "Slick-Overlay-Wide-3-Rows", "Slick-Overlay-Compact-2x2", "Slick-Overlay-Single-Line"
         };
+        private static readonly string[] AnimePresetIds = { "Anime-Cherry-Blossom", "Anime-Neon-Night", "Anime-Lunar" };
         private string _folder;
         private string LibraryPath => Path.Combine(_folder, "OverlayDesigns", "profiles.json");
 
@@ -162,6 +164,7 @@ namespace CapFrameX.Test.Integration
         [DataRow(20, 21)]
         [DataRow(21, 22)]
         [DataRow(22, 23)]
+        [DataRow(23, 24)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -175,6 +178,7 @@ namespace CapFrameX.Test.Integration
                 17 => SlickPresetIds,
                 18 => new[] { "RTX-50-Core-FUSION-RPL", "RTX-50-Ryzen-FUSION" },
                 19 or 20 or 21 or 22 or 23 => Array.Empty<string>(),
+                24 => AnimePresetIds,
                 _ => new[] { "NVIDIA-GeForce-RTX-GREENLINE", "ICELINE-Vertical" }
             };
             CollectionAssert.AreEquivalent(expectedIds,
@@ -283,6 +287,9 @@ namespace CapFrameX.Test.Integration
         [DataRow("OLED-Minimal", "OLED Minimal", false, 6)]
         [DataRow("NVIDIA-GeForce-RTX-GREENLINE", "GREENLINE - GeForce RTX", true, 7)]
         [DataRow("ICELINE-Vertical", "ICELINE - Vertical", true, 7)]
+        [DataRow("Anime-Cherry-Blossom", "CHERRY BLOSSOM - Anime", true, 24)]
+        [DataRow("Anime-Neon-Night", "NEON NIGHT - Anime", true, 24)]
+        [DataRow("Anime-Lunar", "LUNAR - Anime", true, 24)]
         [DataRow("Slick-Overlay-Vertical-Panel", "Slick Overlay - Vertical Panel", true, 17)]
         [DataRow("Slick-Overlay-Wide-3-Rows", "Slick Overlay - Wide 3 Rows", true, 17)]
         [DataRow("Slick-Overlay-Compact-2x2", "Slick Overlay - Compact 2x2", true, 17)]
@@ -441,6 +448,9 @@ namespace CapFrameX.Test.Integration
         [DataRow("RTX-50-Core-Ultra-FUSION-ARL", new[] { "gpuNameShort", "cpuNameShort" })]
         [DataRow("RTX-50-Core-FUSION-RPL", new[] { "gpuNameShort", "cpuNameShort" })]
         [DataRow("RTX-50-Ryzen-FUSION", new[] { "gpuNameShort", "cpuNameShort" })]
+        [DataRow("Anime-Cherry-Blossom", new string[0])]
+        [DataRow("Anime-Neon-Night", new string[0])]
+        [DataRow("Anime-Lunar", new string[0])]
         public void GenericStarterNamesTheInstalledHardwareAndStaysPortable(string presetId, string[] nameKeys)
         {
             var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
@@ -460,6 +470,38 @@ namespace CapFrameX.Test.Integration
             var keys = OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson).MetricKeys;
             Assert.IsFalse(keys.Any(key => key.StartsWith("sensor", StringComparison.Ordinal)),
                 "Semantic keys bind on any GPU and CPU; hardware sensor keys would tie the design to one system.");
+        }
+
+        [TestMethod]
+        [DoNotParallelize] // switches the process-wide overlay language
+        [DataRow("Anime-Cherry-Blossom")]
+        [DataRow("Anime-Neon-Night")]
+        [DataRow("Anime-Lunar")]
+        public void AnimeStarterShowsTheChannelNameAndTakesItsLabelsFromCxLang(string presetId)
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
+            var document = OsdDesignDocument.FromJson(starter.DesignJson);
+            document.Validate();
+            Assert.AreEqual(starter.DesignJson, OverlayRuntimeDesign.Canonicalize(document.ToJson()), "The starter is stored as the editor saves it.");
+            var tiles = document.EnumerateTiles().ToArray();
+            Assert.AreEqual("@channel_name", tiles.Single(tile => tile.Label == "Channel name").Text);
+            Assert.AreEqual(2, tiles.Count(tile => tile.Kind == "image"), "The banner and the character whose head rises above it.");
+
+            // Every reading is labelled with a CxLang source text, which the overlay translation knows;
+            // a few abbreviations read the same in Korean. Translations never come from the design itself.
+            var labels = tiles.Where(tile => tile.Kind is "metric" or "gauge" or "bar" or "chart").Select(tile => tile.Label).ToArray();
+            string language = CxLang.Instance.OverlayLanguage;
+            try
+            {
+                CxLang.Instance.SetOverlayLanguage("ko");
+                foreach (string label in labels.Except(new[] { "1% Low", "GPU", "CPU", "VRAM" }))
+                    Assert.AreNotEqual(label, CxLang.Instance.TranslateOverlay(label), label + " must be a text CxLang translates.");
+            }
+            finally
+            {
+                CxLang.Instance.SetOverlayLanguage(language);
+            }
+            Assert.IsTrue(tiles.All(tile => (tile.Label + tile.Text).All(c => c < '⺀')), "No CJK text outside CxLang.");
         }
 
         [TestMethod]

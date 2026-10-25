@@ -121,3 +121,23 @@ The inset silver panel occupies approximately `(93, 101, 136, 125)`. The top
 Ryzen wordmark starts at `(73, 26)` with width 174. The inset AMD wordmark starts
 at `(99, 132)` with width 121; its Ryzen wordmark starts at `(98, 168)` with width
 124. The lower AMD wordmark starts at `(25, 265)` with width 119.
+
+## Anime starter profiles
+
+CHERRY BLOSSOM, NEON NIGHT and LUNAR (`overlay-templates/Anime-*.json`) embed
+original artwork made for CapFrameX on 2026-10-24. It contains no third-party
+material: no existing character, logo, brand mark, photograph or font glyph.
+`scripts/New-AnimeOverlayArt.py` draws every picture from SVG primitives and
+renders it through headless Microsoft Edge; its fixed random seeds reproduce
+the embedded PNGs byte for byte. The SVGs use filters and masks, so they are
+not offered here as importable graphics.
+
+Each design embeds two PNGs, exported at 1.6 pixels per design unit: a
+608 x 256 banner behind the channel name and a 266 x 288 character on a
+transparent background whose head rises above the banner. The characters
+avoid trait combinations that identify well-known characters (for example
+pink hair with fox ears and violet eyes, or teal hair with a headset). The
+background patterns are traditional public-domain motifs: seigaiha waves
+(CHERRY BLOSSOM), hui wen fret and auspicious clouds (LUNAR). Neon signs and
+lanterns carry no lettering. All text in the designs, such as the channel
+name, stays in editable text tiles.
