@@ -193,10 +193,63 @@ namespace CapFrameX.Test.PresentMonInterface
             context.PublishHeader();
             context.PublishRow("Game", 100);
             context.WaitForProcess("Game", 100);
+            int checksBeforeThePass = context.AliveChecks;
 
             context.Clock.AdvanceBy(TimeSpan.FromSeconds(1));
 
-            Assert.AreEqual(1, context.AliveChecks, "A replaced start must not keep its own pass.");
+            Assert.AreEqual(checksBeforeThePass + 1, context.AliveChecks,
+                "A replaced start must not keep its own pass.");
+        }
+
+        [TestMethod]
+        public void LateRowOfAnExitedProcess_DoesNotListItAgain()
+        {
+            // 2026-10-25: nine seconds after cfx_d3d11_x64 closed, PresentMon delivered one more
+            // row of its PID under the name "<unknown>". Listed beside Metro until the next pass,
+            // it left the automatic target selection with two candidates and hid the overlay.
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishHeader();
+            context.PublishRow("metro", 100);
+            context.PublishRow("cfx_d3d11_x64", 200);
+            context.WaitForProcess("cfx_d3d11_x64", 200);
+            context.ExitedPids.Add(200);
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(1));
+            CollectionAssert.AreEqual(new[] { ("metro", 100) }, context.Processes());
+
+            context.PublishRow("<unknown>", 200);
+            context.PublishRow("cfx_d3d11_x64", 200);
+            // Rows are handled in order on one thread: once this one is listed, the late ones were.
+            context.PublishRow("Later", 300);
+            context.WaitForProcess("Later", 300);
+
+            CollectionAssert.AreEquivalent(new[] { ("metro", 100), ("Later", 300) }, context.Processes());
+        }
+
+        [TestMethod]
+        public void LateRows_CostOneCheckPerPass()
+        {
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishHeader();
+            context.ExitedPids.Add(200);
+
+            for (int i = 0; i < 5; i++)
+                context.PublishRow("<unknown>", 200);
+            context.PublishRow("Game", 100);
+            context.PublishRow("Game", 100);
+            context.WaitForProcess("Game", 100);
+            Assert.AreEqual(2, context.AliveChecks,
+                "One check for the exited PID and one for the new entry; a listed process costs none.");
+
+            // The pass checks the game and forgets the exited rows, so a reused PID gets its chance.
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(1));
+            context.PublishRow("<unknown>", 200);
+            context.PublishRow("Later", 300);
+            context.WaitForProcess("Later", 300);
+
+            Assert.AreEqual(5, context.AliveChecks);
+            CollectionAssert.AreEquivalent(new[] { ("Game", 100), ("Later", 300) }, context.Processes());
         }
 
         [TestMethod]

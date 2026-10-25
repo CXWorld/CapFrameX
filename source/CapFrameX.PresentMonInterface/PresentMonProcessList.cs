@@ -10,8 +10,12 @@ using System.Runtime.InteropServices;
 namespace CapFrameX.PresentMonInterface
 {
     /// <summary>
-    /// The processes PresentMon reports presents for. Every data row adds its process; a pass
-    /// once per second drops the processes that exited.
+    /// The processes PresentMon reports presents for. A data row adds its process if the
+    /// process is alive; a pass once per second drops the processes that exited. PresentMon
+    /// can deliver rows after their process exited (on 2026-10-25 one nine seconds after a
+    /// test app closed, under the name "&lt;unknown&gt;"). Listed again, the process stood
+    /// beside the game until the next pass, and with two entries the automatic target
+    /// selection picks none, which hid the overlay for up to a second.
     /// </summary>
     internal sealed class PresentMonProcessList
     {
@@ -23,6 +27,9 @@ namespace CapFrameX.PresentMonInterface
         private readonly IScheduler _pruneScheduler;
         private readonly object _listLock = new object();
         private HashSet<(string, int)> _processes = new HashSet<(string, int)>();
+        // Rows whose process had exited, so that a burst of late rows costs one check; the next
+        // pass clears it, after which a reused PID is checked again.
+        private readonly HashSet<(string, int)> _exitedRows = new HashSet<(string, int)>();
         private volatile bool _isUpdating;
         private bool _hasInitialData;
         private IDisposable _pruneSubscription;
@@ -76,7 +83,10 @@ namespace CapFrameX.PresentMonInterface
             ReleaseSubscriptions();
 
             lock (_listLock)
+            {
                 _processes.Clear();
+                _exitedRows.Clear();
+            }
         }
 
         public IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter)
@@ -120,9 +130,22 @@ namespace CapFrameX.PresentMonInterface
             lock (_listLock)
             {
                 var processInfo = (processName, processId);
-                if (processName != null && !_processes.Contains(processInfo))
+                if (processName == null || _processes.Contains(processInfo) ||
+                    _exitedRows.Contains(processInfo))
+                    return;
+
+                // Only a new entry is checked, so the rows of a listed process cost a lookup.
+                if (_isProcessAlive(processId))
                 {
                     _processes.Add(processInfo);
+                }
+                else
+                {
+                    _exitedRows.Add(processInfo);
+                    if (Environment.GetEnvironmentVariable("CFX_OSD_VERBOSE_LOG") == "1")
+                        _logger.LogInformation(
+                            "Process list: ignored a row of '{process}' (PID {pid}) - the process has exited",
+                            processName, processId);
                 }
             }
         }
@@ -147,11 +170,10 @@ namespace CapFrameX.PresentMonInterface
                         }
                         else if (logRemovals)
                         {
-                            // IsProcessAlive also returns false when OpenProcess is denied for a
-                            // live (protected) process; such an entry would be re-added by its next
-                            // row and flicker the detected list, so every removal is worth a line.
+                            // A removal changes the detected list and may change the target, so
+                            // every one is worth a line.
                             _logger.LogInformation(
-                                "Process list: removed '{process}' (PID {pid}) - exited or not queryable (Win32 error {error})",
+                                "Process list: removed '{process}' (PID {pid}) - exited (Win32 error {error})",
                                 processInfo.Item1, processInfo.Item2, Marshal.GetLastWin32Error());
                         }
                     }
@@ -162,6 +184,7 @@ namespace CapFrameX.PresentMonInterface
                 }
 
                 _processes = new HashSet<(string, int)>(updatedList);
+                _exitedRows.Clear();
             }
 
             _isUpdating = false;

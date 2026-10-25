@@ -34,25 +34,29 @@ namespace CapFrameX.Extensions
         }
 
 
+        private const int ErrorInvalidParameter = 87;
+        private const uint StillActive = 259;
+
         /// <summary>
-        /// Checks if given process is still alive
+        /// Checks if given process is still alive. Only a conclusive answer counts as exited:
+        /// a PID Windows no longer knows, or a process that has an exit code. A process that
+        /// denies the query (a protected one) is alive; it used to count as exited, so every
+        /// pass of the process list dropped it and its next row added it again.
         /// </summary>
         /// <param name="processId">process id</param>
         /// <returns>true if process is alive, false if not</returns>
         static public bool IsProcessAlive(int processId)
         {
-            IntPtr h = OpenProcess(ProcessAccessFlags.QueryInformation, true, processId);
+            // The limited right is granted for protected processes too, unlike QueryInformation.
+            IntPtr h = OpenProcess(ProcessAccessFlags.QueryLimitedInformation, false, processId);
 
             if (h == IntPtr.Zero)
-                return false;
+                return Marshal.GetLastWin32Error() != ErrorInvalidParameter;
 
             bool b = GetExitCodeProcess(h, out uint code);
             CloseHandle(h);
 
-            if (b)
-                b = (code == 259) /* STILL_ACTIVE  */;
-
-            return b;
+            return !b || code == StillActive;
         }
     }
 }

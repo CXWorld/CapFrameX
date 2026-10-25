@@ -171,6 +171,18 @@ toggles `IsOverlayActive`, which hides a visible overlay at any time but cannot 
 gate; the toggled state takes effect once a process is detected. RTSS and the in-game hook are not
 affected.
 
+### Capture process list
+
+`PresentMonProcessList` lists the processes PresentMon reports presents for: a data row lists its
+process only while `ProcessHelper.IsProcessAlive` says it is alive, and a pass once per second drops
+the exited ones. PresentMon can deliver rows after their process exited (on 2026-10-25 one nine
+seconds after a test app closed, under the name `<unknown>`). Listed again, such a process stood
+beside the game until the next pass, and with two entries the automatic target selection picks
+none, so the in-game overlay hid. Only a new entry is checked, an exited one at most once per pass.
+`IsProcessAlive` counts only a conclusive answer as exited (a PID Windows no longer knows, an exit
+code); a process that denies the query is alive, so a protected process no longer drops out on every
+pass. Tests: `PresentMonProcessListTest`, `ProcessHelperTest`.
+
 ### Remote API and the overlay hotkey
 
 `/api/osd` and `/ws/osd` serve `IOverlayService.CurrentOverlayEntries`, and they keep working with
@@ -399,8 +411,9 @@ Only the in-game hook and the Vulkan layer still read it at load:
   target process (the hook-free feed does not filter by swapchain, unlike captures), runtime
   label flips (they rename the `<APP>` group and rebuild the scene), frametime outliers, source
   and arrival gaps, backdated rows; one summary per 10 s. `Overlay target process: ... PID a -> b`
-  (`CaptureViewModel`) and `Process list: removed ...` (`PresentMonProcessList`) show why a
-  PID changed. Repeating lines are rate-limited; summaries come once per 10 s.
+  (`CaptureViewModel`), `Process list: removed ...` and `Process list: ignored a row of ...`
+  (`PresentMonProcessList`) show why a PID changed. Repeating lines are rate-limited; summaries
+  come once per 10 s.
 
 ### Vulkan titles: implicit layer instead of injection
 
