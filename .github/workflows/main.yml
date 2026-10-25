@@ -33,10 +33,28 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # setup-dotnet hands a floating version (10.0.x) to dotnet-install as a channel, which then
+      # downloads through aka.ms only and never tries its feeds once the redirect resolves. On
+      # 2026-10-25 aka.ms redirected to a storage account that refuses public access (HTTP 409).
+      # An exact version skips aka.ms and downloads from builds.dotnet.microsoft.com. The action's
+      # own LTS runtime install still goes through aka.ms, but a failure there is only a warning.
+      - name: Resolve .NET SDK version
+        id: dotnet
+        shell: pwsh
+        run: |
+          $releases = Invoke-RestMethod -MaximumRetryCount 3 -RetryIntervalSec 5 `
+            -Uri "https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json"
+          $version = $releases.'latest-sdk'
+          if ([string]::IsNullOrWhiteSpace($version)) {
+            throw "The .NET 10.0 release metadata names no latest SDK."
+          }
+          Write-Host "Latest .NET 10.0 SDK: $version"
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v6
         with:
-          dotnet-version: 10.0.x
+          dotnet-version: ${{ steps.dotnet.outputs.version }}
 
       - name: Setup NuGet
         uses: nuget/setup-nuget@v4
