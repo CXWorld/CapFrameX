@@ -531,7 +531,7 @@ namespace CapFrameX.Test.Integration
         {
             foreach (var starter in OverlayDesignStarterCatalog.Profiles)
             {
-                bool adapted = SlickPresetIds.Contains(starter.PresetId);
+                bool adapted = SlickPresetIds.Contains(starter.PresetId) || starter.PresetId == "NVIDIA-GeForce-RTX-GREENLINE";
                 Assert.AreEqual(adapted, starter.Description.Count > 0, starter.PresetId);
                 Assert.AreEqual(adapted, starter.Links.Count > 0, starter.PresetId);
                 Assert.IsTrue(starter.Links.All(link => link.Uri.IsAbsoluteUri && link.Uri.Scheme == Uri.UriSchemeHttps), starter.PresetId);
@@ -551,6 +551,12 @@ namespace CapFrameX.Test.Integration
                 "Every paragraph resolves to catalog text.");
             StringAssert.Contains(info.Description[1], "HeyOkay");
             CollectionAssert.Contains(info.Links.Select(link => link.Uri.AbsoluteUri).ToArray(), "https://github.com/HeyOkay/Slick-Overlay-for-RTSS");
+
+            var greenline = OverlayDesignStarterCatalog.Describe(store.Get(
+                OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "NVIDIA-GeForce-RTX-GREENLINE").Id));
+            Assert.AreEqual(2, greenline.Description.Count, "Layout and credit.");
+            StringAssert.Contains(greenline.Description[1], "Geralt Benchmarks");
+            CollectionAssert.AreEqual(new[] { "https://www.youtube.com/@GeraltBenchmarks" }, greenline.Links.Select(link => link.Uri.AbsoluteUri).ToArray());
 
             var copy = store.Duplicate(panel.Id, "My copy");
             Assert.IsFalse(OverlayDesignStarterCatalog.Describe(copy).HasDescription, "A copy is the user's own design.");

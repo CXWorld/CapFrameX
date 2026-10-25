@@ -242,8 +242,17 @@ namespace CapFrameX.OSD.Integration
                 new Uri("https://github.com/HeyOkay/Slick-Overlay-for-RTSS/blob/main/LICENSE"))
         };
 
+        private static readonly OverlayDesignLink[] GeraltBenchmarksLinks =
+        {
+            new OverlayDesignLink(new LocalizedText("OverlayDesignLink_GeraltBenchmarks"),
+                new Uri("https://www.youtube.com/@GeraltBenchmarks"))
+        };
+
         private static (IReadOnlyList<LocalizedText> Description, IReadOnlyList<OverlayDesignLink> Links) About(string presetId)
         {
+            if (presetId == "NVIDIA-GeForce-RTX-GREENLINE")
+                return (new[] { new LocalizedText("OverlayDesignStarter_Greenline"), new LocalizedText("OverlayDesignStarter_GreenlineCredit") },
+                    GeraltBenchmarksLinks);
             LocalizedText layout = presetId switch
             {
                 "Slick-Overlay-Vertical-Panel" => new LocalizedText("OverlayDesignStarter_SlickVerticalPanel"),
