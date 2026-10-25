@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace CapFrameX.Extensions
 {
@@ -14,6 +17,12 @@ namespace CapFrameX.Extensions
         [DllImport("kernel32.dll", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         static extern bool GetExitCodeProcess(IntPtr hProcess, out uint lpExitCode);
+
+        [DllImport("kernel32.dll", EntryPoint = "QueryFullProcessImageNameW",
+            CharSet = CharSet.Unicode, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        static extern bool QueryFullProcessImageName(IntPtr hProcess, int flags,
+            StringBuilder name, ref int size);
 
         [Flags]
         public enum ProcessAccessFlags : uint
@@ -57,6 +66,47 @@ namespace CapFrameX.Extensions
             CloseHandle(h);
 
             return !b || code == StillActive;
+        }
+
+        /// <summary>
+        /// Path of the process's executable. Needs only QueryLimitedInformation, which protected
+        /// processes grant; Process.MainModule needs module access that Call of Duty's Ricochet
+        /// anti-cheat denies even to administrators (2026-10-25).
+        /// </summary>
+        public static bool TryGetImagePath(int processId, out string imagePath)
+        {
+            imagePath = null;
+            IntPtr h = OpenProcess(ProcessAccessFlags.QueryLimitedInformation, false, processId);
+            if (h == IntPtr.Zero) return false;
+            try
+            {
+                var buffer = new StringBuilder(1024);
+                int length = buffer.Capacity;
+                if (!QueryFullProcessImageName(h, 0, buffer, ref length)) return false;
+                imagePath = buffer.ToString(0, length);
+                return true;
+            }
+            finally
+            {
+                CloseHandle(h);
+            }
+        }
+
+        /// <summary>
+        /// The file description of the process's executable, read from the file instead of
+        /// through Process.MainModule. Null when the path or the file cannot be read.
+        /// </summary>
+        public static string GetFileDescription(int processId)
+        {
+            if (!TryGetImagePath(processId, out string imagePath)) return null;
+            try
+            {
+                return FileVersionInfo.GetVersionInfo(imagePath).FileDescription?.TrimEnd();
+            }
+            catch (FileNotFoundException)
+            {
+                return null;
+            }
         }
     }
 }

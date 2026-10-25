@@ -53,5 +53,27 @@ namespace CapFrameX.Test.Extensions
             // OpenProcess fails with ERROR_INVALID_PARAMETER, the answer for an exited process.
             Assert.IsFalse(ProcessHelper.IsProcessAlive(0x7FFFFFFC));
         }
+
+        [TestMethod]
+        public void TryGetImagePath_ReadsThePathWithoutModuleAccess()
+        {
+            // Call of Duty's Ricochet anti-cheat denies MainModule even to administrators
+            // (2026-10-25); the limited query right it grants is enough for the path.
+            using var current = Process.GetCurrentProcess();
+
+            Assert.IsTrue(ProcessHelper.TryGetImagePath(current.Id, out string path));
+            Assert.AreEqual(current.MainModule.FileName, path, ignoreCase: true);
+            Assert.IsFalse(ProcessHelper.TryGetImagePath(0x7FFFFFFC, out _));
+        }
+
+        [TestMethod]
+        public void GetFileDescription_ReadsTheExecutable()
+        {
+            using var current = Process.GetCurrentProcess();
+
+            Assert.AreEqual(current.MainModule.FileVersionInfo.FileDescription?.TrimEnd(),
+                ProcessHelper.GetFileDescription(current.Id));
+            Assert.IsNull(ProcessHelper.GetFileDescription(0x7FFFFFFC));
+        }
     }
 }

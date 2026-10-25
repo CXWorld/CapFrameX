@@ -933,7 +933,8 @@ namespace CapFrameX.ViewModel
                     try
                     {
                         string mainWindoTitle = processes.First()?.MainWindowTitle?.TrimEnd();
-                        string fileDescription = processes.First()?.MainModule?.FileVersionInfo?.FileDescription?.TrimEnd();
+                        // From the file: protected processes (Ricochet) deny MainModule.
+                        string fileDescription = ProcessHelper.GetFileDescription(processes.First().Id);
 
                         // prefer file description
                         if (!fileDescription.IsNullOrEmpty())
