@@ -20,6 +20,10 @@ namespace CapFrameX.Test.Integration
             "Slick-Overlay-Vertical-Panel", "Slick-Overlay-Wide-3-Rows", "Slick-Overlay-Compact-2x2", "Slick-Overlay-Single-Line"
         };
         private static readonly string[] AnimePresetIds = { "Anime-Cherry-Blossom", "Anime-Neon-Night", "Anime-Lunar" };
+        private static readonly string[] DuolinePresetIds =
+        {
+            "DUOLINE-Radeon-Ryzen", "DUOLINE-GeForce-Ryzen", "DUOLINE-Radeon-Intel", "DUOLINE-GeForce-Intel", "DUOLINE-Arc-Intel"
+        };
         private string _folder;
         private string LibraryPath => Path.Combine(_folder, "OverlayDesigns", "profiles.json");
 
@@ -165,6 +169,7 @@ namespace CapFrameX.Test.Integration
         [DataRow(21, 22)]
         [DataRow(22, 23)]
         [DataRow(23, 24)]
+        [DataRow(24, 25)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -179,6 +184,7 @@ namespace CapFrameX.Test.Integration
                 18 => new[] { "RTX-50-Core-FUSION-RPL", "RTX-50-Ryzen-FUSION" },
                 19 or 20 or 21 or 22 or 23 => Array.Empty<string>(),
                 24 => AnimePresetIds,
+                25 => DuolinePresetIds,
                 _ => new[] { "NVIDIA-GeForce-RTX-GREENLINE", "ICELINE-Vertical" }
             };
             CollectionAssert.AreEquivalent(expectedIds,
@@ -287,6 +293,11 @@ namespace CapFrameX.Test.Integration
         [DataRow("OLED-Minimal", "OLED Minimal", false, 6)]
         [DataRow("NVIDIA-GeForce-RTX-GREENLINE", "GREENLINE - GeForce RTX", true, 7)]
         [DataRow("ICELINE-Vertical", "ICELINE - Vertical", true, 7)]
+        [DataRow("DUOLINE-Radeon-Ryzen", "DUOLINE - Radeon + Ryzen", false, 25)]
+        [DataRow("DUOLINE-GeForce-Ryzen", "DUOLINE - GeForce RTX + Ryzen", false, 25)]
+        [DataRow("DUOLINE-Radeon-Intel", "DUOLINE - Radeon + Intel Core", false, 25)]
+        [DataRow("DUOLINE-GeForce-Intel", "DUOLINE - GeForce RTX + Intel Core", false, 25)]
+        [DataRow("DUOLINE-Arc-Intel", "DUOLINE - Arc + Intel Core", false, 25)]
         [DataRow("Anime-Cherry-Blossom", "CHERRY BLOSSOM - Anime", true, 24)]
         [DataRow("Anime-Neon-Night", "NEON NIGHT - Anime", true, 24)]
         [DataRow("Anime-Lunar", "LUNAR - Anime", true, 24)]
@@ -448,6 +459,11 @@ namespace CapFrameX.Test.Integration
         [DataRow("RTX-50-Core-Ultra-FUSION-ARL", new[] { "gpuNameShort", "cpuNameShort" })]
         [DataRow("RTX-50-Core-FUSION-RPL", new[] { "gpuNameShort", "cpuNameShort" })]
         [DataRow("RTX-50-Ryzen-FUSION", new[] { "gpuNameShort", "cpuNameShort" })]
+        [DataRow("DUOLINE-Radeon-Ryzen", new[] { "gpuNameShort", "cpuNameShort" })]
+        [DataRow("DUOLINE-GeForce-Ryzen", new[] { "gpuNameShort", "cpuNameShort" })]
+        [DataRow("DUOLINE-Radeon-Intel", new[] { "gpuNameShort", "cpuNameShort" })]
+        [DataRow("DUOLINE-GeForce-Intel", new[] { "gpuNameShort", "cpuNameShort" })]
+        [DataRow("DUOLINE-Arc-Intel", new[] { "gpuNameShort", "cpuNameShort" })]
         [DataRow("Anime-Cherry-Blossom", new string[0])]
         [DataRow("Anime-Neon-Night", new string[0])]
         [DataRow("Anime-Lunar", new string[0])]
@@ -502,6 +518,38 @@ namespace CapFrameX.Test.Integration
                 CxLang.Instance.SetOverlayLanguage(language);
             }
             Assert.IsTrue(tiles.All(tile => (tile.Label + tile.Text).All(c => c < '⺀')), "No CJK text outside CxLang.");
+        }
+
+        [TestMethod]
+        [DataRow("DUOLINE-Radeon-Ryzen", "#ED1C24FF", "#ED7618FF")]
+        [DataRow("DUOLINE-GeForce-Ryzen", "#76B900FF", "#ED7618FF")]
+        [DataRow("DUOLINE-Radeon-Intel", "#ED1C24FF", "#6DDBFEFF")]
+        [DataRow("DUOLINE-GeForce-Intel", "#76B900FF", "#6DDBFEFF")]
+        [DataRow("DUOLINE-Arc-Intel", "#B59AFFFF", "#6DDBFEFF")]
+        public void DuolineStarterShowsTheGpuAboveTheCpuInTheColorsOfTheirVendors(string presetId, string gpuColor, string cpuColor)
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
+            var document = OsdDesignDocument.FromJson(starter.DesignJson);
+            document.Validate();
+            Assert.AreEqual(starter.DesignJson, OverlayRuntimeDesign.Canonicalize(document.ToJson()), "The starter is stored as the editor saves it.");
+            // A block per device under a header in its vendor's color that names the installed model,
+            // the GPU above the CPU, then the frame time graph with the current FPS and frame time.
+            CollectionAssert.AreEqual(new[] { "GPU", "CPU", "FPS" }, document.Tiles.Select(tile => tile.Label).ToArray());
+            void Block(OsdDesignTile block, string color, string nameKey, string[] keys, string memory)
+            {
+                var header = block.Children[0];
+                Assert.AreEqual(nameKey, header.Key);
+                Assert.AreEqual(color, header.BackgroundColor, nameKey);
+                var rows = block.Children.Skip(1).ToArray();
+                CollectionAssert.AreEqual(keys, rows.Select(row => row.Key).ToArray());
+                CollectionAssert.AreEqual(new[] { "USAGE", "TEMP", "CLOCK", "POWER", memory }, rows.Select(row => row.Label).ToArray());
+                Assert.IsTrue(rows.All(row => row.LabelPosition == "left" && row.ValueColor == color && row.UnitColor == color), nameKey);
+            }
+            Block(document.Tiles[0], gpuColor, "gpuNameShort", new[] { "gpuLoad", "gpuTemp", "gpuClock", "gpuPower", "vramUsed" }, "VRAM");
+            Block(document.Tiles[1], cpuColor, "cpuNameShort", new[] { "cpuLoad", "cpuTemp", "cpuClock", "cpuPower", "ramUsed" }, "RAM");
+            Assert.IsTrue(document.Tiles[0].Y + document.Tiles[0].FrameHeight <= document.Tiles[1].Y, "The GPU block sits above the CPU block.");
+            CollectionAssert.AreEqual(new[] { "frametimes", "fpsCurrent", "frametimeCurrent" },
+                document.Tiles[2].Children.Select(tile => tile.Key).ToArray());
         }
 
         [TestMethod]

@@ -386,6 +386,17 @@ placeholder `@channel_name`. Labels use CxLang's source spelling (`Framerate`, `
 overlay language. A design saved through the editor or MCP is bound to the PC (`sensor:`/`metric/`
 keys): map them back to semantic keys before shipping it as a starter.
 
+### DUOLINE starters
+
+Five starters (`overlay-templates/DUOLINE-*.json`, catalog version 25) share one vertical layout in the
+colors of a GPU and CPU vendor: Radeon + Ryzen, GeForce RTX + Ryzen, Radeon + Intel Core, GeForce RTX +
+Intel Core, Arc + Intel Core. Each device has a block under a header bar in its vendor's color that names
+the installed model (`gpuNameShort`/`cpuNameShort`), the GPU above the CPU, with usage, temperature,
+clock, power and VRAM/RAM (label left, value right). Below them sit the frame time graph, the current
+FPS and the frame time. The native metric draws device names in the theme text color, so the dark text
+color is also the color of both header names. The files are stored as the editor saves them;
+`DuolineStarterShowsTheGpuAboveTheCpuInTheColorsOfTheirVendors` checks layout and colors.
+
 ### Sharing tile designs (import mapping)
 
 `OverlayDesignProfileTransfer` (`CapFrameX.View/OverlayDesignAuthoring`) exports a design as saved
