@@ -27,11 +27,46 @@ namespace CapFrameX.Test.Hotkey
 
             Assert.IsTrue(filter.ShouldHandleKeyDown(Keys.O, 1000));
 
-            // Windows repeats between roughly 33 ms and 500 ms apart, depending on the configured
+            // Windows repeats between roughly 33 ms and 400 ms apart, depending on the configured
             // repeat rate. None of it may reach the action.
             Assert.IsFalse(filter.ShouldHandleKeyDown(Keys.O, 1033));
             Assert.IsFalse(filter.ShouldHandleKeyDown(Keys.O, 1533));
             Assert.IsFalse(filter.ShouldHandleKeyDown(Keys.O, 2033));
+        }
+
+        /// <summary>
+        /// Before the first repeat Windows waits the keyboard delay: about 250, 500, 750 or
+        /// 1000 ms (settings 0 to 3). An expiry of 700 ms let the first repeat of settings 2 and 3
+        /// through as a second press, so holding a toggle hotkey past the delay flipped it back.
+        /// </summary>
+        [TestMethod]
+        [DataRow(0)]
+        [DataRow(1)]
+        [DataRow(2)]
+        [DataRow(3)]
+        public void ShouldHandleKeyDown_FirstRepeatAfterEveryKeyboardDelayIsSuppressed(int keyboardDelaySetting)
+        {
+            var filter = new KeyRepeatFilter();
+            long keyboardDelayMs = (keyboardDelaySetting + 1) * 250;
+
+            Assert.IsTrue(filter.ShouldHandleKeyDown(Keys.O, 1000));
+            Assert.IsFalse(filter.ShouldHandleKeyDown(Keys.O, 1000 + keyboardDelayMs));
+            // The repeats after the first come at the repeat rate, at most 400 ms apart.
+            Assert.IsFalse(filter.ShouldHandleKeyDown(Keys.O, 1000 + keyboardDelayMs + 400));
+        }
+
+        /// <summary>
+        /// The filter stamps a key-down when the hook thread handles it, so a short stall between
+        /// a press and its first repeat stretches the gap it sees beyond the keyboard delay.
+        /// </summary>
+        [TestMethod]
+        public void ShouldHandleKeyDown_FirstRepeatAfterTheLongestDelayHandledLateIsSuppressed()
+        {
+            var filter = new KeyRepeatFilter();
+
+            Assert.IsTrue(filter.ShouldHandleKeyDown(Keys.O, 1000));
+            // Keyboard delay 3 (about 1 s), and the hook thread got to the repeat 300 ms late.
+            Assert.IsFalse(filter.ShouldHandleKeyDown(Keys.O, 1000 + 1000 + 300));
         }
 
         [TestMethod]
