@@ -117,6 +117,9 @@ namespace CapFrameX.Data
 
         public bool OSDAutoDisabled { get; set; } = false;
 
+        // Whether the auto-disable also switched RTSS' global OSD off.
+        private bool _rtssOsdAutoDisabled;
+
         /// <summary>
         /// Indicates whether a capture is currently active. For external components to check capture status.
         public static bool IsCapturingStatus { get; private set; } = false;
@@ -262,7 +265,11 @@ namespace CapFrameX.Data
 
             if (_appConfiguration.IsOverlayActive && _appConfiguration.AutoDisableOverlay)
             {
-                _rtssService.OnOSDOff();
+                // RTSS' OSD switch is global and also hides other RTSS clients. Only the RTSS
+                // renderer needs it; the CapFrameX renderers follow IsOverlayActive.
+                _rtssOsdAutoDisabled = _appConfiguration.UsesRtss();
+                if (_rtssOsdAutoDisabled)
+                    _rtssService.OnOSDOff();
                 _appConfiguration.IsOverlayActive = false;
                 _overlayService.IsOverlayActiveStream.OnNext(false);
                 OSDAutoDisabled = true;
@@ -430,12 +437,15 @@ namespace CapFrameX.Data
                 {
                     _appConfiguration.IsOverlayActive = true;
                     _overlayService.IsOverlayActiveStream.OnNext(true);
-                    _rtssService.OnOSDOn();
                 }
+                // Gives back what the start took, also after a switch to another renderer.
+                if (_rtssOsdAutoDisabled)
+                    _rtssService.OnOSDOn();
+                _rtssOsdAutoDisabled = false;
                 OSDAutoDisabled = false;
             }
 
-            if (_appConfiguration.IsOverlayActive)
+            if (_appConfiguration.FeedsRtss())
                 _rtssService.Refresh();
 
             _logEntryManager.AddLogEntry($"Running offset of {PRESICE_OFFSET}ms to gather latest frames", ELogMessageType.AdvancedInfo, false);
@@ -459,7 +469,7 @@ namespace CapFrameX.Data
 
             _logEntryManager.AddLogEntry("Processing captured data", ELogMessageType.BasicInfo, false);
 
-            if (_appConfiguration.IsOverlayActive)
+            if (_appConfiguration.FeedsRtss())
                 _rtssService.Refresh();
 
             await WriteExtractedCaptureDataToFileAsync(captureData);

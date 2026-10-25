@@ -167,6 +167,46 @@ namespace CapFrameX.Test.Overlay
             fixture.Rtss.Verify(service => service.OnOSDOn(), Times.Never);
         }
 
+        // RTSS keeps the rows it was fed last, also after a switch to another renderer. The
+        // countdowns and the capture timer refreshed it while any renderer showed the overlay, so
+        // the frozen RTSS rows came back next to the tile overlay.
+        [TestMethod]
+        [DataRow(EOverlayRenderer.Rtss, false, 1)]
+        [DataRow(EOverlayRenderer.Rtss, true, 0)]
+        [DataRow(EOverlayRenderer.InGame, false, 0)]
+        [DataRow(EOverlayRenderer.HookFree, false, 0)]
+        public void CancelledDelayCountdown_RefreshesRtssOnlyWhileItShowsTheOverlay(EOverlayRenderer renderer,
+            bool hideOsdOnRtss, int expectedRefreshes)
+        {
+            using var fixture = new RefreshFixture(overlayActive: true, renderer: renderer);
+            fixture.Configuration.Object.HideOverlay = hideOsdOnRtss;
+
+            fixture.Service.CancelDelayCountdown();
+
+            fixture.Rtss.Verify(service => service.Refresh(), Times.Exactly(expectedRefreshes));
+        }
+
+        [TestMethod]
+        [DataRow(EOverlayRenderer.Rtss, true)]
+        [DataRow(EOverlayRenderer.InGame, false)]
+        [DataRow(EOverlayRenderer.HookFree, false)]
+        public async Task CaptureTimer_RefreshesRtssOnlyWhileItShowsTheOverlay(EOverlayRenderer renderer,
+            bool refreshesRtss)
+        {
+            using var fixture = new RefreshFixture(overlayActive: true, renderer: renderer);
+            int ticks = 0;
+            fixture.Provider.Setup(provider => provider.GetOverlayEntry("CaptureTimer"))
+                .Callback(() => Interlocked.Increment(ref ticks))
+                .Returns((IOverlayEntry)null);
+
+            fixture.Service.StartCaptureTimer();
+            // Ticks never overlap, so the first one has completed once the second starts.
+            await WaitUntil(() => Volatile.Read(ref ticks) >= 2, "The capture timer did not tick twice.");
+            fixture.Service.StopCaptureTimer();
+
+            fixture.Rtss.Verify(service => service.Refresh(), refreshesRtss ? Times.AtLeastOnce() : Times.Never());
+        }
+
         [TestMethod]
         public void RendererOff_DoesNotStartWithAnActiveOverlay()
         {

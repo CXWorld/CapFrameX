@@ -295,8 +295,7 @@ namespace CapFrameX.Overlay
 
                            // IsOverlayActive is checked as well: an update already in flight when
                            // the overlay is switched off must not refill the released RTSS slot.
-                           bool feedRtss = update.MayFeedRtss && IsOverlayActive && !overlayOnAPIOnly
-                               && _appConfiguration.OverlayRenderer == EOverlayRenderer.Rtss;
+                           bool feedRtss = update.MayFeedRtss && _appConfiguration.FeedsRtss();
                            int feedState = feedRtss ? 1 : 0;
                            if (feedState != rtssFeedLogState)
                            {
@@ -398,7 +397,7 @@ namespace CapFrameX.Overlay
             {
                 SetCaptureTimerValue((int)t);
 
-                if (IsOverlayActive)
+                if (_appConfiguration.FeedsRtss())
                     _rTSSService.Refresh();
 
                 if (t == 0)
@@ -514,7 +513,7 @@ namespace CapFrameX.Overlay
                 {
                     SetCaptureTimerValue((int)-t);
 
-                    if (IsOverlayActive)
+                    if (_appConfiguration.FeedsRtss())
                         _rTSSService.Refresh();
                 }
             });
@@ -525,7 +524,7 @@ namespace CapFrameX.Overlay
             _disposableDelayCountdown?.Dispose();
             _rTSSService.SetIsCaptureTimerActive(false);
 
-            if (IsOverlayActive)
+            if (_appConfiguration.FeedsRtss())
                 _rTSSService.Refresh();
         }
 
@@ -791,7 +790,7 @@ namespace CapFrameX.Overlay
                 {
                     SetCaptureTimerValue((int)t);
 
-                    if (IsOverlayActive)
+                    if (_appConfiguration.FeedsRtss())
                         _rTSSService.Refresh();
                 });
         }

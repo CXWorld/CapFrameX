@@ -212,6 +212,14 @@ for the CapFrameX renderers. `OverlayActivation` refuses every activation and th
 Ask `UsesRtss()` whether RTSS renders, never "both flags false". Tests that mock `IAppConfiguration`
 and switch renderers call `WireOverlayRenderer` (`CapFrameX.Test/Mocks`) after `SetupAllProperties`.
 
+RTSS keeps the rows it was fed last, also after a switch to another renderer, and shows them again on
+any `Refresh()`. So every RTSS write passes `FeedsRtss()` (overlay on, RTSS renders, "Hide OSD on
+RTSS" off): the entry feed, the capture timer, the countdowns and the capture stop. The capture
+auto-hide ("Auto hide while capture", `AutoDisableOverlay`) hides every renderer through
+`IsOverlayActive`; RTSS' global OSD switch (`OnOSDOff`/`OnOSDOn`, which also hides other RTSS
+clients) is only toggled when RTSS renders at the start, and given back at the stop even after a
+renderer switch. Tests: `CaptureManagerTest` (`AutoDisableOverlay_*`), `OverlayProfileRefreshTest`.
+
 ### Graphics API label (`<APP>`)
 
 RTSS resolves its `<APP>` macro itself. For the CapFrameX renderers and the remote API,

@@ -515,6 +515,58 @@ namespace CapFrameX.Test.Data
             await Task.Delay(3000);
 
             _rtssServiceMock.Verify(x => x.OnOSDOn(), Times.Once);
+            _rtssServiceMock.Verify(x => x.Refresh(), Times.AtLeastOnce);
+        }
+
+        // RTSS keeps the rows it was fed last, also after a switch to another renderer. A tile
+        // overlay got them back next to it after every capture, and RTSS' global OSD switched on.
+        [TestMethod]
+        [DataRow(EOverlayRenderer.InGame)]
+        [DataRow(EOverlayRenderer.HookFree)]
+        public async Task AutoDisableOverlay_WithACapFrameXRenderer_HidesItWithoutTouchingRtss(EOverlayRenderer renderer)
+        {
+            _appConfigurationMock.WireOverlayRenderer(renderer);
+            _appConfigurationMock.Setup(x => x.AutoDisableOverlay).Returns(true);
+            _appConfigurationMock.SetupProperty(x => x.IsOverlayActive, true);
+            var published = new List<bool>();
+            var activeStream = new Subject<bool>();
+            activeStream.Subscribe(published.Add);
+            _overlayServiceMock.Setup(x => x.IsOverlayActiveStream).Returns(activeStream);
+
+            _mockCaptureService.StartCaptureService(null);
+            await _captureManager.StartCapture(CreateValidCaptureOptions());
+
+            Assert.IsFalse(_appConfigurationMock.Object.IsOverlayActive, "The overlay is hidden while capturing.");
+            Assert.IsTrue(_captureManager.OSDAutoDisabled);
+
+            _mockCaptureService.EmitFrames(5);
+            await _captureManager.StopCapture();
+
+            Assert.IsTrue(_appConfigurationMock.Object.IsOverlayActive, "The overlay returns after the capture.");
+            CollectionAssert.AreEqual(new[] { false, true }, published);
+            _rtssServiceMock.Verify(x => x.OnOSDOff(), Times.Never);
+            _rtssServiceMock.Verify(x => x.OnOSDOn(), Times.Never);
+            _rtssServiceMock.Verify(x => x.Refresh(), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task AutoDisableOverlay_RestoresTheRtssOsdAfterASwitchToAnotherRenderer()
+        {
+            _appConfigurationMock.WireOverlayRenderer(EOverlayRenderer.Rtss);
+            _appConfigurationMock.Setup(x => x.AutoDisableOverlay).Returns(true);
+            _appConfigurationMock.SetupProperty(x => x.IsOverlayActive, true);
+
+            _mockCaptureService.StartCaptureService(null);
+            await _captureManager.StartCapture(CreateValidCaptureOptions());
+            _rtssServiceMock.Verify(x => x.OnOSDOff(), Times.Once);
+
+            _appConfigurationMock.Object.OverlayRenderer = EOverlayRenderer.InGame;
+            _mockCaptureService.EmitFrames(5);
+            await _captureManager.StopCapture();
+
+            Assert.IsTrue(_appConfigurationMock.Object.IsOverlayActive);
+            _rtssServiceMock.Verify(x => x.OnOSDOn(), Times.Once, "The capture gives back RTSS' global OSD switch.");
+            _rtssServiceMock.Verify(x => x.Refresh(), Times.Never, "RTSS no longer renders the overlay.");
         }
 
         [TestMethod]

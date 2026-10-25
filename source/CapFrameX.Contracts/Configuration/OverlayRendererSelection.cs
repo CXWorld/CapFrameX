@@ -90,6 +90,16 @@ namespace CapFrameX.Contracts.Configuration
                 && !configuration.EnableHookOverlay && !configuration.EnableHookFreeOverlay;
 
         /// <summary>
+        /// Whether CapFrameX writes its overlay to RTSS: the overlay is on, RTSS renders it and
+        /// "Hide OSD on RTSS" does not suppress the output. Every RTSS write follows this gate,
+        /// the entry feed as well as the capture timer, the countdowns and the capture stop. RTSS
+        /// keeps the rows it was fed last, also after a switch to another renderer, so a refresh
+        /// past the gate shows them again next to the selected renderer.
+        /// </summary>
+        public static bool FeedsRtss(this IAppConfiguration configuration)
+            => configuration.IsOverlayActive && configuration.UsesRtss() && !configuration.HideOverlay;
+
+        /// <summary>
         /// <see cref="CanShowOverlay(EOverlayRenderer, bool)"/> for the configured renderer, with
         /// the flags taking precedence for the reason given at <see cref="UsesRtss"/>.
         /// </summary>
