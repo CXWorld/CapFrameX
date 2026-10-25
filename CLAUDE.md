@@ -457,7 +457,12 @@ settings are ignored. All of it is pure and unit-tested; the manager only execut
   (`HookCompatibilityStagePlanner.Plan`, the reason ends "...without early injection"): that verdict
   neither verifies nor exhausts the early stage, which NoQueue, NoPresent and EarlyInjectionRequired
   still reach. Early-injection targets come from `LearnedStartStage`, the stage Plan starts an entry
-  with, so an entry of an older hook build keeps its target after a hook update. The early path's
+  with, so an entry of an older hook build keeps its target after a hook update. Targets are per
+  executable, entries per signature: an early attach whose thin signature matches neither an entry
+  nor an early signature plans from the entry that registered the target
+  (`SelectEarlyInjectionEntry`). Which runtimes are resident when the gate module maps varies
+  (Metro 2033 Redux: DLSS-G or not); planned from scratch, the session described no early injection
+  and its verified outcome erased the entry's `earlyInjectionModule` (2026-10-25). The early path's
   probe also finds targets that were running before CapFrameX watched for them (CapFrameX started
   next to the game, or the renderer was switched on): `ResolveEarlyPathAttachMode` makes those a late
   attach, from the process start time against the target's `WatchedSinceUtc` and

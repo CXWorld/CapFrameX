@@ -841,10 +841,12 @@ namespace CapFrameX.OSD.Integration
             string processName = null;
             if (TryReadProcessIdentity(pid, out processName, out string gamePath) &&
                 !_learnedStore.TryGet(processName, evidence.Signature, out learned) &&
-                attachMode == HookAttachMode.Early)
+                attachMode == HookAttachMode.Early &&
+                !_learnedStore.TryGetByEarlySignature(processName, evidence.Signature,
+                    out learned))
             {
-                _learnedStore.TryGetByEarlySignature(processName, evidence.Signature,
-                    out learned);
+                learned = SelectEarlyInjectionEntry(_learnedStore.GetForExecutable(processName),
+                    _hookBuildHash.Value);
             }
 
             HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(evidence,
@@ -2718,6 +2720,27 @@ namespace CapFrameX.OSD.Integration
         /// </summary>
         internal static bool WaitsForSelection(int processId, int selectedProcessId)
             => processId != selectedProcessId;
+
+        /// <summary>
+        /// The learned entry an early injection ran for when neither signature finds one: the
+        /// newest entry of the executable whose start stage registered an early target (see
+        /// AddConfiguredEarlyInjectionTargets). Which runtimes are resident when the gate module
+        /// maps varies between launches (Metro 2033 Redux: DLSS-G or not), so the thin signature
+        /// can miss the entry. Planned from scratch, the session then described no early
+        /// injection, and its verified outcome overwrote the entry's early stage.
+        /// </summary>
+        internal static HookLearnedProfileEntry SelectEarlyInjectionEntry(
+            IReadOnlyList<HookLearnedProfileEntry> newestFirst, string hookBuildHash)
+        {
+            if (newestFirst == null) return null;
+            foreach (HookLearnedProfileEntry entry in newestFirst)
+            {
+                HookCompatibilityStage stage = HookCompatibilityStagePlanner.LearnedStartStage(
+                    entry, hookBuildHash);
+                if (stage != null && stage.RequiresEarlyInjection) return entry;
+            }
+            return null;
+        }
 
         private static DateTime? TryReadProcessStartUtc(int pid)
         {

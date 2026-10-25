@@ -96,6 +96,40 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void SelectEarlyInjectionEntry_PlansTheEarlyStageWhenTheThinSignatureMisses()
+        {
+            // Metro 2033 Redux on 2026-10-25, 14:27: the entry with the early stage was stored as
+            // ffxfg+sldlssg (early signature ffxfg+sldlssg); this launch mapped d3d12.dll before
+            // DLSS-G (ffxfg). Neither lookup matched, the plan started at plain vendor-aware, and
+            // its verified outcome overwrote the entry's earlyInjectionModule.
+            HookLearnedProfileEntry early = HookCompatibilityStagePlannerTest.Entry(
+                HookCompatibilityStageId.VendorAware, verified: true, hash: "old");
+            early.EvidenceSignature = "ffxfg+sldlssg";
+            early.EarlySignature = "ffxfg+sldlssg";
+            early.SetStage(HookCompatibilityStage.Create(HookCompatibilityStageId.VendorAware,
+                HookCompatibilityStagePlanner.GateModuleD3D12));
+            HookLearnedProfileEntry plain = HookCompatibilityStagePlannerTest.Entry(
+                HookCompatibilityStageId.VendorAware, verified: true, hash: "new");
+            plain.EvidenceSignature = "none";
+
+            HookLearnedProfileEntry selected = HookOverlayManager.SelectEarlyInjectionEntry(
+                new[] { plain, early }, "new");
+            Assert.AreSame(early, selected, "the entry that registered the early target");
+
+            HookCompatibilityStagePlan plan = HookCompatibilityStagePlanner.Plan(
+                HookCompatibilityStagePlannerTest.Evidence(ffxFg: true, d3d12: true,
+                    attach: HookAttachMode.Early),
+                null, selected, "new", true);
+            Assert.IsTrue(plan.StartStage.RequiresEarlyInjection, plan.Reason);
+            Assert.AreEqual(HookCompatibilityStagePlanner.GateModuleD3D12,
+                plan.StartStage.EarlyInjectionModule);
+
+            Assert.IsNull(HookOverlayManager.SelectEarlyInjectionEntry(new[] { plain }, "new"),
+                "no entry needs early injection: plan from the evidence as before");
+            Assert.IsNull(HookOverlayManager.SelectEarlyInjectionEntry(null, "new"));
+        }
+
+        [TestMethod]
         public void SelectEarlyInjectionCandidates_KeepsTargetThatIsNotInjectedYet()
         {
             var game = new FakeProcess(GameName, 100);
