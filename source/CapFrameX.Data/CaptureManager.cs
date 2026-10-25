@@ -18,7 +18,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
@@ -78,9 +77,11 @@ namespace CapFrameX.Data
         private IDisposable _disposablePoweneticsDataStream;
         private IDisposable _disposableBenchlabDataStream;
         private IDisposable _rTSSFrameTimesIntervalStream;
-        private EventLoopScheduler _captureStreamScheduler;
-        private EventLoopScheduler _poweneticsScheduler;
-        private EventLoopScheduler _benchlabScheduler;
+        // Disposed right after their subscriptions while a producer may still be in OnNext; see
+        // DisposeSafeEventLoopScheduler.
+        private DisposeSafeEventLoopScheduler _captureStreamScheduler;
+        private DisposeSafeEventLoopScheduler _poweneticsScheduler;
+        private DisposeSafeEventLoopScheduler _benchlabScheduler;
         private List<string[]> _captureData = new List<string[]>();
         private bool _fillArchive;
         private double _qpcTimeStart;
@@ -314,7 +315,7 @@ namespace CapFrameX.Data
                 _captureStreamScheduler?.Dispose();
 
                 // Create scheduler for capture stream
-                _captureStreamScheduler = new EventLoopScheduler();
+                _captureStreamScheduler = new DisposeSafeEventLoopScheduler();
 
                 _disposableCaptureStream = _captureService
                     .FrameDataStream
@@ -596,8 +597,8 @@ namespace CapFrameX.Data
             }
 
             // Create schedulers that we can dispose later
-            _poweneticsScheduler = new EventLoopScheduler();
-            _benchlabScheduler = new EventLoopScheduler();
+            _poweneticsScheduler = new DisposeSafeEventLoopScheduler();
+            _benchlabScheduler = new DisposeSafeEventLoopScheduler();
 
             _disposablePoweneticsDataStream = _poweneticsService.PmdChannelStream
                 .ObserveOn(_poweneticsScheduler)
