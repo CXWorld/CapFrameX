@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 
 namespace CapFrameX.Hotkey
 {
@@ -37,6 +38,12 @@ namespace CapFrameX.Hotkey
         private bool _started;
 
         /// <summary>
+        /// The gap the last heartbeat measured, also when the rate limit kept it from re-arming.
+        /// 0 until the second heartbeat. The hotkey witness reports every stall from it.
+        /// </summary>
+        public long LastGapMs { get; private set; }
+
+        /// <summary>
         /// Records one heartbeat. Returns the gap to the previous heartbeat in milliseconds when
         /// it exceeded <see cref="StallThresholdMs"/> and a re-arm is due, otherwise 0.
         /// </summary>
@@ -51,6 +58,7 @@ namespace CapFrameX.Hotkey
 
             var gap = nowMs - _lastHeartbeatMs;
             _lastHeartbeatMs = nowMs;
+            LastGapMs = gap;
 
             if (gap < StallThresholdMs)
                 return 0;
@@ -83,5 +91,16 @@ namespace CapFrameX.Hotkey
             // come out slightly negative. That is "no measurable delay", not a negative delay.
             return elapsed < 0 ? 0 : elapsed;
         }
+    }
+
+    /// <summary>
+    /// The clock the hook thread and the hotkey witness share for heartbeats, reports and
+    /// verdicts: the performance counter in milliseconds, monotonic and system-wide, so stamps
+    /// taken on different threads compare directly. Unlike tick counts it orders two moments a
+    /// few milliseconds apart, which the witness relies on.
+    /// </summary>
+    internal static class HotkeyClock
+    {
+        internal static long NowMs() => Stopwatch.GetTimestamp() * 1000 / Stopwatch.Frequency;
     }
 }

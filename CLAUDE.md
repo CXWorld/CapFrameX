@@ -58,10 +58,10 @@ that contain the DLL can downgrade; releases built before it still refuse.
 ### Run Tests
 Tests use MSTest framework:
 ```bash
-vstest.console source\CapFrameX.Test\bin\x64\Release\net10.0-windows\CapFrameX.Test.dll /Platform:x64
+vstest.console source\CapFrameX.Test\bin\x64\Release\net10.0-windows\CapFrameX.Test.dll /Platform:x64 /TestCaseFilter:TestCategory!=Integration
 ```
 
-This skips the `Integration` category, which drives the **real** PresentMon capture service and
+The filter skips the `Integration` category (nothing else excludes it), which drives the **real** PresentMon capture service and
 `CaptureManager` against `vkcube.exe` (staged from `source\CapFrameX.Overlay\3d-test-app\` into the
 app output). Those tests report themselves as *skipped* — not failed — whenever their prerequisites
 are missing, so a green run is no evidence that they executed. Run them explicitly, **from an
@@ -77,6 +77,12 @@ Prerequisites, each of which turns into a skip instead of a failure:
 The run takes about a minute, opens vkcube windows and starts PresentMon. Frame-time assertions
 tolerate occasional stalls: vkcube shares the desktop, and a window losing the foreground or being
 occluded stalls its presents.
+
+The category also holds `HotkeyWitnessIntegrationTest`, which drives the real global hotkey hook and
+the hotkey witness with F24 presses injected through `SendInput` (see "Global hotkeys and the hotkey
+witness"). It needs no administrator rights but an unlocked interactive desktop whose foreground
+window is not elevated above the test process; otherwise it reports itself inconclusive. The presses
+go to the foreground window, so do not type meanwhile.
 
 ### Measure CPU load
 `scripts\Measure-CpuLoad.ps1` (elevated, no CapFrameX running) measures the CPU time and cycles of
@@ -603,6 +609,41 @@ unrelated edits.
 - **MCP infrastructure**: a tool may return `McpToolResult` for several content blocks (the render
   tool sends an image plus text); `McpParameterSchemaAttribute` replaces a parameter's generated
   schema; `JObject`/`JArray` parameters also accept their JSON as a string.
+
+## Global hotkeys and the hotkey witness
+
+All hotkeys go through one `WH_KEYBOARD_LL` hook on the thread "CX Global Hotkey Hook"
+(`GlobalHotkeyHook`, `CapFrameX.Hotkey`), which posts the actions to the registering dispatcher. A
+50 ms heartbeat installs a new hook after a stall (`HookThreadStallDetector`, at most once per 2 s),
+a timer every 60 s. A keystroke the hook never receives leaves no log line, so `HotkeyWitness` also
+watches the keyboard through raw input: thread "CX Hotkey Witness", a message-only window,
+`RIDEV_INPUTSINK`. The hook reports every key-down of a trigger key with its outcome (dispatched,
+discarded by the repeat filter, modifiers that form no hotkey), its heartbeats, stalls and
+installations. `HotkeyWitnessLedger` pairs the reports with the raw keystrokes by virtual key and
+input time stamp (`KBDLLHOOKSTRUCT.time` and the WM_INPUT message time are the same value) and
+gives every hotkey press a verdict. A press without a report becomes `NotReceived` only after a hook
+heartbeat that started after the witness saw the press (the hook thread handles all pending hook
+calls before a timer message), or after 30 s without one. The witness tracks the modifiers from the
+raw keystrokes in order, since a late hook call reads the modifiers of its own moment, and checks
+them against `GetAsyncKeyState` only for events it processed within 50 ms, because a key-up on the
+secure desktop (Ctrl+Alt+Del) never reaches it.
+
+Every press the hook did not dispatch is a warning (`Hotkey witness: Alt+O (Overlay) was pressed,
+but ...`) with the heartbeat age at the press, the longest hook-thread stall around it and whether
+it re-armed, the last hook installation and its reason, the foreground process and whether the
+input was injected. The same applies to an auto-repeat the hook dispatched as a press. A summary
+follows every 10 minutes with activity and at exit (`HotkeyDictionaryBuilder.LogSessionSummary` in
+`App.ApplicationExit`); it also counts hook dispatches raw input never showed (the witness was
+blind). Limits: a keystroke another program's hook swallows reaches neither side, and a process can
+register one raw input window per device type, so nothing else in CapFrameX may register the
+keyboard (the summary timer logs a takeover). No timer runs while no verdict is outstanding.
+
+Measured on Windows 11 build 26300 (2026-10-25): contrary to the documentation, a timed-out hook was
+not removed. Keystrokes made during a hook-thread stall past the timeout (about 250–300 ms) were
+lost or reached the hook late, the hook kept working, and raw input saw every one. While the hook
+thread stalls, Windows holds back all keyboard input for up to the timeout per keystroke. Tests:
+`HotkeyWitnessLedgerTest`, and `HotkeyWitnessIntegrationTest` (category `Integration`, see "Run
+Tests"), which writes its verdicts per press to the test output.
 
 ## Update service
 

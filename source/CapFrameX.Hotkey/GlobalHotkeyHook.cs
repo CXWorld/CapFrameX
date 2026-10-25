@@ -2,6 +2,7 @@ using Gma.System.MouseKeyHook;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
@@ -48,6 +49,13 @@ namespace CapFrameX.Hotkey
     /// the hook data) to the hook thread, and from the hook thread to the registered context
     /// running the action. A delay in the first number is this thread or Windows; a delay in
     /// the second is the receiving thread — the WPF dispatcher for every current caller.
+    ///
+    /// A keystroke this hook never receives logs nothing, though. Measured on Windows 11 build
+    /// 26300 (2026-10-25) a timed-out hook was not removed, contrary to the documentation: the
+    /// keystrokes made during a stall were lost and the hook kept working. Whichever happens,
+    /// <see cref="HotkeyWitness"/> sees the keyboard through raw input as well and logs every
+    /// hotkey press this hook missed. The hook reports every key-down of a trigger key, every
+    /// heartbeat and every installation to it.
     /// </summary>
     internal static class GlobalHotkeyHook
     {
@@ -73,12 +81,16 @@ namespace CapFrameX.Hotkey
         private static readonly object _threadLock = new object();
         private static readonly KeyRepeatFilter _repeatFilter = new KeyRepeatFilter();
         private static readonly HookThreadStallDetector _stallDetector = new HookThreadStallDetector();
+        private static readonly ConcurrentQueue<Action> _hookThreadTestActions = new ConcurrentQueue<Action>();
 
         private static volatile HotkeyRegistration[] _registrations = Array.Empty<HotkeyRegistration>();
         private static Thread _hookThread;
 
         /// <summary>Touched on the hook thread only.</summary>
         private static IKeyboardMouseEvents _hook;
+
+        /// <summary>Touched on the hook thread only.</summary>
+        private static System.Windows.Forms.Timer _rearmTimer;
 
         private static ILogger _logger = NullLogger.Instance;
 
@@ -87,6 +99,9 @@ namespace CapFrameX.Hotkey
             get => _logger;
             set => _logger = value ?? NullLogger.Instance;
         }
+
+        /// <summary>The snapshot the hook matches against; the hotkey witness reads the same one.</summary>
+        internal static HotkeyRegistration[] Registrations => _registrations;
 
         /// <summary>
         /// Replaces what the hook matches against. Cheap and lock-free on the hook side: the
@@ -97,6 +112,28 @@ namespace CapFrameX.Hotkey
             _registrations = registrations ?? Array.Empty<HotkeyRegistration>();
             EnsureHookThreadRunning();
         }
+
+        /// <summary>
+        /// Test seam: runs <paramref name="action"/> on the hook thread at the end of its next
+        /// heartbeat. A <c>Thread.Sleep</c> there blocks the message loop like a real stall, and
+        /// the heartbeat after it measures it.
+        /// </summary>
+        internal static void RunOnHookThreadForTesting(Action action) => _hookThreadTestActions.Enqueue(action);
+
+        /// <summary>
+        /// Test seam, hook thread only: takes the hook away silently, as Windows may, and moves
+        /// the periodic re-arm a full interval out so it cannot bring the hook back mid-test.
+        /// </summary>
+        internal static void RemoveHookForTesting()
+        {
+            _hook?.Dispose();
+            _hook = null;
+            _rearmTimer?.Stop();
+            _rearmTimer?.Start();
+        }
+
+        /// <summary>Test seam, hook thread only.</summary>
+        internal static void RearmForTesting() => InstallHook("test");
 
         private static void EnsureHookThreadRunning()
         {
@@ -117,20 +154,23 @@ namespace CapFrameX.Hotkey
                 _hookThread.SetApartmentState(ApartmentState.STA);
                 _hookThread.Start();
             }
+
+            HotkeyWitness.EnsureRunning();
         }
 
         private static void HookThreadProc()
         {
             try
             {
-                InstallHook();
+                InstallHook("startup");
 
                 using (var rearmTimer = new System.Windows.Forms.Timer { Interval = RearmIntervalMs })
                 using (var heartbeatTimer = new System.Windows.Forms.Timer { Interval = HeartbeatIntervalMs })
                 {
+                    _rearmTimer = rearmTimer;
                     rearmTimer.Tick += (_, __) =>
                     {
-                        InstallHook();
+                        InstallHook("periodic");
                         _stallDetector.NotifyRearmed(Environment.TickCount64);
                     };
                     heartbeatTimer.Tick += (_, __) => OnHeartbeat();
@@ -152,21 +192,41 @@ namespace CapFrameX.Hotkey
         /// <summary>
         /// The heartbeat is dispatched through the same message loop as the hook procedure, so a
         /// late heartbeat means the hook procedure would have been late by the same amount — and
-        /// past the timeout, Windows has already dropped the hook.
+        /// past the timeout, Windows has skipped the keystrokes of that time or dropped the hook.
         /// </summary>
         private static void OnHeartbeat()
         {
+            // Taken first: Windows sends hook calls to this thread, and the message loop handles
+            // every pending one before it gets to a timer. Each keystroke the hook was handed
+            // before this moment has been reported to the witness by now.
+            var heartbeatMs = HotkeyClock.NowMs();
             var stallMs = _stallDetector.Heartbeat(Environment.TickCount64);
-            if (stallMs == 0)
-                return;
+            if (stallMs != 0)
+                InstallHook("stall");
 
-            InstallHook();
-            // Logged after the re-arm so the file write cannot delay it. This line is the
-            // evidence for "the hotkey did nothing for a while": every stall long enough to
-            // have cost the hook shows up here with its length.
-            Logger.LogWarning(
-                "Global keyboard hook thread was unresponsive for {stallMs} ms; the hook was re-armed in case Windows dropped it (LowLevelHooksTimeout).",
-                stallMs);
+            HotkeyWitness.ReportHeartbeat(heartbeatMs, _stallDetector.LastGapMs, rearmed: stallMs != 0);
+
+            if (stallMs != 0)
+            {
+                // Logged after the re-arm so the file write cannot delay it. This line is the
+                // evidence for "the hotkey did nothing for a while": every stall long enough to
+                // have cost the hook shows up here with its length.
+                Logger.LogWarning(
+                    "Global keyboard hook thread was unresponsive for {stallMs} ms; the hook was re-armed in case Windows dropped it (LowLevelHooksTimeout).",
+                    stallMs);
+            }
+
+            while (_hookThreadTestActions.TryDequeue(out var testAction))
+            {
+                try
+                {
+                    testAction();
+                }
+                catch (Exception e)
+                {
+                    Logger.LogError(e, "Hook thread test action failed.");
+                }
+            }
         }
 
         /// <summary>
@@ -174,7 +234,7 @@ namespace CapFrameX.Hotkey
         /// creates the underlying listener lazily when the first handler is attached, so the
         /// subscription decides which thread the hook belongs to.
         /// </summary>
-        private static void InstallHook()
+        private static void InstallHook(string reason)
         {
             var previous = _hook;
 
@@ -190,6 +250,8 @@ namespace CapFrameX.Hotkey
                 Logger.LogError(e, "Failed to install the global keyboard hook.");
                 return;
             }
+
+            HotkeyWitness.ReportRearm(reason);
 
             // Retire the old hook only once its replacement is in place. Unhooking first would
             // leave a window in which no hook sees the keyboard at all.
@@ -235,13 +297,25 @@ namespace CapFrameX.Hotkey
                 var hookStamp = Stopwatch.GetTimestamp();
                 var pressedTick = e is KeyEventArgsExt ext && ext.Timestamp != 0 ? ext.Timestamp : hookTick;
 
+                var registrations = _registrations;
+                // Every key-down of a trigger key goes to the witness, which pairs it with the
+                // raw input of the same keystroke by key and input time stamp (pressedTick).
+                var virtualKey = (int)e.KeyCode;
+                var witnessed = HotkeyWitness.IsActive && HotkeyWitnessLedger.IsTriggerKey(registrations, virtualKey);
+
                 // Windows repeats KeyDown while a key stays pressed. Without this, holding a
                 // toggle hotkey a moment too long flips it an even number of times and looks
                 // exactly like "the hotkey did not come through".
                 if (!_repeatFilter.ShouldHandleKeyDown(e.KeyCode))
+                {
+                    if (witnessed)
+                    {
+                        HotkeyWitness.ReportHookKeyDown(virtualKey, pressedTick, HookKeyOutcome.RepeatFiltered,
+                            null, HotkeyLatency.ElapsedMs(pressedTick, hookTick));
+                    }
                     return;
+                }
 
-                var registrations = _registrations;
                 if (registrations.Length == 0)
                     return;
 
@@ -249,6 +323,7 @@ namespace CapFrameX.Hotkey
                 // reports, which is what makes this comparison hold. See HotkeyKeyName.
                 var triggerKey = e.KeyCode.ToString();
                 string combination = null;
+                var dispatched = false;
 
                 foreach (var registration in registrations)
                 {
@@ -258,7 +333,17 @@ namespace CapFrameX.Hotkey
                     combination = combination ?? ModifierState.BuildCombination(triggerKey);
 
                     if (registration.Combinations.TryGetValue(combination, out var action))
+                    {
                         Dispatch(registration, combination, action, pressedTick, hookTick, hookStamp);
+                        dispatched = true;
+                    }
+                }
+
+                if (witnessed)
+                {
+                    HotkeyWitness.ReportHookKeyDown(virtualKey, pressedTick,
+                        dispatched ? HookKeyOutcome.Dispatched : HookKeyOutcome.NoMatch,
+                        combination, HotkeyLatency.ElapsedMs(pressedTick, hookTick));
                 }
             }
             catch (Exception ex)
@@ -322,6 +407,7 @@ namespace CapFrameX.Hotkey
         {
             HotkeyAction = hotkeyAction;
             TriggerKey = triggerKey;
+            TriggerVirtualKey = Enum.TryParse(triggerKey, out Keys key) ? (int)(key & Keys.KeyCode) : 0;
             Combinations = combinations;
             SynchronizationContext = synchronizationContext;
         }
@@ -329,6 +415,12 @@ namespace CapFrameX.Hotkey
         internal HotkeyAction HotkeyAction { get; }
 
         internal string TriggerKey { get; }
+
+        /// <summary>
+        /// The virtual-key code of <see cref="TriggerKey"/>, 0 when it names no key. The witness
+        /// recognizes a trigger key in raw input by it.
+        /// </summary>
+        internal int TriggerVirtualKey { get; }
 
         internal IReadOnlyDictionary<string, Action> Combinations { get; }
 

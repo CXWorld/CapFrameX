@@ -7,6 +7,7 @@ using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.Extensions;
+using CapFrameX.Hotkey;
 using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
@@ -503,6 +504,16 @@ namespace CapFrameX
             // PresentMon or the sensors can drop the tile design while the row feed stays valid,
             // and the hook would show the row overlay until the process is gone.
             ShutdownOverlayRenderers();
+
+            // The witness' count of hotkey presses the hook dispatched or missed this session.
+            try
+            {
+                HotkeyDictionaryBuilder.LogSessionSummary();
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while logging the hotkey summary.");
+            }
 
             // A record rewrite truncates the file first; a cut-off one would lose the record.
             try

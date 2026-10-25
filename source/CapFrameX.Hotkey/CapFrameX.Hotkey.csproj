@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CapFrameX.Contracts\CapFrameX.Contracts.csproj" />
+    <ProjectReference Include="..\CapFrameX.Extensions\CapFrameX.Extensions.csproj" />
     <ProjectReference Include="..\CapFrameX.Statistics.NetStandard\CapFrameX.Statistics.NetStandard.csproj" />
   </ItemGroup>
 
