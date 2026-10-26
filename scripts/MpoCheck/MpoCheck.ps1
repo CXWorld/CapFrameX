@@ -43,7 +43,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$ScriptVersion = '1.0'
+$ScriptVersion = '1.1'
 $Inv = [Globalization.CultureInfo]::InvariantCulture
 
 function Exit-Check([int]$code) {
@@ -1037,6 +1037,10 @@ try {
     }
     if ($overlayTestMode -eq 5) {
         Add-Report '  [!!] MPO is switched off in Windows (OverlayTestMode = 5 under HKLM\SOFTWARE\Microsoft\Windows\Dwm).' 'Yellow'
+        Add-Report '       To switch it back on, run this in a command prompt opened as administrator, then restart Windows:' 'Yellow'
+        Add-Report '         reg delete "HKLM\SOFTWARE\Microsoft\Windows\Dwm" /v OverlayTestMode /f' 'Yellow'
+        Add-Report '       Then run this check again. If MPO was switched off against flickering or black screens, keep it' 'Yellow'
+        Add-Report '       off and use the In-Game renderer of CapFrameX instead of the hook-free overlay.' 'Yellow'
     }
     if ($fullscreen) {
         if ($fullscreen.Plane -ge 0.9) {

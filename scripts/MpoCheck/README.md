@@ -51,6 +51,15 @@ the recorded frame data of the test scene. It contains no user names, files or o
 - `[!!]` with the overlay: Windows still composes every game frame at the end of the capture, which
   costs latency as long as the overlay is visible. The In-Game renderer of CapFrameX avoids that.
 
+If the result says **MPO is switched off in Windows (OverlayTestMode = 5)**, a tweak or an old
+driver workaround disabled MPO. Without MPO every overlay window above a game costs composition. To
+switch MPO back on, open a command prompt as administrator, run
+
+    reg delete "HKLM\SOFTWARE\Microsoft\Windows\Dwm" /v OverlayTestMode /f
+
+restart Windows and run the check again. If MPO was switched off on purpose against flickering or
+black screens, keep it off and use the In-Game renderer of CapFrameX instead of the hook-free overlay.
+
 How long Windows composes after an overlay appears varies from run to run (on one test PC between
 none and about eight seconds), so a second run may differ.
 
