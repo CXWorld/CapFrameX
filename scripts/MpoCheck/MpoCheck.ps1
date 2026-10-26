@@ -699,6 +699,11 @@ function Find-PresentMon {
     }
     $folders = New-Object System.Collections.Generic.List[string]
     $folders.Add($PSScriptRoot)
+    # The installer (1.9.1 and later) records its folder here, also for a custom location.
+    foreach ($key in 'HKLM:\SOFTWARE\CapFrameX', 'HKCU:\Software\CapFrameX') {
+        $installDir = (Get-ItemProperty $key -Name InstallDir -ErrorAction SilentlyContinue).InstallDir
+        if ($installDir) { $folders.Add((Join-Path $installDir 'PresentMon')) }
+    }
     foreach ($key in 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall',
                      'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall') {
         foreach ($entry in (Get-ChildItem $key -ErrorAction SilentlyContinue)) {
@@ -871,8 +876,8 @@ try {
     Write-Host 'CapFrameX MPO check' -ForegroundColor Cyan
     $rates = @($OverlayRates -split '[,; ]+' | Where-Object { $_ } | ForEach-Object { [int]$_ } | Where-Object { $_ -ge 1 -and $_ -le 240 })
     # DWM may compose the game for several seconds after an overlay window appears before it
-    # returns it to its plane, so the overlay stays visible for at least 10 s per capture.
-    $overlaySeconds = [Math]::Max(10, $CaptureSeconds + 4)
+    # returns it to its plane (up to 8 s seen), so the overlay stays visible for at least 15 s per capture.
+    $overlaySeconds = [Math]::Max(15, $CaptureSeconds + 4)
     $seconds = 4 + $CaptureSeconds + 2 + $rates.Count * ($overlaySeconds + 4)
     Write-Host "The test takes about $seconds seconds. Your screen turns into a colored fullscreen test image,"
     Write-Host 'and a small green panel appears in the top-left corner from time to time.'

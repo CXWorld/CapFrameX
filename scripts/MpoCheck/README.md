@@ -9,7 +9,7 @@ adds latency on your PC.
 1. Close CapFrameX and any always-on-top tools (screen recorders, monitoring windows).
 2. Extract the folder anywhere and double-click **`Run-MpoCheck.cmd`**.
 3. Allow the administrator prompt (PresentMon needs it to record frames).
-4. Do not touch the mouse or keyboard for about 40 seconds. The screen shows a colored fullscreen
+4. Do not touch the mouse or keyboard for about 50 seconds. The screen shows a colored fullscreen
    test image, and a small green panel appears in the top-left corner from time to time.
 5. Send the zip file `CapFrameX-MPO-Check_<date>.zip` from your desktop to the CapFrameX team.
 
@@ -28,7 +28,7 @@ If Windows warns about the downloaded files, right-click the zip, choose **Prope
 
 1. Asks the display driver how many MPO planes each display has.
 2. Renders a fullscreen test scene with Direct3D 11 at half the refresh rate and records its frames
-   with PresentMon: once alone, then twice with an overlay window above it for 10 seconds, updating
+   with PresentMon: once alone, then twice with an overlay window above it for 15 seconds, updating
    10 times per second (the default of the hook-free overlay) and 60 times per second. The overlay
    window is built like the CapFrameX hook-free overlay.
 3. Shows the result and writes `MpoCheck-report.txt` plus the PresentMon captures into the zip.
@@ -52,7 +52,7 @@ the recorded frame data of the test scene. It contains no user names, files or o
   costs latency as long as the overlay is visible. The In-Game renderer of CapFrameX avoids that.
 
 How long Windows composes after an overlay appears varies from run to run (on one test PC between
-none and about four seconds), so a second run may differ.
+none and about eight seconds), so a second run may differ.
 
 Windowed games are not tested: whether Windows gives a window its own plane depends on everything
 else on the desktop, so that result does not repeat.

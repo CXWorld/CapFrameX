@@ -108,8 +108,8 @@ takes frame gaps from present time + `MsUntilDisplayed`, because a late-written 
 carries deltas to an older frame. The scene renders at half the refresh rate so `MsUntilDisplayed`
 measures the display path, not a full present queue. After the overlay appears (its swapchain's
 first present), DWM may compose the game for a while before it returns it to its plane: on an
-RX 9070 XT between none and about 4 s, varying from run to run. So each overlay stays visible for
-at least 10 s, and the verdict tells "keeps its plane", "composed for N s, then back" and "still
+RX 9070 XT between none and about 8 s, varying from run to run. So each overlay stays visible for
+at least 15 s, and the verdict tells "keeps its plane", "composed for N s, then back" and "still
 composed at the end" apart. A GDI window over the game behaves differently: on the same PC it was
 composed throughout.
 
