@@ -50,6 +50,9 @@ namespace CapFrameX.PresentMonInterface
         // "Application" or a generated-frame source (--track_frame_type); fixed index before the
         // optional PC latency column. Consumed by the hook-free feed diagnostics only.
         public static readonly int FrameType_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "FrameType");
+        // Also fixed and, like FrameType, read by the hook-free feed diagnostics only.
+        public static readonly int AllowsTearing_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "AllowsTearing");
+        public static readonly int PresentMode_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "PresentMode");
         public static readonly int MsBetweenPresents_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenPresents");
         public static readonly int MsBetweenDisplayChange_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenDisplayChange");
 

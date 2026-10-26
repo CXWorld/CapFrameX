@@ -200,6 +200,10 @@ namespace CapFrameX
                             PresentMonCaptureService.SwapChainAddress_INDEX,
                         frameTypeColumnIndex:
                             PresentMonCaptureService.FrameType_INDEX,
+                        presentModeColumnIndex:
+                            PresentMonCaptureService.PresentMode_INDEX,
+                        allowsTearingColumnIndex:
+                            PresentMonCaptureService.AllowsTearing_INDEX,
                         processCountStream: rtssService.ProcessCountStream,
                         designRuntime: _overlayDesignRuntime,
                         pixelOrbit: _pixelOrbit,

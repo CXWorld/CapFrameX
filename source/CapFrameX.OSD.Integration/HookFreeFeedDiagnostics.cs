@@ -14,7 +14,9 @@ namespace CapFrameX.OSD.Integration
     /// GIVEN: target-PID changes, rows rejected for a foreign PID, additional swapchains inside
     /// the target process, runtime-label flips, frametime outliers and gaps in either the source
     /// timeline or the delivery. Immediate lines cover rare state changes; everything that can
-    /// repeat per row is aggregated into one summary per ten seconds.
+    /// repeat per row is aggregated into one summary per ten seconds. The summary also counts the
+    /// target's present modes and AllowsTearing values: a game that drops from independent flip
+    /// to DWM composition while the hook-free window is visible shows up there.
     /// </summary>
     /// <remarks>
     /// Everything is gated by <see cref="Enabled"/>, the "Extended OSD logging" switch. While it
@@ -64,6 +66,8 @@ namespace CapFrameX.OSD.Integration
         private readonly Dictionary<string, int> _perSwapChain = new Dictionary<string, int>(StringComparer.Ordinal);
         private readonly Dictionary<string, int> _perRuntime = new Dictionary<string, int>(StringComparer.Ordinal);
         private readonly Dictionary<string, int> _perFrameType = new Dictionary<string, int>(StringComparer.Ordinal);
+        private readonly Dictionary<string, int> _perPresentMode = new Dictionary<string, int>(StringComparer.Ordinal);
+        private readonly Dictionary<string, int> _perAllowsTearing = new Dictionary<string, int>(StringComparer.Ordinal);
 
         public HookFreeFeedDiagnostics(Action<string> log)
         {
@@ -135,6 +139,7 @@ namespace CapFrameX.OSD.Integration
         }
 
         public void OnRowAccepted(string swapChain, string runtime, string frameType,
+            string presentMode, string allowsTearing,
             double frametimeMs, double timestampMs, double displayTimeMs, double nowSeconds)
         {
             if (!_enabled) return;
@@ -188,6 +193,8 @@ namespace CapFrameX.OSD.Integration
                 Increment(_perSwapChain, swapChainKey);
                 Increment(_perRuntime, runtimeKey);
                 Increment(_perFrameType, frameTypeKey);
+                Increment(_perPresentMode, presentMode ?? "?");
+                Increment(_perAllowsTearing, allowsTearing ?? "?");
 
                 if (frametimeMs >= OutlierFrametimeMs)
                 {
@@ -289,10 +296,12 @@ namespace CapFrameX.OSD.Integration
 
             _log(string.Format(CultureInfo.InvariantCulture,
                 "10s: pid={0} rows={1} rejected={2} swapchains=[{3}] runtimes=[{4}] frametypes=[{5}] " +
-                "maxFrametime={6:F1}ms outliers={7}{8} sourceGaps={9}(max {10:F0}ms) " +
-                "arrivalGaps={11}(max {12:F1}s) backdated={13} label='{14}'",
+                "presentModes=[{6}] allowsTearing=[{7}] " +
+                "maxFrametime={8:F1}ms outliers={9}{10} sourceGaps={11}(max {12:F0}ms) " +
+                "arrivalGaps={13}(max {14:F1}s) backdated={15} label='{16}'",
                 _targetPid, _rows, _rejectedRows, FormatCounts(_perSwapChain), FormatCounts(_perRuntime),
-                FormatCounts(_perFrameType), _maxFrametimeMs, _outliers,
+                FormatCounts(_perFrameType), FormatCounts(_perPresentMode), FormatCounts(_perAllowsTearing),
+                _maxFrametimeMs, _outliers,
                 _outlierExample != null ? " (max " + _outlierExample + ")" : "",
                 _sourceGaps, _maxSourceGapMs, _arrivalGaps, _maxArrivalGapSeconds, _backdated,
                 _runtimeLabel ?? "<none>"));
@@ -314,6 +323,8 @@ namespace CapFrameX.OSD.Integration
             _perSwapChain.Clear();
             _perRuntime.Clear();
             _perFrameType.Clear();
+            _perPresentMode.Clear();
+            _perAllowsTearing.Clear();
         }
 
         private static void Increment(Dictionary<string, int> counts, string key)

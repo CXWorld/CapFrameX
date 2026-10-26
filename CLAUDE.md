@@ -495,7 +495,10 @@ Only the in-game hook and the Vulkan layer still read it at load:
   rejected for a foreign PID while the target is silent, additional swapchains inside the
   target process (the hook-free feed does not filter by swapchain, unlike captures), runtime
   label flips (they rename the `<APP>` group and rebuild the scene), frametime outliers, source
-  and arrival gaps, backdated rows; one summary per 10 s. `Overlay target process: ... PID a -> b`
+  and arrival gaps, backdated rows; one summary per 10 s, which also counts the target's frame
+  types, `presentModes` and `allowsTearing`. Without an MPO plane (`[mpo]` header of
+  `cfx_osd.log`) DWM composes the visible window into the picture: a game that turns from
+  `Hardware: Independent Flip` to `Composed: Flip` while the overlay is on shows it there. `Overlay target process: ... PID a -> b`
   (`CaptureViewModel`), `Process list: removed ...` and `Process list: ignored a row of ...`
   (`PresentMonProcessList`) show why a PID changed. Repeating lines are rate-limited; summaries
   come once per 10 s.

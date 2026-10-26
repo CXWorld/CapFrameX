@@ -58,6 +58,8 @@ namespace CapFrameX.OSD.Integration
         private readonly int _processIdIndex;
         private readonly int _swapChainIndex;
         private readonly int _frameTypeIndex;
+        private readonly int _presentModeIndex;
+        private readonly int _allowsTearingIndex;
         private readonly HookFreeFeedDiagnostics _feedDiagnostics;
         private readonly IObservable<string[]> _frameDataStream;
         private readonly bool _filterFrameRowsByTarget;
@@ -105,6 +107,8 @@ namespace CapFrameX.OSD.Integration
                                 int processIdColumnIndex = -1,
                                 int swapChainColumnIndex = -1,
                                 int frameTypeColumnIndex = -1,
+                                int presentModeColumnIndex = -1,
+                                int allowsTearingColumnIndex = -1,
                                 IObservable<int> processCountStream = null,
                                 OverlayDesignRuntimePublisher designRuntime = null,
                                 OverlayPixelOrbitResolver pixelOrbit = null,
@@ -140,6 +144,8 @@ namespace CapFrameX.OSD.Integration
             _processIdIndex = processIdColumnIndex;
             _swapChainIndex = swapChainColumnIndex;
             _frameTypeIndex = frameTypeColumnIndex;
+            _presentModeIndex = presentModeColumnIndex;
+            _allowsTearingIndex = allowsTearingColumnIndex;
             _frameDataStream = frameDataStream;
             _startTimeIndexProvider = startTimeIndexProvider;
             _filterFrameRowsByTarget = processIdStream != null;
@@ -590,6 +596,8 @@ namespace CapFrameX.OSD.Integration
                 _swapChainIndex >= 0 && row.Length > _swapChainIndex ? row[_swapChainIndex] : null,
                 runtime,
                 _frameTypeIndex >= 0 && row.Length > _frameTypeIndex ? row[_frameTypeIndex] : null,
+                _presentModeIndex >= 0 && row.Length > _presentModeIndex ? row[_presentModeIndex] : null,
+                _allowsTearingIndex >= 0 && row.Length > _allowsTearingIndex ? row[_allowsTearingIndex] : null,
                 hasFrametimeSample ? ms : 0.0, hasTimestamp ? t : 0.0, hasDisplaySample ? dc : 0.0,
                 HookFreeFeedDiagnostics.Now());
 

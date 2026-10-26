@@ -11,6 +11,8 @@ namespace CapFrameX.Test.Integration
     {
         private const string MainChain = "0x1A2B";
         private const string SecondChain = "0x9F9F";
+        private const string IndependentFlip = "Hardware: Independent Flip";
+        private const string ComposedFlip = "Composed: Flip";
 
         private static HookFreeFeedDiagnostics Create(List<string> lines, bool enabled = true)
         {
@@ -25,7 +27,7 @@ namespace CapFrameX.Test.Integration
             double t = timestampStartMs;
             while (now < startSeconds + durationSeconds)
             {
-                diag.OnRowAccepted(MainChain, "DXGI", "Application", 10.0, t, 10.0, now);
+                diag.OnRowAccepted(MainChain, "DXGI", "Application", IndependentFlip, "1", 10.0, t, 10.0, now);
                 now += 0.010;
                 t += 10.0;
             }
@@ -62,7 +64,7 @@ namespace CapFrameX.Test.Integration
                 now += 0.010;
             }
             double t = FeedSteadyRows(diag, now, 3.0, 1000.0);
-            diag.OnRowAccepted(SecondChain, "DXGI", "Application", 4000.0, t - 1500.0, 4000.0, now + 3.0);
+            diag.OnRowAccepted(SecondChain, "DXGI", "Application", IndependentFlip, "1", 4000.0, t - 1500.0, 4000.0, now + 3.0);
             FeedSteadyRows(diag, now + 3.01, 12.0, t);
             diag.Tick(now + 20.0);
 
@@ -112,7 +114,7 @@ namespace CapFrameX.Test.Integration
             StringAssert.Contains(lines[0], "9001");
             StringAssert.Contains(lines[0], "9002");
 
-            diag.OnRowAccepted(MainChain, "DXGI", "Application", 10.0, 1000.0, 10.0, now);
+            diag.OnRowAccepted(MainChain, "DXGI", "Application", IndependentFlip, "1", 10.0, 1000.0, 10.0, now);
             Assert.AreEqual(2, lines.Count);
             StringAssert.Contains(lines[1], "resumed after 1.5 s");
             StringAssert.Contains(lines[1], "225 foreign rows rejected");
@@ -130,7 +132,7 @@ namespace CapFrameX.Test.Integration
             double t = 1000.0;
             for (int i = 0; i < 300; i++)
             {
-                diag.OnRowAccepted(MainChain, "DXGI", "Application", 10.0, t, 10.0, now);
+                diag.OnRowAccepted(MainChain, "DXGI", "Application", IndependentFlip, "1", 10.0, t, 10.0, now);
                 diag.OnRowRejected(9001, 4217, now);
                 now += 0.010;
                 t += 10.0;
@@ -149,7 +151,7 @@ namespace CapFrameX.Test.Integration
 
             double t = FeedSteadyRows(diag, 0.0, 3.0, 1000.0);
             // 4 s worth of frametime on the same chain, then the timeline jumps 400 ms ahead.
-            diag.OnRowAccepted(MainChain, "DXGI", "Application", 4000.0, t, 4000.0, 3.0);
+            diag.OnRowAccepted(MainChain, "DXGI", "Application", IndependentFlip, "1", 4000.0, t, 4000.0, 3.0);
             t += 400.0;
             FeedSteadyRows(diag, 3.01, 8.0, t);
 
@@ -178,7 +180,35 @@ namespace CapFrameX.Test.Integration
             StringAssert.Contains(lines[0], "swapchains=[" + MainChain + ":");
             StringAssert.Contains(lines[0], "runtimes=[DXGI:");
             StringAssert.Contains(lines[0], "frametypes=[Application:");
+            StringAssert.Contains(lines[0], "presentModes=[" + IndependentFlip + ":");
+            StringAssert.Contains(lines[0], "allowsTearing=[1:");
             StringAssert.Contains(lines[0], "outliers=0");
+        }
+
+        [TestMethod]
+        public void PresentModesAndTearingAreCountedPerWindow()
+        {
+            var lines = new List<string>();
+            var diag = Create(lines);
+            diag.OnTargetPidChanged(0, 4217, 0.0);
+            lines.Clear();
+
+            // The game flips independently, then DWM composes it (e.g. the hook-free window became
+            // visible without an MPO plane): both modes, and the tearing they allow, are counted.
+            double now = 0.0;
+            double t = 1000.0;
+            for (int i = 0; i < 300; i++, now += 0.010, t += 10.0)
+                diag.OnRowAccepted(MainChain, "DXGI", "Application", IndependentFlip, "1", 10.0, t, 10.0, now);
+            for (int i = 0; i < 700; i++, now += 0.010, t += 10.0)
+                diag.OnRowAccepted(MainChain, "DXGI", "Application", ComposedFlip, "0", 10.0, t, 10.0, now);
+            // An unknown column (older capture layouts) is counted as "?", not dropped.
+            diag.OnRowAccepted(MainChain, "DXGI", "Application", null, null, 10.0, t, 10.0, now);
+            diag.Tick(10.5);
+
+            Assert.AreEqual(1, lines.Count, string.Join(Environment.NewLine, lines));
+            StringAssert.Contains(lines[0],
+                "presentModes=[" + ComposedFlip + ":700, " + IndependentFlip + ":300, ?:1]");
+            StringAssert.Contains(lines[0], "allowsTearing=[0:700, 1:300, ?:1]");
         }
 
         [TestMethod]
@@ -191,8 +221,8 @@ namespace CapFrameX.Test.Integration
 
             double t = FeedSteadyRows(diag, 0.0, 2.0, 1000.0);
             // A rarely presenting second chain: its row is dated 1.5 s into the past.
-            diag.OnRowAccepted(SecondChain, "DXGI", "Application", 1500.0, t - 1500.0, 1500.0, 2.0);
-            diag.OnRowAccepted(SecondChain, "DXGI", "Application", 1500.0, t - 1400.0, 1500.0, 2.5);
+            diag.OnRowAccepted(SecondChain, "DXGI", "Application", IndependentFlip, "1", 1500.0, t - 1500.0, 1500.0, 2.0);
+            diag.OnRowAccepted(SecondChain, "DXGI", "Application", IndependentFlip, "1", 1500.0, t - 1400.0, 1500.0, 2.5);
             FeedSteadyRows(diag, 2.51, 8.0, t);
 
             Assert.IsTrue(lines.Count >= 2, string.Join(Environment.NewLine, lines));
@@ -220,7 +250,7 @@ namespace CapFrameX.Test.Integration
             double now = 11.0;
             while (now < 22.0)
             {
-                diag.OnRowAccepted(SecondChain, "DXGI", "Application", 10.0, t, 10.0, now);
+                diag.OnRowAccepted(SecondChain, "DXGI", "Application", IndependentFlip, "1", 10.0, t, 10.0, now);
                 now += 0.010;
                 t += 10.0;
             }
