@@ -225,6 +225,7 @@
     // CAPTURE VIEW - Benchmark recording triggers, hotkeys, process monitoring
     // =========================================================================
     "CaptureViewModel_0AutoDetected": "\"{0}\" 자동 감지됨.",
+    "CaptureViewModel_0AutoSelectedFrom1Processes": "{1}개 프로세스 중 \"{0}\" 자동 선택됨.",
     "CaptureViewModel_0Selected": "\"{0}\" 선택됨.",
     "CaptureViewModel_CaptureDurationSavedFor": "{0}의 캡처 시간이 저장되었습니다({1}). 전역 시간을 사용하려면 클릭하세요.",
     "CaptureViewModel_CaptureHotkeyDisabled": "캡처 단축키가 비활성화되었습니다.",

@@ -226,6 +226,7 @@
     // CAPTURE VIEW - Benchmark recording triggers, hotkeys, process monitoring
     // =========================================================================
     "CaptureViewModel_0AutoDetected": "\"{0}\" detectado automáticamente.",
+    "CaptureViewModel_0AutoSelectedFrom1Processes": "\"{0}\" seleccionado automáticamente entre {1} procesos.",
     "CaptureViewModel_0Selected": "\"{0}\" seleccionado.",
     "CaptureViewModel_CaptureDurationSavedFor": "Duración de captura guardada para {0} ({1}). Haz clic para usar la duración global.",
     "CaptureViewModel_CaptureHotkeyDisabled": "Atajo de captura desactivado.",

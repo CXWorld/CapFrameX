@@ -223,6 +223,26 @@ namespace CapFrameX.Test.Mocks
         }
 
         /// <summary>
+        /// Present statistics returned by <see cref="GetProcessActivity"/>; empty unless a test
+        /// sets them, like a capture service that measures nothing.
+        /// </summary>
+        public List<CaptureProcessActivity> ProcessActivity { get; } = new List<CaptureProcessActivity>();
+
+        /// <summary>
+        /// Calls of <see cref="GetProcessActivity"/>, i.e. runs of the automatic target selection.
+        /// </summary>
+        public int ProcessActivityRequests { get; private set; }
+
+        public IReadOnlyList<CaptureProcessActivity> GetProcessActivity()
+        {
+            lock (_lock)
+            {
+                ProcessActivityRequests++;
+                return ProcessActivity.ToArray();
+            }
+        }
+
+        /// <summary>
         /// Manually emit a single frame of data for synchronous testing.
         /// </summary>
         public void EmitSingleFrame()

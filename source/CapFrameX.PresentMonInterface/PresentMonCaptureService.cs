@@ -314,6 +314,9 @@ namespace CapFrameX.PresentMonInterface
         public IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter)
             => _processList.GetAllFilteredProcesses(filter);
 
+        public IReadOnlyList<CaptureProcessActivity> GetProcessActivity()
+            => _processList.GetProcessActivity();
+
         /// <summary>
         /// Asks a running PresentMon instance to stop. Returns the terminating process so callers
         /// that start a new instance right after can wait for it, or null when it failed to start.

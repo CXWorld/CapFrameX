@@ -180,6 +180,9 @@ namespace CapFrameX.Data
         public IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter)
             => _captureService.GetAllFilteredProcesses(filter);
 
+        public IReadOnlyList<CaptureProcessActivity> GetProcessActivity()
+            => _captureService.GetProcessActivity() ?? Array.Empty<CaptureProcessActivity>();
+
         public IEnumerable<(string, int)> GetAllNonBlacklistedProcesses()
         {
             var filter = new HashSet<string>(

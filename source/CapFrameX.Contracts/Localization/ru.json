@@ -202,6 +202,7 @@
     "Appxaml_YourReportIdIs0": "Ваш идентификатор отчёта: {0}.\nУкажите его в обращении в поддержку. Подробнее: https://www.capframex.com/support",
     "BenchlabMetricsManager_W": "Вт",
     "CaptureViewModel_0AutoDetected": "«{0}» обнаружен автоматически.",
+    "CaptureViewModel_0AutoSelectedFrom1Processes": "«{0}» выбран автоматически из {1} процессов.",
     "CaptureViewModel_0Selected": "«{0}» выбран.",
     "CaptureViewModel_CaptureDurationSavedFor": "Длительность захвата для {0} ({1}). Нажмите, чтобы использовать общую.",
     "CaptureViewModel_CaptureHotkeyDisabled": "Клавиша захвата отключена.",

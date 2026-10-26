@@ -381,11 +381,170 @@ namespace CapFrameX.Test.PresentMonInterface
             Assert.AreEqual(processCount, seen);
         }
 
+        [TestMethod]
+        public void Activity_CountsPresentsAndGpuBusyOfCompletedSeconds()
+        {
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishActivityHeader();
+            for (int i = 0; i < 60; i++)
+                context.PublishPresent("Game", 100, gpuBusyMs: 5);
+            context.Flush();
+
+            var filling = context.Activity("Game");
+            Assert.AreEqual(0.0, filling.PresentsPerSecond, "The current second is still filling.");
+            Assert.IsNull(filling.GpuBusyShare, "No second is complete yet.");
+            Assert.AreEqual(0, filling.IdleSeconds);
+
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(1));
+
+            var measured = context.Activity("Game");
+            Assert.AreEqual(60, measured.PresentsPerSecond);
+            Assert.AreEqual(0.3, measured.GpuBusyShare.Value, 1e-9);
+            Assert.AreEqual(1, measured.IdleSeconds);
+        }
+
+        [TestMethod]
+        public void Activity_AveragesOverTheWindowAndForgetsOlderSeconds()
+        {
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishActivityHeader();
+            for (int i = 0; i < 10; i++)
+                context.PublishPresent("Game", 100, gpuBusyMs: 10);
+            context.Flush();
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(1));
+            for (int i = 0; i < 30; i++)
+                context.PublishPresent("Game", 100, gpuBusyMs: 10);
+            context.Flush();
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(1));
+
+            var twoSeconds = context.Activity("Game");
+            Assert.AreEqual(20, twoSeconds.PresentsPerSecond);
+            Assert.AreEqual(0.2, twoSeconds.GpuBusyShare.Value, 1e-9);
+
+            // The window covers the second with 30 presents and two without any.
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(2));
+            var window = context.Activity("Game");
+            Assert.AreEqual(3, PresentMonProcessList.ActivityWindowSeconds, "The expectations assume a 3 s window.");
+            Assert.AreEqual(10, window.PresentsPerSecond);
+            Assert.AreEqual(0.1, window.GpuBusyShare.Value, 1e-9);
+            Assert.AreEqual(3, window.IdleSeconds);
+
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(1));
+            var idle = context.Activity("Game");
+            Assert.AreEqual(0.0, idle.PresentsPerSecond);
+            Assert.AreEqual(0.0, idle.GpuBusyShare.Value);
+            Assert.AreEqual(4, idle.IdleSeconds);
+        }
+
+        [TestMethod]
+        public void Activity_OfALaterProcess_CountsOnlyTheSecondsItWasListed()
+        {
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishActivityHeader();
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(2));
+
+            for (int i = 0; i < 20; i++)
+                context.PublishPresent("Game", 100, gpuBusyMs: 10);
+            context.Flush();
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(1));
+
+            var activity = context.Activity("Game");
+            Assert.AreEqual(20, activity.PresentsPerSecond);
+            Assert.AreEqual(0.2, activity.GpuBusyShare.Value, 1e-9);
+        }
+
+        [TestMethod]
+        public void Activity_CapsTheGpuShareOfSeveralSwapChains()
+        {
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishActivityHeader();
+            for (int i = 0; i < 240; i++)
+                context.PublishPresent("Game", 100, gpuBusyMs: 6);
+            context.Flush();
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(1));
+
+            Assert.AreEqual(1.0, context.Activity("Game").GpuBusyShare.Value);
+        }
+
+        [TestMethod]
+        public void Activity_WithoutAGpuBusyColumn_HasNoGpuShare()
+        {
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishActivityHeader(withGpuBusy: false);
+            context.PublishPresent("Game", 100, gpuBusyMs: 10);
+            context.Flush();
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(1));
+
+            var activity = context.Activity("Game");
+            Assert.AreEqual(1, activity.PresentsPerSecond);
+            Assert.IsNull(activity.GpuBusyShare);
+        }
+
+        [TestMethod]
+        public void Activity_KeepsTheLatestPresentModeAndSeesGeneratedFrames()
+        {
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishActivityHeader();
+            context.PublishPresent("Game", 100, gpuBusyMs: 1, presentMode: "Composed: Flip");
+            context.PublishPresent("Game", 100, gpuBusyMs: 1, presentMode: "Hardware: Independent Flip",
+                frameType: "Intel XeSS-FG");
+            context.PublishPresent("Browser", 200, gpuBusyMs: 1, presentMode: "Composed: Flip");
+            context.Flush();
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(1));
+
+            Assert.AreEqual("Hardware: Independent Flip", context.Activity("Game").PresentMode);
+            Assert.IsTrue(context.Activity("Game").HasGeneratedFrames);
+            Assert.IsFalse(context.Activity("Browser").HasGeneratedFrames);
+
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(PresentMonProcessList.ActivityWindowSeconds));
+            Assert.IsFalse(context.Activity("Game").HasGeneratedFrames, "The generated frame left the window.");
+            Assert.AreEqual("Hardware: Independent Flip", context.Activity("Game").PresentMode);
+        }
+
+        [TestMethod]
+        public void Activity_DropsTheProcessesThatExited()
+        {
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishActivityHeader();
+            context.PublishPresent("Game", 100, gpuBusyMs: 1);
+            context.PublishPresent("Exited", 200, gpuBusyMs: 1);
+            context.Flush();
+            context.ExitedPids.Add(200);
+
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(1));
+
+            Assert.IsFalse(context.List.GetProcessActivity().Any(activity => activity.ProcessId == 200));
+            Assert.AreEqual(1, context.Activity("Game").PresentsPerSecond);
+        }
+
+        [TestMethod]
+        [DataRow("Application", false)]
+        [DataRow("NotSet", false)]
+        [DataRow("Unspecified", false)]
+        [DataRow("Repeated", false)]
+        [DataRow("NA", false)]
+        [DataRow("", false)]
+        [DataRow(null, false)]
+        [DataRow("Intel XeSS-FG", true)]
+        [DataRow("AMD AFMF", true)]
+        public void IsGeneratedFrame(string frameType, bool expected)
+        {
+            Assert.AreEqual(expected, PresentMonProcessList.IsGeneratedFrame(frameType));
+        }
+
         private sealed class ListContext : IDisposable
         {
             private readonly object _threadsLock = new object();
             private readonly List<Thread> _threads = new List<Thread>();
             private int _aliveChecks;
+            private int _flushes;
 
             public readonly Subject<string[]> Rows = new Subject<string[]>();
             public readonly HistoricalScheduler Clock = new HistoricalScheduler();
@@ -424,6 +583,52 @@ namespace CapFrameX.Test.PresentMonInterface
 
             public void PublishRow(string application, int processId)
                 => Rows.OnNext(Row(application, processId.ToString()));
+
+            // The statistics columns follow the two the list always reads; the list finds them
+            // by their header names.
+            private static int StatisticsColumn => Math.Max(PresentMonCaptureService.ApplicationName_INDEX,
+                PresentMonCaptureService.ProcessID_INDEX) + 1;
+
+            public void PublishActivityHeader(bool withGpuBusy = true)
+            {
+                var header = ActivityRow("Application", "ProcessID");
+                header[StatisticsColumn] = "PresentMode";
+                header[StatisticsColumn + 1] = "FrameType";
+                header[StatisticsColumn + 2] = withGpuBusy ? "MsGPUBusy" : "MsGPUTime";
+                Rows.OnNext(header);
+            }
+
+            public void PublishPresent(string application, int processId, double gpuBusyMs,
+                string presentMode = "Composed: Flip", string frameType = "Application")
+            {
+                var row = ActivityRow(application, processId.ToString());
+                row[StatisticsColumn] = presentMode;
+                row[StatisticsColumn + 1] = frameType;
+                row[StatisticsColumn + 2] = gpuBusyMs.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                Rows.OnNext(row);
+            }
+
+            /// <summary>
+            /// Waits until the row thread handled every row published so far: rows are handled in
+            /// order on one thread, so a new process that is listed was preceded by all of them.
+            /// </summary>
+            public void Flush()
+            {
+                int processId = 900_000 + Interlocked.Increment(ref _flushes);
+                PublishRow("Flush", processId);
+                WaitForProcess("Flush", processId);
+            }
+
+            public CapFrameX.Capture.Contracts.CaptureProcessActivity Activity(string name)
+                => List.GetProcessActivity().Single(activity => activity.Name == name);
+
+            private static string[] ActivityRow(string application, string processId)
+            {
+                var row = new string[StatisticsColumn + 3];
+                row[PresentMonCaptureService.ApplicationName_INDEX] = application;
+                row[PresentMonCaptureService.ProcessID_INDEX] = processId;
+                return row;
+            }
 
             public (string, int)[] Processes()
                 => List.GetAllFilteredProcesses(new HashSet<string>()).ToArray();

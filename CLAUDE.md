@@ -183,11 +183,53 @@ affected.
 process only while `ProcessHelper.IsProcessAlive` says it is alive, and a pass once per second drops
 the exited ones. PresentMon can deliver rows after their process exited (on 2026-10-25 one nine
 seconds after a test app closed, under the name `<unknown>`). Listed again, such a process stood
-beside the game until the next pass, and with two entries the automatic target selection picks
+beside the game until the next pass, and with two entries the target selection of that time picked
 none, so the in-game overlay hid. Only a new entry is checked, an exited one at most once per pass.
 `IsProcessAlive` counts only a conclusive answer as exited (a PID Windows no longer knows, an exit
 code); a process that denies the query is alive, so a protected process no longer drops out on every
 pass. Tests: `PresentMonProcessListTest`, `ProcessHelperTest`.
+
+Every entry also counts its presents, `MsGPUBusy` time, latest `PresentMode` and generated frames
+(`FrameType`) in one bucket per pass; the columns are found by name in the header row, which is read
+on the producer thread. `ICaptureService.GetProcessActivity` returns them over the last 3 completed
+passes (`ActivityWindowSeconds`): presents/s, GPU busy share (capped at 1, null before the first
+complete pass and without the column), idle seconds since the last present.
+
+### Automatic capture target
+
+While the user selected no process, the capture and every overlay renderer follow the process
+`CaptureTargetResolver` (`CapFrameX.Data/CaptureTarget`, pure) picks; the selection always wins and
+the automatic target never touches the ignore list (which is uploaded and needs a PresentMon restart).
+`CaptureViewModel.UpdateAutoTarget` updates it with every list update: a single process is the target
+without any rule (and stays it when a second one appears), the rules only run while at least two
+processes are listed and the user selected none. A selection suspends them; clearing it resolves at
+once. Rules in order, the first that names exactly one process decides:
+
+1. a capture request (hotkey) takes the listed process in the foreground, unless it is idle (the
+   tracker already knows it, nothing is queried at the request);
+2. GPU dominance: at least 10 % busy and 3× every other candidate, all of them measured (an
+   unmeasured process may be the game that just started);
+3. the previous target (`_lastPublishedProcessId`), so a paused or minimized game keeps it;
+4. the candidate that owned the foreground window last, unless idle (`ForegroundProcessTracker`: a
+   `SetWinEventHook(EVENT_SYSTEM_FOREGROUND)` hook on the UI thread, installed only while the list has
+   entries, which reads the foreground once at installation and polls nothing; only a frame window of
+   class `ApplicationFrameWindow` has its child windows searched, for the UWP app drawing inside it);
+5. the only process that presented within 2 s, when every candidate has statistics;
+6. the only known game: a process list entry with a game name that is not ignored, or an executable in
+   a game library folder (`IsGameLibraryPath`: Steam, Epic without its launcher, GOG, Xbox, Ubisoft,
+   EA, Amazon; not WindowsApps);
+7. the only process that presents like a game: `Hardware: …` present modes or generated frames;
+8. processes of one executable: the first, as before.
+
+Otherwise nothing decides (two games at once) and the user selects, as before. The thresholds are
+preliminary: every change of the target or of the candidates while several are listed logs
+`Capture target: … - <reason>: <detail>. Candidates: …` with each candidate's statistics, the material
+to calibrate them; a capture request that changes the target logs `Capture request: …`. The status
+reads "… auto-selected from N processes". The once-per-second list update rebuilds the ignore filter
+and the known-game lookups only after `ProcessList.ProcessesUpdate` reported a change
+(`RefreshProcessListCaches`, a generation counter bumped on the thread of the change); the
+executable paths are read once per process. Tests: `CaptureTargetResolverTest`,
+`ForegroundProcessTrackerTest`, `PresentMonProcessListTest` (`Activity_*`), `CaptureViewModelTest`.
 
 ### Remote API and the overlay hotkey
 

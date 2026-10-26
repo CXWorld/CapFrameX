@@ -55,5 +55,11 @@ namespace CapFrameX.Capture.Contracts
         bool StopCaptureService();
 
         IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter);
+
+        /// <summary>
+        /// Present statistics of every listed process (see <see cref="GetAllFilteredProcesses"/>)
+        /// over the last seconds; empty while the service measures nothing.
+        /// </summary>
+        IReadOnlyList<CaptureProcessActivity> GetProcessActivity();
     }
 }

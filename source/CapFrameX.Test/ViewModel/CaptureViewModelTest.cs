@@ -2,7 +2,9 @@ using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
+using CapFrameX.Capture.Contracts;
 using CapFrameX.Data;
+using CapFrameX.Data.CaptureTarget;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Monitoring.Contracts;
 using CapFrameX.Overlay;
@@ -18,6 +20,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Subjects;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -57,6 +60,8 @@ namespace CapFrameX.Test.ViewModel
         private ProcessList _processList;
         private SoundManager _soundManager;
         private CaptureManager _captureManager;
+        // The installed foreground hook (null without one); tests call it for a foreground change.
+        private Action<int> _foregroundHook;
 
         [TestInitialize]
         public void Setup()
@@ -229,6 +234,192 @@ namespace CapFrameX.Test.ViewModel
         }
 
         [TestMethod]
+        public void UpdateProcessToCaptureList_SecondProcess_KeepsThePreviousTarget()
+        {
+            // Before the automatic selection a browser that started to present beside the game
+            // took the target away and hid the in-game overlay.
+            var sut = CreateDurationSut();
+            int? lastProcessId = null;
+            _processIdStream.Subscribe(id => lastProcessId = id);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            Assert.AreEqual(VkcubeProcessId, lastProcessId);
+
+            _mockCaptureService.AddProcess("msedge.exe", 4242);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+
+            Assert.AreEqual(VkcubeProcessId, lastProcessId);
+            StringAssert.Contains(sut.CaptureStateInfo, "\"vkcube\" auto-selected from 2 processes.");
+            Assert.IsTrue(sut.RememberGameCaptureTimeCommand.CanExecute(null));
+        }
+
+        [TestMethod]
+        public void UpdateProcessToCaptureList_GpuDominantProcess_BecomesTheTarget()
+        {
+            var sut = CreateDurationSut();
+            _mockCaptureService.AddProcess("game.exe", 4242);
+            SetActivity(VkcubeProcess, VkcubeProcessId, gpuBusyShare: 0.03);
+            SetActivity("game.exe", 4242, gpuBusyShare: 0.55);
+            ViewMessages.CurrentProcessToCapture published = null;
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.CurrentProcessToCapture>>()
+                .Subscribe(msg => published = msg);
+
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+
+            Assert.AreEqual("game.exe", published.Process);
+            Assert.AreEqual(4242, published.ProcessId);
+            Assert.IsNull(sut.SelectedProcessToCapture, "The automatic target is no selection.");
+            StringAssert.Contains(sut.CaptureStateInfo, "auto-selected from 2 processes");
+            _captureVmLoggerMock.Verify(logger => logger.Log(LogLevel.Information, It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((state, _) => state.ToString().Contains("GpuDominant")),
+                It.IsAny<Exception>(), It.IsAny<Func<It.IsAnyType, Exception, string>>()), Times.Once);
+        }
+
+        [TestMethod]
+        public void UpdateProcessToCaptureList_SelectionWinsOverTheAutomaticTarget()
+        {
+            var sut = CreateDurationSut();
+            _mockCaptureService.AddProcess("game.exe", 4242);
+            SetActivity(VkcubeProcess, VkcubeProcessId, gpuBusyShare: 0.03);
+            SetActivity("game.exe", 4242, gpuBusyShare: 0.55);
+            int? lastProcessId = null;
+            _processIdStream.Subscribe(id => lastProcessId = id);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+
+            sut.SelectedProcessToCapture = VkcubeProcess;
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+
+            Assert.AreEqual(VkcubeProcessId, lastProcessId);
+            StringAssert.Contains(sut.CaptureStateInfo, "\"vkcube\" selected.");
+        }
+
+        [TestMethod]
+        public void CaptureRequest_TakesTheProcessInTheForegroundAndTheOverlaysFollow()
+        {
+            var sut = CreateDurationSut();
+            _mockCaptureService.AddProcess("game.exe", 4242);
+            int? lastProcessId = null;
+            _processIdStream.Subscribe(id => lastProcessId = id);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            Assert.AreEqual(0, lastProcessId, "Nothing tells the processes apart yet.");
+
+            _foregroundHook(4242);
+            var target = ((string, int))typeof(CaptureViewModel)
+                .GetMethod("GetCaptureRequestTarget", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(sut, null);
+
+            Assert.AreEqual(("game.exe", 4242), target);
+            Assert.AreEqual(4242, lastProcessId);
+
+            // The heartbeat keeps the target although the game left the foreground.
+            _foregroundHook(999);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            Assert.AreEqual(4242, lastProcessId);
+        }
+
+        [TestMethod]
+        public void ForegroundHook_ExistsOnlyWhileProcessesAreListed()
+        {
+            var sut = CreateDurationSut();
+            _mockCaptureService.RemoveProcess(VkcubeProcessId);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            Assert.IsNull(_foregroundHook, "Nothing is listed.");
+
+            _mockCaptureService.AddProcess(VkcubeProcess, VkcubeProcessId);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            Assert.IsNotNull(_foregroundHook);
+
+            _mockCaptureService.RemoveProcess(VkcubeProcessId);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            Assert.IsNull(_foregroundHook);
+        }
+
+        [TestMethod]
+        public void SingleProcess_NeedsNoRules()
+        {
+            var sut = CreateDurationSut();
+            int? lastProcessId = null;
+            _processIdStream.Subscribe(id => lastProcessId = id);
+
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+
+            Assert.AreEqual(VkcubeProcessId, lastProcessId);
+            Assert.AreEqual(0, _mockCaptureService.ProcessActivityRequests);
+        }
+
+        [TestMethod]
+        public void Selection_SuspendsTheRulesUntilItIsCleared()
+        {
+            var sut = CreateDurationSut();
+            _mockCaptureService.AddProcess("game.exe", 4242);
+            SetActivity(VkcubeProcess, VkcubeProcessId, gpuBusyShare: 0.03);
+            SetActivity("game.exe", 4242, gpuBusyShare: 0.55);
+            int? lastProcessId = null;
+            _processIdStream.Subscribe(id => lastProcessId = id);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            Assert.AreEqual(4242, lastProcessId);
+            int requests = _mockCaptureService.ProcessActivityRequests;
+
+            sut.SelectedProcessToCapture = VkcubeProcess;
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            Assert.AreEqual(requests, _mockCaptureService.ProcessActivityRequests);
+            Assert.AreEqual(VkcubeProcessId, lastProcessId);
+
+            // Cleared, the rules run at once; the GPU load decides over the previous target.
+            sut.SelectedProcessToCapture = null;
+            Assert.AreEqual(requests + 1, _mockCaptureService.ProcessActivityRequests);
+            Assert.AreEqual(4242, lastProcessId);
+        }
+
+        [TestMethod]
+        public void UpdateProcessToCaptureList_IgnoredProcess_LeavesTheListAfterTheChange()
+        {
+            // The ignore filter is cached between list updates; a change of the process list
+            // must reach the next update.
+            var sut = CreateDurationSut();
+            _mockCaptureService.AddProcess("second", 4242);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            Assert.AreEqual(2, sut.ProcessesToCapture.Count);
+
+            _processList.AddEntry("second", null, blacklist: true);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+
+            CollectionAssert.AreEqual(new[] { VkcubeProcess }, sut.ProcessesToCapture.ToArray());
+        }
+
+        [TestMethod]
+        public void UpdateProcessToCaptureList_NewGameEntry_DecidesAfterTheChange()
+        {
+            // "Known game" is cached per process name between list updates.
+            var sut = CreateDurationSut();
+            _mockCaptureService.AddProcess("game", 4242);
+            int? lastProcessId = null;
+            _processIdStream.Subscribe(id => lastProcessId = id);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+            Assert.AreEqual(0, lastProcessId, "Nothing tells the processes apart yet.");
+
+            _processList.AddEntry("game", "Some Game");
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+
+            Assert.AreEqual(4242, lastProcessId);
+        }
+
+        [TestMethod]
+        public void CaptureRequest_WithoutADecision_ReturnsNoTarget()
+        {
+            var sut = CreateDurationSut();
+            _mockCaptureService.AddProcess("second.exe", 4242);
+            InvokePrivate(sut, "UpdateProcessToCaptureList");
+
+            var target = ((string, int))typeof(CaptureViewModel)
+                .GetMethod("GetCaptureRequestTarget", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(sut, null);
+
+            Assert.IsNull(target.Item1);
+        }
+
+        [TestMethod]
         public void SelectedNumberOfRuns_SetToOne_DisablesAggregationAndUpdatesOverlay()
         {
             var sut = CreateSut();
@@ -361,8 +552,7 @@ namespace CapFrameX.Test.ViewModel
             var sut = CreateDurationSut();
             Assert.IsFalse(sut.RememberGameCaptureTimeCommand.CanExecute(null));
 
-            InvokePrivate(sut, "UpdateProcessToCaptureList");
-            Assert.IsTrue(sut.RememberGameCaptureTimeCommand.CanExecute(null));
+            // Listed together from the start, so no previous target decides.
             _mockCaptureService.AddProcess("second.exe", 4242);
             InvokePrivate(sut, "UpdateProcessToCaptureList");
 
@@ -532,6 +722,15 @@ namespace CapFrameX.Test.ViewModel
                 _rtssServiceMock.Object,
                 _logEntryManagerMock.Object);
 
+            // Neither the test runner's foreground window nor a real process behind a test PID
+            // may take part in the automatic target selection.
+            vm.ForegroundTracker = new ForegroundProcessTracker(() => 0, onForegroundChanged =>
+            {
+                _foregroundHook = onForegroundChanged;
+                return Disposable.Create(() => _foregroundHook = null);
+            }, () => 0);
+            vm.ImagePathProvider = _ => null;
+
             return vm;
         }
 
@@ -604,6 +803,10 @@ namespace CapFrameX.Test.ViewModel
                 _processListLoggerMock.Object
             });
         }
+
+        private void SetActivity(string name, int processId, double gpuBusyShare)
+            => _mockCaptureService.ProcessActivity.Add(new CaptureProcessActivity(name, processId,
+                idleSeconds: 0, presentsPerSecond: 60, gpuBusyShare, "Composed: Flip", hasGeneratedFrames: false));
 
         private static void InvokePrivate(object instance, string methodName)
         {

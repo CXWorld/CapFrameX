@@ -72,6 +72,10 @@ namespace CapFrameX.ViewModel
         private bool _isUpdatingProcessList;
         private bool _areButtonsActive = true;
         private Dictionary<string, string> _gameFileDescriptionCache = new Dictionary<string, string>();
+        // Bumped by every change of the process list, from any thread; see RefreshProcessListCaches.
+        private int _processListGeneration;
+        private int _cachedProcessListGeneration;
+        private HashSet<string> _ignoredProcessFilter;
 
         private PubSubEvent<ViewMessages.CurrentProcessToCapture> _updateCurrentProcess;
 
@@ -83,7 +87,12 @@ namespace CapFrameX.ViewModel
                 _selectedProcessToCapture = value;
                 RaisePropertyChanged();
                 if (!_isUpdatingProcessList)
+                {
+                    // The automatic target is not kept up to date while a selection decides.
+                    if (string.IsNullOrWhiteSpace(value))
+                        UpdateAutoTarget();
                     OnSelectedProcessToCaptureChanged();
+                }
             }
         }
 
@@ -602,6 +611,11 @@ namespace CapFrameX.ViewModel
 
         private void SubscribeToUpdateProcessIgnoreList()
         {
+            // Synchronous on the thread of the change, so the next list update never reads a
+            // cache that is older than the change.
+            _processList.ProcessesUpdate
+                .Subscribe(_ => System.Threading.Interlocked.Increment(ref _processListGeneration));
+
             _processList.ProcessesUpdate
                 .StartWith(default(int))
                 .ObserveOnDispatcher()
@@ -657,16 +671,18 @@ namespace CapFrameX.ViewModel
                 _logEntryManager.AddLogEntry("Capture triggered, but no process was detected", ELogMessageType.BasicInfo, true);
                 return;
             }
-            else if (ProcessesToCapture.Count > 1 && string.IsNullOrWhiteSpace(SelectedProcessToCapture))
-            {
-                _soundManager.PlaySound(Sound.MoreThanOneProcess);
-                _logEntryManager.AddLogEntry("Capture triggered, but multiple proccesses were detected", ELogMessageType.BasicInfo, true);
-                return;
-            }
             else if (!_captureManager.IsCapturing && !_captureManager.DelayCountdownRunning)
             {
-                string processToCapture = SelectedProcessToCapture ?? ProcessesToCapture.FirstOrDefault();
-                var processInfo = ProcessesInfo.FirstOrDefault(info => info.Item1 == processToCapture);
+                // Resolved for starts only: a stop must never depend on the list.
+                var processInfo = GetCaptureRequestTarget();
+                if (processInfo.Item1 == null)
+                {
+                    _soundManager.PlaySound(Sound.MoreThanOneProcess);
+                    _logEntryManager.AddLogEntry("Capture triggered, but multiple proccesses were detected", ELogMessageType.BasicInfo, true);
+                    return;
+                }
+
+                string processToCapture = processInfo.Item1;
 
                 if (!CommitCaptureTime())
                 {
@@ -780,8 +796,8 @@ namespace CapFrameX.ViewModel
         {
             var selectedProcessToCapture = SelectedProcessToCapture;
 
-            var filter = _processList.GetIgnoredProcessNames().ToHashSet();
-            var processesInfo = _captureManager.GetAllFilteredProcesses(filter).ToArray();
+            RefreshProcessListCaches();
+            var processesInfo = _captureManager.GetAllFilteredProcesses(_ignoredProcessFilter).ToArray();
             var processList = processesInfo.Select(info => info.Item1).ToArray();
 
             // A ListView clears its selection while its items are replaced. Do not treat
@@ -818,7 +834,25 @@ namespace CapFrameX.ViewModel
             // process never invalidated the registration — while re-registering once per process
             // change used to tear down and re-install the global hook, which drops keystrokes.
 
+            UpdateAutoTarget();
             OnSelectedProcessToCaptureChanged();
+        }
+
+        /// <summary>
+        /// Rebuilds what the once-per-second list update derives from the process list, only after
+        /// the list changed: the ignore filter (a copy of all entries and a sort of the ignored
+        /// names) and the known-game lookups of the automatic target selection.
+        /// </summary>
+        private void RefreshProcessListCaches()
+        {
+            // Read first: a change during the rebuild bumps it again and the next call rebuilds.
+            int generation = System.Threading.Volatile.Read(ref _processListGeneration);
+            if (_ignoredProcessFilter != null && generation == _cachedProcessListGeneration)
+                return;
+
+            _cachedProcessListGeneration = generation;
+            _ignoredProcessFilter = _processList.GetIgnoredProcessNames().ToHashSet();
+            _knownGameCache.Clear();
         }
 
         private void OnSelectedProcessToCaptureChanged()
@@ -830,13 +864,18 @@ namespace CapFrameX.ViewModel
         private void UpdateProcessToCapture()
         {
             string currentProcess = null;
+            int processId = 0;
             // explicit hook
             if (!string.IsNullOrWhiteSpace(SelectedProcessToCapture))
-                currentProcess = SelectedProcessToCapture;
-            // auto hook with filtered process list
-            else if (ProcessesToCapture.Count == 1)
             {
-                currentProcess = ProcessesToCapture.FirstOrDefault();
+                currentProcess = SelectedProcessToCapture;
+                processId = ProcessesInfo.FirstOrDefault(info => info.Item1 == currentProcess).Item2;
+            }
+            // auto hook, see CaptureTargetResolver
+            else if (_autoTarget.Target != null)
+            {
+                currentProcess = _autoTarget.Target.Name;
+                processId = _autoTarget.Target.ProcessId;
             }
 
             if (_currentProcessToCapture != currentProcess)
@@ -848,7 +887,6 @@ namespace CapFrameX.ViewModel
                 RestoreCaptureTime();
             }
 
-            var processId = ProcessesInfo.FirstOrDefault(info => info.Item1 == currentProcess).Item2;
             if (processId != _lastPublishedProcessId)
             {
                 // Every overlay renderer keys its frame feed on this PID; a flicker to 0 silences
@@ -986,12 +1024,18 @@ namespace CapFrameX.ViewModel
                         + GetCaptureHotkeyHint(hotkey => CxLang.Format("CaptureViewModel_StartAnyGameAndPress0", hotkey)));
                     _overlayService.SetCaptureServiceStatus("Scanning for process...");
                 }
-                else if (ProcessesToCapture.Count == 1 && !_captureManager.DelayCountdownRunning)
+                else if (_autoTarget.Target != null)
                 {
-                    var game = _currentGameNameToCapture;
-                    SetCaptureStateInfo(() => CxLang.Format("CaptureViewModel_0AutoDetected", game) + Environment.NewLine
-                        + GetCaptureHotkeyHint(hotkey => CxLang.Format("CaptureViewModel_Press0ToStartCapture", hotkey)));
-                    _overlayService.SetCaptureServiceStatus($"\"{_currentGameNameToCapture}\" ready to capture...");
+                    if (!_captureManager.DelayCountdownRunning)
+                    {
+                        var game = _currentGameNameToCapture;
+                        int detected = ProcessesToCapture.Count;
+                        SetCaptureStateInfo(() => (detected > 1
+                                ? CxLang.Format("CaptureViewModel_0AutoSelectedFrom1Processes", game, detected)
+                                : CxLang.Format("CaptureViewModel_0AutoDetected", game)) + Environment.NewLine
+                            + GetCaptureHotkeyHint(hotkey => CxLang.Format("CaptureViewModel_Press0ToStartCapture", hotkey)));
+                        _overlayService.SetCaptureServiceStatus($"\"{_currentGameNameToCapture}\" ready to capture...");
+                    }
                 }
                 else if (ProcessesToCapture.Count > 1)
                 {
