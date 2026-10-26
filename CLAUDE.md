@@ -95,6 +95,24 @@ with the settings it writes (`OverlayRenderer` and its mirror flags, `IsOverlayA
 `ActiveOverlayDesignProfileId`) and the endpoints it reads (`/api/version`, `/api/processes`,
 `/api/metrics`, MCP `cfx_get_overlay_entries`/`cfx_set_overlay_entry`). Details: `scripts\CPU_LOAD_TEST.md`.
 
+### MPO check for users
+`scripts\MpoCheck\` (`Run-MpoCheck.cmd` → `MpoCheck.ps1`, README for users) needs no build: it reads the
+D3DKMT plane caps of every display and records a fullscreen D3D11 test scene with PresentMon, alone
+and with an overlay window at 10 and 60 Hz, then zips a report onto the desktop. PresentMon comes
+from the CapFrameX installation; the script elevates unless the user is in Performance Log Users.
+The overlay window mirrors the hook-free one (`OverlayWindow.cpp`/`GraphicsDevice.cpp` in the OSD
+repo: the same extended styles, a BGRA8 flip-discard composition swapchain with premultiplied
+alpha); keep it in step when those change. It presents from the script's process, so PresentMon
+records its frames too: the analysis keeps the test scene's swapchain (`SwapChainAddress`) and
+takes frame gaps from present time + `MsUntilDisplayed`, because a late-written composed row
+carries deltas to an older frame. The scene renders at half the refresh rate so `MsUntilDisplayed`
+measures the display path, not a full present queue. After the overlay appears (its swapchain's
+first present), DWM may compose the game for a while before it returns it to its plane: on an
+RX 9070 XT between none and about 4 s, varying from run to run. So each overlay stays visible for
+at least 10 s, and the verdict tells "keeps its plane", "composed for N s, then back" and "still
+composed at the end" apart. A GDI window over the game behaves differently: on the same PC it was
+composed throughout.
+
 ## Architecture
 
 ### Solution Structure
