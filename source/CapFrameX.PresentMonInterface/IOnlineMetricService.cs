@@ -32,6 +32,12 @@ namespace CapFrameX.PresentMonInterface
 
         double GetOnlineAnimationErrorValue();
 
+        /// <summary>
+        /// PresentMon's present mode of most of the target's presents within the last second, e.g.
+        /// "Composed: Flip". Null while the target presented nothing for 2 s.
+        /// </summary>
+        string GetOnlinePresentMode();
+
         OnlinePmdMetrics GetPmdMetricsPowerCurrent();
 
         void ResetRealtimeMetrics();

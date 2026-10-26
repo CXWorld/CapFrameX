@@ -229,6 +229,11 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(sources.Single(s => s.Identifier == "DisplayResolution:DISPLAY2").IsText);
             Assert.AreEqual("Percentiles", sources.Single(s => s.Identifier == "OnlineP1").Subcategory);
             Assert.AreEqual("Low averages", sources.Single(s => s.Identifier == "Online1PercentLow").Subcategory);
+            var presentMode = sources.Single(s => s.Identifier == "OnlinePresentMode");
+            Assert.IsTrue(presentMode.IsText);
+            Assert.AreEqual("presentMode", presentMode.SemanticKey);
+            Assert.AreEqual("Performance", presentMode.Category);
+            Assert.AreEqual("Application", presentMode.Subcategory);
             classic.Verify(p => p.GetOverlayEntries(It.IsAny<bool>()), Times.Never);
             classic.Verify(p => p.GetDefaultOverlayEntries(), Times.Never);
         }
@@ -258,7 +263,7 @@ namespace CapFrameX.Test.Integration
                 "Framerate", "Frametime", "DisplayTime", "OnlineAverage", "OnlineP1", "OnlineP0dot1", "OnlineP0dot2",
                 "Online1PercentLow", "Online0dot1PercentLow", "Online0dot2PercentLow", "OnlineFrameTimeAverage",
                 "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineGpuActiveTimePercentageDeviation",
-                "OnlineStutteringPercentage", "OnlinePcLatency", "OnlineAnimationError", "HookOverlayStatus",
+                "OnlineStutteringPercentage", "OnlinePcLatency", "OnlinePresentMode", "OnlineAnimationError", "HookOverlayStatus",
                 "FrameGenerationTechnology", "FrameGenerationStatus", "Resolution"
             };
             if (includeOnlineMetrics) processSpecific.AddRange(new[] { "ProcessName", "GraphicsAPI" });
@@ -290,7 +295,8 @@ namespace CapFrameX.Test.Integration
             var readings = new Dictionary<string, object>
             {
                 ["CustomGPU"] = "GPU 9000", ["CaptureTimer"] = "12", ["CaptureServiceStatus"] = "Recording...",
-                ["BatteryLifePercent"] = double.NaN, ["Resolution"] = "N/A", ["Ping"] = 4d
+                ["BatteryLifePercent"] = double.NaN, ["Resolution"] = "N/A", ["Ping"] = 4d,
+                ["OnlinePresentMode"] = "Composed: Flip"
             };
             classic.Setup(p => p.GetTelemetryValues()).Returns(readings);
             var overlay = new Mock<IOverlayService>();
@@ -307,6 +313,7 @@ namespace CapFrameX.Test.Integration
             Assert.IsNull(snapshot.MetricValues["metric/BatteryLifePercent"]);
             Assert.IsNull(snapshot.MetricValues["metric/Resolution"]);
             Assert.AreEqual(4d, snapshot.MetricValues["metric/Ping"]);
+            Assert.AreEqual("Composed: Flip", snapshot.MetricValues["metric/OnlinePresentMode"]);
             Assert.AreEqual("100 FPS\n120 FPS [outlier]\n110 FPS average", snapshot.MetricValues["metric/RunHistory"]);
             Assert.AreEqual("110 FPS average", snapshot.MetricValues["metric/RunHistoryAggregation"]);
             Assert.AreEqual(2d, snapshot.Values["metric/RunHistoryCount"]);

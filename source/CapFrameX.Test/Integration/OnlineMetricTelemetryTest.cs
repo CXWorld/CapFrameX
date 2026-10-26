@@ -9,6 +9,7 @@ using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.PMD;
 using CapFrameX.EventAggregation.Messages;
+using CapFrameX.Overlay;
 using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
@@ -141,11 +142,81 @@ namespace CapFrameX.Test.Integration
             }
         }
 
+        [TestMethod]
+        public void PresentModeIsTheModeOfMostOfTheTargetsPresentsWithinTheLastSecond()
+        {
+            const string IndependentFlip = "Hardware: Independent Flip", ComposedFlip = "Composed: Flip";
+            var events = new EventAggregator();
+            var capture = new Mock<ICaptureService>();
+            capture.SetupGet(c => c.FrameDataStream).Returns(Observable.Never<string[]>());
+            capture.SetupGet(c => c.CPUStartQPCTimeInMs_Index).Returns(18);
+            capture.SetupGet(c => c.CpuBusy_Index).Returns(20);
+            capture.SetupGet(c => c.GpuBusy_Index).Returns(24);
+            using var service = CreateService(events, capture.Object);
+            events.GetEvent<PubSubEvent<ViewMessages.CurrentProcessToCapture>>()
+                .Publish(new ViewMessages.CurrentProcessToCapture("game", 42));
+            var update = typeof(OnlineMetricService).GetMethod("UpdateOnlineMetrics", BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNull(service.GetOnlinePresentMode(), "No present, no mode.");
+
+            Add(1000, IndependentFlip);
+            Add(1100, ComposedFlip);
+            Add(1200, ComposedFlip);
+            Add(1300, IndependentFlip);
+            Assert.AreEqual(IndependentFlip, service.GetOnlinePresentMode(), "A tie goes to the mode of the newest present.");
+            Add(1400, ComposedFlip);
+            Assert.AreEqual(ComposedFlip, service.GetOnlinePresentMode());
+            Add(1500, IndependentFlip, pid: "77");
+            Add(1510, IndependentFlip, pid: "77");
+            Assert.AreEqual(ComposedFlip, service.GetOnlinePresentMode(), "Another process' presents do not count.");
+
+            // A second later only the composed present at 1.4 s is left of the earlier ones.
+            Add(2350, IndependentFlip);
+            Add(2380, IndependentFlip);
+            Add(2390, "Unknown");
+            Add(2391, "Unknown");
+            Add(2392, "Unknown");
+            Add(2393, "");
+            Assert.AreEqual(IndependentFlip, service.GetOnlinePresentMode(),
+                "Presents PresentMon could not classify do not outvote the ones it could.");
+
+            events.GetEvent<PubSubEvent<ViewMessages.CurrentProcessToCapture>>()
+                .Publish(new ViewMessages.CurrentProcessToCapture("game", 43));
+            Assert.IsNull(service.GetOnlinePresentMode(), "A new target starts without a mode.");
+            Add(5000, "Unknown", pid: "43");
+            Assert.AreEqual("Unknown", service.GetOnlinePresentMode());
+
+            typeof(OnlineMetricService).GetField("_lastFrameTimestampTicks", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(service, DateTime.UtcNow.AddSeconds(-3).Ticks);
+            Assert.IsNull(service.GetOnlinePresentMode(), "A target that stopped presenting has no current mode.");
+
+            void Add(double timestamp, string presentMode, string pid = "42")
+            {
+                var row = Enumerable.Repeat("0", 31).ToArray();
+                row[0] = "game.exe"; row[1] = pid;
+                row[PresentMonCaptureService.PresentMode_INDEX] = presentMode;
+                row[18] = timestamp.ToString(CultureInfo.InvariantCulture);
+                update.Invoke(service, new object[] { row });
+            }
+        }
+
+        [TestMethod]
+        public void ShownPresentModeEntryRequestsTheTargetsRows()
+        {
+            var core = new OverlayEntryCore();
+            using var service = CreateService(overlayEntryCore: core);
+            var entry = new OverlayEntryWrapper("OnlinePresentMode") { ShowOnOverlay = false };
+            core.RealtimeMetricEntryDict[entry.Identifier] = entry;
+            Assert.IsFalse(Evaluate(service, "EvaluateRealtimeMetrics"));
+            entry.ShowOnOverlay = true;
+            Assert.IsTrue(Evaluate(service, "EvaluateRealtimeMetrics"));
+        }
+
         private static bool Evaluate(OnlineMetricService service, string method)
             => (bool)typeof(OnlineMetricService).GetMethod(method, BindingFlags.NonPublic | BindingFlags.Instance)
                 .Invoke(service, null);
 
-        private static OnlineMetricService CreateService(EventAggregator events = null, ICaptureService captureService = null)
+        private static OnlineMetricService CreateService(EventAggregator events = null, ICaptureService captureService = null,
+            IOverlayEntryCore overlayEntryCore = null)
         {
             var capture = new Mock<ICaptureService>();
             capture.SetupGet(c => c.FrameDataStream).Returns(Observable.Never<string[]>());
@@ -157,7 +228,7 @@ namespace CapFrameX.Test.Integration
             benchlab.SetupGet(p => p.CpuPowerSensorIndex).Returns(1);
             benchlab.SetupGet(p => p.SytemPowerSensorIndex).Returns(2);
             return new OnlineMetricService(Mock.Of<IStatisticProvider>(), captureService ?? capture.Object, events ?? new EventAggregator(),
-                Mock.Of<IOverlayEntryCore>(), powenetics.Object, benchlab.Object, Mock.Of<IAppConfiguration>());
+                overlayEntryCore ?? Mock.Of<IOverlayEntryCore>(), powenetics.Object, benchlab.Object, Mock.Of<IAppConfiguration>());
         }
     }
 }

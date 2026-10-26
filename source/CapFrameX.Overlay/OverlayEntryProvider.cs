@@ -97,6 +97,7 @@ namespace CapFrameX.Overlay
         private const string FRAME_GENERATION_STATUS_IDENTIFIER = "FrameGenerationStatus";
         private const string DISPLAY_TIME_IDENTIFIER = "DisplayTime";
         private const string PRESENT_RESOLUTION_IDENTIFIER = "Resolution";
+        private const string PRESENT_MODE_IDENTIFIER = "OnlinePresentMode";
         private const string DISPLAY_RESOLUTION_IDENTIFIER_PREFIX = "DisplayResolution:";
 
         private readonly ISensorService _sensorService;
@@ -301,6 +302,8 @@ namespace CapFrameX.Overlay
                     values["GraphicsAPI"] = _appConfiguration.EnableHookOverlay ? targetHook?.RenderApi
                         : _appConfiguration.UsesRtss() && _currentProcessId > 0
                             ? _rTSSService.GetApiInfo(_currentProcessId) : null;
+                if (Requested(PRESENT_MODE_IDENTIFIER))
+                    values[PRESENT_MODE_IDENTIFIER] = PresentModeLabel.Shorten(_onlineMetricService?.GetOnlinePresentMode());
                 if (identifiers == null || identifiers.Any(identifier =>
                         identifier.StartsWith(DISPLAY_RESOLUTION_IDENTIFIER_PREFIX, StringComparison.Ordinal)))
                     foreach (var display in GetDetectedDisplays())
@@ -565,7 +568,8 @@ namespace CapFrameX.Overlay
                 _sensorConfig.SelectForOverlay(entry.Identifier, entry.ShowOnOverlay);
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
 
-                if (ONLINE_METRIC_NAMES.Contains(entry.Identifier) || entry.Identifier == "SystemTime"
+                if (ONLINE_METRIC_NAMES.Contains(entry.Identifier) || entry.Identifier == PRESENT_MODE_IDENTIFIER
+                    || entry.Identifier == "SystemTime"
                     || entry.Identifier == "BatteryLifePercent" || entry.Identifier == "BatteryLifeRemaining"
                     || entry.Identifier == "Ping" || entry.Identifier == "ThreadAffinityState" || entry.Identifier == "PCLatency")
                 {
@@ -1655,6 +1659,14 @@ namespace CapFrameX.Overlay
             if (pcLatency != null && pcLatency.ShowOnOverlay)
             {
                 pcLatency.Value = Math.Round(_onlineMetricService.GetOnlinePcLatencyAverageValue(), 1, MidpointRounding.AwayFromZero);
+            }
+
+            // Present mode
+            _identifierOverlayEntryDict.TryGetValue(PRESENT_MODE_IDENTIFIER, out IOverlayEntry presentMode);
+
+            if (presentMode != null && presentMode.ShowOnOverlay)
+            {
+                presentMode.Value = PresentModeLabel.Shorten(_onlineMetricService.GetOnlinePresentMode()) ?? "N/A";
             }
 
             // Animation Error

@@ -1680,6 +1680,7 @@
     "PMD GPU Power (W)": "Мощность ГП PMD (Вт)",
     "PMD Sys Power": "Мощность системы PMD",
     "PMD System Power (W)": "Мощность системы PMD (Вт)",
+    "Present Mode": "Режим вывода",
     "Present Resolution": "Разрешение вывода",
     "Processing data": "Обработка данных",
     "RAM Info": "Память",

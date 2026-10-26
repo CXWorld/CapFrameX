@@ -57,7 +57,12 @@ namespace CapFrameX.PresentMonInterface
 
         // Circular buffers for 1-second window metrics
         private CircularBuffer<double> _pcLatency1Second;
+        private CircularBuffer<string> _presentModes1Second;
         private CircularBuffer<double> _measuretimes1Second;
+        // Every row splits into new strings. Consecutive equal modes share the stored instance, so
+        // the window does not keep a copy of the same text per present alive.
+        private string _lastPresentMode;
+        private readonly List<(string Mode, int Count)> _presentModeVotes = new List<(string, int)>(4);
 
         // Circular buffers for 250ms animation error window metrics
         private CircularBuffer<double> _animationError500Ms;
@@ -331,7 +336,8 @@ namespace CapFrameX.PresentMonInterface
                     || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineFrameTimeAverage")?.ShowOnOverlay ?? false)
                     || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineGpuActiveTimePercentageDeviation")?.ShowOnOverlay ?? false)
                     || (_overlayEntryCore.GetRealtimeMetricEntry("OnlinePcLatency")?.ShowOnOverlay ?? false)
-                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineAnimationError")?.ShowOnOverlay ?? false);
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlineAnimationError")?.ShowOnOverlay ?? false)
+                    || (_overlayEntryCore.GetRealtimeMetricEntry("OnlinePresentMode")?.ShowOnOverlay ?? false);
             }
             catch { return true; }
         }
@@ -446,6 +452,11 @@ namespace CapFrameX.PresentMonInterface
                 }
             }
 
+            string presentMode = lineSplit.Length > PresentMonCaptureService.PresentMode_INDEX
+                ? lineSplit[PresentMonCaptureService.PresentMode_INDEX]?.Trim() : null;
+            if (string.IsNullOrEmpty(presentMode) || presentMode == "<error>")
+                presentMode = null;
+
             // Selection can change while a row is being parsed. Commit only while the same
             // process is still selected, serialized with the selection's buffer reset.
             lock (_currentProcessLock)
@@ -488,8 +499,13 @@ namespace CapFrameX.PresentMonInterface
                     lock (_lock1SecondMetric)
                     {
                         // 1 second window - using circular buffer for O(1) add and efficient removal
+                        if (string.Equals(presentMode, _lastPresentMode, StringComparison.Ordinal))
+                            presentMode = _lastPresentMode;
+                        else if (presentMode != null)
+                            _lastPresentMode = presentMode;
                         _measuretimes1Second.Add(startTime);
                         _pcLatency1Second.Add(pcLatency);
+                        _presentModes1Second.Add(presentMode);
 
                         // Remove old entries that exceed the 1 second interval
                         if (_measuretimes1Second.Any() &&
@@ -500,6 +516,7 @@ namespace CapFrameX.PresentMonInterface
                             {
                                 _measuretimes1Second.RemoveFirst();
                                 _pcLatency1Second.RemoveFirst();
+                                _presentModes1Second.RemoveFirst();
                             }
                         }
                     }
@@ -622,6 +639,8 @@ namespace CapFrameX.PresentMonInterface
                 int capacity1Second = LIST_CAPACITY / 20;
                 _measuretimes1Second = new CircularBuffer<double>(capacity1Second);
                 _pcLatency1Second = new CircularBuffer<double>(capacity1Second);
+                _presentModes1Second = new CircularBuffer<string>(capacity1Second);
+                _lastPresentMode = null;
             }
 
             lock (_lock5SecondsMetric)
@@ -816,6 +835,54 @@ namespace CapFrameX.PresentMonInterface
                 }
 
                 return resultValue;
+            }
+        }
+
+        public string GetOnlinePresentMode()
+        {
+            // The window keeps the last second the target presented, also long after it stopped.
+            long lastFrameTicks = Interlocked.Read(ref _lastFrameTimestampTicks);
+            if (lastFrameTicks == 0 || DateTime.UtcNow.Ticks - lastFrameTicks > TimeSpan.FromSeconds(2).Ticks)
+                return null;
+
+            lock (_lock1SecondMetric)
+            {
+                if (_presentModes1Second == null)
+                    return null;
+
+                // The most frequent mode, not the latest: a second swapchain of the target or a
+                // single composed frame must not make the entry flicker. Counted from the newest
+                // present, so a tie goes to the mode the target presents with now. "Unknown" (a
+                // present PresentMon could not classify) only shows when nothing else was seen.
+                _presentModeVotes.Clear();
+                bool sawUnknown = false;
+                for (int i = _presentModes1Second.Count - 1; i >= 0; i--)
+                {
+                    string mode = _presentModes1Second[i];
+                    if (mode == null)
+                        continue;
+                    if (mode == "Unknown")
+                    {
+                        sawUnknown = true;
+                        continue;
+                    }
+
+                    int vote = 0;
+                    while (vote < _presentModeVotes.Count && !string.Equals(_presentModeVotes[vote].Mode, mode, StringComparison.Ordinal))
+                        vote++;
+                    if (vote == _presentModeVotes.Count)
+                        _presentModeVotes.Add((mode, 1));
+                    else
+                        _presentModeVotes[vote] = (mode, _presentModeVotes[vote].Count + 1);
+                }
+
+                // Votes are in the order of their newest present: the first of the highest wins.
+                int best = -1;
+                for (int vote = 0; vote < _presentModeVotes.Count; vote++)
+                    if (best < 0 || _presentModeVotes[vote].Count > _presentModeVotes[best].Count)
+                        best = vote;
+
+                return best >= 0 ? _presentModeVotes[best].Mode : sawUnknown ? "Unknown" : null;
             }
         }
 

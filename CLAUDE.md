@@ -317,6 +317,19 @@ renderer selected) and a PID change drop it. API names follow RTSS's spelling (`
 `Vulkan`, `OpenGL`, ...), also in `RTSSCoreControl.cpp` (`IRTSSService.GetApiInfo`): both sources feed a
 capture's `ApiInfo` and the `GraphicsAPI` overlay entry, so they must spell alike.
 
+### Present mode entry
+
+`OnlinePresentMode` ("Present Mode", an `OnlineMetric` text entry) shows PresentMon's `PresentMode` of
+the target in every renderer, the remote API and tile designs (text source `metric/OnlinePresentMode`,
+semantic key `presentMode`), shortened by `PresentModeLabel` (`HW: Legacy Copy`, `MPO: Independent
+Flip`, `Composed: GPU Copy`, ...; unknown names pass through). Capture files and logs keep PresentMon's
+names. No hook can provide it: DWM decides it after the present. `OnlineMetricService.GetOnlinePresentMode`
+returns the mode of most of the target's presents within the last second, so a second swapchain or a
+single composed frame does not make it flicker; a tie goes to the newest present, `Unknown` only shows
+when nothing else was seen, and 2 s after the last present it is null (the entry reads "N/A"). The entry
+is registered in `RealtimeMetricEntryDict`, so showing it makes the service evaluate rows, but it is
+not one of the numeric `ONLINE_METRIC_NAMES`. Tests: `PresentModeEntryTest`, `OnlineMetricTelemetryTest`.
+
 ### OLED pixel orbit
 
 `OsdPixelOrbit` (`CapFrameX.Contracts/Configuration`) moves the CapFrameX renderers by one pixel per

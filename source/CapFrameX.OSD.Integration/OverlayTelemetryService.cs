@@ -351,6 +351,7 @@ namespace CapFrameX.OSD.Integration
                 "OS" => ("System", "Information", "", "osVersion", true),
                 "GPUDriver" => ("Graphics", "Information", "", "gpuDriver", true),
                 "Resolution" => ("Graphics", "Displays", "", "resolution", true),
+                "OnlinePresentMode" => ("Performance", "Application", "", "presentMode", true),
                 "BatteryLifePercent" => ("Power", "Battery", "%", "batteryLevel", false),
                 "BatteryLifeRemaining" => ("Power", "Battery", "min", "batteryRemaining", false),
                 "Ping" => ("Network", "Connectivity", "ms", "ping", false),
