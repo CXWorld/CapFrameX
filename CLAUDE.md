@@ -182,7 +182,7 @@ The hook-free OSD lives in the **private** repo [CXWorld/CapFrameX.OSD](https://
 - `source/Directory.Build.props` detects the sibling checkout and selects source builds for Interop and Controls. Override its location with `CfxOsdSourceDir`; the legacy `CfxOsdSubmoduleDir` override remains supported. Without source, builds reference the prebuilt DLLs. Force the fallback with `/p:CfxOsdFromSource=false`.
 - The native renderer `cfx_osd_core.dll` is staged from the selected checkout's CMake output if built (`../CapFrameX.OSD/CapFrameX.OSD/build/bin/RelWithDebInfo`), else from the prebuilt folder. Explicit prebuilt mode also applies to hooks and Vulkan payloads.
 - `source/CapFrameX.OSD.Integration` (adapter mapping `IOverlayEntry` onto the OSD, references `CapFrameX.Contracts`) intentionally stays in this repo; everything CapFrameX-independent (native core, Interop, WPF editor controls) lives in the OSD repo.
-- After OSD changes: update the DLLs in `external/CapFrameX.OSD-prebuilt/` (see its README) and record their source revision and hashes there.
+- After OSD changes: update the DLLs in `external/CapFrameX.OSD-prebuilt/` (see its README) and record their source revision and hashes there. When the Vulkan layer code changed, also replace the installed layers (`C:\Program Files\CapFrameX\vulkan` and `vulkan\x86`): games load the registered copies, not the build output (the README's "Updating" section says which sources count).
 
 ### Hook-free visibility
 

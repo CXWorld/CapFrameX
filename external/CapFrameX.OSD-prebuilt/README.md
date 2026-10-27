@@ -52,9 +52,7 @@ from the previous ones in the build timestamps and in `CFX_VK_COMPATIBILITY_BUIL
 catalogs are unchanged.
 
 Verification: all 16 core CTests pass, as do the 33 hook and 10 Vulkan CTests on x64 and x86. A
-CapFrameX build with `CfxOsdFromSource=false` was not run. The Vulkan layers in
-`C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` were not updated; they carry the previous `vk`
-DLLs (`EEFF5E85…`, `2D909855…`), built from the same layer sources.
+CapFrameX build with `CfxOsdFromSource=false` was not run.
 
 | Updated component | SHA-256 |
 | --- | --- |
@@ -92,9 +90,6 @@ fails on this machine (RTX 5090, driver 32.0.16.2101) and fails the same way on 
 CapFrameX built against these sources (`CfxOsdFromSource`, Release) passes all 3206 runnable unit
 tests (6 skipped), among them `OverlayTileStyleTest` and `OverlayTileDocumentTest`; a build with
 `CfxOsdFromSource=false` was not run.
-The Vulkan layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` were not updated with this
-build; they carried the `d958d92` build (`37B16B44…`, `4847DBE4…`) until 2026-10-25, when they were
-replaced by the two `vk` DLLs below (manifests unchanged).
 A clean rebuild of the five trees from `dcf0bf9` (2026-10-25, on a machine with an RX 9070 XT)
 differs from these DLLs only in the build timestamps, a few swapped incremental-link thunks and one
 hash constant; its code sections match byte for byte for the core and the x64 hook. There all 16 core
@@ -130,8 +125,7 @@ with the analysis chart in `chart_geometry` and the `lines` schema, shared range
 per two-line chart in `design` (415 checks). All 33 hook CTests and all 10 Vulkan CTests pass on x64
 and x86. CapFrameX built against these sources (`CfxOsdFromSource`) passes all 3177 runnable unit
 tests (6 skipped), among them `OverlayChartLinesTest`, `OverlayTileDocumentTest` and
-`OverlayDesignRuntimeTest`; a build with `CfxOsdFromSource=false` was not run. The Vulkan layer in
-`C:\Program Files\CapFrameX\vulkan` was not updated.
+`OverlayDesignRuntimeTest`; a build with `CfxOsdFromSource=false` was not run.
 
 | Updated component | SHA-256 |
 | --- | --- |
@@ -163,8 +157,7 @@ Verification: all 16 core CTests pass (`chart_geometry` checks that every pre-sc
 every plot column for replayed and local charts and, as a negative control, that a line ending at
 the window end leaves the scrolled columns open). All 33 hook CTests and all 10 Vulkan CTests pass on
 x64 and x86. A CapFrameX Release build with `CfxOsdFromSource=false` stages exactly these DLLs into
-the test output and passes all 3122 runnable unit tests (6 skipped). The Vulkan layer pair is also
-installed in `C:\Program Files\CapFrameX\vulkan` on the development machine.
+the test output and passes all 3122 runnable unit tests (6 skipped).
 
 | Updated component | SHA-256 |
 | --- | --- |
@@ -1794,6 +1787,16 @@ Copy those files one by one, never a whole `RelWithDebInfo` folder: the build ou
 hold the ctest executables and `cfx_inject.exe`. That injector was deliberately dropped when
 `HookInjector` learned to resolve the target's 32-bit `LoadLibraryW` itself, and a bulk copy
 is how it silently reappeared under `native/x86/` once already.
+
+**When the Vulkan layer code changes, the installed layers have to be updated as well.** The layer
+compiles `vk_layer/src` with its shaders, the core sources (`${CFX_OSD_CORE_SRC}`) and the `hook_poc`
+feed sources listed in `HOOK_SHARED_SRC` (`vk_layer/CMakeLists.txt`). After a change to any of them,
+the `vk` DLLs here carry new code, but Vulkan games keep loading the registered copies, normally
+`C:\Program Files\CapFrameX\vulkan` and `vulkan\x86`. Copy both new `cfx_osd_vklayer.dll` there
+(elevated; the manifests stay), or register this checkout's payload as described below, and keep a
+backup of the replaced DLLs. A change to another `hook_poc` header alone does not change the layer's
+behavior, only `CFX_VK_COMPATIBILITY_BUILD`, the build hash CapFrameX binds learned Vulkan profiles to;
+updating the installed copies is optional then.
 
 For Vulkan runtime tests, also check the manifest paths registered in both HKLM registry views.
 The loader uses the DLL beside each registered manifest, even when CapFrameX runs from its
