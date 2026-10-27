@@ -195,6 +195,20 @@ toggles `IsOverlayActive`, which hides a visible overlay at any time but cannot 
 gate; the toggled state takes effect once a process is detected. RTSS and the in-game hook are not
 affected.
 
+### MPO warning
+
+The hook-free window is a topmost window, so a game below it keeps independent flip only on an MPO
+plane of its own. `MpoSupportProbe` (`CapFrameX.Overlay/MpoSupport.cs`) asks the display driver for
+the planes of the hook-free display (`D3DKMTGetMultiPlaneOverlayCaps`, as `scripts\MpoCheck` does;
+the counts include the base plane, so a game needs `min(MaxPlanes, MaxRGBPlanes)` ≥ 2) and reads
+`OverlayTestMode` under `HKLM\SOFTWARE\Microsoft\Windows\Dwm` (5 switches MPO off). Without a plane,
+or with MPO switched off, the Overlay tab shows a red warning under both hook-free choices (OSD
+options and the Designs tab's output) whether or not hook-free is selected, and `CapFrameX.log`
+records `MPO check for the hook-free display …` whenever the result changes. Caps the driver does not
+report (remote session, basic display driver) do not warn. The caps can only rule MPO out: with
+planes reported, DWM may still compose for a while (see "MPO check for users"), which the Present
+Mode entry shows in the game. Tests: `MpoSupportTest`.
+
 ### Capture process list
 
 `PresentMonProcessList` lists the processes PresentMon reports presents for: a data row lists its

@@ -13,6 +13,7 @@ using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.ViewModel.SubModels;
 using GongSolutions.Wpf.DragDrop;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;
@@ -65,6 +66,9 @@ namespace CapFrameX.ViewModel
             Array.Empty<HookFreeDisplayItem>();
         private bool _displaySettingsChangedSubscribed;
         private IReadOnlyList<string> _osdFontFamilies;
+        private readonly ILogger<OverlayViewModel> _logger;
+        private MpoSupportInfo _hookFreeMpo;
+        private string _loggedHookFreeMpo;
 
         public bool OverlayItemsOptionsEnabled
         {
@@ -453,7 +457,43 @@ namespace CapFrameX.ViewModel
 
                 _appConfiguration.HookFreeDisplayDeviceName = value;
                 RaisePropertyChanged();
+                UpdateHookFreeMpo(value);
             }
+        }
+
+        // Shown under both hook-free choices whether or not it is selected, so it warns before the
+        // switch: without an MPO plane on its display, the visible window makes DWM compose the game.
+        public string HookFreeMpoWarning => GetHookFreeMpoWarning(_hookFreeMpo);
+
+        public bool ShowHookFreeMpoWarning => _hookFreeMpo?.WarnsHookFree == true;
+
+        public static string GetHookFreeMpoWarning(MpoSupportInfo mpo)
+        {
+            switch (mpo?.Status)
+            {
+                case MpoSupportStatus.NoOverlayPlane:
+                    return CxLang.T("OverlayView_HookFreeMpoMissing") + " " +
+                        CxLang.T("OverlayView_HookFreeMpoConsequence");
+                case MpoSupportStatus.SwitchedOff:
+                    return CxLang.T("OverlayView_HookFreeMpoSwitchedOff") + " " +
+                        CxLang.T("OverlayView_HookFreeMpoConsequence");
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private void UpdateHookFreeMpo(string deviceName)
+        {
+            _hookFreeMpo = MpoSupportProbe.Query(deviceName);
+            string described = _hookFreeMpo.ToString();
+            if (!string.Equals(described, _loggedHookFreeMpo, StringComparison.Ordinal))
+            {
+                _loggedHookFreeMpo = described;
+                _logger?.LogInformation("MPO check for the hook-free display {Result}", described);
+            }
+
+            RaisePropertyChanged(nameof(HookFreeMpoWarning));
+            RaisePropertyChanged(nameof(ShowHookFreeMpoWarning));
         }
 
         public int HookFreeRefreshRate
@@ -880,8 +920,10 @@ namespace CapFrameX.ViewModel
             IPathService pathService, ISensorService sensorService, IRTSSService rTSSService, IThreadAffinityController threadAffinityController,
             IOnlineMetricService onlineMetricService, IOverlayTemplateService overlayTemplateService,
             IHookLearnedProfileService hookLearnedProfileService, IHookOverlayStatusService hookOverlayStatusService,
-            IOverlayDesignService overlayDesignService = null, Prism.Events.IEventAggregator eventAggregator = null)
+            IOverlayDesignService overlayDesignService = null, Prism.Events.IEventAggregator eventAggregator = null,
+            ILogger<OverlayViewModel> logger = null)
         {
+            _logger = logger;
             _overlayService = overlayService;
             _overlayEntryProvider = overlayEntryProvider;
             _appConfiguration = appConfiguration;
@@ -953,6 +995,12 @@ namespace CapFrameX.ViewModel
                 .Where(x => x.key == nameof(IAppConfiguration.HideOverlay))
                 .ObserveOnDispatcher()
                 .Subscribe(_ => RaisePropertyChanged(nameof(ShowRtssHiddenHint)));
+
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage))
+                    RaisePropertyChanged(nameof(HookFreeMpoWarning));
+            };
 
             SaveConfigCommand = new DelegateCommand<object>(
                async (object targetConfig) =>
@@ -1587,6 +1635,8 @@ namespace CapFrameX.ViewModel
             }
 
             RaisePropertyChanged(nameof(HookFreeDisplayDeviceName));
+            // A topology change can move the display to another adapter or mode.
+            UpdateHookFreeMpo(selectedDeviceName);
         }
 
         void IDropTarget.Drop(IDropInfo dropInfo)

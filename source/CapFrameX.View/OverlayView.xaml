@@ -1268,6 +1268,9 @@
                                     <RadioButton Content="{loc:Tr OverlayDesigns_InGame}" IsChecked="{Binding OverlayModeHook}" GroupName="DesignRenderer" Margin="0,0,24,0" />
                                     <RadioButton Content="{loc:Tr OverlayDesigns_HookFree}" IsChecked="{Binding OverlayModeHookFree}" GroupName="DesignRenderer" />
                                 </WrapPanel>
+                                <TextBlock Margin="0,8,0,0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
+                                           Visibility="{Binding ShowHookFreeMpoWarning, Converter={StaticResource TrueToVisibleConverter}}"
+                                           Text="{Binding HookFreeMpoWarning}" />
                             </StackPanel>
                         </Border>
                     </StackPanel>
@@ -1541,6 +1544,9 @@
 													 Style="{StaticResource MaterialDesignRadioButton}"/>
 										<TextBlock Margin="26 0 0 0" Style="{StaticResource OsdOptionsDescription}"
 												   Text="{loc:Tr OverlayView_UsesDWMDirectCompositionWithoutGame}"/>
+										<TextBlock Margin="26 5 0 0" FontSize="11" Foreground="#D95050" TextWrapping="Wrap"
+												   Visibility="{Binding ShowHookFreeMpoWarning, Converter={StaticResource TrueToVisibleConverter}}"
+												   Text="{Binding HookFreeMpoWarning}"/>
 										<StackPanel Margin="26 8 0 0" IsEnabled="{Binding CanConfigureHookFreeOptions}">
 											<StackPanel>
 												<TextBlock Text="{loc:Tr OverlayView_HookFreeOutputDisplay}"/>
