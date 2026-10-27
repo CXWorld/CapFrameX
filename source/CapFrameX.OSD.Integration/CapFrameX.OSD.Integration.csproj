@@ -206,5 +206,14 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <!-- Registers the layers of the folder it lies in. Portable extraction writes no registry
+       values, so the portable CapFrameX offers to run it at startup (PortableVulkanLayerPrompt).
+       The installer registers its layers itself and excludes the script. -->
+  <ItemGroup>
+    <Content Include="Register-CapFrameXVulkanLayer.ps1">
+      <Link>vulkan\Register-CapFrameXVulkanLayer.ps1</Link>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
 
 </Project>

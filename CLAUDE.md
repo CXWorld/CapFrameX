@@ -544,6 +544,26 @@ Registration is bitness-scoped and this is load-bearing: the loader identifies a
 
 **Never register the layer in HKCU** (the OSD repo's `register_layer.cmd` uses HKLM only and purges HKCU leftovers). HKCU is user-controlled, so the loader ignores it for targets started elevated — e.g. a game launched from a Visual Studio that debugs the admin-only `CapFrameX.exe` — and it is not split by bitness, so it also triggers the shadowing above. Both failure modes are silent and look exactly like "this game has no Vulkan": `VulkanActivityProbe` finds no renderer-state mapping, `VulkanLayerModuleProbe` finds no layer module, and `HookOverlayManager` correctly concludes DXGI and injects the hook into a Vulkan title — where the in-game arbiter denies its renderer lease and the status parks on `Initializing` until it turns `Unavailable`.
 
+### Portable version: layer registration at startup
+
+Portable extraction writes no registry values. In portable mode `App` schedules
+`PortableVulkanLayerPrompt` at `ApplicationIdle`; it asks `PortableVulkanLayerCheck` (CapFrameX.Overlay)
+whether games of both bitnesses load the layers of the app's own `vulkan` folder: every registration
+the loader of that bitness reads (`VulkanLayerRegistrationProbe.VisibleTo`) must be in its HKLM view
+and name the own manifest or a DLL with the same SHA-256, so an installed CapFrameX of the same build
+needs nothing. Otherwise it offers `Install` (nothing registered) or `Update` and, on Yes, runs
+`vulkan\Register-CapFrameXVulkanLayer.ps1` (source in `CapFrameX.OSD.Integration`, Windows PowerShell
+5.1, started by `VulkanLayerRegistrationScript` without UAC since CapFrameX is elevated): it enables the
+own manifests per view, disables every other enabled CapFrameX registration (DWORD 1, so an installer
+repair restores it) and removes HKCU entries, then CapFrameX checks again and publishes
+`AppMessages.VulkanLayerRegistrationChanged`, which makes the Info tab read the layer status again:
+it is the startup page, so no navigation refreshes it while the prompt runs. A No stores
+`DeclinedPortableVulkanLayerSignature`, a hash over the own layers and the visible registrations, so the
+prompt returns only once one of them changes. The MSI excludes the script; CI requires it in the app
+output; release signing signs it like every `.ps1`. Keep its registration rules in step with the
+probe and the installer's purge. Tests: `PortableVulkanLayerCheckTest` (runs the script with
+`-ValidateOnly`).
+
 ## In-game hook compatibility probing
 
 The profile catalog (`HookCompatibilityProfileCatalog.LoadProfiles`, read once at startup) merges the

@@ -1454,6 +1454,12 @@
     "PmdView_SystemPower": "Potencia del sistema",
     "PmdView_SystemPower2": "Potencia del sistema",
     "PmdView_Values": "Valores",
+    "PortableVulkanLayerPrompt_Failed0": "No se pudieron registrar las capas de Vulkan:\n{0}\n\nEl archivo de log de CapFrameX contiene la salida del script.",
+    "PortableVulkanLayerPrompt_Install01": "Los juegos Vulkan muestran el overlay en el juego a través de la capa de Vulkan de CapFrameX. La versión portable no la registra por sí misma, y en este PC todavía no hay ninguna capa de Vulkan de CapFrameX registrada.\n\n¿Quieres registrar ahora las capas de esta carpeta?\n{0}\n\nPara ello, CapFrameX ejecuta el script {1} de esta carpeta. Si eliges 'No', CapFrameX solo volverá a preguntar cuando cambien las capas o su registro.",
+    "PortableVulkanLayerPrompt_Registered": "Las capas de Vulkan de esta carpeta están registradas. Reinicia los juegos Vulkan en ejecución para que las carguen.",
+    "PortableVulkanLayerPrompt_ScriptTimedOut0": "El script de registro no terminó en {0} s.",
+    "PortableVulkanLayerPrompt_Title": "Capa de Vulkan de CapFrameX",
+    "PortableVulkanLayerPrompt_Update012": "Los juegos Vulkan muestran el overlay en el juego a través de la capa de Vulkan de CapFrameX. El registro actual no corresponde a esta versión portable:\n{0}\n\n¿Quieres registrar en su lugar las capas de esta carpeta?\n{1}\n\nPara ello, CapFrameX ejecuta el script {2} de esta carpeta. El script desactiva los demás registros de capas de CapFrameX, así que un CapFrameX instalado también usará estas capas hasta que repares su instalación. Si eliges 'No', CapFrameX solo volverá a preguntar cuando cambien las capas o su registro.",
     "PoweneticsMetricsManager_W": "W",
     "PoweneticsViewModel_1S": "[1/s]",
 

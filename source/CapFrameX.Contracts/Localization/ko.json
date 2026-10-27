@@ -1454,6 +1454,12 @@
     "PmdView_SystemPower": "시스템 전력",
     "PmdView_SystemPower2": "시스템 전력",
     "PmdView_Values": "값",
+    "PortableVulkanLayerPrompt_Failed0": "Vulkan 레이어를 등록하지 못했습니다:\n{0}\n\n스크립트 출력은 CapFrameX 로그에 있습니다.",
+    "PortableVulkanLayerPrompt_Install01": "Vulkan 게임은 CapFrameX Vulkan 레이어를 통해 게임 내 오버레이를 표시합니다. 포터블 버전은 이 레이어를 직접 등록하지 않으며, 이 PC에는 아직 CapFrameX Vulkan 레이어가 등록되어 있지 않습니다.\n\n지금 이 폴더의 레이어를 등록하시겠습니까?\n{0}\n\nCapFrameX가 이 폴더의 {1} 스크립트를 실행합니다. '아니요'를 선택하면 레이어나 등록 상태가 바뀔 때까지 다시 묻지 않습니다.",
+    "PortableVulkanLayerPrompt_Registered": "이 폴더의 Vulkan 레이어가 등록되었습니다. 실행 중인 Vulkan 게임을 다시 시작해야 레이어가 로드됩니다.",
+    "PortableVulkanLayerPrompt_ScriptTimedOut0": "등록 스크립트가 {0}초 안에 끝나지 않았습니다.",
+    "PortableVulkanLayerPrompt_Title": "CapFrameX Vulkan 레이어",
+    "PortableVulkanLayerPrompt_Update012": "Vulkan 게임은 CapFrameX Vulkan 레이어를 통해 게임 내 오버레이를 표시합니다. 현재 등록이 이 포터블 버전과 맞지 않습니다:\n{0}\n\n대신 이 폴더의 레이어를 등록하시겠습니까?\n{1}\n\nCapFrameX가 이 폴더의 {2} 스크립트를 실행합니다. 이 스크립트는 다른 CapFrameX 레이어 등록을 비활성화하므로, 설치된 CapFrameX도 그 설치를 복구할 때까지 이 레이어를 사용합니다. '아니요'를 선택하면 레이어나 등록 상태가 바뀔 때까지 다시 묻지 않습니다.",
     "PoweneticsMetricsManager_W": "W",
     "PoweneticsViewModel_1S": "[1/s]",
 

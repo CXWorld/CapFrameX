@@ -85,7 +85,8 @@ namespace CapFrameX.Overlay
     public sealed class VulkanLayerRegistryEntry
     {
         public VulkanLayerRegistryEntry(VulkanLayerRegistryLocation location, string manifestPath, bool isEnabled,
-            bool manifestReadable, VulkanLayerLibraryBitness libraryBitness, string implementationVersion)
+            bool manifestReadable, VulkanLayerLibraryBitness libraryBitness, string implementationVersion,
+            string libraryPath = null)
         {
             Location = location;
             ManifestPath = manifestPath;
@@ -93,6 +94,7 @@ namespace CapFrameX.Overlay
             ManifestReadable = manifestReadable;
             LibraryBitness = libraryBitness;
             ImplementationVersion = implementationVersion;
+            LibraryPath = libraryPath;
         }
 
         public VulkanLayerRegistryLocation Location { get; }
@@ -112,6 +114,11 @@ namespace CapFrameX.Overlay
         public VulkanLayerLibraryBitness LibraryBitness { get; }
 
         public string ImplementationVersion { get; }
+
+        /// <summary>
+        /// Full path of the layer DLL the manifest names; null when the manifest names none.
+        /// </summary>
+        public string LibraryPath { get; }
     }
 
     /// <summary>
@@ -145,11 +152,7 @@ namespace CapFrameX.Overlay
         {
             try
             {
-                var entries = new List<VulkanLayerRegistryEntry>();
-                ReadEntries(entries, RegistryHive.LocalMachine, RegistryView.Registry64, VulkanLayerRegistryLocation.Machine64);
-                ReadEntries(entries, RegistryHive.LocalMachine, RegistryView.Registry32, VulkanLayerRegistryLocation.Machine32);
-                ReadEntries(entries, RegistryHive.CurrentUser, RegistryView.Default, VulkanLayerRegistryLocation.CurrentUser);
-                return Classify(entries);
+                return Classify(ReadRegistrations());
             }
             catch (Exception ex)
             {
@@ -158,12 +161,39 @@ namespace CapFrameX.Overlay
         }
 
         /// <summary>
+        /// Every registration of the CapFrameX layer in both HKLM views and HKCU, enabled or not.
+        /// </summary>
+        public static IReadOnlyList<VulkanLayerRegistryEntry> ReadRegistrations()
+        {
+            var entries = new List<VulkanLayerRegistryEntry>();
+            ReadEntries(entries, RegistryHive.LocalMachine, RegistryView.Registry64, VulkanLayerRegistryLocation.Machine64);
+            ReadEntries(entries, RegistryHive.LocalMachine, RegistryView.Registry32, VulkanLayerRegistryLocation.Machine32);
+            ReadEntries(entries, RegistryHive.CurrentUser, RegistryView.Default, VulkanLayerRegistryLocation.CurrentUser);
+            return entries;
+        }
+
+        /// <summary>
+        /// The registrations a process of the given bitness reads: enabled, with a readable
+        /// manifest, in its own HKLM view or in HKCU.
+        /// </summary>
+        internal static IEnumerable<VulkanLayerRegistryEntry> VisibleTo(IEnumerable<VulkanLayerRegistryEntry> entries,
+            VulkanLayerLibraryBitness bitness)
+        {
+            var machineView = bitness == VulkanLayerLibraryBitness.X86
+                ? VulkanLayerRegistryLocation.Machine32
+                : VulkanLayerRegistryLocation.Machine64;
+
+            return entries.Where(entry => entry.IsEnabled && entry.ManifestReadable
+                && (entry.Location == machineView || entry.Location == VulkanLayerRegistryLocation.CurrentUser));
+        }
+
+        /// <summary>
         /// Applies the loader's rules to the registrations of the CapFrameX layer.
         /// </summary>
         internal static VulkanLayerRegistrationStatus Classify(IReadOnlyCollection<VulkanLayerRegistryEntry> entries)
         {
-            var x64 = Evaluate(entries, VulkanLayerRegistryLocation.Machine64, VulkanLayerLibraryBitness.X64);
-            var x86 = Evaluate(entries, VulkanLayerRegistryLocation.Machine32, VulkanLayerLibraryBitness.X86);
+            var x64 = Evaluate(entries, VulkanLayerLibraryBitness.X64);
+            var x86 = Evaluate(entries, VulkanLayerLibraryBitness.X86);
 
             var detail = new StringBuilder();
             AppendDetail(detail, "x64", x64);
@@ -194,14 +224,11 @@ namespace CapFrameX.Overlay
         }
 
         private static BitnessVerdict Evaluate(IEnumerable<VulkanLayerRegistryEntry> entries,
-            VulkanLayerRegistryLocation machineView, VulkanLayerLibraryBitness bitness)
+            VulkanLayerLibraryBitness bitness)
         {
             var verdict = new BitnessVerdict();
 
-            var visible = entries.Where(entry => entry.IsEnabled && entry.ManifestReadable
-                && (entry.Location == machineView || entry.Location == VulkanLayerRegistryLocation.CurrentUser));
-
-            foreach (var entry in visible)
+            foreach (var entry in VisibleTo(entries, bitness))
             {
                 string reason = GetBreakage(entry, bitness);
                 if (reason == null)
@@ -276,7 +303,7 @@ namespace CapFrameX.Overlay
                     var bitness = manifestReadable ? ReadLibraryBitness(libraryPath) : VulkanLayerLibraryBitness.Missing;
 
                     entries.Add(new VulkanLayerRegistryEntry(location, manifestPath, isEnabled,
-                        manifestReadable, bitness, implementationVersion));
+                        manifestReadable, bitness, implementationVersion, libraryPath));
                 }
             }
         }
@@ -298,7 +325,7 @@ namespace CapFrameX.Overlay
         /// manifest. Handles both the single "layer" object and the "layers" array form; for any
         /// other manifest the name of its (first) layer is returned so the caller can skip it.
         /// </summary>
-        private static bool TryReadManifest(string manifestPath, out string layerName,
+        internal static bool TryReadManifest(string manifestPath, out string layerName,
             out string libraryPath, out string implementationVersion)
         {
             layerName = null;

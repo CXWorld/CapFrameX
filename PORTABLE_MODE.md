@@ -55,11 +55,45 @@ When running in portable mode, the following dependencies must be installed on t
 The native .NET application host checks the Desktop Runtime before managed startup. Once CapFrameX
 starts, its dependency checker validates the expected .NET 10 Desktop Runtime and Visual C++ runtime.
 
+## Vulkan layer registration
+
+Vulkan games show the in-game overlay through the CapFrameX Vulkan layer, which the Vulkan loader only
+finds through the registry. Extracting the portable package writes no registry values, so at startup
+the portable version compares the registration with the layers in its own `vulkan` folder (`vulkan` for
+x64, `vulkan\x86` for x86). When no CapFrameX layer is registered, when one bitness has none, or when
+the registered layer uses other files than this folder, it asks whether to register the layers of this
+folder. Layers of an installed CapFrameX with identical files count as a match.
+
+**Yes** runs `vulkan\Register-CapFrameXVulkanLayer.ps1` with the rights of CapFrameX (it always runs
+elevated). The script:
+
+- registers the x64 manifest in the 64-bit view and the x86 manifest in the 32-bit view (`WOW6432Node`)
+  of `HKLM\SOFTWARE\Khronos\Vulkan\ImplicitLayers`,
+- disables every other CapFrameX layer registration there (value `1`, not deleted), because the loader
+  identifies the layer by its name and would otherwise pick one of them,
+- removes CapFrameX layer registrations from HKCU, which elevated games ignore and which break the
+  layer for the other bitness.
+
+An installed CapFrameX then uses the portable layers too, until you repair its installation. Restart
+Vulkan games that were running. **No** is remembered: CapFrameX asks again only when the layers of the
+folder or their registration change, for example after extracting a newer version or moving the folder.
+The Info tab shows the current registration.
+
+You can also run the script yourself from an elevated PowerShell; `-ValidateOnly` only shows the planned
+changes:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\vulkan\Register-CapFrameXVulkanLayer.ps1
+```
+
+Deleting the portable folder leaves its registration behind without a manifest; the Vulkan loader skips
+it. Repair an installed CapFrameX to enable its own registration again.
+
 ## 1.9.2 Beta
 
 Installer and portable builds of **1.9.2.0-beta** include the in-game overlay again: keep the `hook` and `vulkan` folders, including their x86 subfolders, alongside the application. The `benchlab-service` folder contains the bundled service, which CapFrameX starts when needed; compatible separately installed services are also supported.
 
-The current installer defaults to `C:\Program Files\CapFrameX`, with the x64 Vulkan layer and its manifest in `vulkan` and the x86 pair in `vulkan\x86` beneath that folder. It registers them in their respective HKLM registry views. Earlier installers used `C:\Program Files (x86)\CapFrameX`. Portable extraction does not register the layers; Vulkan integration requires the matching layers to be registered separately.
+The current installer defaults to `C:\Program Files\CapFrameX`, with the x64 Vulkan layer and its manifest in `vulkan` and the x86 pair in `vulkan\x86` beneath that folder. It registers them in their respective HKLM registry views. Earlier installers used `C:\Program Files (x86)\CapFrameX`. Portable extraction does not register the layers; Vulkan integration requires the matching layers to be registered separately. Later builds offer this at startup, see [Vulkan layer registration](#vulkan-layer-registration).
 
 The beta bundles **CX-PresentMon 2.6.1**, the CapFrameX-maintained build based on Intel PresentMon 2.6.0, with fixes for accumulating stale timing data and stalled output after frame-generation changes. All shipped Windows binaries must pass the [release signature checks](scripts/RELEASE_SIGNING.md).
 

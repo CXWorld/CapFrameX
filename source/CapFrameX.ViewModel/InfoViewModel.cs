@@ -196,6 +196,11 @@ namespace CapFrameX.ViewModel
                     UpdateSensorEvaluationState();
                 });
 
+            // The portable version registers the layers while this tab is already shown, so no
+            // navigation refreshes it. The layer status does not depend on the sensor service.
+            eventAggregator.GetEvent<PubSubEvent<AppMessages.VulkanLayerRegistrationChanged>>()
+                .Subscribe(_ => Task.Run(UpdateVulkanLayerStatus));
+
             // Two independent blocks: the board/memory/OS identification comes from WMI and is
             // available right away, while CPU and GPU identity have to wait for the sensor
             // service to finish hardware detection. Queuing the first behind the second only
@@ -392,13 +397,17 @@ namespace CapFrameX.ViewModel
                     CaptureServiceConfiguration.GetPresentMonVersion(),
                     File.Exists(CaptureServiceConfiguration.GetPresentMonPath()));
                 RtssStatus = SoftwareComponentStatus.ForRtss(_rtssService.GetRTSSVersion());
-                VulkanLayerStatus = SoftwareComponentStatus.FromVulkanLayer(VulkanLayerRegistrationProbe.Query());
+                UpdateVulkanLayerStatus();
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error while collecting software component information.");
             }
         }
+
+        // The probe reports a registry it cannot read as Unknown instead of throwing.
+        private void UpdateVulkanLayerStatus()
+            => VulkanLayerStatus = SoftwareComponentStatus.FromVulkanLayer(VulkanLayerRegistrationProbe.Query());
 
         private void UpdateRamManufacturer()
         {

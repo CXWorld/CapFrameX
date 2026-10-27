@@ -1455,6 +1455,12 @@
     "PmdView_SystemPower": "Systemleistung",
     "PmdView_SystemPower2": "Systemleistung",
     "PmdView_Values": "Werte",
+    "PortableVulkanLayerPrompt_Failed0": "Die Vulkan-Layer konnten nicht registriert werden:\n{0}\n\nDie Ausgabe des Skripts steht im CapFrameX-Log.",
+    "PortableVulkanLayerPrompt_Install01": "Vulkan-Spiele zeigen das Ingame-Overlay über den CapFrameX-Vulkan-Layer. Die portable Version registriert ihn nicht selbst, und auf diesem PC ist noch kein CapFrameX-Vulkan-Layer registriert.\n\nMöchtest du die Layer aus diesem Ordner jetzt registrieren?\n{0}\n\nCapFrameX führt dazu das Skript {1} aus diesem Ordner aus. Wählst du „Nein“, fragt CapFrameX erst wieder, wenn sich die Layer oder ihre Registrierung ändern.",
+    "PortableVulkanLayerPrompt_Registered": "Die Vulkan-Layer aus diesem Ordner sind registriert. Starte laufende Vulkan-Spiele neu, damit sie die Layer laden.",
+    "PortableVulkanLayerPrompt_ScriptTimedOut0": "Das Registrierungsskript ist nicht innerhalb von {0} s fertig geworden.",
+    "PortableVulkanLayerPrompt_Title": "CapFrameX-Vulkan-Layer",
+    "PortableVulkanLayerPrompt_Update012": "Vulkan-Spiele zeigen das Ingame-Overlay über den CapFrameX-Vulkan-Layer. Die aktuelle Registrierung passt nicht zu dieser portablen Version:\n{0}\n\nMöchtest du stattdessen die Layer aus diesem Ordner registrieren?\n{1}\n\nCapFrameX führt dazu das Skript {2} aus diesem Ordner aus. Es deaktiviert die anderen CapFrameX-Layer-Registrierungen, sodass auch ein installiertes CapFrameX diese Layer nutzt, bis du seine Installation reparierst. Wählst du „Nein“, fragt CapFrameX erst wieder, wenn sich die Layer oder ihre Registrierung ändern.",
     "PoweneticsMetricsManager_W": "W",
     "PoweneticsViewModel_1S": "[1/s]",
 

@@ -446,6 +446,8 @@ namespace CapFrameX.Contracts.Configuration
 
         bool SuppressFrameViewServiceWarning { get; set; }
 
+        string DeclinedPortableVulkanLayerSignature { get; set; }
+
         bool McpEnabled { get; set; }
     }
 

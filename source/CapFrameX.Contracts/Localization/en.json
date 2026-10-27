@@ -1455,6 +1455,12 @@
     "PmdView_SystemPower": "System Power",
     "PmdView_SystemPower2": "System Power",
     "PmdView_Values": "Values",
+    "PortableVulkanLayerPrompt_Failed0": "The Vulkan layers could not be registered:\n{0}\n\nThe CapFrameX log contains the script output.",
+    "PortableVulkanLayerPrompt_Install01": "Vulkan games show the in-game overlay through the CapFrameX Vulkan layer. The portable version does not register it on its own, and no CapFrameX Vulkan layer is registered on this PC yet.\n\nRegister the layers of this folder now?\n{0}\n\nCapFrameX runs the script {1} from this folder. If you choose No, CapFrameX asks again only once the layers or their registration change.",
+    "PortableVulkanLayerPrompt_Registered": "The Vulkan layers of this folder are registered. Restart running Vulkan games to load them.",
+    "PortableVulkanLayerPrompt_ScriptTimedOut0": "The registration script did not finish within {0} s.",
+    "PortableVulkanLayerPrompt_Title": "CapFrameX Vulkan layer",
+    "PortableVulkanLayerPrompt_Update012": "Vulkan games show the in-game overlay through the CapFrameX Vulkan layer. The current registration does not match this portable version:\n{0}\n\nRegister the layers of this folder instead?\n{1}\n\nCapFrameX runs the script {2} from this folder. It disables the other CapFrameX layer registrations, so an installed CapFrameX also uses these layers until you repair its installation. If you choose No, CapFrameX asks again only once the layers or their registration change.",
     "PoweneticsMetricsManager_W": "W",
     "PoweneticsViewModel_1S": "[1/s]",
 

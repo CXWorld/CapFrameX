@@ -231,6 +231,7 @@ jobs:
             "hook\cfx_osd_hook.dll", "hook\x86\cfx_osd_hook.dll", "hook\MinHook.LICENSE.txt",
             "vulkan\cfx_osd_vklayer.dll", "vulkan\cfx_osd_vklayer_v1.json",
             "vulkan\x86\cfx_osd_vklayer.dll", "vulkan\x86\cfx_osd_vklayer_v1.json",
+            "vulkan\Register-CapFrameXVulkanLayer.ps1",
             "benchlab-service\BL_Service.exe", "benchlab-service\appsettings.json",
             "benchlab-service\LICENSE-BENCHLAB-Service.txt", "benchlab-service\VERSION"
           )

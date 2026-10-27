@@ -157,6 +157,9 @@
         <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\OverlayEntryConfiguration_0.json" />
         <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\OverlayEntryConfiguration_1.json" />
         <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\**\OverlayEntryConfiguration_2.json" />
+        <!-- Setup registers the Vulkan layers itself (VulkanLayerRegistration below); the script
+             is the portable version's way to do it. -->
+        <Exclude Files="$(var.CapFrameXInstaller.BinaryDir)\vulkan\Register-CapFrameXVulkanLayer.ps1" />
       </Files>
       <!-- Since the move to SDK-style .NET the app config is named CapFrameX.dll.config instead of
            CapFrameX.exe.config, and ConfigurationManager reads the update catalog and the

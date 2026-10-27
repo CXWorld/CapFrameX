@@ -242,6 +242,12 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public string DeclinedPortableVulkanLayerSignature
+        {
+            get => Get<string>(string.Empty);
+            set => Set(value);
+        }
+
         public bool McpEnabled
         {
             get => Get<bool>(false);

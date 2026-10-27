@@ -18,6 +18,7 @@ using DryIoc;
 using EmbedIO;
 using Newtonsoft.Json;
 using Prism.DryIoc;
+using Prism.Events;
 using Serilog;
 using System;
 using System.Configuration;
@@ -249,6 +250,26 @@ namespace CapFrameX
                     catch (Exception ex)
                     {
                         Log.Logger.Error(ex, "Error checking for ETW services");
+                    }
+                }
+
+                // The portable version ships the Vulkan layers but registers nothing on extraction.
+                if (PortableModeDetector.IsPortableMode)
+                {
+                    using (StartupPerformanceLogger.Measure("Portable Vulkan layer check scheduling"))
+                    {
+                        try
+                        {
+                            var appConfiguration = Container.Resolve<IAppConfiguration>();
+                            var eventAggregator = Container.Resolve<IEventAggregator>();
+                            _ = Current.Dispatcher.BeginInvoke(
+                                new Action(() => _ = PortableVulkanLayerPrompt.RunAsync(appConfiguration, eventAggregator)),
+                                DispatcherPriority.ApplicationIdle);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Logger.Error(ex, "Error scheduling the portable Vulkan layer check");
+                        }
                     }
                 }
 

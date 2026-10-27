@@ -32,5 +32,11 @@
 				IsContentVisible = isContentVisible;
 			}
 		}
+
+		/// <summary>
+		/// Published after CapFrameX changed the Vulkan layer registration (the portable
+		/// version's startup prompt), so the Info tab, the startup page, shows the new state.
+		/// </summary>
+		public class VulkanLayerRegistrationChanged { }
 	}
 }
