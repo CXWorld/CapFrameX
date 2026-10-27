@@ -444,6 +444,8 @@
   "Editor_HeatmapWindowHint": "각 셀은 이 시간(초) 동안 평균한 값을 표시합니다(1–600).",
   "Editor_HeatmapHint": "셀은 이 색상으로 유휴부터 최대 부하까지 표시됩니다. 코어 유형마다 이름이 붙은 별도의 블록을 이루며, 셀이 16개를 넘으면 여러 줄로 배치됩니다.",
   "Editor_StutterCharts": "스터터 차트",
+  "Editor_CapFrameXBanner": "CapFrameX 배너",
+  "Editor_CapFrameXLogo": "CapFrameX 로고",
   "Editor_ChartLines": "선",
   "Editor_ChartLinesHint": "한 축에 최대 4개의 선을 표시하며, 모두 밀리초이거나 모두 FPS여야 합니다. 스터터 임계값은 분석 차트의 스터터링 선처럼 해당 계열을 따릅니다.",
   "Editor_ChartLineValue": "값",

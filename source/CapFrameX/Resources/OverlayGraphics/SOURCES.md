@@ -141,3 +141,16 @@ background patterns are traditional public-domain motifs: seigaiha waves
 (CHERRY BLOSSOM), hui wen fret and auspicious clouds (LUNAR). Neon signs and
 lanterns carry no lettering. All text in the designs, such as the channel
 name, stays in editable text tiles.
+
+## CapFrameX logo tiles
+
+The editor's **CapFrameX banner** and **CapFrameX logo** palette items embed two
+PNGs of CapFrameX's own mark; no third-party material. They are not files of
+this folder: `source/CapFrameX/Icons/New-OverlayLogoTiles.ps1` renders them
+from the production masters `Icons/CX_Concepts/Production/CX_A1_Mark_Master.png`
+and `CX_A1_Wordmark_Master.png` into the OSD Controls (`Resources/Logos`).
+Both are transparent and carry only the white mark and wordmark with their lime
+X; the tile behind them supplies the brand blue `#0271F9`. The banner
+(1280 x 256, 5:1) places mark and wordmark side by side in the proportions of
+`Icons/CX_Installer_Banner.png`, with the same margin on all four sides. The
+logo (512 x 512) places the mark where the app icon does.

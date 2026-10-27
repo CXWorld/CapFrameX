@@ -444,6 +444,8 @@
   "Editor_HeatmapWindowHint": "Each cell shows its reading averaged over this many seconds (1–600).",
   "Editor_HeatmapHint": "Cells shade from idle to full load in this color. Each core type forms a labelled block of its own; more than 16 cells spread over several rows.",
   "Editor_StutterCharts": "Stutter charts",
+  "Editor_CapFrameXBanner": "CapFrameX banner",
+  "Editor_CapFrameXLogo": "CapFrameX logo",
   "Editor_ChartLines": "Lines",
   "Editor_ChartLinesHint": "Up to four lines on one axis, all in milliseconds or all in FPS. A stutter threshold follows its series like the stuttering line of the analysis chart.",
   "Editor_ChartLineValue": "Values",

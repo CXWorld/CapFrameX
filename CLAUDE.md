@@ -476,6 +476,18 @@ FPS and the frame time. The native metric draws device names in the theme text c
 color is also the color of both header names. The files are stored as the editor saves them;
 `DuolineStarterShowsTheGpuAboveTheCpuInTheColorsOfTheirVendors` checks layout and colors.
 
+### CapFrameX logo tiles
+
+The palette's "CapFrameX banner" and "CapFrameX logo" (`OsdLogoPresets`, OSD Controls) are image tiles
+in the brand blue `#0271F9` that draw the white and lime mark with fit `contain` and no padding. The
+banner spans the whole overlay at its ratio of 5:1 (`BannerAspectRatio`): every column of a grid with
+`Height` = width / 5, the full width of a canvas. The logo is a square: one grid column, or 96 x 96. In a
+container both shrink to its height. A frame of another ratio (the overlay widened later, a resized
+tile) shows more blue beside the logo instead of distorting it; the tile color stays editable, so the
+logo also sits on a dark tile. The transparent PNGs (1280 x 256, 512 x 512) are rendered from the masters
+in `Icons/CX_Concepts/Production` by `source/CapFrameX/Icons/New-OverlayLogoTiles.ps1` into the OSD
+Controls' `Resources/Logos`, so the prebuilt Controls must contain them. Tests: `OverlayLogoTileTest`.
+
 ### Sharing tile designs (import mapping)
 
 `OverlayDesignProfileTransfer` (`CapFrameX.View/OverlayDesignAuthoring`) exports a design as saved

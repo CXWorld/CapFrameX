@@ -12,6 +12,29 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### CapFrameX logo tiles (2026-10-27)
+
+Controls was rebuilt in `Release|x64` for .NET 10 (`--no-incremental`) from OSD commit
+`60dbc5b0e754d31d3de932c148f81fa60143ff64`, which follows `beeed24`. The palette offers a CapFrameX
+banner and a square CapFrameX logo (`OsdLogoPresets`): image tiles in the brand blue `#0271F9` that
+draw the white and lime mark with fit `contain`, so a frame that no longer matches the image's ratio
+shows more blue instead of a distorted logo. The images are embedded as `Resources/Logos/CapFrameX-Banner.png`
+(1280 × 256) and `CapFrameX-Logo.png` (512 × 512), rendered by CapFrameX's
+`source/CapFrameX/Icons/New-OverlayLogoTiles.ps1`. In a grid the banner spans every column and is as
+tall as the width the preview laid out ÷ 5, the logo takes one column; on a canvas the banner takes the
+whole width and the logo 96 × 96. `Editor_CapFrameXBanner` and `Editor_CapFrameXLogo` were added in
+all five languages; `Editor.en.json` and `Editor.ko.json` are copied here. The native DLLs, Interop
+(still the signed build), both Vulkan manifests and the template catalogs are unchanged.
+
+Verification: a CapFrameX Release build with `CfxOsdFromSource=false` stages exactly this DLL and the
+prebuilt core into the test output and passes all 3434 unit tests outside the `Integration` category,
+among them the 10 tests of `OverlayLogoTileTest` (grid, canvas and container placement, checked in
+native renders).
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `50F077556C69DA462D3DAA0C0C3E4B0F3630CEB48C8093E7C46DD19BDBC3BD46` |
+
 ### Native D3D11 swapchains under the generic route (2026-10-25)
 
 All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, on a
