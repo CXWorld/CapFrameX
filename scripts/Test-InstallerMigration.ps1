@@ -76,12 +76,17 @@ public static class Fixture { public static void Main() {} }
     foreach ($file in @('CapFrameX.exe', 'CapFrameX.dll', 'CapFrameX.ADLX.dll'))
     {
         $target = if ($file.EndsWith('.exe')) { 'exe' } else { 'library' }
-        & $compiler /nologo "/target:$target" "/out:$(Join-Path $Directory $file)" $source
+        & $compiler /nologo "/target:$target" "/out:$(Join-Path $Directory $file)" $source | Out-Host
         if ($LASTEXITCODE -ne 0) { throw "Could not compile fixture $file" }
     }
     # These two explicit files accompany the production Files harvest.
     '<configuration />' | Set-Content -LiteralPath (Join-Path $Directory 'CapFrameX.dll.config')
     '<profiles />' | Set-Content -LiteralPath (Join-Path $Directory 'HookCompatibilityProfiles.xml')
+    # The production harvest excludes this script by its path below vulkan\. WiX warns about an
+    # exclusion whose folder is missing, so the fixture keeps the app output's layout here.
+    $vulkan = Join-Path $Directory 'vulkan'
+    $null = New-Item -ItemType Directory -Path $vulkan -Force
+    '# portable only' | Set-Content -LiteralPath (Join-Path $vulkan 'Register-CapFrameXVulkanLayer.ps1')
 }
 
 function New-FixtureMsi($Scenario, [bool]$Old)
@@ -150,7 +155,9 @@ function New-FixtureMsi($Scenario, [bool]$Old)
 </Wix>
 "@ | Set-Content -LiteralPath $wxs -Encoding UTF8
     $msi = Join-Path $Scenario.Root "$label.msi"
-    & $WixPath build $wxs -arch x64 -out $msi -intermediatefolder (Join-Path $Scenario.Root "$label-obj")
+    # Tool output must not join the returned path: WiX prints its warnings to stdout, and a
+    # warning in front of the path made the package argument of msiexec unusable.
+    & $WixPath build $wxs -arch x64 -out $msi -intermediatefolder (Join-Path $Scenario.Root "$label-obj") | Out-Host
     if ($LASTEXITCODE -ne 0) { throw "WiX build failed for $wxs" }
     return $msi
 }
