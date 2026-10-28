@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
@@ -612,6 +613,67 @@ namespace CapFrameX.Test.Integration
                 hookEnabled: true, processId: 42, runtime: "D3D9");
 
             Assert.IsTrue(unavailable);
+        }
+
+        [TestMethod]
+        public void HookFreeFallback_StandsInForD3D9Only()
+        {
+            // Resident Evil 6 (BH6.exe) on 2026-10-28: the in-game overlay was unavailable for
+            // D3D9 and nothing drew.
+            string d3d9 = HookOverlayManager.GetInGameUnavailableReason(true, 3288, "D3D9");
+            Assert.IsTrue(HookOverlayManager.IsHookFreeFallback(d3d9, null, "D3D9"));
+
+            // A block changes the reason, not that the in-game renderer cannot draw on D3D9.
+            const string antiCheat = "anti-cheat module 'EasyAntiCheat.dll' matched 'easyanticheat'";
+            Assert.IsTrue(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
+                .GetInGameUnavailableReason(true, 3288, "D3D9", antiCheat), antiCheat, "D3D9"));
+
+            // Another renderer selected or the game gone.
+            Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
+                .GetInGameUnavailableReason(false, 3288, "D3D9"), null, "D3D9"));
+            Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
+                .GetInGameUnavailableReason(true, 3288, "D3D9", targetProcessAlive: false),
+                null, "D3D9"));
+
+            // "Other" stays unavailable without a stand-in: Vulkan titles outside DXGI report it
+            // too, and the Vulkan layer may draw there.
+            string other = HookOverlayManager.GetInGameUnavailableReason(true, 42, "Other");
+            Assert.IsNotNull(other);
+            Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(other, null, "Other"));
+
+            // A hook that failed on a DXGI game leaves it without an overlay.
+            string failed = HookOverlayManager.GetInGameUnavailableReason(true, 42, "DXGI",
+                nativeFallbackReason: "in-game hook injection failed (5)");
+            Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(failed, null, "DXGI"));
+        }
+
+        [TestMethod]
+        public void HookFreeFallbackStream_FollowsTheRuntimeOfTheSelectedPid()
+        {
+            int pid = Process.GetCurrentProcess().Id;
+            using var changes = new Subject<(string key, object value)>();
+            using var pids = new BehaviorSubject<int>(0);
+            using var rows = new Subject<string[]>();
+            var configuration = new Mock<IAppConfiguration>();
+            configuration.SetupGet(x => x.OnValueChanged).Returns(changes);
+            configuration.SetupGet(x => x.EnableHookOverlay).Returns(true);
+            configuration.SetupGet(x => x.IsOverlayActive).Returns(true);
+            using var manager = new HookOverlayManager(configuration.Object, pids, rows,
+                processIdColumnIndex: 0, runtimeColumnIndex: 1,
+                dllPathOverride: @"C:\missing\cfx_osd_hook.dll");
+            bool standsIn() => manager.HookFreeFallbackStream.FirstAsync().Wait();
+
+            Assert.IsFalse(standsIn(), "no target yet");
+            pids.OnNext(pid);
+            rows.OnNext(new[] { pid.ToString(), "D3D9" });
+            Assert.IsTrue(standsIn(), "a D3D9 game gets the hook-free overlay");
+
+            pids.OnNext(0);
+            Assert.IsFalse(standsIn(), "nothing stands in without a target");
+
+            pids.OnNext(pid);
+            rows.OnNext(new[] { pid.ToString(), "Other" });
+            Assert.IsFalse(standsIn(), "Other may be a Vulkan title the layer draws in");
         }
 
         [TestMethod]

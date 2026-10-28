@@ -26,7 +26,7 @@ Download **[CapFrameX v1.9.2 Beta](https://github.com/CXWorld/CapFrameX/releases
 
 > **PC Latency correction:** Disabling **PC Latency** in the settings does **not** fix the PresentMon tracking problem, contrary to our [earlier post on X](https://x.com/CapFrameX/status/2105998858019078230). Application-timing tracking remains active independently of this setting. This beta includes the fix in CX-PresentMon 2.6.1.
 
-> **Important for reviewers:** Do not use the **CapFrameX hook-free overlay** for benchmark measurements. Hiding it can cause frametime spikes, and some AMD and Intel driver versions can have problems with Windows Desktop Window Manager (DWM). Check the active renderer before measuring. These limitations are separate from the PresentMon fixes in this beta.
+> **Important for reviewers:** Do not use the **CapFrameX hook-free overlay** for benchmark measurements. Hiding it can cause frametime spikes, and some AMD and Intel driver versions can have problems with Windows Desktop Window Manager (DWM). Check the active renderer before measuring: with **CapFrameX in-game** selected, Direct3D 9 games and Call of Duty titles (Ricochet anti-cheat) show the hook-free overlay. These limitations are separate from the PresentMon fixes in this beta.
 
 | Package | Use |
 | --- | --- |
@@ -86,7 +86,7 @@ Choose a renderer under **Overlay → OSD options**. The following describes 1.9
 
 | Renderer | Behavior |
 | --- | --- |
-| **CapFrameX in-game** | The default for new configurations in 1.9.2 Beta, with DirectX and Vulkan integration and game compatibility profiles. Available again since v1.9.1. |
+| **CapFrameX in-game** | The default for new configurations in 1.9.2 Beta, with DirectX and Vulkan integration and game compatibility profiles. Available again since v1.9.1. Direct3D 9 games and Call of Duty titles (Ricochet anti-cheat), which it cannot draw in, get the hook-free overlay instead. |
 | **CapFrameX hook-free** | Built-in overlay without injecting into the game, with an output-display picker and chart refresh control. See the reviewer warning above before using it for measurements. |
 | **RTSS** | Uses [RivaTuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html), which must be installed separately. |
 | **Off** | No overlay at all: CapFrameX injects nothing into games, creates no overlay window and does not feed RTSS. Captures, sensors and the remote API (`/api/osd`, `/ws/osd`) keep working. Use it for capture-only setups, or to rule out the overlay when a game misbehaves. |
@@ -338,7 +338,8 @@ These cases are not routing problems, and no profile changes them. Check `CapFra
 | `HookOverlay: target PID {pid} blocked by target policy ({reason})`, with a `reason` such as `anti-cheat module '…' matched '…'` or `process '…' is on the in-game injection blacklist` | Injection is refused for this game. | Use the **CapFrameX hook-free** or **RTSS** renderer for this game. |
 | `HookOverlay: target PID {pid} blocked by target policy ({reason})`, with a `reason` starting with `Ricochet anti-cheat`, followed by `HookOverlay: the hook-free overlay stands in for pid {pid}` | Call of Duty's Ricochet anti-cheat refuses the in-game hook. The hook-free overlay is shown instead while the in-game renderer stays selected; the status reads *Blocked*. | Nothing; switch to RTSS if you prefer it. |
 | `HookOverlay: injection into pid {pid} ('{process}') blocked — {reason}`, with a `reason` starting with `the game was already running when the in-game overlay was enabled` | Safety gate when the renderer is switched on while the game already runs with other overlays. | Restart the game. |
-| `HookOverlay: target PID {pid} runtime {runtime} -> no DXGI injection` | The game does not present through DXGI (for example OpenGL or Direct3D 9). | Use hook-free or RTSS. |
+| `HookOverlay: target PID {pid} runtime {runtime} -> no DXGI injection` with `runtime` `D3D9`, followed by `HookOverlay: the hook-free overlay stands in for pid {pid}` | A Direct3D 9 game. The in-game renderer cannot draw on it, so the hook-free overlay is shown instead while the in-game renderer stays selected; the status reads *Blocked*. | Nothing; switch to RTSS if you prefer it. |
+| `HookOverlay: target PID {pid} runtime {runtime} -> no DXGI injection` with another `runtime` | The game presents through neither DXGI nor Direct3D 9 (for example OpenGL). | Use hook-free or RTSS. |
 | `HookOverlay: DXGI injection into pid {pid} ('{process}') suppressed ({reason})` | A Vulkan game. Vulkan is served by the CapFrameX Vulkan layer, not by the hook. | Profiles do not apply. |
 | `HookOverlay: injection into {arch} pid {pid} failed — {error}; …` | Windows refused to load the hook DLL. | Check security software that blocks DLL injection. |
 

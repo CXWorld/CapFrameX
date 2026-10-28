@@ -248,10 +248,11 @@ namespace CapFrameX.OSD.Integration
         }
 
         /// <summary>
-        /// True while the in-game renderer is selected but the target policy refuses the hook
-        /// with a reason that lets the hook-free renderer stand in (Ricochet,
-        /// <see cref="HookTargetPolicy.RequestsHookFreeFallback"/>). Transient: the stored
-        /// renderer selection stays in-game.
+        /// True while the in-game renderer is selected but can never draw in the target: the
+        /// target policy refuses the hook with a reason that lets the hook-free renderer stand in
+        /// (Ricochet, <see cref="HookTargetPolicy.RequestsHookFreeFallback"/>), or the target
+        /// presents through Direct3D 9 (<see cref="RuntimeRequestsHookFreeFallback"/>).
+        /// Transient: the stored renderer selection stays in-game.
         /// </summary>
         public IObservable<bool> HookFreeFallbackStream =>
             _hookFreeFallbackStream.DistinctUntilChanged();
@@ -519,14 +520,27 @@ namespace CapFrameX.OSD.Integration
 
         /// <summary>
         /// The hook-free renderer stands in for the in-game one only when the in-game overlay is
-        /// unavailable because the target policy refused the hook with a reason that asks for it.
+        /// unavailable for good in this process: the target policy refused the hook with a reason
+        /// that asks for it (Ricochet), or the game presents through a runtime the in-game
+        /// renderer cannot draw on (<see cref="RuntimeRequestsHookFreeFallback"/>). An in-game
+        /// overlay that merely failed leaves the game without an overlay.
         /// </summary>
-        internal static bool IsHookFreeFallback(string inGameUnavailableReason, string targetBlockReason)
+        internal static bool IsHookFreeFallback(string inGameUnavailableReason,
+            string targetBlockReason, string runtime)
             => inGameUnavailableReason != null &&
-               HookTargetPolicy.RequestsHookFreeFallback(targetBlockReason);
+               (HookTargetPolicy.RequestsHookFreeFallback(targetBlockReason) ||
+                RuntimeRequestsHookFreeFallback(runtime));
 
-        // Ricochet: the policy refuses the hook for good and the hook-free renderer draws
-        // instead. Blocked, because injection was deliberately not attempted.
+        /// <summary>
+        /// Direct3D 9: neither the hook nor the Vulkan layer draws on it. PresentMon's "Other"
+        /// does not qualify, Vulkan titles that present outside DXGI report it too, and the layer
+        /// draws for the target PID whatever PresentMon reports.
+        /// </summary>
+        internal static bool RuntimeRequestsHookFreeFallback(string runtime)
+            => string.Equals(runtime, "D3D9", StringComparison.OrdinalIgnoreCase);
+
+        // Ricochet or Direct3D 9: the in-game renderer can never draw in the process and the
+        // hook-free renderer draws instead. Blocked, because injection was deliberately not attempted.
         internal static HookOverlayStatus CreateHookFreeFallbackStatus(int processId,
             string runtime, bool visible, string unavailableReason)
             => new HookOverlayStatus(
@@ -538,7 +552,7 @@ namespace CapFrameX.OSD.Integration
 
         // The selected renderer is the only one that draws: an in-game overlay that cannot run
         // leaves the game without an overlay instead of switching to the hook-free renderer,
-        // unless the policy asks for it (IsHookFreeFallback).
+        // unless it can never draw in the process (IsHookFreeFallback).
         internal static HookOverlayStatus CreateInGameUnavailableStatus(int processId,
             string runtime, bool visible, string unavailableReason = null)
         {
@@ -645,7 +659,7 @@ namespace CapFrameX.OSD.Integration
                         _targetBlockReason, _vulkanFallbackReason ?? _nativeFallbackReason,
                         targetProcessAlive: pid > 0 && IsProcessAlive(pid));
                     unavailable = reason != null;
-                    fallback = IsHookFreeFallback(reason, _targetBlockReason);
+                    fallback = IsHookFreeFallback(reason, _targetBlockReason, runtime);
                     bool reasonChanged = !string.Equals(reason, _inGameUnavailableReason,
                         StringComparison.Ordinal);
                     fallbackChanged = fallback != _hookFreeFallbackActive;

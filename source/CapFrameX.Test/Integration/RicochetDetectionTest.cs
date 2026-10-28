@@ -84,16 +84,16 @@ namespace CapFrameX.Test.Integration
         {
             string ricochet = HookTargetPolicy.GetRicochetReason(Driver, 0, null);
             Assert.IsTrue(HookTargetPolicy.RequestsHookFreeFallback(ricochet));
-            Assert.IsTrue(HookOverlayManager.IsHookFreeFallback(Unavailable(ricochet), ricochet));
+            Assert.IsTrue(HookOverlayManager.IsHookFreeFallback(Unavailable(ricochet), ricochet, "DXGI"));
 
             // Another renderer selected, the game gone or its runtime still unknown.
             Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
-                .GetInGameUnavailableReason(false, 24592, "DXGI", ricochet), ricochet));
+                .GetInGameUnavailableReason(false, 24592, "DXGI", ricochet), ricochet, "DXGI"));
             Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
                 .GetInGameUnavailableReason(true, 24592, "DXGI", ricochet,
-                    targetProcessAlive: false), ricochet));
+                    targetProcessAlive: false), ricochet, "DXGI"));
             Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
-                .GetInGameUnavailableReason(true, 24592, null, ricochet), ricochet));
+                .GetInGameUnavailableReason(true, 24592, null, ricochet), ricochet, null));
 
             // Every other block leaves the game without an overlay, as before.
             foreach (string other in new[]
@@ -104,7 +104,7 @@ namespace CapFrameX.Test.Integration
             })
             {
                 Assert.IsFalse(HookTargetPolicy.RequestsHookFreeFallback(other), other);
-                Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(Unavailable(other), other), other);
+                Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(Unavailable(other), other, "DXGI"), other);
             }
         }
 

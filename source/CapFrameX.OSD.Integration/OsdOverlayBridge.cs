@@ -21,7 +21,7 @@ namespace CapFrameX.OSD.Integration
     ///    capture service's frame-data stream → batched PushSample,
     ///  - runs while the user selected the hook-free overlay
     ///    (<c>IAppConfiguration.EnableHookFreeOverlay</c>) and the overlay is active. It stands in
-    ///    for the in-game overlay only when the target policy asks for it (Ricochet, see
+    ///    for the in-game overlay only where that can never draw (Ricochet, Direct3D 9, see
     ///    <c>HookOverlayManager.HookFreeFallbackStream</c>), never for an in-game overlay that
     ///    merely failed; RTSS is gated off in OverlayService for both hook modes, so the
     ///    renderers never overlap,
@@ -228,7 +228,7 @@ namespace CapFrameX.OSD.Integration
         private bool IsVisible => IsShown(_enabled, _fallbackEnabled, _active, _hasProcesses);
 
         // The renderer exists while the hook-free mode is selected or stands in for the in-game
-        // renderer (Ricochet).
+        // renderer (Ricochet, Direct3D 9).
         internal static bool Exists(bool enabled, bool fallback) => enabled || fallback;
 
         // An empty process list hides exactly like the overlay hotkey does: a soft-hide.
