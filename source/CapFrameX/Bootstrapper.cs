@@ -155,8 +155,8 @@ namespace CapFrameX
                 // the same stream the overlay/capture pipeline uses — so we address the process
                 // directly, no manual injector. When injection is unsafe, fails its handshake, or the
                 // runtime is unsupported, its status reports the in-game overlay as unavailable. A
-                // Ricochet title or a Direct3D 9 game publishes HookFreeFallbackStream instead (see
-                // below).
+                // game the target policy refuses for good (anti-cheat, blacklist) or a Direct3D 9 game
+                // publishes HookFreeFallbackStream instead (see below).
                 using (StartupPerformanceLogger.Measure("Hook overlay manager initialization"))
                 {
                     _hookOverlayManager = new OSD.Integration.HookOverlayManager(
@@ -174,9 +174,10 @@ namespace CapFrameX
                 // CapFrameX.OSD: hook-free DWM/DirectComposition overlay. Scalars come from the
                 // same IOverlayEntry[] stream RTSS uses; per-present frametimes from the capture
                 // service. It runs in the hook-free mode, and in the in-game mode only while that
-                // can never draw in the target: Ricochet refuses the hook, or the game presents
-                // through Direct3D 9 (HookFreeFallbackStream). Any other in-game overlay that cannot
-                // draw is not replaced by it.
+                // can never draw in the target: the target policy refuses the hook for good
+                // (anti-cheat, blacklist), or the game presents through Direct3D 9
+                // (HookFreeFallbackStream). Any other in-game overlay that cannot draw is not
+                // replaced by it.
                 using (StartupPerformanceLogger.Measure("OSD overlay bridge initialization"))
                 {
                     _overlayDesignRuntime = new OSD.Integration.OverlayDesignRuntimePublisher(

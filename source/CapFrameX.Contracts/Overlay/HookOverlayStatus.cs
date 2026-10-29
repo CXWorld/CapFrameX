@@ -33,8 +33,8 @@ namespace CapFrameX.Contracts.Overlay
         /// <summary>
         /// Injection was deliberately not attempted and will not be retried for this process.
         /// Unlike <see cref="Waiting"/> this never resolves on its own — the game has to be
-        /// restarted. Detail carries the reason. Where the in-game renderer can never draw (a
-        /// Ricochet title, a Direct3D 9 game), the hook-free overlay stands in for it.
+        /// restarted. Detail carries the reason. Where the in-game renderer can never draw (an
+        /// anti-cheat or blacklisted title, a Direct3D 9 game), the hook-free overlay stands in for it.
         /// </summary>
         [Description("Blocked")]
         Blocked,

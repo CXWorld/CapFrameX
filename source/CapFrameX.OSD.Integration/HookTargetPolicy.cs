@@ -14,8 +14,9 @@ namespace CapFrameX.OSD.Integration
     /// A failed or suspicious module scan disables the in-game renderer while leaving the
     /// hook-free overlay available. Clean results are cached briefly so startup races can recover.
     /// Ricochet hides the module list even from an elevated CapFrameX, so it is recognized from
-    /// outside (<see cref="GetRicochetReason"/>), and its reason lets the hook-free renderer stand
-    /// in for the in-game one (<see cref="RequestsHookFreeFallback"/>).
+    /// outside (<see cref="GetRicochetReason"/>). A denial that is final for the process (an
+    /// anti-cheat module, Ricochet, the injection blacklist) lets the hook-free renderer stand in
+    /// for the in-game one (<see cref="RequestsHookFreeFallback"/>).
     /// </summary>
     internal static class HookTargetPolicy
     {
@@ -34,6 +35,8 @@ namespace CapFrameX.OSD.Integration
         internal const string RicochetDriverFileName = "Randgrid.sys";
         internal const string RicochetDriverServicePrefix = "atvi-randgrid";
         internal const int RicochetDriverFolderLevels = 2;
+        internal const string AntiCheatReasonPrefix = "anti-cheat module ";
+        internal const string BlacklistReasonSuffix = " is on the in-game injection blacklist";
         private static readonly string[] AntiCheatMarkers =
         {
             "easyanticheat",
@@ -172,12 +175,19 @@ namespace CapFrameX.OSD.Integration
 
         /// <summary>
         /// True for block reasons that let the hook-free renderer stand in for the selected in-game
-        /// renderer: an anti-cheat that refuses the hook for good while a desktop window is fine.
-        /// Only Ricochet so far; every other block leaves the game without an overlay.
+        /// renderer: a denial that is final for the process while a desktop window is fine, that is
+        /// an anti-cheat module, Ricochet or the injection blacklist. A transient startup failure
+        /// (<see cref="IsTransientStartupFailure"/>) does not qualify: it often passes within seconds
+        /// of a start, and every switch would create or remove the hook-free window.
         /// </summary>
         internal static bool RequestsHookFreeFallback(string reason)
             => !string.IsNullOrEmpty(reason) &&
-               reason.StartsWith(RicochetReasonPrefix, StringComparison.Ordinal);
+               (reason.StartsWith(RicochetReasonPrefix, StringComparison.Ordinal) ||
+                reason.StartsWith(AntiCheatReasonPrefix, StringComparison.Ordinal) ||
+                reason.EndsWith(BlacklistReasonSuffix, StringComparison.Ordinal));
+
+        internal static string GetAntiCheatReason(string moduleName, string marker)
+            => $"{AntiCheatReasonPrefix}'{moduleName}' matched '{marker}'";
 
         /// <summary>
         /// The block reason of a Ricochet title, or null: its driver ships with the game, or the
@@ -244,7 +254,7 @@ namespace CapFrameX.OSD.Integration
             {
                 if (string.Equals(normalized, candidate, StringComparison.OrdinalIgnoreCase))
                 {
-                    reason = $"process '{normalized}' is on the in-game injection blacklist";
+                    reason = $"process '{normalized}'{BlacklistReasonSuffix}";
                     return true;
                 }
             }
@@ -546,7 +556,7 @@ namespace CapFrameX.OSD.Integration
                 {
                     if (HasAntiCheatMarker(entry.ModuleName, entry.ExePath, out string marker))
                     {
-                        reason = $"anti-cheat module '{entry.ModuleName}' matched '{marker}'";
+                        reason = GetAntiCheatReason(entry.ModuleName, marker);
                         return false;
                     }
                     entry.Size = (uint)Marshal.SizeOf<ModuleEntry32>();

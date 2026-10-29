@@ -80,7 +80,7 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void HookFreeFallback_OnlyForRicochetWhileTheInGameOverlayIsUnavailable()
+        public void HookFreeFallback_ForRicochetWhileTheInGameOverlayIsUnavailable()
         {
             string ricochet = HookTargetPolicy.GetRicochetReason(Driver, 0, null);
             Assert.IsTrue(HookTargetPolicy.RequestsHookFreeFallback(ricochet));
@@ -95,17 +95,10 @@ namespace CapFrameX.Test.Integration
             Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
                 .GetInGameUnavailableReason(true, 24592, null, ricochet), ricochet, null));
 
-            // Every other block leaves the game without an overlay, as before.
-            foreach (string other in new[]
-            {
-                "module scan failed (5)",
-                "anti-cheat module 'EasyAntiCheat_EOS.dll' matched 'easyanticheat'",
-                "process 'cs2' is on the in-game injection blacklist"
-            })
-            {
-                Assert.IsFalse(HookTargetPolicy.RequestsHookFreeFallback(other), other);
-                Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(Unavailable(other), other, "DXGI"), other);
-            }
+            // A denied scan without the Ricochet driver may pass a moment later.
+            const string denied = "module scan failed (5)";
+            Assert.IsFalse(HookTargetPolicy.RequestsHookFreeFallback(denied));
+            Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(Unavailable(denied), denied, "DXGI"));
         }
 
         [TestMethod]

@@ -101,8 +101,8 @@ namespace CapFrameX.ViewModel
 					case EHookOverlayStatus.Active: return "LimeGreen";
 					case EHookOverlayStatus.Unavailable: return "DarkOrange";
 					// Deliberate and final for this process (restart the game, or the hook-free
-					// overlay standing in for Ricochet or Direct3D 9), so it must not read as a
-					// transient "Waiting" orange, but it is not a malfunction either.
+					// overlay standing in for an anti-cheat title or Direct3D 9), so it must not
+					// read as a transient "Waiting" orange, but it is not a malfunction either.
 					case EHookOverlayStatus.Blocked: return "Goldenrod";
 					// Same as Blocked: the next launch applies the next stage, nothing is broken.
 					case EHookOverlayStatus.RestartPending: return "Goldenrod";

@@ -300,11 +300,21 @@ auto-hide ("Auto hide while capture", `AutoDisableOverlay`) hides every renderer
 clients) is only toggled when RTSS renders at the start, and given back at the stop even after a
 renderer switch. Tests: `CaptureManagerTest` (`AutoDisableOverlay_*`), `OverlayProfileRefreshTest`.
 
-### Hook-free stand-in: Direct3D 9 and Ricochet
+### Hook-free stand-in: Direct3D 9, anti-cheat and blacklist
 
 Only the selected renderer draws: an in-game overlay that cannot run leaves the game without an
 overlay (`Unavailable`). The exceptions are the processes the in-game renderer can never draw in
-(`HookOverlayManager.IsHookFreeFallback`): Direct3D 9 games and Ricochet titles.
+(`HookOverlayManager.IsHookFreeFallback`): Direct3D 9 games and the games the target policy refuses
+for good (`HookTargetPolicy.RequestsHookFreeFallback`): an anti-cheat module (`AntiCheatMarkers`:
+EasyAntiCheat, BattlEye, VAC), Ricochet, and the injection blacklist (CS2 Trusted Mode, VALORANT's
+Vanguard, AoE II DE and AoM Retold, which crash). The hook-free window injects nothing, and the policy
+always left it available. The transient startup failures (`IsTransientStartupFailure`: `process
+identity check failed`, `module scan failed`, `module scan returned no modules`, `module enumeration
+failed`) do not qualify: they often pass within seconds of a start, and every switch would create or
+remove the hook-free window. So a kernel anti-cheat other than Ricochet that keeps denying the scan
+(`module scan failed (5)`) leaves the game without an overlay. The reasons are matched by
+`AntiCheatReasonPrefix`, `RicochetReasonPrefix` and `BlacklistReasonSuffix`; keep the texts built from
+them.
 
 PresentMon reports `D3D9` for a Direct3D 9 game (Resident Evil 6 on 2026-10-28), and neither the
 hook nor the Vulkan layer draws on it (`RuntimeRequestsHookFreeFallback`). PresentMon's `Other` does
@@ -318,16 +328,14 @@ recognizes it from outside: `Randgrid.sys` in the executable's folder or up to t
 `sp26\sp26-cod.exe`), or a denied scan while a kernel driver service `atvi-randgrid*` runs
 (`atvi-randgrid_msstore` for the Store build, read without administrator rights). The path comes
 from `QueryFullProcessImageName` with `PROCESS_QUERY_LIMITED_INFORMATION`, which Ricochet grants;
-`MainModule` needs the module access it denies. The block reason starts with `Ricochet anti-cheat`,
-and `RequestsHookFreeFallback` lets that reason, and no other block reason, bring in the hook-free
-renderer.
+`MainModule` needs the module access it denies. The block reason starts with `Ricochet anti-cheat`.
 
-In both cases the in-game renderer stays selected: `HookOverlayManager.HookFreeFallbackStream`
+In every case the in-game renderer stays selected: `HookOverlayManager.HookFreeFallbackStream`
 (transient, the stored selection stays `InGame`, log `HookOverlay: the hook-free overlay stands in
 for pid …`) feeds `OsdOverlayBridge` (`Exists`/`IsShown`, the usual soft-hides apply), and the status
 reads `Blocked` with "…; the hook-free overlay is shown instead." The design publisher keeps its
 telemetry for the in-game mode anyway, so the stand-in draws the active design. RTSS stays off.
-Tests: `RicochetDetectionTest`, `HookOverlayStatusEvaluatorTest` (`HookFreeFallback_*`).
+Tests: `HookOverlayStatusEvaluatorTest` (`HookFreeFallback_*`), `RicochetDetectionTest`.
 
 ### Graphics API label (`<APP>`)
 

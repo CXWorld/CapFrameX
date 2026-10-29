@@ -616,7 +616,7 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void HookFreeFallback_StandsInForD3D9Only()
+        public void HookFreeFallback_StandsInForD3D9ButNotOther()
         {
             // Resident Evil 6 (BH6.exe) on 2026-10-28: the in-game overlay was unavailable for
             // D3D9 and nothing drew.
@@ -645,6 +645,50 @@ namespace CapFrameX.Test.Integration
             string failed = HookOverlayManager.GetInGameUnavailableReason(true, 42, "DXGI",
                 nativeFallbackReason: "in-game hook injection failed (5)");
             Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(failed, null, "DXGI"));
+        }
+
+        [TestMethod]
+        public void HookFreeFallback_StandsInForFinalPolicyDenials()
+        {
+            Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted("cs2", out string blacklisted));
+            Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted("VALORANT-Win64-Shipping.exe",
+                out string vanguard));
+            foreach (string final in new[]
+            {
+                HookTargetPolicy.GetAntiCheatReason("EasyAntiCheat_EOS.dll", "easyanticheat"),
+                HookTargetPolicy.GetAntiCheatReason("BEClient_x64.dll", "beclient"),
+                blacklisted,
+                vanguard
+            })
+            {
+                Assert.IsTrue(HookTargetPolicy.RequestsHookFreeFallback(final), final);
+                Assert.IsFalse(HookTargetPolicy.IsTransientStartupFailure(final), final);
+                Assert.IsTrue(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
+                    .GetInGameUnavailableReason(true, 42, "DXGI", final), final, "DXGI"), final);
+                // Another renderer selected or the game gone.
+                Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
+                    .GetInGameUnavailableReason(false, 42, "DXGI", final), final, "DXGI"), final);
+                Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
+                    .GetInGameUnavailableReason(true, 42, "DXGI", final, targetProcessAlive: false),
+                    final, "DXGI"), final);
+            }
+
+            // Startup failures often pass within seconds; switching the window each time would
+            // create and remove it.
+            foreach (string transient in new[]
+            {
+                "process identity check failed (Process with an Id of 42 is not running.)",
+                "module scan failed (5)",
+                "module scan returned no modules (299)",
+                "module enumeration failed (299)"
+            })
+            {
+                Assert.IsTrue(HookTargetPolicy.IsTransientStartupFailure(transient), transient);
+                Assert.IsFalse(HookTargetPolicy.RequestsHookFreeFallback(transient), transient);
+                Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
+                    .GetInGameUnavailableReason(true, 42, "DXGI", transient), transient, "DXGI"),
+                    transient);
+            }
         }
 
         [TestMethod]
