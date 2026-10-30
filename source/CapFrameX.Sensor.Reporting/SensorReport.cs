@@ -359,7 +359,9 @@ namespace CapFrameX.Sensor.Reporting
             if (gpuLoadKey != null && sensorDict.TryGetValue(gpuLoadKey, out var gpuCoreLoadValues))
             {
                 var gpuLimitKey = "__GPULimitTime__";
-                sensorDict.Add(gpuLimitKey, Enumerable.Repeat(GetPercentageInGpuLoadLimit(gpuCoreLoadValues.Select(Convert.ToInt32)), gpuCoreLoadValues.Count()).ToList());
+                // Filter non-finite samples (NaN from a glitched sensor read) before
+                // the conversion - Convert.ToInt32 throws on NaN/Infinity.
+                sensorDict.Add(gpuLimitKey, Enumerable.Repeat(GetPercentageInGpuLoadLimit(gpuCoreLoadValues.Where(double.IsFinite).Select(Convert.ToInt32)), gpuCoreLoadValues.Count()).ToList());
                 sensorMetadata[gpuLimitKey] = ("GPU Limit Time", "LoadLimit");
             }
 
