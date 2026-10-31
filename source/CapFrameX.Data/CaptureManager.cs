@@ -715,8 +715,9 @@ namespace CapFrameX.Data
 
                 PrepareForNextCapture();
 
-                // Skip first line to compensate the first frametime being one frame before original capture start point.
-                var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData.Skip(1));
+                // Skip the first frame to compensate the first frametime being one frame before original capture start point.
+                var capturedFrames = DropFramesOfFirstStartTime(adjustedCaptureData);
+                var normalizedAdjustedCaptureData = NormalizeTimes(capturedFrames);
                 var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
                 var finalCaptureTime = GetTimeFromDataLine(normalizedAdjustedCaptureData?.Last());
 
@@ -733,7 +734,7 @@ namespace CapFrameX.Data
 
                     // Time 0 of the file is the first frame NormalizeTimes kept.
                     if (sessionRun.SampleTime > 0)
-                        AddPmdData(sessionRun, GetCpuStartQpcFromDataLine(adjustedCaptureData[1]), finalCaptureTime);
+                        AddPmdData(sessionRun, GetCpuStartQpcFromDataLine(capturedFrames[0]), finalCaptureTime);
                 }
 
                 if (_appConfiguration.UseRunHistory)
@@ -978,8 +979,10 @@ namespace CapFrameX.Data
                     {
                         captureInterval.Add(unionCaptureData[i]);
 
-                        if (captureInterval.Count == 2)
-                            normalizeTimeOffset = GetCpuStartQpcFromDataLine(captureInterval[1]) - startTime;
+                        // The file starts with the first frame after startTime (see
+                        // DropFramesOfFirstStartTime), so the defined time counts from it.
+                        if (normalizeTimeOffset == 0 && currentStartTime > startTime)
+                            normalizeTimeOffset = currentStartTime - startTime;
                     }
                 }
             }
@@ -1017,6 +1020,23 @@ namespace CapFrameX.Data
             var lineSplit = line.Split(',');
             var length = Convert.ToDouble(lineSplit[_captureService.CPUStartQPCTimeInMs_Index], CultureInfo.InvariantCulture);
             return Math.Round(length, 2, MidpointRounding.AwayFromZero);
+        }
+
+        /// <summary>
+        /// Drops the frames of the capture interval's first start time. Frame generation presents
+        /// a generated and a real frame with one CPUStartQPCTime, so dropping only the first row
+        /// left the real frame of the pair in flight at the capture start as the file's first
+        /// frame, without its partner.
+        /// </summary>
+        internal List<string[]> DropFramesOfFirstStartTime(List<string[]> captureInterval)
+        {
+            int timeIndex = _captureService.CPUStartQPCTimeInMs_Index;
+            string firstStartTime = captureInterval[0][timeIndex];
+            int skip = 1;
+            while (skip < captureInterval.Count &&
+                   string.Equals(captureInterval[skip][timeIndex], firstStartTime, StringComparison.Ordinal))
+                skip++;
+            return captureInterval.Skip(skip).ToList();
         }
 
         /// <summary>

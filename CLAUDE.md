@@ -369,6 +369,13 @@ regular row of false ~10 ms spikes (every renderer and design, the rows' graphs 
 designer dropped every real frame. A FG stream's frametime graph is a band between both intervals.
 Tests: `OverlayPreviewFrameFeedTest`, OSD `chart_geometry_test`.
 
+A capture file starts after the frames of the interval's first start time
+(`CaptureManager.DropFramesOfFirstStartTime`): the interval begins with the frame before the
+capture start, and under frame generation that is a pair. Dropping one row left the pair's real
+frame, from before the start, as the first frame of every FG capture. The defined capture time
+counts from the first frame after that start time. Tests: `CaptureManagerTest`
+(`DropFramesOfFirstStartTime_*`).
+
 ### Present mode entry
 
 `OnlinePresentMode` ("Present Mode", an `OnlineMetric` text entry) shows PresentMon's `PresentMode` of

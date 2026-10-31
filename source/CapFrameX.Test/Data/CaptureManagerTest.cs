@@ -1127,6 +1127,41 @@ namespace CapFrameX.Test.Data
             }
         }
 
+        [TestMethod]
+        public void DropFramesOfFirstStartTime_DropsTheFrameBeforeTheCaptureStart()
+        {
+            var rows = CreateRecordLines(startTimeMs: 11_848_037, frameCount: 5);
+
+            var kept = _captureManager.DropFramesOfFirstStartTime(rows);
+
+            CollectionAssert.AreEqual(rows.Skip(1).ToList(), kept);
+        }
+
+        /// <summary>
+        /// Field regression (Mafia: The Old Country with FSR frame generation, 2026-10-31): the
+        /// generated and the real frame of a pair share one CPUStartQPCTime. Dropping one row
+        /// left the real frame of the pair before the capture start as the first frame, and every
+        /// capture began with that half pair.
+        /// </summary>
+        [TestMethod]
+        public void DropFramesOfFirstStartTime_DropsTheWholeFrameGenerationPair()
+        {
+            int timeIndex = ((ICaptureService)_mockCaptureService).CPUStartQPCTimeInMs_Index;
+            var pairs = CreateRecordLines(startTimeMs: 11_848_037, frameCount: 3);
+            var rows = new List<string[]>();
+            foreach (var pair in pairs)
+            {
+                rows.Add(pair);
+                rows.Add((string[])pair.Clone()); // the real frame, same CPUStartQPCTime
+            }
+
+            var kept = _captureManager.DropFramesOfFirstStartTime(rows);
+
+            CollectionAssert.AreEqual(rows.Skip(2).ToList(), kept);
+            Assert.AreEqual(pairs[1][timeIndex], kept[0][timeIndex],
+                "the file must start with the first pair after the capture start");
+        }
+
         // Rows shaped like the capture service's own layout, with a raw CPUStartQPCTime that is
         // far from zero — the field data is a machine-uptime timeline, which is what made the
         // repeated subtraction so visible.
