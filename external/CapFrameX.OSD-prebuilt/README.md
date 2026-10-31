@@ -24,8 +24,8 @@ re-anchors on the first sample newer than the ones it saw, and the Y scales star
 The hook and the layer drain what the PresentMon ring kept of the hidden time in the first draw's one
 Present (`FrametimeShmKeepNewest`, at most 3072 samples); CapFrameX keeps the hook-free frame feed
 subscribed while hidden. Controls, Interop (still the signed build) and both Vulkan manifests are
-unchanged. The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` are **not**
-replaced yet.
+unchanged. The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only
+registrations in both HKLM views) were replaced with these two layer DLLs; their hashes match the table.
 
 Verification: all 16 core CTests (two new replay-clock cases), the 33 hook and 10 Vulkan CTests on
 x64 and x86 pass. A hook-free window fed in one-second PresentMon waves (8 ms before the hide, 20 ms
