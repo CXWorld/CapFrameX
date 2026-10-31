@@ -12,6 +12,36 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Charts after a show (2026-10-31)
+
+Core, hook and Vulkan layer were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64
+and x86) from the OSD working tree committed as `1a5d9d26b405cd380d3aea580d707c33b3d995d9`. A shown overlay played the chart samples from before the hide and then jumped: the replay held
+on the stale history, the first fresh PresentMon wave snapped it over the gap (or, after a shorter
+hide, shed the lag at 100 ms per tick), and the chart came back empty and filled from the right. Since
+the renderers survive a hide this happened after every auto-hidden capture. Every show now calls the
+new export `cfx_osd_resume_charts` (the hook-free window through `cfx_osd_set_hidden`): the replay
+re-anchors on the first sample newer than the ones it saw, and the Y scales start from that window.
+The hook and the layer drain what the PresentMon ring kept of the hidden time in the first draw's one
+Present (`FrametimeShmKeepNewest`, at most 3072 samples); CapFrameX keeps the hook-free frame feed
+subscribed while hidden. Controls, Interop (still the signed build) and both Vulkan manifests are
+unchanged. The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` are **not**
+replaced yet.
+
+Verification: all 16 core CTests (two new replay-clock cases), the 33 hook and 10 Vulkan CTests on
+x64 and x86 pass. A hook-free window fed in one-second PresentMon waves (8 ms before the hide, 20 ms
+while hidden 8 s, 12 ms after the show): the previous core logged `replay hold`, then `replay snap
++7600 ms`, and showed an empty chart 1.6 s after the show; this core logs `charts resume on the newest
+samples` with the cursor at the replay delay behind the newest sample, and the chart shows the 20 ms
+history at once. One push of 4096 samples costs 44 us (median, 0.3 ms max).
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `06C8563CCD487211636B3E41FCBC786E03F9EBCADA89F7E6F130615EB3117FB6` |
+| native\cfx_osd_hook.dll | `730438717C5A9EBC8A03122D4D65D1447EAC1114D534AC2565A4DD3A5F632496` |
+| native\x86\cfx_osd_hook.dll | `30C9A78C471D6FAF853337221B7D93F732FFA914B8741AD3A45DD382B9F5283A` |
+| native\vk\cfx_osd_vklayer.dll | `E2E76AB9CFE9E31F2235EF4CC6BA2F05D8AB6AD178D335AD8BDCF97E891611E4` |
+| native\vk\x86\cfx_osd_vklayer.dll | `22A49E17F7FF8649DABC4A32A131D44AA6D7399C0B84707429C42885238588C0` |
+
 ### Hook-free hide methods (2026-10-31)
 
 The core was rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`) from the OSD working tree

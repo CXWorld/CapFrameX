@@ -99,8 +99,9 @@ namespace CapFrameX.Test.Integration
             using var harness = new BridgeHarness(processCount);
             harness.SetActive(true);
             harness.Publish(true, false, false);
-            Assert.IsFalse(harness.Frames.HasObservers, "Nothing is detected yet.");
-            Assert.IsTrue(harness.IsHidden);
+            Assert.IsTrue(harness.IsHidden, "Nothing is detected yet.");
+            // The feed follows the renderer, not its visibility; an empty list delivers no rows.
+            Assert.IsTrue(harness.Frames.HasObservers);
 
             processCount.OnNext(1);
             Assert.IsTrue(harness.Frames.HasObservers);
@@ -111,7 +112,6 @@ namespace CapFrameX.Test.Integration
             Assert.IsFalse(harness.IsHidden);
 
             processCount.OnNext(0);
-            Assert.IsFalse(harness.Frames.HasObservers);
             Assert.IsTrue(harness.IsHidden);
         }
 
@@ -149,7 +149,8 @@ namespace CapFrameX.Test.Integration
             harness.SetActive(false);
             harness.Publish(true, false, false);
             Assert.IsNull(harness.PendingEntries, "The switched-off renderer must not receive entries.");
-            Assert.IsFalse(harness.Frames.HasObservers);
+            Assert.IsTrue(harness.Frames.HasObservers,
+                "The hidden renderer keeps its frame feed, so its charts resume on the current window.");
 
             harness.SetActive(true);
             harness.Publish(true, false, false);

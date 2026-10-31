@@ -85,9 +85,12 @@ namespace CapFrameX.OSD.Integration
         internal Func<HookFreeHideMethod, bool> ApplyHideMethod { get; set; } = HookFreeHideMethods.Apply;
 
         // The PresentMon row stream can run hundreds or thousands of times per second. Keep the
-        // bridge completely out of that path unless the currently visible layout actually needs
-        // one of its graphs. Scalar values and runtime labels already arrive in the shared
-        // entries, so a numeric-only profile does not need another frame subscription here.
+        // bridge completely out of that path unless the current layout actually needs one of its
+        // graphs. Scalar values and runtime labels already arrive in the shared entries, so a
+        // numeric-only profile does not need another frame subscription here. A hidden overlay
+        // keeps the feed: shown again, its charts continue on the current window (the native core
+        // re-anchors its replay at the show) instead of playing the samples from before the hide
+        // and then jumping over the gap.
         private const int NeedFrametimeGraph = 1 << 0;
         private const int NeedDisplayTimeGraph = 1 << 1;
         private int _frameFeedRequirements;
@@ -277,7 +280,7 @@ namespace CapFrameX.OSD.Integration
                 ApplyDiagnosticsSwitch(); // applied natively right after the instance is created
                 _osd.Start();
                 _started = true;
-                UpdateFrameSubscription(visible);
+                UpdateFrameSubscription(running: true);
                 // Start creates the native handle asynchronously. These calls apply immediately
                 // if it is ready; otherwise OnEntries retries without poisoning the caches.
                 ApplyBackgroundOpacity();
@@ -292,11 +295,10 @@ namespace CapFrameX.OSD.Integration
                 return;
             }
 
-            // Old prebuilt core without the hidden API: fall back to the historic full stop.
-            UpdateFrameSubscription(visible);
             if (!visible && _lastShown != false)
                 ChooseHideMethod();
             _lastShown = visible;
+            // Old prebuilt core without the hidden API: fall back to the historic full stop.
             if (!_osd.SetHidden(!visible) && !visible)
                 StopOsd();
         }
@@ -336,7 +338,7 @@ namespace CapFrameX.OSD.Integration
             _lastAnchor = -1; _lastMonitor = -1; _lastMarginX = -1; _lastMarginY = -1;
             _lastDiagnosticRuntime = null;
             Interlocked.Exchange(ref _frameFeedRequirements, 0);
-            UpdateFrameSubscription(false);
+            UpdateFrameSubscription(running: false);
         }
 
         private void OnEntries()
@@ -385,7 +387,7 @@ namespace CapFrameX.OSD.Integration
         {
             Interlocked.Exchange(ref _frameFeedRequirements,
                 GetFrameFeedRequirements(_designRuntime?.Current.Design, entries));
-            UpdateFrameSubscription(IsVisible);
+            UpdateFrameSubscription(running: true);
         }
 
         internal static int GetFrameFeedRequirements(OverlayRuntimeDesign design, IEnumerable<IOverlayEntry> entries)
@@ -471,9 +473,10 @@ namespace CapFrameX.OSD.Integration
                 _designRuntime.ReportRendererReady();
         }
 
-        private void UpdateFrameSubscription(bool visible)
+        // While the renderer runs, visible or hidden, and its layout draws a graph.
+        private void UpdateFrameSubscription(bool running)
         {
-            bool shouldSubscribe = visible && _started && _frameDataStream != null &&
+            bool shouldSubscribe = running && _started && _frameDataStream != null &&
                 _ftIndex >= 0 && Volatile.Read(ref _frameFeedRequirements) != 0;
             lock (_frameSubscriptionLock)
             {
@@ -667,7 +670,7 @@ namespace CapFrameX.OSD.Integration
             _designSub?.Dispose();
             _activeSub?.Dispose();
             _entriesSub?.Dispose();
-            UpdateFrameSubscription(false);
+            UpdateFrameSubscription(running: false);
             _enabledSub?.Dispose();
             _fallbackSub?.Dispose();
             _valueSmoothingSub?.Dispose();

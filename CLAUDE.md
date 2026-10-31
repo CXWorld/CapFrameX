@@ -319,6 +319,14 @@ OSD: hides by <method>; pid … presents …`. A core without the export keeps c
 `"hideMode"` forces one method for A/B runs; `verify-osd-hookfree-hide.ps1` measures a method over a
 fullscreen app with PresentMon. Tests: `HookFreeHideMethodTest`.
 
+After a show the charts continue on the current window in every CapFrameX renderer. The hook-free
+bridge keeps its frame subscription while hidden (`UpdateFrameSubscription`), and the hook and the
+Vulkan layer drain what the PresentMon ring (`HookFrametimePublisher`, written regardless of the
+hide) kept of the hidden time. The core then re-anchors its replay on the newest sample
+(`cfx_osd_resume_charts`; OSD repo CLAUDE.md, "Charts after a show"). Before, a shown chart played
+the samples from before the hide and then jumped over the gap: the hook-free one because its feed
+followed the visibility, the in-game ones once they kept their instance through the hide.
+
 ### Hook-free stand-in: Direct3D 9, anti-cheat and blacklist
 
 Only the selected renderer draws: an in-game overlay that cannot run leaves the game without an
