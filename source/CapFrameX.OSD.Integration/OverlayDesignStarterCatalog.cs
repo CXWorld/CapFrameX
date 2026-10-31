@@ -60,7 +60,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 25;
+        public const int Version = 26;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -158,6 +158,9 @@ namespace CapFrameX.OSD.Integration
                 // Version twenty-two gave GREENLINE, ICELINE and Turquoise Reference one font, the
                 // Bahnschrift their readings and captions had used tile by tile. Version twenty-three
                 // drew the stutter threshold into the FRAME PACING chart of the three FUSION designs.
+                // Version twenty-six let the row block of the three hybrid designs follow its rows and put it
+                // last, so a longer row profile no longer clips, and gave Hybrid Thread Deck's thread loads the
+                // design's cyan accent on its neutral panel.
                 // Never replace a renamed or edited profile.
                 string[] previousDesignHashes = entry.Id switch
                 {
@@ -214,6 +217,9 @@ namespace CapFrameX.OSD.Integration
                         "BD5DB1FD01A7D5D7B5FCE3BC2B6C39CD1B2CF16E399786C1798B3AC3B56A90FD"
                     },
                     "turquoise-reference" => new[] { "8D87F7B59BA05436CA4968439662372DE4D6E14FFE199B1CE87598DDE181EB06" },
+                    "hybrid-benchmark" => new[] { "7F7D44B0D8CE8CAAD9D448DA2265E6A192AD50DF2E0232882236D7B46C0629EB" },
+                    "hybrid-compact" => new[] { "F5EEAC1DAF3BDDF9091F000217553F526FA4D47B3FE34769B39A5F0E74D7C6F3" },
+                    "hybrid-thread-deck" => new[] { "E8A6A8520219CAEFD959C0494FADD89EA73DD2E17F625E38095F8CA9E118DDDC" },
                     "Slick-Overlay-Vertical-Panel" => new[] { "9A30110C438204C115A22A0EFDC2D3F4F1758E8E6C4EAEF51283DEEB6B0C52D6" },
                     "Slick-Overlay-Wide-3-Rows" => new[] { "C3CC520265BAD7EA85707F9DFA1D94E27996FE84FDF0F322B423756B019F6C18" },
                     "Slick-Overlay-Compact-2x2" => new[] { "91184A06DADEE4782C7ABEE4E7B691FFAC0AA51E07AE44A6D1156A1ED6527276" },

@@ -509,6 +509,21 @@ FPS and the frame time. The native metric draws device names in the theme text c
 color is also the color of both header names. The files are stored as the editor saves them;
 `DuolineStarterShowsTheGpuAboveTheCpuInTheColorsOfTheirVendors` checks layout and colors.
 
+### Hybrid starters
+
+Hybrid Benchmark, Hybrid Compact and Hybrid Thread Deck (`StarterDesigns/hybrid-*.json`) embed the
+linked row profile, whose length only the user knows. Their row block follows its rows
+(`classicRowsAutoHeight`, the editor's "Height follows the rows"): widget height 0 and no panel
+`frameHeight`, so the renderer measures every row and graph and nothing is clipped. It grows
+downward, so it is the last tile, below the headlines, the frametime strip or the thread loads; the
+editor rejects a tile below it and such a block inside a container. Its editor frame height only
+reserves room, and `OverlayRuntimeSourceBinder.GrowFrame` takes that reservation from the editor
+metadata when a group above it grows (16 threads already grow Hybrid Thread Deck's loads), as the
+editor does. Hybrid Thread Deck draws its thread loads in its cyan accent on the neutral panel
+(catalog version 26, which replaces unmodified version-1 copies). The files are the gallery presets
+applied as the editor applies them (native measured canvas conversion, no host sources). Tests:
+`OverlayHybridStarterTest`.
+
 ### CapFrameX logo tiles
 
 The palette's "CapFrameX banner" and "CapFrameX logo" (`OsdLogoPresets`, OSD Controls) are image tiles

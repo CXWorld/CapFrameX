@@ -95,7 +95,7 @@
           {
             "type": "classicRows",
             "width": 464,
-            "height": 128,
+            "height": 0,
             "rowScale": 1,
             "editor": {
               "x": 0,
@@ -108,6 +108,7 @@
               "unit": "",
               "text": "CapFrameX",
               "labelPosition": "top",
+              "classicRowsAutoHeight": true,
               "columnSpan": 1,
               "digits": 0,
               "valueSize": 28,
@@ -120,7 +121,6 @@
         "x": 0,
         "y": 73.203,
         "frameWidth": 480,
-        "frameHeight": 144,
         "clip": true
       }
     ],
