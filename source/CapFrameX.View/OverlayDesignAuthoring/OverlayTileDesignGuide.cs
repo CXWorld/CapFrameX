@@ -177,7 +177,10 @@ Kinds:
 - container (canvas only): holds tiles in `children`; build cards from several pieces (icon + text +
   metric). Containers nest up to 4 levels.
 - classicRows: embeds the classic row overlay (the entries configured on the Overlay tab, see
-  cfx_get_overlay_entries). height (24..2048), classicRowScale (0.5..2).
+  cfx_get_overlay_entries). height (24..2048), classicRowScale (0.5..2). classicRowsAutoHeight
+  true makes the block as tall as its rows and graphs, so a long profile never clips; it grows
+  downward, so on a canvas no tile may sit below it (frameHeight only reserves room in the editor)
+  and it cannot sit in a container.
 
 Omitted fields get the editor's defaults: a metric takes label and unit from its reading, a chart
 defaults to frametimes, an icon to Segoe MDL2 Assets.

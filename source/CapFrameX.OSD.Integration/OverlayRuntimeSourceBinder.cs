@@ -378,13 +378,18 @@ namespace CapFrameX.OSD.Integration
             var following = tiles.OfType<JObject>().Where(tile => !ReferenceEquals(tile, outer)
                 && (double?)tile["y"] >= y + originalHeight - .001 * scale
                 && (double?)tile["x"] < right && (double?)tile["x"] + (double?)tile["frameWidth"] > x).ToArray();
-            double bottom = Math.Max(y + required, following.Select(tile => (double)tile["y"] + (double)tile["frameHeight"] + increase).DefaultIfEmpty().Max());
+            double bottom = Math.Max(y + required, following.Select(tile => (double)tile["y"] + FrameHeight(tile, scale) + increase).DefaultIfEmpty().Max());
             double needed = Math.Ceiling((DesignUnits(bottom, scale) + gridSize) / gridSize) * gridSize * scale;
             if (needed > 4096 * scale) throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_GroupHeight"), message => new FormatException(message));
             outer["frameHeight"] = required;
             foreach (var next in following) next["y"] = (double)next["y"] + increase;
             root["height"] = Math.Max((double?)root["height"] ?? 0, needed);
         }
+
+        // A row block that follows its rows has no frame height: the renderer measures it. The room the editor
+        // reserves for it (its metadata, in design units) grows the canvas as the editor does.
+        private static double FrameHeight(JObject tile, double scale)
+            => (double?)tile["frameHeight"] ?? ((double?)(tile["children"] as JArray)?.FirstOrDefault()?["editor"]?["frameHeight"] ?? 0) * scale;
 
         private static string CompactLabel(string name)
         {

@@ -12,6 +12,33 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Row blocks that follow their rows (2026-10-31)
+
+Controls was rebuilt in `Release|x64` for .NET 10 (`--no-incremental`) from the OSD working tree
+committed as `66ecd20` and `d6bcc79711c10ca4da621dd699985d72ade0601e`. A row block (`classicRows`) with
+`classicRowsAutoHeight` ("Height follows the rows", `OsdDesignTile.FollowsRows`) exports height 0 and,
+on a canvas, no panel `frameHeight`, so the renderer measures every row and graph of the linked
+profile instead of clipping them; the native core has measured a row block without a height since
+`5dde08e`. The tile's frame height only reserves room in the editor. `Validate` rejects such a block
+in a container (`Editor_RowsAutoHeightNested`) and any tile at or below its top within its columns
+(`Editor_RowsAutoHeightBelow`). The three hybrid templates end with such a block, and Hybrid Thread
+Deck draws its thread loads in its cyan accent on the neutral panel instead of magenta on a dark red
+one. `Editor_RowsAutoHeight`, `Editor_RowsAutoHeightHint` and the two errors were added in all five
+languages and the Hybrid Benchmark description changed; `Editor.en.json`, `Editor.ko.json`,
+`Templates.en.json` and `Templates.ko.json` are copied here. The native DLLs, Interop (still the
+signed build) and both Vulkan manifests are unchanged.
+
+Verification: the editor demo's `--verify` (1764 checks) and `--verify-native` (1241 checks, among them a
+row block that grows from 2 to 24 rows without moving the tile above it) pass. A CapFrameX Release
+build with `CfxOsdFromSource=false` stages exactly this DLL into the test output and passes the 799
+tests of the overlay design classes, among them the 11 of `OverlayHybridStarterTest`. The full
+`Debug` run from source passed 3447 of 3456 tests outside the `Integration` category; the 9 record
+file tests failed only because that output lacked `TestRecordFiles`, and pass in the Release output.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `1CD9A62BEA3D5F2C0232EDBF9F384C8D83C6E92ECDD91E87E74F0DEB84484760` |
+
 ### CapFrameX logo tiles (2026-10-27)
 
 Controls was rebuilt in `Release|x64` for .NET 10 (`--no-incremental`) from OSD commit
