@@ -136,9 +136,9 @@ namespace CapFrameX.OSD.Integration
                 _channel?.SetTargetPid(EffectiveTargetPidLocked());
                 if (active)
                 {
-                    // A hide tears down the native OSD instance, whose replacement starts at
-                    // top-left. Advance the sequence even when the configured placement itself
-                    // did not change so the replacement consumes it again.
+                    // A long hide tears down the native OSD instance, whose replacement starts
+                    // at top-left (a short one keeps it). Advance the sequence even when the
+                    // configured placement itself did not change so a replacement consumes it.
                     PublishPlacement(force: true);
                 }
             }

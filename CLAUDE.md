@@ -300,6 +300,13 @@ auto-hide ("Auto hide while capture", `AutoDisableOverlay`) hides every renderer
 clients) is only toggled when RTSS renders at the start, and given back at the stop even after a
 renderer switch. Tests: `CaptureManagerTest` (`AutoDisableOverlay_*`), `OverlayProfileRefreshTest`.
 
+A hide costs the game nothing in any CapFrameX renderer. The in-game hook and the Vulkan layer keep
+their OSD instance and GPU resources through it and only stop drawing (OSD repo CLAUDE.md, "Hide and
+show keep the renderer"). Until 2026-10-31 the hook and the layer released everything on the hide,
+inside the game's Present, and rebuilt it on the show: every auto-hidden capture began with the frame
+in flight at the start ~5 ms late (Mafia: The Old Country, RX 9070 XT) and the overlay came back
+with a ~45 ms rebuild. Measured by CapFrameX.Test's `verify-osd-hide-cost.ps1`.
+
 ### Hook-free stand-in: Direct3D 9, anti-cheat and blacklist
 
 Only the selected renderer draws: an in-game overlay that cannot run leaves the game without an

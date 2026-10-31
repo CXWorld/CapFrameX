@@ -12,6 +12,38 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Hide and show keep the in-game renderer (2026-10-31)
+
+Hook and Vulkan layer were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64 and
+x86) from the OSD working tree committed as `e199c326491fadc84ce0e71e625fd3e4d283f1c4`. A
+soft hide (ALT+O, "Auto hide while capture", another renderer selected) no longer releases the
+renderer: the DXGI hook keeps its OSD instance and D3D resources and only stops drawing
+(`hook_poc/src/overlay.cpp`), and the Vulkan layer suspends on target 0 instead of destroying its
+instance (`vk_layer/src/osd_feed.cpp`). The release on the hide ran inside the game's Present and the
+show rebuilt everything there: every auto-hidden capture began with a late frame (Mafia: The Old
+Country, ~5 ms) and the overlay came back with a ~45 ms rebuild. Frame-generation stand-downs, a
+lease lost to the Vulkan layer, host exit and the swapchain lifecycle boundaries still release.
+`CFX_HOOK_HIDDEN_RELEASE_MS` releases after that many hidden milliseconds (0 = on every hide, as
+before). The core sources are unchanged, so `cfx_osd_core.dll` stays the build below; Controls,
+Interop (still the signed build) and both Vulkan manifests are unchanged. The installed layers in
+`C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only registrations in both HKLM views) were
+replaced with these two layer DLLs; their hashes match the table.
+
+Verification: all 16 core CTests, the 33 hook and 10 Vulkan CTests on x64 and x86 pass, and the D3D12
+design host reports device refcount 0 after a hide with a 100 ms release delay. CapFrameX.Test's new
+`tools\verify-osd-hide-cost.ps1` (D3D11, D3D12, Vulkan; x64 and x86, four hide/show cycles each, the
+app's own QPC stamps per Present) passes all six cases: no toggle delays a present beyond the
+baseline's noise and the renderer is created once per process. The previous binaries, and these with
+`CFX_HOOK_HIDDEN_RELEASE_MS=0`, measured 3-6 ms per hide and ~8 ms (D3D11), ~9 ms (D3D12) or ~2 ms
+(Vulkan) per show.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_hook.dll | `AC83C634500FD91853775CD199565EC0A888BC3AF006FAF71C5460381E1D49B6` |
+| native\x86\cfx_osd_hook.dll | `A12B1E1E089F6C2D0EA075449DC46C24CB2706AD14EDF3828C25AC8F126AB8A8` |
+| native\vk\cfx_osd_vklayer.dll | `9354212A2CD0BC53AA30B7ACD84376E18979B74A21B90F5313E3415F5AA79429` |
+| native\vk\x86\cfx_osd_vklayer.dll | `E8B704A7C13CD8973F663DB8925BFC7A92F1C19B0B7F6B0B4D214B86A7950651` |
+
 ### Frame-generation pairs in frametime graphs (2026-10-31)
 
 All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`) from the
@@ -24,7 +56,8 @@ spikes wherever a column held two pairs (RE Requiem with FSR FG: 10.4 ms pairs, 
 spike every ~14 px, in the rows' graphs and in tile charts such as DUOLINE's). Such a stream now draws
 the band it is. Hook and Vulkan layer compile the core sources, so they changed too; the Vulkan
 manifests and Interop (still the signed build) are unchanged. The installed layers in
-`C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` were **not** updated (no elevated shell).
+`C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` were not updated with this build, but with the
+next one above, which contains this change.
 
 Verification: all 16 core CTests pass, among them `chart_geometry` with the new
 `TestColumnExtremesKeepBothValuesOfOneTimestamp`, as do the 33 hook and 10 Vulkan CTests on x64 and
