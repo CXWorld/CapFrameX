@@ -75,6 +75,14 @@ namespace CapFrameX.OSD.Integration
         private volatile bool _hasProcesses;
         private volatile bool _started;
         private int _targetPid;
+        // The present mode of a process (PresentMon's name) decides how a hide takes the window
+        // out of the picture (HookFreeHideMethods); null without a process list.
+        private readonly Func<int, string> _presentModeOfProcess;
+        // Null until the first visibility is applied, so the first hide also chooses its method.
+        private bool? _lastShown;
+
+        // Sets the native hide method; a test seam, the native core in production.
+        internal Func<HookFreeHideMethod, bool> ApplyHideMethod { get; set; } = HookFreeHideMethods.Apply;
 
         // The PresentMon row stream can run hundreds or thousands of times per second. Keep the
         // bridge completely out of that path unless the currently visible layout actually needs
@@ -112,7 +120,8 @@ namespace CapFrameX.OSD.Integration
                                 IObservable<int> processCountStream = null,
                                 OverlayDesignRuntimePublisher designRuntime = null,
                                 OverlayPixelOrbitResolver pixelOrbit = null,
-                                IObservable<bool> hookFreeFallbackStream = null)
+                                IObservable<bool> hookFreeFallbackStream = null,
+                                Func<int, string> presentModeOfProcess = null)
         {
             if (overlayService == null) throw new ArgumentNullException(nameof(overlayService));
             if (appConfiguration == null) throw new ArgumentNullException(nameof(appConfiguration));
@@ -125,6 +134,7 @@ namespace CapFrameX.OSD.Integration
             _appConfiguration = appConfiguration;
             _designRuntime = designRuntime;
             _pixelOrbit = pixelOrbit;
+            _presentModeOfProcess = presentModeOfProcess;
             // Seeded from the configuration so the very first frame is already placed correctly;
             // OnEntries keeps it in sync from there.
             _osd = new OsdHost((OsdAnchor)appConfiguration.OsdAnchor,
@@ -252,10 +262,11 @@ namespace CapFrameX.OSD.Integration
         {
             // Two-level lifecycle: the renderer EXISTS while the hook-free mode is selected or
             // stands in, and mere visibility toggles (IsOverlayActive — capture auto-disable,
-            // overlay hotkey — or an empty process list) are soft-hides via DWM cloaking. Tearing
-            // the window down instead stalls the game's presentation path (measured 20-70 ms
+            // overlay hotkey — or an empty process list) are soft-hides that keep the window.
+            // Tearing the window down instead stalls the game's presentation path (measured 20-70 ms
             // display hitches from the multi-stage DWM re-evaluation, including a delayed one
-            // seconds later) — cloaking is the only hide method that stays completely stall-free.
+            // seconds later). How a soft hide takes the window out of the picture follows the
+            // target's present mode (ChooseHideMethod).
             bool exist = Exists(_enabled, _fallbackEnabled);
             bool visible = IsVisible;
 
@@ -283,8 +294,30 @@ namespace CapFrameX.OSD.Integration
 
             // Old prebuilt core without the hidden API: fall back to the historic full stop.
             UpdateFrameSubscription(visible);
+            if (!visible && _lastShown != false)
+                ChooseHideMethod();
+            _lastShown = visible;
             if (!_osd.SetHidden(!visible) && !visible)
                 StopOsd();
+        }
+
+        // Right before a hide: a target on a plane of its own is hidden by an empty frame, which
+        // keeps the window composed and spares it DWM's plane reassignment; anything else is cloaked.
+        private void ChooseHideMethod()
+        {
+            int targetPid = Volatile.Read(ref _targetPid);
+            string presentMode = null;
+            if (targetPid > 0 && _presentModeOfProcess != null)
+            {
+                try { presentMode = _presentModeOfProcess(targetPid); }
+                catch (Exception ex) { Log.Debug(ex, "HookFree OSD: present mode of pid {pid} unavailable", targetPid); }
+            }
+
+            HookFreeHideMethod method = HookFreeHideMethods.Choose(presentMode);
+            bool applied = ApplyHideMethod(method);
+            Log.Information("HookFree OSD: hides by {method}; pid {pid} presents {presentMode}",
+                applied ? method.ToString() : "Cloak (the native core has no hide methods)",
+                targetPid, presentMode ?? "nothing known");
         }
 
         private void StopOsd()
@@ -293,6 +326,7 @@ namespace CapFrameX.OSD.Integration
             {
                 _osd.Stop();
                 _started = false;
+                _lastShown = null;
                 _lastDesignRevision = 0;
                 _lastDesignMetricsRevision = 0;
                 _customDesignLoaded = false;

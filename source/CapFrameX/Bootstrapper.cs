@@ -210,7 +210,9 @@ namespace CapFrameX
                         processCountStream: rtssService.ProcessCountStream,
                         designRuntime: _overlayDesignRuntime,
                         pixelOrbit: _pixelOrbit,
-                        hookFreeFallbackStream: _hookOverlayManager.HookFreeFallbackStream);
+                        hookFreeFallbackStream: _hookOverlayManager.HookFreeFallbackStream,
+                        presentModeOfProcess: processId => osdCaptureService.GetProcessActivity()?
+                            .FirstOrDefault(activity => activity.ProcessId == processId)?.PresentMode);
                 }
 
                 // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries

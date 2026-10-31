@@ -307,6 +307,18 @@ inside the game's Present, and rebuilt it on the show: every auto-hidden capture
 in flight at the start ~5 ms late (Mafia: The Old Country, RX 9070 XT) and the overlay came back
 with a ~45 ms rebuild. Measured by CapFrameX.Test's `verify-osd-hide-cost.ps1`.
 
+The hook-free window keeps everything too, but a window that leaves the composition makes DWM
+reassign its planes: in the same game (VRR, FSR FG) the cloak and `ShowWindow(SW_HIDE)` alike cost
+1-2 s of lost displays at every capture start while the game stayed on its plane. So
+`OsdOverlayBridge` chooses the method right before each hide (`HookFreeHideMethods.Choose`, applied
+through the core's `cfx_osd_set_hide_mode`): a target whose latest present mode in the process
+list (`GetProcessActivity`) is `Hardware…` is on a plane of its own and is hidden by one empty frame,
+the window staying composed (three captures began clean); a composed or unknown target is cloaked,
+because a window that stayed would keep it composed for the whole capture. The log reads `HookFree
+OSD: hides by <method>; pid … presents …`. A core without the export keeps cloaking. OsdDebug.json
+`"hideMode"` forces one method for A/B runs; `verify-osd-hookfree-hide.ps1` measures a method over a
+fullscreen app with PresentMon. Tests: `HookFreeHideMethodTest`.
+
 ### Hook-free stand-in: Direct3D 9, anti-cheat and blacklist
 
 Only the selected renderer draws: an in-game overlay that cannot run leaves the game without an

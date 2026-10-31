@@ -12,6 +12,31 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Hook-free hide methods (2026-10-31)
+
+The core was rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`) from the OSD working tree
+committed as `cdfa5d5bb3927dee8678fd99d825a2d68c4c80ab`. A soft hide of the hook-free window
+now has three methods (`OsdHideMode`): the cloak, `ShowWindow(SW_HIDE)` as PresentMon's overlay
+hides, and a transparent hide that presents one empty frame on the root surface and the stepped
+chart layer and leaves the window composed. The new export `cfx_osd_set_hide_mode` lets the host
+choose per hide; each hide keeps its method until its show; OsdDebug.json `"hideMode"` and
+`CFX_OSD_HIDE_MODE` force one. CapFrameX hides transparently over a game on an MPO plane of its own
+and cloaks anything else (`HookFreeHideMethods`): in Mafia: The Old Country (RX 9070 XT, VRR, FSR FG)
+the cloak and `SW_HIDE` both cost 1-2 s of lost displays at every auto-hidden capture start, three
+captures with the transparent hide began clean. A CapFrameX build against an older core keeps
+cloaking (EntryPointNotFound). Hook and Vulkan layer compile the changed core files too, but only
+windowed instances hide this way, so their builds stay those of the next section; Controls, Interop
+(still the signed build) and both Vulkan manifests are unchanged.
+
+Verification: all 16 core CTests pass. Screenshots of a hook-free window with the transparent hide
+show the panel gone while hidden (mean RGB difference 1.0 to the screen without the window, 181
+while visible) and back on the show (0.65 to before). CapFrameX passes the 1895 bridge, overlay and
+hook-free tests outside the `Integration` category, among them the 14 of `HookFreeHideMethodTest`.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `52CCDEFDD012046CC0BD46631EDC4EBE6967D190C008E9D9B01D08D33D7BC8EE` |
+
 ### Hide and show keep the in-game renderer (2026-10-31)
 
 Hook and Vulkan layer were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64 and
