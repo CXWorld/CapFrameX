@@ -1639,6 +1639,28 @@ namespace CapFrameX.Data
                     indexCPUStartQPCTime, indexCPUStartQPCTimeInMs, indexLayerIndex, indexPresentId);
                 var values = new string[metrics.Length];
 
+                // Sampled hardware sensor columns embedded in the CSV (NVIDIA FrameView logs).
+                // Unrecognized files simply end up with an empty list here.
+                var sensorColumns = FrameViewSensorColumnMapper.MapColumns(metrics);
+                double[][] embeddedSensorValues = null;
+                if (sensorColumns.Count > 0)
+                {
+                    foreach (var sensorColumn in sensorColumns)
+                    {
+                        // Make the CSV parser materialize these columns as well
+                        if (sensorColumn.ColumnIndex >= 0 && sensorColumn.ColumnIndex < requiredColumns.Length)
+                            requiredColumns[sensorColumn.ColumnIndex] = true;
+                    }
+
+                    embeddedSensorValues = new double[sensorColumns.Count][];
+                    for (int i = 0; i < sensorColumns.Count; i++)
+                    {
+                        // Pre-fill with NaN so "NA" values and empty lines stay aligned
+                        // with the measure times.
+                        embeddedSensorValues[i] = Enumerable.Repeat(double.NaN, presentLineCount).ToArray();
+                    }
+                }
+
                 for (int lineIndex = 0; lineIndex < dataLines.Count; lineIndex++)
                 {
                     string line = dataLines[lineIndex];
@@ -1802,6 +1824,17 @@ namespace CapFrameX.Data
                             captureData.LayerIndex[lineIndex] = layerIndex;
                         }
                     }
+                    if (embeddedSensorValues != null)
+                    {
+                        for (int i = 0; i < sensorColumns.Count; i++)
+                        {
+                            // Unparsable values ("NA" in unsupported metrics, empty cells) stay NaN
+                            if (double.TryParse(GetStringFromArray(values, sensorColumns[i].ColumnIndex), NumberStyles.Any, CultureInfo.InvariantCulture, out var embeddedSensorValue))
+                            {
+                                embeddedSensorValues[i][lineIndex] = embeddedSensorValue;
+                            }
+                        }
+                    }
                 }
 
                 // No frame on a known layer: spare composed and older captures a -1 per frame.
@@ -1838,6 +1871,13 @@ namespace CapFrameX.Data
                 sessionRun.SensorData2 = new SessionSensorData2(initialAdd: true);
                 captureData.TimeInSeconds.ForEach(time => sessionRun.SensorData2["MeasureTime"].Values.AddLast(time));
 
+                // Take over sampled hardware sensor data embedded in the CSV file
+                // (e.g. NVIDIA FrameView logs)
+                if (sensorColumns.Count > 0)
+                {
+                    AddEmbeddedSensorData(sessionRun.SensorData2, sensorColumns, embeddedSensorValues);
+                }
+
                 sessionRun.CaptureData = captureData;
                 return sessionRun;
             }
@@ -1845,6 +1885,91 @@ namespace CapFrameX.Data
             {
                 _logger.LogError(e, "Error converting PresentData");
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// Adds the sampled hardware sensor columns of an imported CSV file (e.g. NVIDIA FrameView
+        /// logs) to the session sensor data. Columns that never reported a value (e.g. PCAT power
+        /// without a PCAT setup) are skipped.
+        /// </summary>
+        private static void AddEmbeddedSensorData(ISessionSensorData2 sensorData,
+            List<FrameViewSensorColumnMapper.SensorColumn> sensorColumns, double[][] sensorValues)
+        {
+            for (int i = 0; i < sensorColumns.Count; i++)
+            {
+                var values = sensorValues[i];
+
+                bool hasValues = false;
+                for (int j = 0; j < values.Length; j++)
+                {
+                    if (!double.IsNaN(values[j]))
+                    {
+                        hasValues = true;
+                        break;
+                    }
+                }
+
+                if (!hasValues)
+                    continue;
+
+                var sensorEntry = new SessionSensorEntry(sensorColumns[i].Name, sensorColumns[i].Type);
+                foreach (var value in values)
+                {
+                    sensorEntry.Values.AddLast(value);
+                }
+
+                sensorData.Add(sensorColumns[i].Key, sensorEntry);
+            }
+
+            // Intel hybrid CPUs: FrameView samples the per-cluster core power (E-Core/P-Core)
+            // separately; "CPU Package Power(W)" frequently reports no value in such logs, so
+            // both entries are combined into one "CPU Package (E+P Cores)" power entry (E+P per
+            // sample), exposing a "CPU Power (W)" metric in analysis and sensor reports. The
+            // name is kept distinct from a real package power reading (a sum of core clusters
+            // is not the package power), while still matching the "CPU Package" lookup of
+            // SessionSensorData2.CpuPower. A real "CPU Package" power column that reported
+            // values always wins over the merge.
+            if (sensorColumns != null && sensorColumns.Count >= 2)
+            {
+                int eCoreIndex = -1, pCoreIndex = -1;
+                for (int i = 0; i < sensorColumns.Count; i++)
+                {
+                    var name = sensorColumns[i].Name;
+                    if (name == "E-Core Power")
+                        eCoreIndex = i;
+                    else if (name == "P-Core Power")
+                        pCoreIndex = i;
+                }
+
+                if (eCoreIndex >= 0 && pCoreIndex >= 0)
+                {
+                    bool cpuPackageReported = sensorData.ContainsKey("cpupackagepower(w)")
+                        || sensorData.ContainsKey("cpupackagepower(watts)");
+
+                    if (!cpuPackageReported)
+                    {
+                        var eCoreValues = sensorValues[eCoreIndex];
+                        var pCoreValues = sensorValues[pCoreIndex];
+                        var mergedEntry = new SessionSensorEntry("CPU Package (E+P Cores)", "Power");
+                        bool mergedHasValues = false;
+
+                        for (int j = 0; j < eCoreValues.Length; j++)
+                        {
+                            var eValue = eCoreValues[j];
+                            var pValue = pCoreValues[j];
+                            var mergedValue = double.IsNaN(eValue) || double.IsNaN(pValue)
+                                ? double.NaN
+                                : eValue + pValue;
+                            if (!double.IsNaN(mergedValue))
+                                mergedHasValues = true;
+                            mergedEntry.Values.AddLast(mergedValue);
+                        }
+
+                        if (mergedHasValues)
+                            sensorData.Add("corepower(e+p)", mergedEntry);
+                    }
+                }
             }
         }
 
