@@ -350,6 +350,18 @@ renderer selected) and a PID change drop it. API names follow RTSS's spelling (`
 `Vulkan`, `OpenGL`, ...), also in `RTSSCoreControl.cpp` (`IRTSSService.GetApiInfo`): both sources feed a
 capture's `ApiInfo` and the `GraphicsAPI` overlay entry, so they must spell alike.
 
+### Frame generation in the frametime graphs
+
+PresentMon reports a frame-generation pair with one CPU start time (`CPUStartQPCTimeInMs`): the
+generated frame ~10 ms after the previous pair, the real frame ~0.1 ms after it. Captures spread
+equal start times by 0.1 ms (`CaptureManager.NormalizeTimes`); the live feeds pass them unchanged.
+Every graph sample of a pair counts: the native core keeps both extremes of a pixel column that share a
+timestamp (OSD `AppendColumnExtremes`), and the designer's live feed (`OverlayPreviewFrameFeed`) drops
+only rows older than the previous one. Before 2026-10-31 the core drew only the 0.1 ms line with a
+regular row of false ~10 ms spikes (every renderer and design, the rows' graphs included), and the
+designer dropped every real frame. A FG stream's frametime graph is a band between both intervals.
+Tests: `OverlayPreviewFrameFeedTest`, OSD `chart_geometry_test`.
+
 ### Present mode entry
 
 `OnlinePresentMode` ("Present Mode", an `OnlineMetric` text entry) shows PresentMon's `PresentMode` of

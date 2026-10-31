@@ -12,6 +12,33 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Frame-generation pairs in frametime graphs (2026-10-31)
+
+All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`) from the
+working tree committed as OSD `efcc9f8c6c3d60412ab06fa390b9e8e6e6678d67`. The only native change is in
+`src/core/ChartGeometry.h`: `AppendColumnExtremes` keeps both extremes of a pixel column that share a
+timestamp but not a value. PresentMon gives a frame-generation pair one CPU start time (the generated
+frame ~10 ms after the previous pair, the real frame ~0.1 ms after it); the core kept only the
+earlier extreme, so every frametime graph drew the 0.1 ms line with a regular row of false ~10 ms
+spikes wherever a column held two pairs (RE Requiem with FSR FG: 10.4 ms pairs, 11.2 ms columns, a
+spike every ~14 px, in the rows' graphs and in tile charts such as DUOLINE's). Such a stream now draws
+the band it is. Hook and Vulkan layer compile the core sources, so they changed too; the Vulkan
+manifests and Interop (still the signed build) are unchanged. The installed layers in
+`C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` were **not** updated (no elevated shell).
+
+Verification: all 16 core CTests pass, among them `chart_geometry` with the new
+`TestColumnExtremesKeepBothValuesOfOneTimestamp`, as do the 33 hook and 10 Vulkan CTests on x64 and
+x86. A capture of the game (whose `NormalizeTimes` spreads equal start times by 0.1 ms) fed back with
+its live timestamps reproduced the spikes with the previous core and draws the band with this one.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `CD22CAFE0FD27D040956A1A5EEFFF7AD0D42B6AD01A7546E8D2EE423D2484909` |
+| native\cfx_osd_hook.dll | `5C23CD2641EE5D303552181E7AB6621B6C3DAF39F8224F941A47F3FB2B2E2740` |
+| native\x86\cfx_osd_hook.dll | `D887A56EC97E1EF5D16CB1FA9B3A8B4470B28B1D4C79BB04E476FACD72AB456C` |
+| native\vk\cfx_osd_vklayer.dll | `1703ED01C75CC010C7172ABAAF15F68F5B05CB9F749BDCA6B4623143DBA7B3C3` |
+| native\vk\x86\cfx_osd_vklayer.dll | `7CDB1849FE723310BB3C8822E59DBB4720A9C56F06BED7A5EE45824B547DBA7A` |
+
 ### Row blocks that follow their rows (2026-10-31)
 
 Controls was rebuilt in `Release|x64` for .NET 10 (`--no-incremental`) from the OSD working tree
