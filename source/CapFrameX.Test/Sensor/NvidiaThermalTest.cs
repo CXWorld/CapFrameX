@@ -105,6 +105,30 @@ namespace CapFrameX.Test.Sensor
             Assert.IsNull(temperatures[0]);
         }
 
+        [TestMethod]
+        public void GetMemoryTemperatureSpread_ReturnsHottestMinusCoolestModule()
+        {
+            var temperatures = new float?[SensorCount];
+            temperatures[0] = 70;
+            temperatures[7] = 64;
+            temperatures[15] = 68;
+
+            Assert.AreEqual(6f, NvidiaThermal.GetMemoryTemperatureSpread(temperatures));
+        }
+
+        [TestMethod]
+        public void GetMemoryTemperatureSpread_FewerThanTwoModules_ReturnsNull()
+        {
+            var temperatures = new float?[SensorCount];
+            Assert.IsNull(NvidiaThermal.GetMemoryTemperatureSpread(temperatures));
+
+            temperatures[3] = 66;
+            Assert.IsNull(NvidiaThermal.GetMemoryTemperatureSpread(temperatures));
+
+            temperatures[4] = 66;
+            Assert.AreEqual(0f, NvidiaThermal.GetMemoryTemperatureSpread(temperatures));
+        }
+
         private static long[] CreateOutput()
         {
             long[] output = new long[OutputLength];

@@ -192,6 +192,26 @@ internal sealed class NvidiaThermal
         return (value & 0xFFFF) / 256.0f;
     }
 
+    /// <summary>The hottest minus the coolest module, or null while fewer than two modules report.</summary>
+    internal static float? GetMemoryTemperatureSpread(float?[] memoryTemperatures)
+    {
+        float? coolest = null, hottest = null;
+        int count = 0;
+        foreach (float? temperature in memoryTemperatures ?? [])
+        {
+            if (!temperature.HasValue)
+                continue;
+
+            count++;
+            if (!coolest.HasValue || temperature.Value < coolest.Value)
+                coolest = temperature;
+            if (!hottest.HasValue || temperature.Value > hottest.Value)
+                hottest = temperature;
+        }
+
+        return count < 2 ? null : hottest - coolest;
+    }
+
     internal static bool TryDecodeMemoryTemperatures(
         long[] output,
         uint returnSize,
