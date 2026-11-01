@@ -69,6 +69,37 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public async Task GpuThermalsHaveRolesOfTheirOwnUpToEveryMemoryModule()
+        {
+            // NVIDIA reports the hottest memory module as the junction and, through PawnIO, every module
+            // and their spread.
+            using var nvidia = new Fixture(new[]
+            {
+                Sensor("/gpu-nvidia/0/temperature/0", "GPU Core", "GpuNvidia", "Temperature", "NVIDIA GeForce RTX 5090"),
+                Sensor("/gpu-nvidia/0/temperature/1", "GPU Hot Spot", "GpuNvidia", "Temperature", "NVIDIA GeForce RTX 5090"),
+                Sensor("/gpu-nvidia/0/temperature/2", "GPU Memory Junction", "GpuNvidia", "Temperature", "NVIDIA GeForce RTX 5090"),
+                Sensor("/gpu-nvidia/0/temperature/3", "GPU Memory Temperature #1", "GpuNvidia", "Temperature", "NVIDIA GeForce RTX 5090"),
+                Sensor("/gpu-nvidia/0/temperature/18", "GPU Memory Temperature #16", "GpuNvidia", "Temperature", "NVIDIA GeForce RTX 5090"),
+                Sensor("/gpu-nvidia/0/temperature/51", "GPU Memory Temperature Spread", "GpuNvidia", "Temperature", "NVIDIA GeForce RTX 5090")
+            });
+            var sources = await nvidia.Service.GetSourcesAsync();
+            CollectionAssert.AreEqual(new[] { "gpuTemp", "gpuHotSpot", "vramTemp", "vramChipTemp1", "vramChipTemp16", "vramTempSpread" },
+                new[] { "GPU Core", "GPU Hot Spot", "GPU Memory Junction", "GPU Memory Temperature #1", "GPU Memory Temperature #16",
+                    "GPU Memory Temperature Spread" }
+                    .Select(name => sources.Single(source => source.Name == name).SemanticKey).ToArray());
+
+            // AMD reports one memory temperature, named like its memory clock.
+            using var amd = new Fixture(new[]
+            {
+                Sensor("/gpu-amd/0/temperature/1", "GPU Memory", "GpuAmd", "Temperature", "AMD Radeon RX 9070 XT"),
+                Sensor("/gpu-amd/0/clock/1", "GPU Memory", "GpuAmd", "Clock", "AMD Radeon RX 9070 XT")
+            });
+            sources = await amd.Service.GetSourcesAsync();
+            Assert.AreEqual("vramTemp", sources.Single(source => source.SensorType == "Temperature").SemanticKey);
+            Assert.AreEqual("gpuMemoryClock", sources.Single(source => source.SensorType == "Clock").SemanticKey);
+        }
+
+        [TestMethod]
         public async Task CatalogIncludesUnselectedAndUnusualSensorsWithUnits()
         {
             var entries = new[]

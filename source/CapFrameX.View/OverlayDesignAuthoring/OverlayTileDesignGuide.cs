@@ -190,7 +190,10 @@ defaults to frametimes, an icon to Segoe MDL2 Assets.
 A metric, bar or gauge shows the reading named by `key`. Use:
 - a source key from cfx_list_tile_sources (`key`), exact for this machine, or
 - a semantic key (`semanticKey` there) such as fps, frametime, fps1pctLow, gpuTemp, gpuLoad, cpuLoad,
-  gpuPower, cpuTemp, gpuClock, vramUsed, ramLoad. Saving binds it to this machine's matching reading.
+  gpuPower, cpuTemp, gpuClock, vramUsed, ramLoad, gpuHotSpot, vramTemp (the hottest memory module on
+  NVIDIA), vramTempSpread (the hottest minus the coolest module) or vramChipTemp1, vramChipTemp2, ...
+  (NVIDIA's memory modules one by one, partition order A0, A1, B0, ...). Saving binds it to this
+  machine's matching reading.
 A key that matches nothing is accepted but shows no value; the tools report it as a warning. Text
 readings (isText, e.g. the GPU name or the game) belong in metric tiles; bars and gauges need numbers.
 
