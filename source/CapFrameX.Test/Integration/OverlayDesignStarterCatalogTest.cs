@@ -171,6 +171,7 @@ namespace CapFrameX.Test.Integration
         [DataRow(23, 24)]
         [DataRow(24, 25)]
         [DataRow(26, 27)]
+        [DataRow(27, 28)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -187,6 +188,7 @@ namespace CapFrameX.Test.Integration
                 24 => AnimePresetIds,
                 25 => DuolinePresetIds,
                 27 => new[] { "Blackwell-Thermals-RTX-5090" },
+                28 => new[] { "Blackwell-Thermals-RTX-5080", "Blackwell-Thermals-RTX-5070", "Blackwell-Thermals-RTX-5060" },
                 _ => new[] { "NVIDIA-GeForce-RTX-GREENLINE", "ICELINE-Vertical" }
             };
             CollectionAssert.AreEquivalent(expectedIds,
@@ -301,6 +303,9 @@ namespace CapFrameX.Test.Integration
         [DataRow("DUOLINE-GeForce-Intel", "DUOLINE - GeForce RTX + Intel Core", false, 25)]
         [DataRow("DUOLINE-Arc-Intel", "DUOLINE - Arc + Intel Core", false, 25)]
         [DataRow("Blackwell-Thermals-RTX-5090", "BLACKWELL THERMALS - RTX 5090", true, 27)]
+        [DataRow("Blackwell-Thermals-RTX-5080", "BLACKWELL THERMALS - RTX 5080 & 5070 Ti", true, 28)]
+        [DataRow("Blackwell-Thermals-RTX-5070", "BLACKWELL THERMALS - RTX 5070", true, 28)]
+        [DataRow("Blackwell-Thermals-RTX-5060", "BLACKWELL THERMALS - RTX 5060 & 5060 Ti 8 GB", true, 28)]
         [DataRow("Anime-Cherry-Blossom", "CHERRY BLOSSOM - Anime", true, 24)]
         [DataRow("Anime-Neon-Night", "NEON NIGHT - Anime", true, 24)]
         [DataRow("Anime-Lunar", "LUNAR - Anime", true, 24)]
@@ -468,6 +473,9 @@ namespace CapFrameX.Test.Integration
         [DataRow("DUOLINE-GeForce-Intel", new[] { "gpuNameShort", "cpuNameShort" })]
         [DataRow("DUOLINE-Arc-Intel", new[] { "gpuNameShort", "cpuNameShort" })]
         [DataRow("Blackwell-Thermals-RTX-5090", new[] { "gpuNameShort" })]
+        [DataRow("Blackwell-Thermals-RTX-5080", new[] { "gpuNameShort" })]
+        [DataRow("Blackwell-Thermals-RTX-5070", new[] { "gpuNameShort" })]
+        [DataRow("Blackwell-Thermals-RTX-5060", new[] { "gpuNameShort" })]
         [DataRow("Anime-Cherry-Blossom", new string[0])]
         [DataRow("Anime-Neon-Night", new string[0])]
         [DataRow("Anime-Lunar", new string[0])]
@@ -557,30 +565,41 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void BlackwellThermalsShowsEveryMemoryModuleAroundTheGpuOnItsBoard()
+        // The RTX 5090 Founders Edition: four modules above the die, five on each side and two below,
+        // partitions A to H counter-clockwise from the bottom right, opposite the pin-1 corner at the top left.
+        [DataRow("Blackwell-Thermals-RTX-5090", "right right right right top right top top left top left left left left bottom bottom", -45)]
+        // The partner boards of the RTX 5080, 5070 Ti and 5070 turn the package to the right: pin 1 at the
+        // top right, partitions from the bottom left, the power stages on the left. A GB205 has no partition D.
+        [DataRow("Blackwell-Thermals-RTX-5080", "bottom bottom right right right right top top", -135)]
+        [DataRow("Blackwell-Thermals-RTX-5070", "bottom bottom right right right right", -135)]
+        // The RTX 5060 board keeps the package upright: partition A on the right, B above.
+        [DataRow("Blackwell-Thermals-RTX-5060", "right right top top", -45)]
+        public void BlackwellThermalsShowsEveryMemoryModuleAroundTheGpuOnItsBoard(string presetId, string sides, int partitionACorner)
         {
-            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "Blackwell-Thermals-RTX-5090");
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
+            string[] moduleSides = sides.Split(' ');
+            int count = moduleSides.Length;
             var document = OsdDesignDocument.FromJson(starter.DesignJson);
             document.Validate();
             Assert.AreEqual(starter.DesignJson, OverlayRuntimeDesign.Canonicalize(document.ToJson()), "The starter is stored as the editor saves it.");
             CollectionAssert.AreEqual(new[] { "Header", "Board", "Footer" }, document.Tiles.Select(tile => tile.Label).ToArray());
 
-            // The board drawing fills its tile; a reading sits on each of the sixteen modules and two on the die.
+            // The board drawing fills its tile; a reading sits on each memory module and two on the die.
             // PawnIO reports the modules in partition order, so module 2p + m + 1 is partition p's module m.
             var board = document.Tiles[1];
             Assert.AreEqual("image", board.Children[0].Kind);
             Assert.AreEqual((board.FrameWidth, board.FrameHeight), (board.Children[0].FrameWidth, board.Children[0].FrameHeight));
             var modules = board.Children.Where(tile => tile.Key?.StartsWith("vramChipTemp", StringComparison.Ordinal) == true).ToArray();
-            CollectionAssert.AreEqual(Enumerable.Range(1, 16).Select(module => "vramChipTemp" + module).ToArray(), modules.Select(tile => tile.Key).ToArray());
-            var names = Enumerable.Range(0, 16).Select(module => $"{(char)('A' + module / 2)}{module % 2}").ToArray();
+            CollectionAssert.AreEqual(Enumerable.Range(1, count).Select(module => "vramChipTemp" + module).ToArray(), modules.Select(tile => tile.Key).ToArray());
+            var names = Enumerable.Range(0, count).Select(module => $"{(char)('A' + module / 2)}{module % 2}").ToArray();
             CollectionAssert.AreEqual(names, modules.Select(tile => tile.Label).ToArray());
             var die = board.Children.Where(tile => tile.Key is "gpuHotSpot" or "gpuTemp").ToArray();
             Assert.AreEqual(2, die.Length);
             CollectionAssert.AreEqual(new[] { "vramTemp", "vramTempSpread", "gpuPower", "gpuFan" },
                 document.Tiles[2].Children.Where(tile => tile.Kind == "metric").Select(tile => tile.Key).ToArray());
 
-            // The modules sit where the Founders Edition has them: four above the die, five on each side and two
-            // below, partitions A to H counter-clockwise from the bottom right; no reading covers another.
+            // The modules sit where the board has them, the partitions counter-clockwise from the corner of
+            // partition A; no reading covers another.
             (double Left, double Top, double Right, double Bottom) Frame(OsdDesignTile tile)
                 => (tile.X.Value, tile.Y.Value, tile.X.Value + tile.FrameWidth.Value, tile.Y.Value + tile.FrameHeight.Value);
             double dieX = die.Average(tile => Frame(tile).Left + tile.FrameWidth.Value / 2);
@@ -591,17 +610,13 @@ namespace CapFrameX.Test.Integration
                 double dx = (frame.Left + frame.Right) / 2 - dieX, dy = (frame.Top + frame.Bottom) / 2 - dieY;
                 return Math.Abs(dx) > Math.Abs(dy) ? (dx < 0 ? "left" : "right") : (dy < 0 ? "top" : "bottom");
             }
-            CollectionAssert.AreEqual(new[]
-                {
-                    "right", "right", "right", "right", "top", "right", "top", "top",
-                    "left", "top", "left", "left", "left", "left", "bottom", "bottom"
-                }, modules.Select(Side).ToArray());
+            CollectionAssert.AreEqual(moduleSides, modules.Select(Side).ToArray());
             double Angle(OsdDesignTile tile)
             {
                 var frame = Frame(tile);
-                // Counter-clockwise on screen, starting at the bottom right corner.
+                // Counter-clockwise on screen, starting at the corner of partition A.
                 double angle = Math.Atan2(dieY - (frame.Top + frame.Bottom) / 2, (frame.Left + frame.Right) / 2 - dieX) * 180 / Math.PI;
-                return (angle + 360 + 45) % 360;
+                return (angle - partitionACorner + 720) % 360;
             }
             var counterClockwise = modules.OrderBy(Angle).Select(tile => tile.Label[0]).ToArray();
             CollectionAssert.AreEqual(counterClockwise.OrderBy(partition => partition).ToArray(), counterClockwise);
@@ -612,7 +627,7 @@ namespace CapFrameX.Test.Integration
                     || readings[i].Bottom <= readings[j].Top || readings[j].Bottom <= readings[i].Top, $"Readings {i} and {j} overlap.");
 
             // The modules bind to NVIDIA's per-module temperatures on any machine that reports them.
-            var catalog = Enumerable.Range(1, 16).Select(module => new OverlayTelemetrySource
+            var catalog = Enumerable.Range(1, count).Select(module => new OverlayTelemetrySource
             {
                 Id = "sensor:GpuNvidia/GPU Memory Temperature #" + module, SemanticKey = "vramChipTemp" + module, Unit = "°C"
             }).Append(new OverlayTelemetrySource

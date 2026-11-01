@@ -555,27 +555,45 @@ FPS and the frame time. The native metric draws device names in the theme text c
 color is also the color of both header names. The files are stored as the editor saves them;
 `DuolineStarterShowsTheGpuAboveTheCpuInTheColorsOfTheirVendors` checks layout and colors.
 
-### BLACKWELL THERMALS starter
+### BLACKWELL THERMALS starters
 
-`overlay-templates/Blackwell-Thermals-RTX-5090.json` (catalog version 27) shows the temperatures of an
-RTX 5090 on a drawing of its board: one reading on each of the 16 GDDR7 modules, hot spot and core
-temperature on the die, then the hottest module (`vramTemp`), the hottest minus the coolest
-(`vramTempSpread`), board power and fan. The modules sit where the Founders Edition has them (four
-above the package, five on each side, two below; from a labelled photo of the board) and carry NVIDIA's
-names: memory partitions A to H counter-clockwise from the bottom right, opposite the gold pin-1 corner
-of the package, each with modules 0 and 1. The PawnIO module (`ioctl_read_memory_temperatures` in
-`Nvidia.p`) reports register group p, module m as `GPU Memory Temperature #(2p + m + 1)`, so
-`vramChipTemp1` is A0, `vramChipTemp2` A1, ..., `vramChipTemp16` H1. That group p is partition p
-follows NVIDIA's numbering and was not verified on the board; with topology bit `0x00400000` (clear on
-the RTX 5090) the module reports two inputs per module and the numbering differs. The board is rendered
-by `scripts/New-BlackwellBoardArt.py`, whose chip and die geometry the tiles repeat; it uses flat fills
-only, because Edge dithers gradients and the noise tripled the PNG. LHM scans the per-module readings
-(`NvidiaThermal`, up to 48) only while one of them or the spread is in use. `GPU Memory Temperature
-Spread` (LHM, NVIDIA only, `NvidiaThermal.GetMemoryTemperatureSpread`) comes from the same read, is
-null below two modules and moves in 2 K steps like the modules: a module with poor thermal pad contact
-stays above the others whatever the load. A card with fewer modules leaves the rest empty.
-`OverlaySemanticKeys` maps `gpuHotSpot`, `vramTemp` (NVIDIA "GPU Memory Junction", AMD and Intel "GPU
-Memory"), `vramTempSpread` and `vramChipTemp1`..`48`. Tests:
+Four starters show the temperatures of an RTX 50 card on a drawing of its board: one reading on each
+GDDR7 module, hot spot and core temperature on the die, then the hottest module (`vramTemp`), the
+hottest minus the coolest (`vramTempSpread`), board power and fan. Each fits one board layout:
+
+- `Blackwell-Thermals-RTX-5090.json` (catalog version 27): the RTX 5090 Founders Edition (GB202,
+  16 modules: four above the package, five on each side, two below; from a labelled photo of the
+  board). Pin 1 at the top left, partitions A to H counter-clockwise from the bottom right.
+- `Blackwell-Thermals-RTX-5080.json`, "RTX 5080 & 5070 Ti" (catalog version 28): an MSI Gaming Trio
+  board (GB203, 8 modules: two above, four on the right, two below, the power stages on the left).
+- `Blackwell-Thermals-RTX-5070.json` (catalog version 28): an ASUS TUF board (GB205, 6 modules) with
+  the same layout; the two places above the package stay empty.
+- `Blackwell-Thermals-RTX-5060.json`, "RTX 5060 & 5060 Ti 8 GB" (catalog version 28): an ASUS PRIME
+  board (GB206, 4 modules: two above, two on the right, the power stages on the left).
+
+Every module carries NVIDIA's name: its memory partition, counter-clockwise from the corner opposite the
+gold pin-1 mark of the package, and module 0 or 1 (on the 5090, module 1 of each partition comes first
+counter-clockwise; the other boards follow the same rule). The GB203 and GB205 boards turn the package
+by 90 degrees to the right (the die marking runs top to bottom), so pin 1 sits at the top right and
+partition A at the bottom left. The GB205's six modules then leave partition D empty, the places above
+the package, which the ASUS board leaves unpopulated; with the package unturned the empty places would be
+below it. The GB206 board keeps the package upright like the 5090: A on the right, B above. Only the
+5090's letters come from a labelled photo; the others are derived this way. The PawnIO module
+(`ioctl_read_memory_temperatures` in `Nvidia.p`) reports register group p, module m as `GPU Memory
+Temperature #(2p + m + 1)`, so `vramChipTemp1` is A0, `vramChipTemp2` A1, and so on (an RTX 5070 reported
+#1 to #6). That group p is partition p follows NVIDIA's numbering and was not verified on a board. With
+topology bit `0x00400000` (clear on the RTX 5090) the module reads two values per module place, as
+`#(4p + 2m + s + 1)`; presumably a clamshell card such as the 16 GB RTX 5060 Ti (four more modules on
+the back), which no log has shown yet, so it has no starter and the 8 GB one would misplace its values.
+A starter on another card leaves the places it does not have empty and shows its readings at the places
+of its own board. The boards are rendered by `scripts/New-BlackwellBoardArt.py` (`gb202`, `gb203`,
+`gb205`, `gb206`), whose chip and die geometry the tiles repeat; it uses flat fills only, because Edge
+dithers gradients and the noise tripled the PNG. LHM scans the per-module readings (`NvidiaThermal`, up
+to 48) only while one of them or the spread is in use. `GPU Memory Temperature Spread` (LHM, NVIDIA
+only, `NvidiaThermal.GetMemoryTemperatureSpread`) comes from the same read, is null below two modules
+and moves in 2 K steps like the modules: a module with poor thermal pad contact stays above the others
+whatever the load. `OverlaySemanticKeys` maps `gpuHotSpot`, `vramTemp` (NVIDIA "GPU Memory Junction",
+AMD and Intel "GPU Memory"), `vramTempSpread` and `vramChipTemp1`..`48`. Tests:
 `BlackwellThermalsShowsEveryMemoryModuleAroundTheGpuOnItsBoard`,
 `GpuThermalsHaveRolesOfTheirOwnUpToEveryMemoryModule`, `NvidiaThermalTest`.
 
