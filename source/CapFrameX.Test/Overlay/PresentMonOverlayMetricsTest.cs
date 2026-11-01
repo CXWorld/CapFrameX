@@ -128,6 +128,28 @@ namespace CapFrameX.Test.Overlay
         }
 
         [TestMethod]
+        public void Disable_KeepsTheRuntimeOfTheTargetForTheFirstRefreshAfterTheShow()
+        {
+            using var fixture = new Fixture();
+            fixture.Metrics.SetEnabled(true);
+            fixture.Frames.OnNext(Row(42, "10", "20", "DXGI"));
+            Assert.AreEqual("DXGI", fixture.Snapshot()[0].GroupName);
+
+            // A hide switches the entry feed off; the show's first refresh precedes the next wave.
+            fixture.Metrics.SetEnabled(false);
+            fixture.Metrics.SetEnabled(true);
+            var shown = fixture.Snapshot();
+            AssertValues(shown, 0, 0, 0);
+            Assert.AreEqual("DXGI", shown[0].GroupName, "A label flip renames the group and rebuilds the scene.");
+
+            fixture.Metrics.SetEnabled(false);
+            fixture.ProcessIds.OnNext(99);
+            fixture.Metrics.SetEnabled(true);
+            Assert.AreEqual(CxLang.Instance.TranslateOverlay("Performance"), fixture.Snapshot()[0].GroupName,
+                "A target change while the feed is off still drops the runtime.");
+        }
+
+        [TestMethod]
         public void RepeatedEnable_PreservesTheCurrentInterval()
         {
             using var fixture = new Fixture();

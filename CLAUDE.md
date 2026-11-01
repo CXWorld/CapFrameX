@@ -373,9 +373,12 @@ the hook's device type, `Vulkan` from the loaded layer), the PresentMon `Present
 `D3D9`, `Other`), then "Performance". The hook-free renderer only has PresentMon. The proven API is
 bound to the target PID and kept through statuses without one (hidden, idle, transitional): every
 label change renames the group and makes the renderer rebuild its scene. A `Disabled` status (another
-renderer selected) and a PID change drop it. API names follow RTSS's spelling (`D3D11`, `D3D12`,
+renderer selected) and a PID change drop it. The PresentMon runtime survives a hide too (the entry feed
+switching off), so the first refresh after a show does not read "Performance"; a PID change and a
+PresentMon stop drop it. API names follow RTSS's spelling (`D3D11`, `D3D12`,
 `Vulkan`, `OpenGL`, ...), also in `RTSSCoreControl.cpp` (`IRTSSService.GetApiInfo`): both sources feed a
-capture's `ApiInfo` and the `GraphicsAPI` overlay entry, so they must spell alike.
+capture's `ApiInfo` and the `GraphicsAPI` overlay entry, so they must spell alike. Tests:
+`PresentMonOverlayMetricsTest`.
 
 ### Frame generation in the frametime graphs
 

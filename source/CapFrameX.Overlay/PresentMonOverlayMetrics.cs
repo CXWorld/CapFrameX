@@ -120,7 +120,11 @@ namespace CapFrameX.Overlay
 
                 _enabled = enabled;
                 long generation = ++_subscriptionGeneration;
-                ResetLocked();
+                // The runtime belongs to the process, not to the interval. Every hide switches the
+                // entry feed off, and the first refresh after the show comes before the next
+                // PresentMon wave: without it the label read "Performance" for that refresh and
+                // the renderer rebuilt its scene twice.
+                ResetIntervalLocked();
                 if (enabled)
                 {
                     _frameSubscription = _frames.Subscribe(row => OnFrame(row, generation));
@@ -233,6 +237,12 @@ namespace CapFrameX.Overlay
 
         private void ResetLocked()
         {
+            ResetIntervalLocked();
+            _runtime = null;
+        }
+
+        private void ResetIntervalLocked()
+        {
             _frametimeSum = 0;
             _frametimeCount = 0;
             _displayTimeSum = 0;
@@ -240,7 +250,6 @@ namespace CapFrameX.Overlay
             _framerate = 0;
             _frametime = 0;
             _displayTime = 0;
-            _runtime = null;
         }
 
         public void Dispose()
