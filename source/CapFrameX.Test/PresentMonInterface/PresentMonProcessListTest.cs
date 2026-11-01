@@ -508,6 +508,49 @@ namespace CapFrameX.Test.PresentMonInterface
         }
 
         [TestMethod]
+        public void Activity_DominantPresentMode_IsTheModeOfMostRecentPresents()
+        {
+            const string independentFlip = "Hardware: Independent Flip";
+            const string composedFlip = "Composed: Flip";
+            using var context = new ListContext();
+            context.List.Start(context.Rows);
+            context.PublishActivityHeader();
+            for (int i = 0; i < 10; i++)
+                context.PublishPresent("Game", 100, gpuBusyMs: 1, presentMode: independentFlip);
+            context.PublishPresent("Game", 100, gpuBusyMs: 1, presentMode: composedFlip);
+            context.Flush();
+
+            // The hide in Doom on 2026-11-01 chose the cloak from one composed present.
+            var blip = context.Activity("Game");
+            Assert.AreEqual(composedFlip, blip.PresentMode);
+            Assert.AreEqual(independentFlip, blip.DominantPresentMode);
+
+            // The previous pass still counts: PresentMon delivers its rows in waves.
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(1));
+            for (int i = 0; i < 3; i++)
+                context.PublishPresent("Game", 100, gpuBusyMs: 1, presentMode: composedFlip);
+            context.Flush();
+            Assert.AreEqual(independentFlip, context.Activity("Game").DominantPresentMode);
+
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(1));
+            Assert.AreEqual(composedFlip, context.Activity("Game").DominantPresentMode,
+                "Only the current and the previous pass count.");
+
+            context.PublishPresent("Game", 100, gpuBusyMs: 1, presentMode: independentFlip);
+            context.PublishPresent("Game", 100, gpuBusyMs: 1, presentMode: independentFlip);
+            context.Flush();
+            Assert.AreEqual(composedFlip, context.Activity("Game").DominantPresentMode);
+            context.PublishPresent("Game", 100, gpuBusyMs: 1, presentMode: independentFlip);
+            context.Flush();
+            Assert.AreEqual(independentFlip, context.Activity("Game").DominantPresentMode,
+                "A tie goes to the mode of the latest present.");
+
+            context.Clock.AdvanceBy(TimeSpan.FromSeconds(2));
+            Assert.IsNull(context.Activity("Game").DominantPresentMode, "No recent present, no mode.");
+            Assert.AreEqual(independentFlip, context.Activity("Game").PresentMode);
+        }
+
+        [TestMethod]
         public void Activity_DropsTheProcessesThatExited()
         {
             using var context = new ListContext();

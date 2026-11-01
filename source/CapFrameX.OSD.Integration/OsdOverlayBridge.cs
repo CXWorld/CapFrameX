@@ -75,8 +75,9 @@ namespace CapFrameX.OSD.Integration
         private volatile bool _hasProcesses;
         private volatile bool _started;
         private int _targetPid;
-        // The present mode of a process (PresentMon's name) decides how a hide takes the window
-        // out of the picture (HookFreeHideMethods); null without a process list.
+        // The present mode of most of a process' recent presents (PresentMon's name) decides how a
+        // hide takes the window out of the picture (HookFreeHideMethods); null without a process
+        // list or recent presents.
         private readonly Func<int, string> _presentModeOfProcess;
         // Null until the first visibility is applied, so the first hide also chooses its method.
         private bool? _lastShown;

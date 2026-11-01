@@ -225,7 +225,9 @@ Every entry also counts its presents, `MsGPUBusy` time, latest `PresentMode` and
 (`FrameType`) in one bucket per pass; the columns are found by name in the header row, which is read
 on the producer thread. `ICaptureService.GetProcessActivity` returns them over the last 3 completed
 passes (`ActivityWindowSeconds`): presents/s, GPU busy share (capped at 1, null before the first
-complete pass and without the column), idle seconds since the last present.
+complete pass and without the column), idle seconds since the last present. `DominantPresentMode` is
+the mode of most presents in the current and the previous pass (rows arrive in waves), a tie going to
+the latest present, null without presents in them: one differing present does not decide it.
 
 ### Automatic capture target
 
@@ -311,10 +313,12 @@ The hook-free window keeps everything too, but a window that leaves the composit
 reassign its planes: in the same game (VRR, FSR FG) the cloak and `ShowWindow(SW_HIDE)` alike cost
 1-2 s of lost displays at every capture start while the game stayed on its plane. So
 `OsdOverlayBridge` chooses the method right before each hide (`HookFreeHideMethods.Choose`, applied
-through the core's `cfx_osd_set_hide_mode`): a target whose latest present mode in the process
+through the core's `cfx_osd_set_hide_mode`): a target whose `DominantPresentMode` in the process
 list (`GetProcessActivity`) is `Hardware…` is on a plane of its own and is hidden by one empty frame,
 the window staying composed (three captures began clean); a composed or unknown target is cloaked,
-because a window that stayed would keep it composed for the whole capture. The log reads `HookFree
+because a window that stayed would keep it composed for the whole capture. Until 2026-11-01 the
+latest present decided: in Doom: The Dark Ages one composed present chose the cloak, although the
+capture ran on its plane from the first frame. The log reads `HookFree
 OSD: hides by <method>; pid … presents …`. A core without the export keeps cloaking. OsdDebug.json
 `"hideMode"` forces one method for A/B runs; `verify-osd-hookfree-hide.ps1` measures a method over a
 fullscreen app with PresentMon. Tests: `HookFreeHideMethodTest`.

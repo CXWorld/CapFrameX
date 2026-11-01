@@ -288,15 +288,17 @@ namespace CapFrameX.PresentMonInterface
         }
 
         /// <summary>
-        /// Presents and GPU busy time of one process, one bucket per pass. A bucket is reset when
-        /// a row of a new pass reuses it, so no pass has to touch the entries. Guarded by the
-        /// list lock.
+        /// Presents, GPU busy time and present modes of one process, one bucket per pass. A bucket
+        /// is reset when a row of a new pass reuses it, so no pass has to touch the entries.
+        /// Guarded by the list lock.
         /// </summary>
         private sealed class PresentActivity
         {
             private readonly long[] _bucketPass = new long[ActivityWindowSeconds + 1];
             private readonly int[] _presents = new int[ActivityWindowSeconds + 1];
             private readonly double[] _gpuBusyMs = new double[ActivityWindowSeconds + 1];
+            // Presents per present mode; a process rarely shows more than two modes in a pass.
+            private readonly List<(string Mode, int Count)>[] _modeVotes = new List<(string, int)>[ActivityWindowSeconds + 1];
             private readonly long _firstPass;
             private long _lastPresentPass;
             private long _lastGeneratedFramePass = long.MinValue;
@@ -307,7 +309,10 @@ namespace CapFrameX.PresentMonInterface
                 _firstPass = pass;
                 _lastPresentPass = pass;
                 for (int i = 0; i < _bucketPass.Length; i++)
+                {
                     _bucketPass[i] = -1;
+                    _modeVotes[i] = new List<(string, int)>(2);
+                }
             }
 
             public void Record(long pass, double? gpuBusyMs, string presentMode, bool generatedFrame)
@@ -318,6 +323,7 @@ namespace CapFrameX.PresentMonInterface
                     _bucketPass[index] = pass;
                     _presents[index] = 0;
                     _gpuBusyMs[index] = 0;
+                    _modeVotes[index].Clear();
                 }
 
                 _presents[index]++;
@@ -325,9 +331,74 @@ namespace CapFrameX.PresentMonInterface
                     _gpuBusyMs[index] += gpuBusyMs.Value;
                 _lastPresentPass = pass;
                 if (!string.IsNullOrEmpty(presentMode))
+                {
                     _presentMode = presentMode;
+                    Vote(_modeVotes[index], presentMode);
+                }
                 if (generatedFrame)
                     _lastGeneratedFramePass = pass;
+            }
+
+            private static void Vote(List<(string Mode, int Count)> votes, string mode)
+            {
+                for (int i = 0; i < votes.Count; i++)
+                {
+                    if (string.Equals(votes[i].Mode, mode, StringComparison.Ordinal))
+                    {
+                        votes[i] = (votes[i].Mode, votes[i].Count + 1);
+                        return;
+                    }
+                }
+                votes.Add((mode, 1));
+            }
+
+            // The current pass is still filling and PresentMon delivers its rows in waves, so the
+            // previous pass counts too. A tie goes to the mode of the latest present.
+            private string GetDominantPresentMode(long pass)
+            {
+                var previous = VotesOf(pass - 1);
+                var current = VotesOf(pass);
+                string dominant = null;
+                int dominantCount = 0;
+                Consider(previous);
+                Consider(current);
+                return dominant;
+
+                void Consider(List<(string Mode, int Count)> votes)
+                {
+                    if (votes == null)
+                        return;
+                    foreach (var vote in votes)
+                    {
+                        int count = CountOf(previous, vote.Mode) + CountOf(current, vote.Mode);
+                        if (count > dominantCount ||
+                            (count == dominantCount && string.Equals(vote.Mode, _presentMode, StringComparison.Ordinal)))
+                        {
+                            dominant = vote.Mode;
+                            dominantCount = count;
+                        }
+                    }
+                }
+            }
+
+            private List<(string Mode, int Count)> VotesOf(long pass)
+            {
+                if (pass < 0)
+                    return null;
+                int index = (int)(pass % _bucketPass.Length);
+                return _bucketPass[index] == pass ? _modeVotes[index] : null;
+            }
+
+            private static int CountOf(List<(string Mode, int Count)> votes, string mode)
+            {
+                if (votes == null)
+                    return 0;
+                foreach (var vote in votes)
+                {
+                    if (string.Equals(vote.Mode, mode, StringComparison.Ordinal))
+                        return vote.Count;
+                }
+                return 0;
             }
 
             public CaptureProcessActivity ToActivity(string name, int processId, long pass, bool tracksGpuBusy)
@@ -353,7 +424,8 @@ namespace CapFrameX.PresentMonInterface
                 int idleSeconds = (int)Math.Min(int.MaxValue, pass - _lastPresentPass);
 
                 return new CaptureProcessActivity(name, processId, idleSeconds, presentsPerSecond,
-                    gpuBusyShare, _presentMode, _lastGeneratedFramePass >= pass - ActivityWindowSeconds);
+                    gpuBusyShare, _presentMode, _lastGeneratedFramePass >= pass - ActivityWindowSeconds,
+                    GetDominantPresentMode(pass));
             }
         }
     }

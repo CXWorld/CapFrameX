@@ -212,7 +212,7 @@ namespace CapFrameX
                         pixelOrbit: _pixelOrbit,
                         hookFreeFallbackStream: _hookOverlayManager.HookFreeFallbackStream,
                         presentModeOfProcess: processId => osdCaptureService.GetProcessActivity()?
-                            .FirstOrDefault(activity => activity.ProcessId == processId)?.PresentMode);
+                            .FirstOrDefault(activity => activity.ProcessId == processId)?.DominantPresentMode);
                 }
 
                 // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries
