@@ -154,3 +154,16 @@ X; the tile behind them supplies the brand blue `#0271F9`. The banner
 (1280 x 256, 5:1) places mark and wordmark side by side in the proportions of
 `Icons/CX_Installer_Banner.png`, with the same margin on all four sides. The
 logo (512 x 512) places the mark where the app icon does.
+
+## BLACKWELL THERMALS board
+
+BLACKWELL THERMALS (`overlay-templates/Blackwell-Thermals-RTX-5090.json`)
+embeds a drawing of an RTX 5090 board made for CapFrameX on 2026-11-01: the GPU
+package with its die and pin-1 mark, sixteen memory modules, traces, vias,
+mounting holes and chokes. It contains no third-party material: no photograph,
+logo, brand mark or font glyph. Only the arrangement of the modules follows the
+Founders Edition board (four above the package, five on each side, two below).
+`scripts/New-BlackwellBoardArt.py` draws it from
+SVG primitives and renders it through headless Microsoft Edge at 880 x 768
+pixels, 2 pixels per design unit; its fixed random seed reproduces the embedded
+PNG. The readings, captions and the GPU name stay in editable tiles.

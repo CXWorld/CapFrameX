@@ -555,6 +555,30 @@ FPS and the frame time. The native metric draws device names in the theme text c
 color is also the color of both header names. The files are stored as the editor saves them;
 `DuolineStarterShowsTheGpuAboveTheCpuInTheColorsOfTheirVendors` checks layout and colors.
 
+### BLACKWELL THERMALS starter
+
+`overlay-templates/Blackwell-Thermals-RTX-5090.json` (catalog version 27) shows the temperatures of an
+RTX 5090 on a drawing of its board: one reading on each of the 16 GDDR7 modules, hot spot and core
+temperature on the die, then the hottest module (`vramTemp`), the hottest minus the coolest
+(`vramTempSpread`), board power and fan. The modules sit where the Founders Edition has them (four
+above the package, five on each side, two below; from a labelled photo of the board) and carry NVIDIA's
+names: memory partitions A to H counter-clockwise from the bottom right, opposite the gold pin-1 corner
+of the package, each with modules 0 and 1. The PawnIO module (`ioctl_read_memory_temperatures` in
+`Nvidia.p`) reports register group p, module m as `GPU Memory Temperature #(2p + m + 1)`, so
+`vramChipTemp1` is A0, `vramChipTemp2` A1, ..., `vramChipTemp16` H1. That group p is partition p
+follows NVIDIA's numbering and was not verified on the board; with topology bit `0x00400000` (clear on
+the RTX 5090) the module reports two inputs per module and the numbering differs. The board is rendered
+by `scripts/New-BlackwellBoardArt.py`, whose chip and die geometry the tiles repeat; it uses flat fills
+only, because Edge dithers gradients and the noise tripled the PNG. LHM scans the per-module readings
+(`NvidiaThermal`, up to 48) only while one of them or the spread is in use. `GPU Memory Temperature
+Spread` (LHM, NVIDIA only, `NvidiaThermal.GetMemoryTemperatureSpread`) comes from the same read, is
+null below two modules and moves in 2 K steps like the modules: a module with poor thermal pad contact
+stays above the others whatever the load. A card with fewer modules leaves the rest empty.
+`OverlaySemanticKeys` maps `gpuHotSpot`, `vramTemp` (NVIDIA "GPU Memory Junction", AMD and Intel "GPU
+Memory"), `vramTempSpread` and `vramChipTemp1`..`48`. Tests:
+`BlackwellThermalsShowsEveryMemoryModuleAroundTheGpuOnItsBoard`,
+`GpuThermalsHaveRolesOfTheirOwnUpToEveryMemoryModule`, `NvidiaThermalTest`.
+
 ### Hybrid starters
 
 Hybrid Benchmark, Hybrid Compact and Hybrid Thread Deck (`StarterDesigns/hybrid-*.json`) embed the
