@@ -673,7 +673,10 @@ Only the in-game hook and the Vulkan layer still read it at load:
 - `%TEMP%\cfx-osd-logs\cfx_osd.log` — the native core's `[diag]` lines (timestamped): host tick gaps, slow
   ticks with a phase breakdown, replay holds/snaps, feed arrival vs. source gaps, scene rebuilds
   with the entries that changed, window placement, topmost fights, scale changes, Present
-  HRESULT changes. Documented in the OSD repo's CLAUDE.md.
+  HRESULT changes. Documented in the OSD repo's CLAUDE.md. The first process that loads the core
+  keeps this file for its lifetime; a game's hook or Vulkan layer beside the hook-free window (or
+  the window beside one, after a renderer switch) writes `cfx_osd_<pid>.log` instead. The header
+  names the process and PID: check it before reading a log as the hook-free one.
 - `CapFrameX.log` — `HookFree OSD: render loop stall/slow step/10s` (the managed render loop:
   iteration gaps, wake latency, pump/drain/tick durations, GC collection and pause deltas — the
   one thing native code cannot see) and `HookFree feed: ...` from
