@@ -225,7 +225,9 @@ Every entry also counts its presents, `MsGPUBusy` time, latest `PresentMode` and
 (`FrameType`) in one bucket per pass; the columns are found by name in the header row, which is read
 on the producer thread. `ICaptureService.GetProcessActivity` returns them over the last 3 completed
 passes (`ActivityWindowSeconds`): presents/s, GPU busy share (capped at 1, null before the first
-complete pass and without the column), idle seconds since the last present.
+complete pass and without the column), idle seconds since the last present. `DominantPresentMode` is
+the mode of most presents in the current and the previous pass (rows arrive in waves), a tie going to
+the latest present, null without presents in them: one differing present does not decide it.
 
 ### Automatic capture target
 
@@ -300,6 +302,35 @@ auto-hide ("Auto hide while capture", `AutoDisableOverlay`) hides every renderer
 clients) is only toggled when RTSS renders at the start, and given back at the stop even after a
 renderer switch. Tests: `CaptureManagerTest` (`AutoDisableOverlay_*`), `OverlayProfileRefreshTest`.
 
+A hide costs the game nothing in any CapFrameX renderer. The in-game hook and the Vulkan layer keep
+their OSD instance and GPU resources through it and only stop drawing (OSD repo CLAUDE.md, "Hide and
+show keep the renderer"). Until 2026-10-31 the hook and the layer released everything on the hide,
+inside the game's Present, and rebuilt it on the show: every auto-hidden capture began with the frame
+in flight at the start ~5 ms late (Mafia: The Old Country, RX 9070 XT) and the overlay came back
+with a ~45 ms rebuild. Measured by CapFrameX.Test's `verify-osd-hide-cost.ps1`.
+
+The hook-free window keeps everything too, but a window that leaves the composition makes DWM
+reassign its planes: in the same game (VRR, FSR FG) the cloak and `ShowWindow(SW_HIDE)` alike cost
+1-2 s of lost displays at every capture start while the game stayed on its plane. So
+`OsdOverlayBridge` chooses the method right before each hide (`HookFreeHideMethods.Choose`, applied
+through the core's `cfx_osd_set_hide_mode`): a target whose `DominantPresentMode` in the process
+list (`GetProcessActivity`) is `Hardware…` is on a plane of its own and is hidden by one empty frame,
+the window staying composed (three captures began clean); a composed or unknown target is cloaked,
+because a window that stayed would keep it composed for the whole capture. Until 2026-11-01 the
+latest present decided: in Doom: The Dark Ages one composed present chose the cloak, although the
+capture ran on its plane from the first frame. The log reads `HookFree
+OSD: hides by <method>; pid … presents …`. A core without the export keeps cloaking. OsdDebug.json
+`"hideMode"` forces one method for A/B runs; `verify-osd-hookfree-hide.ps1` measures a method over a
+fullscreen app with PresentMon. Tests: `HookFreeHideMethodTest`.
+
+After a show the charts continue on the current window in every CapFrameX renderer. The hook-free
+bridge keeps its frame subscription while hidden (`UpdateFrameSubscription`), and the hook and the
+Vulkan layer drain what the PresentMon ring (`HookFrametimePublisher`, written regardless of the
+hide) kept of the hidden time. The core then re-anchors its replay on the newest sample
+(`cfx_osd_resume_charts`; OSD repo CLAUDE.md, "Charts after a show"). Before, a shown chart played
+the samples from before the hide and then jumped over the gap: the hook-free one because its feed
+followed the visibility, the in-game ones once they kept their instance through the hide.
+
 ### Hook-free stand-in: Direct3D 9, anti-cheat and blacklist
 
 Only the selected renderer draws: an in-game overlay that cannot run leaves the game without an
@@ -346,9 +377,31 @@ the hook's device type, `Vulkan` from the loaded layer), the PresentMon `Present
 `D3D9`, `Other`), then "Performance". The hook-free renderer only has PresentMon. The proven API is
 bound to the target PID and kept through statuses without one (hidden, idle, transitional): every
 label change renames the group and makes the renderer rebuild its scene. A `Disabled` status (another
-renderer selected) and a PID change drop it. API names follow RTSS's spelling (`D3D11`, `D3D12`,
+renderer selected) and a PID change drop it. The PresentMon runtime survives a hide too (the entry feed
+switching off), so the first refresh after a show does not read "Performance"; a PID change and a
+PresentMon stop drop it. API names follow RTSS's spelling (`D3D11`, `D3D12`,
 `Vulkan`, `OpenGL`, ...), also in `RTSSCoreControl.cpp` (`IRTSSService.GetApiInfo`): both sources feed a
-capture's `ApiInfo` and the `GraphicsAPI` overlay entry, so they must spell alike.
+capture's `ApiInfo` and the `GraphicsAPI` overlay entry, so they must spell alike. Tests:
+`PresentMonOverlayMetricsTest`.
+
+### Frame generation in the frametime graphs
+
+PresentMon reports a frame-generation pair with one CPU start time (`CPUStartQPCTimeInMs`): the
+generated frame ~10 ms after the previous pair, the real frame ~0.1 ms after it. Captures spread
+equal start times by 0.1 ms (`CaptureManager.NormalizeTimes`); the live feeds pass them unchanged.
+Every graph sample of a pair counts: the native core keeps both extremes of a pixel column that share a
+timestamp (OSD `AppendColumnExtremes`), and the designer's live feed (`OverlayPreviewFrameFeed`) drops
+only rows older than the previous one. Before 2026-10-31 the core drew only the 0.1 ms line with a
+regular row of false ~10 ms spikes (every renderer and design, the rows' graphs included), and the
+designer dropped every real frame. A FG stream's frametime graph is a band between both intervals.
+Tests: `OverlayPreviewFrameFeedTest`, OSD `chart_geometry_test`.
+
+A capture file starts after the frames of the interval's first start time
+(`CaptureManager.DropFramesOfFirstStartTime`): the interval begins with the frame before the
+capture start, and under frame generation that is a pair. Dropping one row left the pair's real
+frame, from before the start, as the first frame of every FG capture. The defined capture time
+counts from the first frame after that start time. Tests: `CaptureManagerTest`
+(`DropFramesOfFirstStartTime_*`).
 
 ### Present mode entry
 
@@ -508,6 +561,63 @@ clock, power and VRAM/RAM (label left, value right). Below them sit the frame ti
 FPS and the frame time. The native metric draws device names in the theme text color, so the dark text
 color is also the color of both header names. The files are stored as the editor saves them;
 `DuolineStarterShowsTheGpuAboveTheCpuInTheColorsOfTheirVendors` checks layout and colors.
+
+### BLACKWELL THERMALS starters
+
+Four starters show the temperatures of an RTX 50 card on a drawing of its board: one reading on each
+GDDR7 module, hot spot and core temperature on the die, then the hottest module (`vramTemp`), the
+hottest minus the coolest (`vramTempSpread`), board power and fan. Each fits one board layout:
+
+- `Blackwell-Thermals-RTX-5090.json` (catalog version 27): the RTX 5090 Founders Edition (GB202,
+  16 modules: four above the package, five on each side, two below; from a labelled photo of the
+  board). Pin 1 at the top left, partitions A to H counter-clockwise from the bottom right.
+- `Blackwell-Thermals-RTX-5080.json`, "RTX 5080 & 5070 Ti" (catalog version 28): an MSI Gaming Trio
+  board (GB203, 8 modules: two above, four on the right, two below, the power stages on the left).
+- `Blackwell-Thermals-RTX-5070.json` (catalog version 28): an ASUS TUF board (GB205, 6 modules) with
+  the same layout; the two places above the package stay empty.
+- `Blackwell-Thermals-RTX-5060.json`, "RTX 5060 & 5060 Ti 8 GB" (catalog version 28): an ASUS PRIME
+  board (GB206, 4 modules: two above, two on the right, the power stages on the left).
+
+Every module carries NVIDIA's name: its memory partition, counter-clockwise from the corner opposite the
+gold pin-1 mark of the package, and module 0 or 1 (on the 5090, module 1 of each partition comes first
+counter-clockwise; the other boards follow the same rule). The GB203 and GB205 boards turn the package
+by 90 degrees to the right (the die marking runs top to bottom), so pin 1 sits at the top right and
+partition A at the bottom left. The GB205's six modules then leave partition D empty, the places above
+the package, which the ASUS board leaves unpopulated; with the package unturned the empty places would be
+below it. The GB206 board keeps the package upright like the 5090: A on the right, B above. Only the
+5090's letters come from a labelled photo; the others are derived this way. The PawnIO module
+(`ioctl_read_memory_temperatures` in `Nvidia.p`) reports register group p, module m as `GPU Memory
+Temperature #(2p + m + 1)`, so `vramChipTemp1` is A0, `vramChipTemp2` A1, and so on (an RTX 5070 reported
+#1 to #6). That group p is partition p follows NVIDIA's numbering and was not verified on a board. With
+topology bit `0x00400000` (clear on the RTX 5090) the module reads two values per module place, as
+`#(4p + 2m + s + 1)`; presumably a clamshell card such as the 16 GB RTX 5060 Ti (four more modules on
+the back), which no log has shown yet, so it has no starter and the 8 GB one would misplace its values.
+A starter on another card leaves the places it does not have empty and shows its readings at the places
+of its own board. The boards are rendered by `scripts/New-BlackwellBoardArt.py` (`gb202`, `gb203`,
+`gb205`, `gb206`), whose chip and die geometry the tiles repeat; it uses flat fills only, because Edge
+dithers gradients and the noise tripled the PNG. LHM scans the per-module readings (`NvidiaThermal`, up
+to 48) only while one of them or the spread is in use. `GPU Memory Temperature Spread` (LHM, NVIDIA
+only, `NvidiaThermal.GetMemoryTemperatureSpread`) comes from the same read, is null below two modules
+and moves in 2 K steps like the modules: a module with poor thermal pad contact stays above the others
+whatever the load. `OverlaySemanticKeys` maps `gpuHotSpot`, `vramTemp` (NVIDIA "GPU Memory Junction",
+AMD and Intel "GPU Memory"), `vramTempSpread` and `vramChipTemp1`..`48`. Tests:
+`BlackwellThermalsShowsEveryMemoryModuleAroundTheGpuOnItsBoard`,
+`GpuThermalsHaveRolesOfTheirOwnUpToEveryMemoryModule`, `NvidiaThermalTest`.
+
+### Hybrid starters
+
+Hybrid Benchmark, Hybrid Compact and Hybrid Thread Deck (`StarterDesigns/hybrid-*.json`) embed the
+linked row profile, whose length only the user knows. Their row block follows its rows
+(`classicRowsAutoHeight`, the editor's "Height follows the rows"): widget height 0 and no panel
+`frameHeight`, so the renderer measures every row and graph and nothing is clipped. It grows
+downward, so it is the last tile, below the headlines, the frametime strip or the thread loads; the
+editor rejects a tile below it and such a block inside a container. Its editor frame height only
+reserves room, and `OverlayRuntimeSourceBinder.GrowFrame` takes that reservation from the editor
+metadata when a group above it grows (16 threads already grow Hybrid Thread Deck's loads), as the
+editor does. Hybrid Thread Deck draws its thread loads in its cyan accent on the neutral panel
+(catalog version 26, which replaces unmodified version-1 copies). The files are the gallery presets
+applied as the editor applies them (native measured canvas conversion, no host sources). Tests:
+`OverlayHybridStarterTest`.
 
 ### CapFrameX logo tiles
 

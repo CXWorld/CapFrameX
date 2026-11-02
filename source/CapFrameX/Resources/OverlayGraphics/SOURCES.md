@@ -154,3 +154,19 @@ X; the tile behind them supplies the brand blue `#0271F9`. The banner
 (1280 x 256, 5:1) places mark and wordmark side by side in the proportions of
 `Icons/CX_Installer_Banner.png`, with the same margin on all four sides. The
 logo (512 x 512) places the mark where the app icon does.
+
+## BLACKWELL THERMALS boards
+
+The BLACKWELL THERMALS starters (`overlay-templates/Blackwell-Thermals-RTX-50*.json`)
+embed drawings of RTX 50 boards made for CapFrameX on 2026-11-01: the GPU package
+with its die and pin-1 mark, the memory modules, traces, vias, mounting holes,
+chokes and power stages. They contain no third-party material: no photograph,
+logo, brand mark or font glyph. Only the arrangement of the modules follows real
+boards: the RTX 5090 Founders Edition (four above the package, five on each side,
+two below), an MSI Gaming Trio RTX 5080 / 5070 Ti and an ASUS TUF RTX 5070 (two
+above, four on the right, two below; the RTX 5070 leaves the upper two empty) and
+an ASUS PRIME RTX 5060 Ti (two above, two on the right).
+`scripts/New-BlackwellBoardArt.py` draws them from
+SVG primitives and renders them through headless Microsoft Edge at 880 x 768
+pixels, 2 pixels per design unit; its fixed random seed reproduces the embedded
+PNGs. The readings, captions and the GPU name stay in editable tiles.

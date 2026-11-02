@@ -72,6 +72,7 @@ internal sealed class NvidiaGpu : GenericGpu
     private readonly Sensor _memoryFree;
     private readonly Sensor[] _memoryTemperatures;
     private readonly Sensor _memoryJunctionTemperature;
+    private readonly Sensor _memoryTemperatureSpread;
     private readonly Sensor _memoryTotal;
     private readonly Sensor _memoryUsed;
     private readonly Sensor _memoryLoad;
@@ -158,6 +159,11 @@ internal sealed class NvidiaGpu : GenericGpu
             _memoryTemperatures[i] = new Sensor($"GPU Memory Temperature #{i + 1}", sensorIndex, SensorType.Temperature, this, settings)
             { PresentationSortKey = $"{adapterIndex}_2_0_{sensorIndex}" };
         }
+
+        // The hottest minus the coolest module: a module with poor thermal pad contact stays above the others.
+        int spreadIndex = (int)thermalSettings.Count + 3 + NvidiaThermal.MemoryTemperatureSensorCount;
+        _memoryTemperatureSpread = new Sensor("GPU Memory Temperature Spread", spreadIndex, SensorType.Temperature, this, settings)
+        { PresentationSortKey = $"{adapterIndex}_2_0_{spreadIndex}" };
 
         bool hasAnyThermalSensor = false;
 
@@ -671,6 +677,7 @@ internal sealed class NvidiaGpu : GenericGpu
         bool shouldUpdateHotSpot = ShouldEvaluateSensor(_hotSpotTemperature);
         bool shouldUpdateMemoryJunction = ShouldEvaluateSensor(_memoryJunctionTemperature);
         bool shouldUpdateDirectMemoryTemperatures = ShouldEvaluateAnySensor(_memoryTemperatures);
+        shouldUpdateDirectMemoryTemperatures |= ShouldEvaluateSensor(_memoryTemperatureSpread);
         bool shouldReadDirectMemoryTemperatures = shouldUpdateDirectMemoryTemperatures ||
             (shouldUpdateMemoryJunction && _thermalSensorsMask == 0);
         bool shouldReadDirectHotSpot = _nvidiaThermal?.NeedsInitialSample == true;
@@ -726,6 +733,10 @@ internal sealed class NvidiaGpu : GenericGpu
                 if (memoryTemperature.Value.HasValue)
                     ActivateSensor(memoryTemperature);
             }
+
+            _memoryTemperatureSpread.Value = NvidiaThermal.GetMemoryTemperatureSpread(_directMemoryTemperatures);
+            if (_memoryTemperatureSpread.Value.HasValue)
+                ActivateSensor(_memoryTemperatureSpread);
         }
 
         bool shouldUpdateExtendedThermals = shouldUpdateHotSpot ||

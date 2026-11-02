@@ -75,11 +75,23 @@ namespace CapFrameX.OSD.Integration
         private volatile bool _hasProcesses;
         private volatile bool _started;
         private int _targetPid;
+        // The present mode of most of a process' recent presents (PresentMon's name) decides how a
+        // hide takes the window out of the picture (HookFreeHideMethods); null without a process
+        // list or recent presents.
+        private readonly Func<int, string> _presentModeOfProcess;
+        // Null until the first visibility is applied, so the first hide also chooses its method.
+        private bool? _lastShown;
+
+        // Sets the native hide method; a test seam, the native core in production.
+        internal Func<HookFreeHideMethod, bool> ApplyHideMethod { get; set; } = HookFreeHideMethods.Apply;
 
         // The PresentMon row stream can run hundreds or thousands of times per second. Keep the
-        // bridge completely out of that path unless the currently visible layout actually needs
-        // one of its graphs. Scalar values and runtime labels already arrive in the shared
-        // entries, so a numeric-only profile does not need another frame subscription here.
+        // bridge completely out of that path unless the current layout actually needs one of its
+        // graphs. Scalar values and runtime labels already arrive in the shared entries, so a
+        // numeric-only profile does not need another frame subscription here. A hidden overlay
+        // keeps the feed: shown again, its charts continue on the current window (the native core
+        // re-anchors its replay at the show) instead of playing the samples from before the hide
+        // and then jumping over the gap.
         private const int NeedFrametimeGraph = 1 << 0;
         private const int NeedDisplayTimeGraph = 1 << 1;
         private int _frameFeedRequirements;
@@ -112,7 +124,8 @@ namespace CapFrameX.OSD.Integration
                                 IObservable<int> processCountStream = null,
                                 OverlayDesignRuntimePublisher designRuntime = null,
                                 OverlayPixelOrbitResolver pixelOrbit = null,
-                                IObservable<bool> hookFreeFallbackStream = null)
+                                IObservable<bool> hookFreeFallbackStream = null,
+                                Func<int, string> presentModeOfProcess = null)
         {
             if (overlayService == null) throw new ArgumentNullException(nameof(overlayService));
             if (appConfiguration == null) throw new ArgumentNullException(nameof(appConfiguration));
@@ -125,6 +138,7 @@ namespace CapFrameX.OSD.Integration
             _appConfiguration = appConfiguration;
             _designRuntime = designRuntime;
             _pixelOrbit = pixelOrbit;
+            _presentModeOfProcess = presentModeOfProcess;
             // Seeded from the configuration so the very first frame is already placed correctly;
             // OnEntries keeps it in sync from there.
             _osd = new OsdHost((OsdAnchor)appConfiguration.OsdAnchor,
@@ -252,10 +266,11 @@ namespace CapFrameX.OSD.Integration
         {
             // Two-level lifecycle: the renderer EXISTS while the hook-free mode is selected or
             // stands in, and mere visibility toggles (IsOverlayActive — capture auto-disable,
-            // overlay hotkey — or an empty process list) are soft-hides via DWM cloaking. Tearing
-            // the window down instead stalls the game's presentation path (measured 20-70 ms
+            // overlay hotkey — or an empty process list) are soft-hides that keep the window.
+            // Tearing the window down instead stalls the game's presentation path (measured 20-70 ms
             // display hitches from the multi-stage DWM re-evaluation, including a delayed one
-            // seconds later) — cloaking is the only hide method that stays completely stall-free.
+            // seconds later). How a soft hide takes the window out of the picture follows the
+            // target's present mode (ChooseHideMethod).
             bool exist = Exists(_enabled, _fallbackEnabled);
             bool visible = IsVisible;
 
@@ -266,7 +281,7 @@ namespace CapFrameX.OSD.Integration
                 ApplyDiagnosticsSwitch(); // applied natively right after the instance is created
                 _osd.Start();
                 _started = true;
-                UpdateFrameSubscription(visible);
+                UpdateFrameSubscription(running: true);
                 // Start creates the native handle asynchronously. These calls apply immediately
                 // if it is ready; otherwise OnEntries retries without poisoning the caches.
                 ApplyBackgroundOpacity();
@@ -281,10 +296,31 @@ namespace CapFrameX.OSD.Integration
                 return;
             }
 
+            if (!visible && _lastShown != false)
+                ChooseHideMethod();
+            _lastShown = visible;
             // Old prebuilt core without the hidden API: fall back to the historic full stop.
-            UpdateFrameSubscription(visible);
             if (!_osd.SetHidden(!visible) && !visible)
                 StopOsd();
+        }
+
+        // Right before a hide: a target on a plane of its own is hidden by an empty frame, which
+        // keeps the window composed and spares it DWM's plane reassignment; anything else is cloaked.
+        private void ChooseHideMethod()
+        {
+            int targetPid = Volatile.Read(ref _targetPid);
+            string presentMode = null;
+            if (targetPid > 0 && _presentModeOfProcess != null)
+            {
+                try { presentMode = _presentModeOfProcess(targetPid); }
+                catch (Exception ex) { Log.Debug(ex, "HookFree OSD: present mode of pid {pid} unavailable", targetPid); }
+            }
+
+            HookFreeHideMethod method = HookFreeHideMethods.Choose(presentMode);
+            bool applied = ApplyHideMethod(method);
+            Log.Information("HookFree OSD: hides by {method}; pid {pid} presents {presentMode}",
+                applied ? method.ToString() : "Cloak (the native core has no hide methods)",
+                targetPid, presentMode ?? "nothing known");
         }
 
         private void StopOsd()
@@ -293,6 +329,7 @@ namespace CapFrameX.OSD.Integration
             {
                 _osd.Stop();
                 _started = false;
+                _lastShown = null;
                 _lastDesignRevision = 0;
                 _lastDesignMetricsRevision = 0;
                 _customDesignLoaded = false;
@@ -302,7 +339,7 @@ namespace CapFrameX.OSD.Integration
             _lastAnchor = -1; _lastMonitor = -1; _lastMarginX = -1; _lastMarginY = -1;
             _lastDiagnosticRuntime = null;
             Interlocked.Exchange(ref _frameFeedRequirements, 0);
-            UpdateFrameSubscription(false);
+            UpdateFrameSubscription(running: false);
         }
 
         private void OnEntries()
@@ -351,7 +388,7 @@ namespace CapFrameX.OSD.Integration
         {
             Interlocked.Exchange(ref _frameFeedRequirements,
                 GetFrameFeedRequirements(_designRuntime?.Current.Design, entries));
-            UpdateFrameSubscription(IsVisible);
+            UpdateFrameSubscription(running: true);
         }
 
         internal static int GetFrameFeedRequirements(OverlayRuntimeDesign design, IEnumerable<IOverlayEntry> entries)
@@ -437,9 +474,10 @@ namespace CapFrameX.OSD.Integration
                 _designRuntime.ReportRendererReady();
         }
 
-        private void UpdateFrameSubscription(bool visible)
+        // While the renderer runs, visible or hidden, and its layout draws a graph.
+        private void UpdateFrameSubscription(bool running)
         {
-            bool shouldSubscribe = visible && _started && _frameDataStream != null &&
+            bool shouldSubscribe = running && _started && _frameDataStream != null &&
                 _ftIndex >= 0 && Volatile.Read(ref _frameFeedRequirements) != 0;
             lock (_frameSubscriptionLock)
             {
@@ -633,7 +671,7 @@ namespace CapFrameX.OSD.Integration
             _designSub?.Dispose();
             _activeSub?.Dispose();
             _entriesSub?.Dispose();
-            UpdateFrameSubscription(false);
+            UpdateFrameSubscription(running: false);
             _enabledSub?.Dispose();
             _fallbackSub?.Dispose();
             _valueSmoothingSub?.Dispose();

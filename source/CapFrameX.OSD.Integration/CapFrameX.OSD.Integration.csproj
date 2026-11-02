@@ -58,6 +58,15 @@
                       Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\overlay-templates\DUOLINE-Arc-Intel.json"
                       Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
+    <!-- Board artwork rendered by scripts\New-BlackwellBoardArt.py. -->
+    <EmbeddedResource Include="..\..\overlay-templates\Blackwell-Thermals-RTX-5090.json"
+                      Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\overlay-templates\Blackwell-Thermals-RTX-5080.json"
+                      Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\overlay-templates\Blackwell-Thermals-RTX-5070.json"
+                      Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\overlay-templates\Blackwell-Thermals-RTX-5060.json"
+                      Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
     <!-- Original artwork rendered by scripts\New-AnimeOverlayArt.py. -->
     <EmbeddedResource Include="..\..\overlay-templates\Anime-Cherry-Blossom.json"
                       Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />

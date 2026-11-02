@@ -33,6 +33,23 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void FrameGenerationPairsSharingAStartTimeAreBothRetained()
+        {
+            // PresentMon reports a generated frame and the real frame after it with one CPU start time.
+            using var frames = new Subject<string[]>();
+            using var targets = new BehaviorSubject<int>(42);
+            var output = new List<OverlayPreviewFrame>();
+            using var subscription = OverlayPreviewFrameFeed.Observe(frames, targets, 0, 2, 3, () => 1)
+                .Subscribe(output.Add);
+            frames.OnNext(new[] { "42", "100", "10.3", "5.4" });
+            frames.OnNext(new[] { "42", "100", "0.1", "5.1" });
+            frames.OnNext(new[] { "42", "110.4", "10.3", "5.3" });
+
+            Assert.AreEqual(4, output.Count);
+            CollectionAssert.AreEqual(new[] { 10.3, 0.1, 10.3 }, new[] { output[1].FrametimeMs, output[2].FrametimeMs, output[3].FrametimeMs });
+        }
+
+        [TestMethod]
         public void InvalidNumbersAreDroppedAndDisplayOnlySamplesAreRetained()
         {
             using var frames = new Subject<string[]>();

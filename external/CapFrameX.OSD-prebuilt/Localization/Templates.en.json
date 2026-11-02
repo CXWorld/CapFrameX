@@ -136,7 +136,7 @@
   "Template_core_types_amd_Name": "AMD Core Types",
   "Template_core_types_amd_Description": "Core clocks and per-core SMU power where supported. Suited to AMD Standard or P/D/LP (performance, dense and low-power) layouts; detected telemetry determines the rows.",
   "Template_hybrid_benchmark_Name": "Hybrid Benchmark",
-  "Template_hybrid_benchmark_Description": "Large FPS and lows above your active row overlay, followed by a frametime strip. Row formatting stays linked to your row profile.",
+  "Template_hybrid_benchmark_Description": "Large FPS and lows and a frametime strip above your active row overlay, which grows with its rows. Row formatting stays linked to your row profile.",
   "Template_hybrid_compact_Name": "Hybrid Compact",
   "Template_hybrid_compact_Description": "A large FPS headline and your existing row profile in a simple, compact column.",
   "Template_hybrid_thread_deck_Name": "Hybrid Thread Deck",

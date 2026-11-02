@@ -7,7 +7,8 @@ namespace CapFrameX.Capture.Contracts
     public sealed class CaptureProcessActivity
     {
         public CaptureProcessActivity(string name, int processId, int idleSeconds,
-            double presentsPerSecond, double? gpuBusyShare, string presentMode, bool hasGeneratedFrames)
+            double presentsPerSecond, double? gpuBusyShare, string presentMode, bool hasGeneratedFrames,
+            string dominantPresentMode = null)
         {
             Name = name;
             ProcessId = processId;
@@ -16,6 +17,7 @@ namespace CapFrameX.Capture.Contracts
             GpuBusyShare = gpuBusyShare;
             PresentMode = presentMode;
             HasGeneratedFrames = hasGeneratedFrames;
+            DominantPresentMode = dominantPresentMode;
         }
 
         public string Name { get; }
@@ -43,6 +45,13 @@ namespace CapFrameX.Capture.Contracts
         /// PresentMon's present mode of the latest present, e.g. "Hardware: Independent Flip".
         /// </summary>
         public string PresentMode { get; }
+
+        /// <summary>
+        /// PresentMon's present mode of most presents during the current and the previous second;
+        /// a tie goes to the mode of the latest present. A single present that differs, such as
+        /// one composed frame, does not decide it. Null without presents in that time.
+        /// </summary>
+        public string DominantPresentMode { get; }
 
         /// <summary>
         /// True when a generated frame (frame generation reported through FrameType) was seen

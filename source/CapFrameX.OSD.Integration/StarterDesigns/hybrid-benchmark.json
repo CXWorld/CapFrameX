@@ -138,45 +138,6 @@
         "color": "#20242CEB",
         "children": [
           {
-            "type": "classicRows",
-            "width": 616,
-            "height": 160,
-            "rowScale": 1,
-            "editor": {
-              "x": 0,
-              "y": 110.814,
-              "frameWidth": 640,
-              "frameHeight": 184,
-              "kind": "classicRows",
-              "label": "Classic rows",
-              "key": null,
-              "unit": "",
-              "text": "CapFrameX",
-              "labelPosition": "top",
-              "columnSpan": 2,
-              "digits": 0,
-              "valueSize": 28,
-              "height": 160,
-              "minimum": 0,
-              "maximum": 100
-            }
-          }
-        ],
-        "x": 0,
-        "y": 110.814,
-        "frameWidth": 640,
-        "frameHeight": 184,
-        "clip": true
-      },
-      {
-        "type": "panel",
-        "background": true,
-        "colSpan": 2,
-        "padding": 12,
-        "radius": 6,
-        "color": "#20242CEB",
-        "children": [
-          {
             "type": "chart",
             "title": "Frametime",
             "series": "frametimes",
@@ -185,7 +146,7 @@
             "unit": "ms",
             "editor": {
               "x": 0,
-              "y": 302.814,
+              "y": 110.814,
               "frameWidth": 640,
               "frameHeight": 96,
               "kind": "chart",
@@ -204,9 +165,48 @@
           }
         ],
         "x": 0,
-        "y": 302.814,
+        "y": 110.814,
         "frameWidth": 640,
         "frameHeight": 96,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 2,
+        "padding": 12,
+        "radius": 6,
+        "color": "#20242CEB",
+        "children": [
+          {
+            "type": "classicRows",
+            "width": 616,
+            "height": 0,
+            "rowScale": 1,
+            "editor": {
+              "x": 0,
+              "y": 214.814,
+              "frameWidth": 640,
+              "frameHeight": 184,
+              "kind": "classicRows",
+              "label": "Classic rows",
+              "key": null,
+              "unit": "",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "classicRowsAutoHeight": true,
+              "columnSpan": 2,
+              "digits": 0,
+              "valueSize": 28,
+              "height": 160,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 214.814,
+        "frameWidth": 640,
         "clip": true
       }
     ],

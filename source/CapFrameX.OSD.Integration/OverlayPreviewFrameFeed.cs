@@ -63,7 +63,9 @@ namespace CapFrameX.OSD.Integration
                     {
                         if (!PresentMonFrameFilter.IsForTargetProcess(row, processIdColumn, target)) return;
                         double time = ReadPositive(row, startTimeColumn());
-                        if (time <= previousTime) return;
+                        // Frame generation presents a generated and a real frame with one CPU start
+                        // time; both belong to the graph, only older rows do not.
+                        if (time <= 0 || time < previousTime) return;
                         double frametime = ReadPositive(row, frametimeColumn);
                         double displayTime = ReadPositive(row, displayTimeColumn);
                         if (frametime >= 10000) frametime = 0;

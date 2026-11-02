@@ -35,8 +35,18 @@ namespace CapFrameX.OSD.Integration
             Rule("cpuPCoreClock", "Clock", OverlayDeviceKind.Cpu, "CPU P Max"),
             Rule("cpuECoreClock", "Clock", OverlayDeviceKind.Cpu, "CPU E Max"),
             Rule("cpuPower", "Power", OverlayDeviceKind.Cpu, "CPU Package"),
-            Rule("ramLoad", "Load", OverlayDeviceKind.Memory, "RAM Usage", "RAM", "Memory")
-        };
+            Rule("ramLoad", "Load", OverlayDeviceKind.Memory, "RAM Usage", "RAM", "Memory"),
+            Rule("gpuHotSpot", "Temperature", OverlayDeviceKind.Gpu, "GPU Hot Spot"),
+            // NVIDIA reports the hottest memory module as the junction, AMD and Intel one memory temperature.
+            Rule("vramTemp", "Temperature", OverlayDeviceKind.Gpu, "GPU Memory Junction", "GPU Memory"),
+            // The hottest minus the coolest memory module (NVIDIA).
+            Rule("vramTempSpread", "Temperature", OverlayDeviceKind.Gpu, "GPU Memory Temperature Spread")
+        }.Concat(Enumerable.Range(1, MemoryModuleCount).Select(module =>
+            // NVIDIA's memory modules one by one, numbered as the PawnIO module reports them.
+            Rule("vramChipTemp" + module, "Temperature", OverlayDeviceKind.Gpu, "GPU Memory Temperature #" + module))).ToArray();
+
+        /// <summary>Memory modules with a semantic key of their own, the most a GPU reports (LibreHardwareMonitor's NvidiaThermal).</summary>
+        public const int MemoryModuleCount = 48;
 
         private static OverlaySemanticKeyRule Rule(string key, string sensorType, OverlayDeviceKind device, params string[] names)
             => new OverlaySemanticKeyRule(key, sensorType, device, names);

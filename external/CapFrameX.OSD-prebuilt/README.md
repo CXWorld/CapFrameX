@@ -12,6 +12,148 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Charts after a show (2026-10-31)
+
+Core, hook and Vulkan layer were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64
+and x86) from the OSD working tree committed as `1a5d9d26b405cd380d3aea580d707c33b3d995d9`. A shown overlay played the chart samples from before the hide and then jumped: the replay held
+on the stale history, the first fresh PresentMon wave snapped it over the gap (or, after a shorter
+hide, shed the lag at 100 ms per tick), and the chart came back empty and filled from the right. Since
+the renderers survive a hide this happened after every auto-hidden capture. Every show now calls the
+new export `cfx_osd_resume_charts` (the hook-free window through `cfx_osd_set_hidden`): the replay
+re-anchors on the first sample newer than the ones it saw, and the Y scales start from that window.
+The hook and the layer drain what the PresentMon ring kept of the hidden time in the first draw's one
+Present (`FrametimeShmKeepNewest`, at most 3072 samples); CapFrameX keeps the hook-free frame feed
+subscribed while hidden. Controls, Interop (still the signed build) and both Vulkan manifests are
+unchanged. The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only
+registrations in both HKLM views) were replaced with these two layer DLLs; their hashes match the table.
+
+Verification: all 16 core CTests (two new replay-clock cases), the 33 hook and 10 Vulkan CTests on
+x64 and x86 pass. A hook-free window fed in one-second PresentMon waves (8 ms before the hide, 20 ms
+while hidden 8 s, 12 ms after the show): the previous core logged `replay hold`, then `replay snap
++7600 ms`, and showed an empty chart 1.6 s after the show; this core logs `charts resume on the newest
+samples` with the cursor at the replay delay behind the newest sample, and the chart shows the 20 ms
+history at once. One push of 4096 samples costs 44 us (median, 0.3 ms max).
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `06C8563CCD487211636B3E41FCBC786E03F9EBCADA89F7E6F130615EB3117FB6` |
+| native\cfx_osd_hook.dll | `730438717C5A9EBC8A03122D4D65D1447EAC1114D534AC2565A4DD3A5F632496` |
+| native\x86\cfx_osd_hook.dll | `30C9A78C471D6FAF853337221B7D93F732FFA914B8741AD3A45DD382B9F5283A` |
+| native\vk\cfx_osd_vklayer.dll | `E2E76AB9CFE9E31F2235EF4CC6BA2F05D8AB6AD178D335AD8BDCF97E891611E4` |
+| native\vk\x86\cfx_osd_vklayer.dll | `22A49E17F7FF8649DABC4A32A131D44AA6D7399C0B84707429C42885238588C0` |
+
+### Hook-free hide methods (2026-10-31)
+
+The core was rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`) from the OSD working tree
+committed as `cdfa5d5bb3927dee8678fd99d825a2d68c4c80ab`. A soft hide of the hook-free window
+now has three methods (`OsdHideMode`): the cloak, `ShowWindow(SW_HIDE)` as PresentMon's overlay
+hides, and a transparent hide that presents one empty frame on the root surface and the stepped
+chart layer and leaves the window composed. The new export `cfx_osd_set_hide_mode` lets the host
+choose per hide; each hide keeps its method until its show; OsdDebug.json `"hideMode"` and
+`CFX_OSD_HIDE_MODE` force one. CapFrameX hides transparently over a game on an MPO plane of its own
+and cloaks anything else (`HookFreeHideMethods`): in Mafia: The Old Country (RX 9070 XT, VRR, FSR FG)
+the cloak and `SW_HIDE` both cost 1-2 s of lost displays at every auto-hidden capture start, three
+captures with the transparent hide began clean. A CapFrameX build against an older core keeps
+cloaking (EntryPointNotFound). Hook and Vulkan layer compile the changed core files too, but only
+windowed instances hide this way, so their builds stay those of the next section; Controls, Interop
+(still the signed build) and both Vulkan manifests are unchanged.
+
+Verification: all 16 core CTests pass. Screenshots of a hook-free window with the transparent hide
+show the panel gone while hidden (mean RGB difference 1.0 to the screen without the window, 181
+while visible) and back on the show (0.65 to before). CapFrameX passes the 1895 bridge, overlay and
+hook-free tests outside the `Integration` category, among them the 14 of `HookFreeHideMethodTest`.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `52CCDEFDD012046CC0BD46631EDC4EBE6967D190C008E9D9B01D08D33D7BC8EE` |
+
+### Hide and show keep the in-game renderer (2026-10-31)
+
+Hook and Vulkan layer were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64 and
+x86) from the OSD working tree committed as `e199c326491fadc84ce0e71e625fd3e4d283f1c4`. A
+soft hide (ALT+O, "Auto hide while capture", another renderer selected) no longer releases the
+renderer: the DXGI hook keeps its OSD instance and D3D resources and only stops drawing
+(`hook_poc/src/overlay.cpp`), and the Vulkan layer suspends on target 0 instead of destroying its
+instance (`vk_layer/src/osd_feed.cpp`). The release on the hide ran inside the game's Present and the
+show rebuilt everything there: every auto-hidden capture began with a late frame (Mafia: The Old
+Country, ~5 ms) and the overlay came back with a ~45 ms rebuild. Frame-generation stand-downs, a
+lease lost to the Vulkan layer, host exit and the swapchain lifecycle boundaries still release.
+`CFX_HOOK_HIDDEN_RELEASE_MS` releases after that many hidden milliseconds (0 = on every hide, as
+before). The core sources are unchanged, so `cfx_osd_core.dll` stays the build below; Controls,
+Interop (still the signed build) and both Vulkan manifests are unchanged. The installed layers in
+`C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only registrations in both HKLM views) were
+replaced with these two layer DLLs; their hashes match the table.
+
+Verification: all 16 core CTests, the 33 hook and 10 Vulkan CTests on x64 and x86 pass, and the D3D12
+design host reports device refcount 0 after a hide with a 100 ms release delay. CapFrameX.Test's new
+`tools\verify-osd-hide-cost.ps1` (D3D11, D3D12, Vulkan; x64 and x86, four hide/show cycles each, the
+app's own QPC stamps per Present) passes all six cases: no toggle delays a present beyond the
+baseline's noise and the renderer is created once per process. The previous binaries, and these with
+`CFX_HOOK_HIDDEN_RELEASE_MS=0`, measured 3-6 ms per hide and ~8 ms (D3D11), ~9 ms (D3D12) or ~2 ms
+(Vulkan) per show.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_hook.dll | `AC83C634500FD91853775CD199565EC0A888BC3AF006FAF71C5460381E1D49B6` |
+| native\x86\cfx_osd_hook.dll | `A12B1E1E089F6C2D0EA075449DC46C24CB2706AD14EDF3828C25AC8F126AB8A8` |
+| native\vk\cfx_osd_vklayer.dll | `9354212A2CD0BC53AA30B7ACD84376E18979B74A21B90F5313E3415F5AA79429` |
+| native\vk\x86\cfx_osd_vklayer.dll | `E8B704A7C13CD8973F663DB8925BFC7A92F1C19B0B7F6B0B4D214B86A7950651` |
+
+### Frame-generation pairs in frametime graphs (2026-10-31)
+
+All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`) from the
+working tree committed as OSD `efcc9f8c6c3d60412ab06fa390b9e8e6e6678d67`. The only native change is in
+`src/core/ChartGeometry.h`: `AppendColumnExtremes` keeps both extremes of a pixel column that share a
+timestamp but not a value. PresentMon gives a frame-generation pair one CPU start time (the generated
+frame ~10 ms after the previous pair, the real frame ~0.1 ms after it); the core kept only the
+earlier extreme, so every frametime graph drew the 0.1 ms line with a regular row of false ~10 ms
+spikes wherever a column held two pairs (RE Requiem with FSR FG: 10.4 ms pairs, 11.2 ms columns, a
+spike every ~14 px, in the rows' graphs and in tile charts such as DUOLINE's). Such a stream now draws
+the band it is. Hook and Vulkan layer compile the core sources, so they changed too; the Vulkan
+manifests and Interop (still the signed build) are unchanged. The installed layers in
+`C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` were not updated with this build, but with the
+next one above, which contains this change.
+
+Verification: all 16 core CTests pass, among them `chart_geometry` with the new
+`TestColumnExtremesKeepBothValuesOfOneTimestamp`, as do the 33 hook and 10 Vulkan CTests on x64 and
+x86. A capture of the game (whose `NormalizeTimes` spreads equal start times by 0.1 ms) fed back with
+its live timestamps reproduced the spikes with the previous core and draws the band with this one.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `CD22CAFE0FD27D040956A1A5EEFFF7AD0D42B6AD01A7546E8D2EE423D2484909` |
+| native\cfx_osd_hook.dll | `5C23CD2641EE5D303552181E7AB6621B6C3DAF39F8224F941A47F3FB2B2E2740` |
+| native\x86\cfx_osd_hook.dll | `D887A56EC97E1EF5D16CB1FA9B3A8B4470B28B1D4C79BB04E476FACD72AB456C` |
+| native\vk\cfx_osd_vklayer.dll | `1703ED01C75CC010C7172ABAAF15F68F5B05CB9F749BDCA6B4623143DBA7B3C3` |
+| native\vk\x86\cfx_osd_vklayer.dll | `7CDB1849FE723310BB3C8822E59DBB4720A9C56F06BED7A5EE45824B547DBA7A` |
+
+### Row blocks that follow their rows (2026-10-31)
+
+Controls was rebuilt in `Release|x64` for .NET 10 (`--no-incremental`) from the OSD working tree
+committed as `66ecd20` and `d6bcc79711c10ca4da621dd699985d72ade0601e`. A row block (`classicRows`) with
+`classicRowsAutoHeight` ("Height follows the rows", `OsdDesignTile.FollowsRows`) exports height 0 and,
+on a canvas, no panel `frameHeight`, so the renderer measures every row and graph of the linked
+profile instead of clipping them; the native core has measured a row block without a height since
+`5dde08e`. The tile's frame height only reserves room in the editor. `Validate` rejects such a block
+in a container (`Editor_RowsAutoHeightNested`) and any tile at or below its top within its columns
+(`Editor_RowsAutoHeightBelow`). The three hybrid templates end with such a block, and Hybrid Thread
+Deck draws its thread loads in its cyan accent on the neutral panel instead of magenta on a dark red
+one. `Editor_RowsAutoHeight`, `Editor_RowsAutoHeightHint` and the two errors were added in all five
+languages and the Hybrid Benchmark description changed; `Editor.en.json`, `Editor.ko.json`,
+`Templates.en.json` and `Templates.ko.json` are copied here. The native DLLs, Interop (still the
+signed build) and both Vulkan manifests are unchanged.
+
+Verification: the editor demo's `--verify` (1764 checks) and `--verify-native` (1241 checks, among them a
+row block that grows from 2 to 24 rows without moving the tile above it) pass. A CapFrameX Release
+build with `CfxOsdFromSource=false` stages exactly this DLL into the test output and passes the 799
+tests of the overlay design classes, among them the 11 of `OverlayHybridStarterTest`. The full
+`Debug` run from source passed 3447 of 3456 tests outside the `Integration` category; the 9 record
+file tests failed only because that output lacked `TestRecordFiles`, and pass in the Release output.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `1CD9A62BEA3D5F2C0232EDBF9F384C8D83C6E92ECDD91E87E74F0DEB84484760` |
+
 ### CapFrameX logo tiles (2026-10-27)
 
 Controls was rebuilt in `Release|x64` for .NET 10 (`--no-incremental`) from OSD commit

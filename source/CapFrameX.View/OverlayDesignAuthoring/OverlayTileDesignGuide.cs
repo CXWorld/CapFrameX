@@ -177,7 +177,10 @@ Kinds:
 - container (canvas only): holds tiles in `children`; build cards from several pieces (icon + text +
   metric). Containers nest up to 4 levels.
 - classicRows: embeds the classic row overlay (the entries configured on the Overlay tab, see
-  cfx_get_overlay_entries). height (24..2048), classicRowScale (0.5..2).
+  cfx_get_overlay_entries). height (24..2048), classicRowScale (0.5..2). classicRowsAutoHeight
+  true makes the block as tall as its rows and graphs, so a long profile never clips; it grows
+  downward, so on a canvas no tile may sit below it (frameHeight only reserves room in the editor)
+  and it cannot sit in a container.
 
 Omitted fields get the editor's defaults: a metric takes label and unit from its reading, a chart
 defaults to frametimes, an icon to Segoe MDL2 Assets.
@@ -187,7 +190,10 @@ defaults to frametimes, an icon to Segoe MDL2 Assets.
 A metric, bar or gauge shows the reading named by `key`. Use:
 - a source key from cfx_list_tile_sources (`key`), exact for this machine, or
 - a semantic key (`semanticKey` there) such as fps, frametime, fps1pctLow, gpuTemp, gpuLoad, cpuLoad,
-  gpuPower, cpuTemp, gpuClock, vramUsed, ramLoad. Saving binds it to this machine's matching reading.
+  gpuPower, cpuTemp, gpuClock, vramUsed, ramLoad, gpuHotSpot, vramTemp (the hottest memory module on
+  NVIDIA), vramTempSpread (the hottest minus the coolest module) or vramChipTemp1, vramChipTemp2, ...
+  (NVIDIA's memory modules one by one, partition order A0, A1, B0, ...). Saving binds it to this
+  machine's matching reading.
 A key that matches nothing is accepted but shows no value; the tools report it as a warning. Text
 readings (isText, e.g. the GPU name or the game) belong in metric tiles; bars and gauges need numbers.
 

@@ -136,7 +136,7 @@
   "Template_core_types_amd_Name": "AMD 코어 유형",
   "Template_core_types_amd_Description": "지원되는 경우 코어 클럭과 코어별 SMU 전력을 표시합니다. AMD Standard 또는 P/D/LP(성능, 고밀도, 저전력) 구성에 적합하며 감지된 텔레메트리에 따라 행을 결정합니다.",
   "Template_hybrid_benchmark_Name": "하이브리드 벤치마크",
-  "Template_hybrid_benchmark_Description": "활성 행 오버레이 위에 FPS와 Low FPS를 크게 표시하고 아래에 프레임타임 띠를 배치합니다. 행 서식은 행 프로필과 계속 연결됩니다.",
+  "Template_hybrid_benchmark_Description": "활성 행 오버레이 위에 큰 FPS와 Low FPS, 프레임타임 띠를 배치하며 행 오버레이는 행 수에 맞춰 늘어납니다. 행 서식은 행 프로필과 계속 연결됩니다.",
   "Template_hybrid_compact_Name": "소형 하이브리드",
   "Template_hybrid_compact_Description": "큰 FPS 표시와 기존 행 프로필을 간결한 세로 패널에 배치합니다.",
   "Template_hybrid_thread_deck_Name": "하이브리드 스레드 패널",
