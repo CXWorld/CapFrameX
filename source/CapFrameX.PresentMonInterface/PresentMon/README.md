@@ -10,11 +10,11 @@ version taken from that name.
 - Source: branch `cfx/bugfixes` of [CXPresentMon](https://github.com/DevTechProfile/CXPresentMon),
   Intel tag v2.6.0 plus the fixes, with the version set to 2.6.1. `--help` prints
   "PresentMon 2.6.1 (CapFrameX build, based on Intel PresentMon 2.6.0)".
-- SHA-256: `ce7da452e8e2cc5154e5e653bb5f3f7a424b1423bea87fa240f92196921d8218` (unsigned build
-  of October 31, 2026; the hash changes when the file is signed).
-- Not signed yet. The previous 2.6.1 build (SHA-256
-  `987aaf638d7bcee2cbf0669b9797f9a8cc799079a8aa0a51a6b13b25363354aa`) was signed by
-  "Open Source Developer Mark Daniel Fangmeyer" (Certum, RFC 3161 timestamp).
+- SHA-256: `88d88d37b557e145ce623082d690ff57eca60a20c9951d945fdaad85b13e5941` (build of
+  November 2, 2026, source revision `a57a4a5f`).
+- Signed by "Open Source Developer Mark Daniel Fangmeyer" (Certum, RFC 3161 timestamp). The
+  unsigned build of October 31 (SHA-256 `ce7da452…`) was quarantined by Microsoft Defender as
+  `Trojan:Win32/Bearfoos.B!ml`, a machine-learning detection; the signed builds were not.
 - Upstream asset it replaces: [PresentMon-2.6.0-x64.exe](https://github.com/GameTechDev/PresentMon/releases/download/v2.6.0/PresentMon-2.6.0-x64.exe),
   SHA-256 `b2a706bc6ad475749e3b7e3409263aa1e6906d45bdcf993f6dbc0f660188f1af`.
 - License: [MIT](license.txt), copied from the release's source tree.
@@ -102,7 +102,11 @@ Generated frames of runtime frame generation (XeSS-FG, AFMF and FSR FG frame typ
 the PresentMon provider) now read PC latency data without taking it, and only data newer
 than any data an application frame already took. With XeSS-FG the application frame is
 presented first, so older data is stale. Driver frame generation reported through
-`FlipFrameType` events is not affected.
+`FlipFrameType` events is not affected. A generated frame that is discarded loses its display
+list, which held its frame type, so it counted as an application frame and could still take
+the data; its frame type from the PresentFrameType event is now kept for this check. Both
+changes are upstream pull request
+[GameTechDev/PresentMon#725](https://github.com/GameTechDev/PresentMon/pull/725).
 
 ## Capture compatibility
 
@@ -221,3 +225,15 @@ These checks cover recorded traces and unit tests, not a live game session.
 
 The live captures were short, fresh sessions; a long CapFrameX session, where the
 problem appeared, was not part of these checks.
+
+## Build of November 2, 2026
+
+Adds the check for discarded generated frames (part 4) and the signature.
+
+- PresentMonUnitTests: all 303 tests passed, including the new test for a discarded
+  generated frame.
+- PresentMonTests: all 25 tests passed, including the 18 `Tests/Gold` ETL comparisons.
+- Replays of two Mafia: The Old Country ETLs (FSR FG) and the AC Shadows ETL (XeSS-FG) with
+  CapFrameX's arguments: CSV byte-identical to the build of October 31. The traces contain no
+  discarded generated frame.
+- `signtool verify /pa` succeeded on the signed executable.
