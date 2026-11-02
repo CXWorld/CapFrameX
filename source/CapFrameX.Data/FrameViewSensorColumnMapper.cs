@@ -68,6 +68,8 @@ namespace CapFrameX.Data
                 ["nvpwr(w)(api)"] = new("GPU Power", "Power"),
                 ["nv-total-usbcpwr(w)(api)"] = new("GPU Board Power (excl. USB-C)", "Power"),
                 ["gpuonlypwr(w)(api)"] = new("GPU Chip Power", "Power"),
+                // Imported as FrameView reports it. On a Ryzen with integrated graphics it belongs to the
+                // iGPU, not to the card that renders (RX 9070 XT: 79 W at full load against 292 W TBP).
                 ["amdpwr(w)(api)"] = new("GPU Power", "Power"),
 
                 // Per the FrameView user guide (1.2/1.4), "CPUClk" is the average CPU
