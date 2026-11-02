@@ -19,8 +19,8 @@
     <!-- Keep these in step with source/Directory.Packages.props: LibreHardwareMonitorLib brings
          them in transitively, and a lower version here fails restore as a downgrade (NU1605). -->
     <PackageReference Include="Serilog" Version="4.4.0" />
-    <PackageReference Include="System.Management" Version="10.0.12" />
-    <PackageReference Include="System.Reactive" Version="6.1.0" />
+    <PackageReference Include="System.Management" Version="10.0.14" />
+    <PackageReference Include="System.Reactive" Version="7.0.0" />
   </ItemGroup>
   <!-- Plugin source files -->
   <ItemGroup>

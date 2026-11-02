@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace CapFrameX.Webservice.Implementation.Handlers
 {
-	public class DeleteSessionCollectionByIdHandler : AsyncRequestHandler<DeleteSessionCollectionByIdCommand>
+	public class DeleteSessionCollectionByIdHandler : IRequestHandler<DeleteSessionCollectionByIdCommand>
 	{
 		private readonly ISessionService _sessionService;
 		private readonly IValidator<DeleteSessionCollectionByIdCommand> _validator;
@@ -21,7 +21,7 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 			_validator = validator;
 		}
 
-		protected override async Task Handle(DeleteSessionCollectionByIdCommand command, CancellationToken cancellationToken)
+		public async Task Handle(DeleteSessionCollectionByIdCommand command, CancellationToken cancellationToken)
 		{
 			_validator.ValidateAndThrow(command);
 			await _sessionService.DeleteCollection(command.Id, (Guid)command.UserId);
