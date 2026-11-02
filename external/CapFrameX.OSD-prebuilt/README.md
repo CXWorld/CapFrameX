@@ -12,6 +12,40 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### A session log for every process (2026-11-02)
+
+All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64 and
+x86) from the OSD working tree committed as `40e48b38b01062c1129bd6a900f6af52da7e728d`
+(`src/core/SessionLog.h`, `src/core/Common.cpp`, `apps/diagnostics_test`, `CMakeLists.txt`, the OSD
+repo's CLAUDE.md). The core opens
+`%TEMP%\cfx-osd-logs\cfx_osd.log` once per process and keeps it for that process's lifetime, readable
+but not writable by others. A second process that loaded the core found it held and logged nothing:
+on 2026-11-02 Doom: The Dark Ages ran the Vulkan layer for 23 s before the switch to the hook-free
+renderer, and the hook-free core in CapFrameX wrote no line, its `[mpo]` header included, while
+`cfx_osd.log` still looked like a hook-free log. Such a process now writes `cfx_osd_<pid>.log` beside
+it, and every header names its file, the process and its PID, the fallback adding "cfx_osd.log is
+held by another process". Hook and Vulkan layer compile `Common.cpp`, so they changed too; Controls,
+Interop (still the signed build) and both Vulkan manifests are unchanged. The installed layers in
+`C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only registrations in both HKLM views) were
+replaced with these two layer DLLs; their hashes match the table.
+
+Verification: all 16 core CTests pass, `diagnostics` with the new fallback and path cases, as do the
+33 hook and 10 Vulkan CTests on x64 and x86. While Doom held `cfx_osd.log`, the new core's
+`cfx_osd_extern_test.exe` left that file untouched and wrote `cfx_osd_25120.log`, headed
+`# cfx_osd_25120.log 2026-11-02, local time, UTC+01:00, cfx_osd_extern_test.exe pid 25120; cfx_osd.log
+is held by another process`, followed by its `[create]` line.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `862938EDF035CF17F1E32DB41F2FB16DB0D5D8B6DECEDB0C293839AAEC729487` |
+| native\cfx_osd_hook.dll | `4EAB231F0542497E7DB82BF99BA6505C35C1901F9F8AA15E61076D28084E878D` |
+| native\x86\cfx_osd_hook.dll | `385CBE01659C29FC74D94F4B24265154FBE5370E6618D657FA1ABBC903022E15` |
+| native\vk\cfx_osd_vklayer.dll | `DAF1D03A0E768D44A0F1142ABB8E0F3C43B4E8DEC88F96D3FF97C0185AF778B6` |
+| native\vk\x86\cfx_osd_vklayer.dll | `4A6320CB5167862F465FF783F86BAD8D01D789CC0FD130361D6D0281639EA142` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Charts after a show (2026-10-31)
 
 Core, hook and Vulkan layer were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64
