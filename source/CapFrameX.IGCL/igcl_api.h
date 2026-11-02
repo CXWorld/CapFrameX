@@ -394,6 +394,10 @@ typedef enum _ctl_result_t
     CTL_RESULT_ERROR_LOAD = 0x40000026,             ///< Library load failure
     CTL_RESULT_ERROR_DEVICE_UNAVAILABLE = 0x40000027,   ///< Device is unavailable due to loading, unloading, low power state (D3),
                                                     ///< or recovery (TDR/FLR)
+    CTL_RESULT_ERROR_SWITCH_TO_ZESINIT_IN_APP = 0x40000028, ///< Incompatible sysman initialization, application should initialize
+                                                    ///< zeInit without sysman or switch to zesInit (if application needs
+                                                    ///< sysman API). For more details, refer to:
+                                                    ///< https://spec.oneapi.io/level-zero/latest/sysman/PROG.html#sysman-programming-guide
     CTL_RESULT_ERROR_UNKNOWN = 0x4000FFFF,          ///< Unknown or internal error
     CTL_RESULT_ERROR_RETRY_OPERATION = 0x40010000,  ///< Operation failed, retry previous operation again
     CTL_RESULT_ERROR_IGSC_LOADER = 0x40010001,      ///< IGSC library loader not found
@@ -2152,7 +2156,7 @@ ctlEnumerateI2CPinPairs(
                                                     ///< return the avaialble number of i2c pin-pair instances in phI2cPinPairs.
     ctl_i2c_pin_pair_handle_t* phI2cPinPairs        ///< [out][optional][release][range(0, *pCount)] array of i2c pin pair
                                                     ///< instance handles. Need to be allocated by Caller when supplying the
-                                                    ///< *pCount > 0. 
+                                                    ///< *pCount > 0.
                                                     ///< If Count is not equal to actual number of i2c pin-pair instances, it
                                                     ///< will return CTL_RESULT_ERROR_INVALID_SIZE.
     );
@@ -2403,27 +2407,26 @@ typedef struct _ctl_adapter_display_encoder_properties_t
                                                     ///< supported.BPC will vary per mode based on restrictions like bandwidth
                                                     ///< and monitor support
     ctl_encoder_config_flags_t EncoderConfigFlags;  ///< [out] Output configuration related flags which indicate how the output
-                                                    ///< pixel stream drive the panel. Refer ::ctl_encoder_config_flag_t  
-                                                    ///< Note:  
-                                                    ///<    Virtual = 1: This indicates that its a software display. Hardware
-                                                    ///< based features will not be applicable to this display. 
+                                                    ///< pixel stream drive the panel. Refer ::ctl_encoder_config_flag_t
+                                                    ///< Note:    Virtual = 1: This indicates that its a software display.
+                                                    ///< Hardware based features will not be applicable to this display.
                                                     ///<    Collage=1,Virtual=1: Indicates the fake display output created by
                                                     ///< driver which has the combined resolution of multiple physical displays
-                                                    ///< involved in collage configuration  
+                                                    ///< involved in collage configuration
                                                     ///<    Collage=1,Virtual=0: Indicates the child physical displays involved
-                                                    ///< in a collage configuration. These are real physical outputs  
+                                                    ///< in a collage configuration. These are real physical outputs
                                                     ///<    Split=1,Virtual=1  : Indicates the fake display output created by
-                                                    ///< driver which occupies a portion of a real physical display  
+                                                    ///< driver which occupies a portion of a real physical display
                                                     ///<    Split=1,Virtual=0  : Indicates the physical display which got split
-                                                    ///< to form multiple split displays  
-                                                    ///<    Split=1,Collage=1  : Invalid combination    
+                                                    ///< to form multiple split displays
+                                                    ///<    Split=1,Collage=1  : Invalid combination
                                                     ///<    MgpuCollage=1,Collage=1,Virtual=1: Indicates the fake display
                                                     ///< output created by driver which has the combined resolution of multiple
                                                     ///< physical displays spread across multiple GPUs involved in Multi-GPU
                                                     ///< collage configuration
                                                     ///<    MgpuCollage=1,Collage=1,Virtual=0: Indicates the child physical
                                                     ///< displays involved in a Multi-GPU collage configuration. These are real
-                                                    ///< physical outputs 
+                                                    ///< physical outputs
     ctl_std_display_feature_flags_t FeatureSupportedFlags;  ///< [out] Adapter Supported feature flags. Refer
                                                     ///< ::ctl_std_display_feature_flag_t
     ctl_intel_display_feature_flags_t AdvancedFeatureSupportedFlags;///< [out] Advanced Features Supported by the Adapter. Refer
@@ -2508,13 +2511,13 @@ ctlGetAdaperDisplayEncoderProperties(
 ///     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
 ///         + `nullptr == hDAhandle`
 ///     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
-///         + `nullptr == pZeDevice`
+///         + `nullptr == pZesDevice`
 ///         + `nullptr == hInstance`
 ///     - ::CTL_RESULT_ERROR_UNSUPPORTED_VERSION - "Unsupported version"
 CTL_APIEXPORT ctl_result_t CTL_APICALL
 ctlGetZeDevice(
     ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to display adapter
-    void* pZeDevice,                                ///< [out][release] ze_device handle
+    void* pZesDevice,                               ///< [out][release] zes_device handle
     void** hInstance                                ///< [out][release] Module instance which caller can use to get export
                                                     ///< functions directly
     );
@@ -2861,7 +2864,7 @@ typedef enum _ctl_power_optimization_flag_t
                                                     ///< NDA clients. UBZRR and UBLRR both can not be enabled at the same time,
                                                     ///< only one can be enabled at a given time
     CTL_POWER_OPTIMIZATION_FLAG_LACE = CTL_BIT(4),  ///< Lighting Aware Contrast Enhancement
-    CTL_POWER_OPTIMIZATION_FLAG_SPH = CTL_BIT(5),   ///< Smart Power HDR, This flag is Applicable for only API version > 0
+    CTL_POWER_OPTIMIZATION_FLAG_INTELSMARTHDR = CTL_BIT(5), ///< Intel Smart HDR, This flag is Applicable for only API version > 0
     CTL_POWER_OPTIMIZATION_FLAG_MAX = 0x80000000
 
 } ctl_power_optimization_flag_t;
@@ -4321,6 +4324,12 @@ typedef struct _ctl_genlock_args_t
     bool IsGenlockEnabled;                          ///< [out] Whether the feature is currently enabled or not
     bool IsGenlockPossible;                         ///< [out] Indicates if Genlock can be enabled/disabled with the given
                                                     ///< topology
+    bool IsGenlockSupported;                        ///< [out] Whether Genlock is supported as a feature on this platform. If
+                                                    ///< false, no driver invocation shall be made for Genlock action
+                                                    ///< operations
+    bool IsMultiChipGenlockSupported;               ///< [out] Whether multi-chip Genlock is supported on this platform. If
+                                                    ///< false but IsGenlockSupported is true, single-chip Genlock can still be
+                                                    ///< performed
 
 } ctl_genlock_args_t;
 
