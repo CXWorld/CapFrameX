@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace CapFrameX.Webservice.Implementation.Handlers
 {
-	public class AddProcessHandler : AsyncRequestHandler<AddProcessCommand>
+	public class AddProcessHandler : IRequestHandler<AddProcessCommand>
 	{
 		private readonly IProcessListService _processListService;
 		private readonly ILogger<AddProcessHandler> _logger;
@@ -22,7 +22,7 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 			_logger = logger;
 		}
 
-		protected override async Task Handle(AddProcessCommand request, CancellationToken cancellationToken)
+		public async Task Handle(AddProcessCommand request, CancellationToken cancellationToken)
 		{
 			var process = request.Process.ToProcessListData();
 			try

@@ -35,7 +35,7 @@ namespace CapFrameX.Test.Webservice
             service.Setup(s => s.AddProcess(It.IsAny<ProcessListData>()))
                 .Callback<ProcessListData>(data => stored = data)
                 .Returns(Task.CompletedTask);
-            IRequestHandler<AddProcessCommand, Unit> handler = new AddProcessHandler(service.Object, NullLogger<AddProcessHandler>.Instance);
+            IRequestHandler<AddProcessCommand> handler = new AddProcessHandler(service.Object, NullLogger<AddProcessHandler>.Instance);
 
             await handler.Handle(new AddProcessCommand
             {
@@ -55,7 +55,7 @@ namespace CapFrameX.Test.Webservice
             var service = new Mock<IProcessListService>();
             service.Setup(s => s.AddProcess(It.IsAny<ProcessListData>())).ThrowsAsync(failure);
             var logger = new Mock<ILogger<AddProcessHandler>>();
-            IRequestHandler<AddProcessCommand, Unit> handler = new AddProcessHandler(service.Object, logger.Object);
+            IRequestHandler<AddProcessCommand> handler = new AddProcessHandler(service.Object, logger.Object);
 
             await handler.Handle(new AddProcessCommand { Process = new ProcessListDataDTO { Name = "game.exe" } }, CancellationToken.None);
 

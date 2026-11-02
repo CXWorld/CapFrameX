@@ -7,7 +7,7 @@ using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
 using CapFrameX.Webservice.Implementation.Handlers;
 using CapFrameX.Webservice.Implementation.Services;
-using FluentValidation.AspNetCore;
+using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -47,11 +47,16 @@ namespace CapFrameX.Webservice.Host
 			var assembly = Assembly.GetExecutingAssembly();
 
 			// Register Libraries
-			services.AddMediatR(
+			services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(
 				typeof(GetSessionCollectionByIdHandler).GetTypeInfo().Assembly, // Register Handlers
 				typeof(GetSessionCollectionByIdQuery).GetTypeInfo().Assembly, // Register Queries
 				typeof(UploadSessionsCommand).GetTypeInfo().Assembly // Register Commands
-			);
+			));
+
+			// Register Validators. The handlers validate their requests themselves; no action
+			// argument has a validator, so MVC's automatic validation never ran one.
+			services.AddValidatorsFromAssemblyContaining<GetCaptureByIdQueryValidator>(ServiceLifetime.Transient);
+			services.AddValidatorsFromAssemblyContaining<UploadSessionsCommandValidator>(ServiceLifetime.Transient);
 
 			services.Configure<SmtpOptions>(Configuration.GetSection("SmtpOptions"));
 
@@ -88,14 +93,7 @@ namespace CapFrameX.Webservice.Host
 
 			// Register Controllers
 			services.AddControllers()
-				.AddNewtonsoftJson()
-				.AddFluentValidation(opt =>
-				{
-					opt.RegisterValidatorsFromAssemblyContaining<GetCaptureByIdQueryValidator>();
-					opt.RegisterValidatorsFromAssemblyContaining<UploadSessionsCommandValidator>();
-					opt.ImplicitlyValidateChildProperties = true;
-					opt.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
-				});
+				.AddNewtonsoftJson();
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
