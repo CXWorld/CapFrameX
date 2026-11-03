@@ -604,6 +604,24 @@ AMD and Intel "GPU Memory"), `vramTempSpread` and `vramChipTemp1`..`48`. Tests:
 `BlackwellThermalsShowsEveryMemoryModuleAroundTheGpuOnItsBoard`,
 `GpuThermalsHaveRolesOfTheirOwnUpToEveryMemoryModule`, `NvidiaThermalTest`.
 
+### BLUELINE starter
+
+"BLUELINE - Nova Lake" (`overlay-templates/BLUELINE-Nova-Lake.json`, catalog version 29) was made for
+the Core Ultra Series 4 desktop CPUs before their launch, from the leaked configurations: up to 8 P-
+(Coyote Cove), 16 E- (Arctic Wolf) and 4 LP-E cores on one compute tile (6+12+4 and 4+8+4 below it),
+16+32+4 on the dual compute tile flagship, no Hyper-Threading. It binds semantic keys and roles only and
+names the installed CPU and GPU (`cpuNameShort`, `gpuNameShort`). A vivid blue header and GPU bar frame
+navy tiles. Each core type has a load card of its own (`role:cpu-loads|P`, `|E`, `|LPE`; azure, cyan, ice
+blue), as wide as the single-tile flagship's cores need; `GroupColumns` 8, 16 and 4 wrap a dual-tile CPU
+into two even rows. Below them a table shows every core's clock as a number (`role:cpu-clocks|…`): a row
+per core type, eight cells of a fixed width (`GroupBarWidth` 54) over a flat line. Binding gives a group
+its source's unit, so a cell reads "5650 MHz", which no narrower cell or card column holds; a vertical bar
+that flat shows no level, so the line is one color. Loads and clocks each sit in a full-width container
+because a growing tile moves only the tiles below it that it overlaps: a container moves every tile below
+alike. The header's rails stand above the cards, in lighter shades that show on the blue. On a CPU without
+LP-E cores the LP-E card and clock row stay empty. Tests: `BluelineStarterShowsTheLoadAndClockOfEveryCore`,
+`BluelineStarterShowsEveryCoreOfAnyNovaLakeCpu`.
+
 ### Hybrid starters
 
 Hybrid Benchmark, Hybrid Compact and Hybrid Thread Deck (`StarterDesigns/hybrid-*.json`) embed the

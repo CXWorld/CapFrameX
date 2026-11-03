@@ -60,7 +60,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 28;
+        public const int Version = 29;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -126,6 +126,7 @@ namespace CapFrameX.OSD.Integration
                 (Id: "Blackwell-Thermals-RTX-5070", Version: 28),
                 (Id: "Blackwell-Thermals-RTX-5060", Version: 28),
                 (Id: "Panther-Lake-Arc-Aurora", Version: 6),
+                (Id: "BLUELINE-Nova-Lake", Version: 29),
                 (Id: "AMD-Ryzen-5-9600X-Badge", Version: 4),
                 (Id: "AMD-Ryzen-7-9800X3D-Badge", Version: 4),
                 // Anime artwork

@@ -41,6 +41,8 @@
                       Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\overlay-templates\Panther-Lake-Arc-Aurora.json"
                       Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\overlay-templates\BLUELINE-Nova-Lake.json"
+                      Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
     <EmbeddedResource Include="..\..\overlay-templates\OLED-Minimal.json"
                       Link="StarterDesigns\%(Filename)%(Extension)" LogicalName="CapFrameX.OSD.Integration.StarterDesigns.%(Filename)%(Extension)" />
     <!-- Recreated from the overlay of the YouTube channel Geralt Benchmarks (https://www.youtube.com/@GeraltBenchmarks). -->
