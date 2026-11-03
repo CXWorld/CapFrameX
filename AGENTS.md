@@ -21,7 +21,7 @@ See `.github/workflows/main.yml` for the CI build ordering and Visual Studio ver
 
 - C# uses spaces for indentation and favors Allman-style braces; `System.*` usings should appear before other namespaces.
 - Follow existing naming: PascalCase for types and public members, camelCase for locals and parameters, and `I*` for interfaces.
-- Add NuGet versions to `source/Directory.Packages.props` and reference packages without `Version=` in the project (central package management covers every project under `source/`, including the `net472` installer custom actions).
+- Add NuGet versions to `source/Directory.Packages.props` and reference packages without `Version=` in the project (central package management covers every project under `source/`, including the `net472` installer custom actions). Keep MaterialDesignThemes and MaterialDesignColors on 5.2.1 when updating packages: 5.4.0 caused rendering errors in the UI.
 
 ## Testing Guidelines
 

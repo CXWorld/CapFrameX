@@ -1028,6 +1028,11 @@ comparison, rollback and display. The MSI project maps patch/build monotonically
 three-component ProductVersion while the app and bootstrapper retain the full version.
 
 ## NuGet Package Issues
+Pinned versions in `source/Directory.Packages.props`; leave them out of package updates:
+- WiX `6.0.2` (see "Prerequisites").
+- MaterialDesignThemes and MaterialDesignColors `5.2.1`: 5.4.0 caused rendering errors in the UI
+  and was rolled back on 2026-11-03. Keep both packages on the same version.
+
 If package conflicts occur, run in Package Manager Console:
 ```
 Update-Package -reinstall
