@@ -18,8 +18,9 @@
     <PackageVersion Include="HidSharp" Version="2.6.4" />
     <PackageVersion Include="Jot" Version="2.1.17" />
     <PackageVersion Include="MahApps.Metro" Version="2.4.11" />
-    <PackageVersion Include="MaterialDesignColors" Version="5.4.0" />
-    <PackageVersion Include="MaterialDesignThemes" Version="5.4.0" />
+    <!-- Pinned to 5.2.1: MaterialDesignThemes 5.4.0 causes rendering errors in the UI. Keep Colors on the Themes version. -->
+    <PackageVersion Include="MaterialDesignColors" Version="5.2.1" />
+    <PackageVersion Include="MaterialDesignThemes" Version="5.2.1" />
     <PackageVersion Include="MathNet.Numerics" Version="5.0.0" />
     <PackageVersion Include="MediatR" Version="12.5.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.14" />
