@@ -172,6 +172,7 @@ namespace CapFrameX.Test.Integration
         [DataRow(24, 25)]
         [DataRow(26, 27)]
         [DataRow(27, 28)]
+        [DataRow(28, 29)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -189,7 +190,8 @@ namespace CapFrameX.Test.Integration
                 25 => DuolinePresetIds,
                 27 => new[] { "Blackwell-Thermals-RTX-5090" },
                 28 => new[] { "Blackwell-Thermals-RTX-5080", "Blackwell-Thermals-RTX-5070", "Blackwell-Thermals-RTX-5060" },
-                _ => new[] { "NVIDIA-GeForce-RTX-GREENLINE", "ICELINE-Vertical" }
+                29 => new[] { "BLUELINE-Nova-Lake" },
+                _ =>new[] { "NVIDIA-GeForce-RTX-GREENLINE", "ICELINE-Vertical" }
             };
             CollectionAssert.AreEquivalent(expectedIds,
                 newStarters.Select(profile => profile.PresetId).ToArray());
@@ -294,6 +296,7 @@ namespace CapFrameX.Test.Integration
         [DataRow("AMD-Ryzen-5-9600X-Badge", "AMD Ryzen 5 9600X Badge", true, 4)]
         [DataRow("AMD-Ryzen-7-9800X3D-Badge", "AMD Ryzen 7 9800X3D Badge", true, 4)]
         [DataRow("Panther-Lake-Arc-Aurora", "Panther Lake - Arc Aurora", false, 6)]
+        [DataRow("BLUELINE-Nova-Lake", "BLUELINE - Nova Lake", false, 29)]
         [DataRow("OLED-Minimal", "OLED Minimal", false, 6)]
         [DataRow("NVIDIA-GeForce-RTX-GREENLINE", "GREENLINE - GeForce RTX", true, 7)]
         [DataRow("ICELINE-Vertical", "ICELINE - Vertical", true, 7)]
@@ -328,8 +331,8 @@ namespace CapFrameX.Test.Integration
             string[] Images(string json) => JObject.Parse(json).Descendants().OfType<JProperty>()
                 .Where(property => property.Name == "dataUri").Select(property => (string)property.Value).ToArray();
             // Compare renderer scenes: editor metadata contains additional copies of each image.
-            // APEX, Panther Lake and OLED Minimal use text and vector elements only, while the
-            // other hardware profiles embed PNGs.
+            // APEX, Panther Lake, BLUELINE and OLED Minimal use text and vector elements only, while
+            // the other hardware profiles embed PNGs.
             var images = Images(original.TemplateJson);
             Assert.AreEqual(hasImages, images.Length > 0);
             Assert.IsTrue(images.All(uri => uri.StartsWith("data:image/png;base64,", StringComparison.Ordinal)));
@@ -476,6 +479,7 @@ namespace CapFrameX.Test.Integration
         [DataRow("Blackwell-Thermals-RTX-5080", new[] { "gpuNameShort" })]
         [DataRow("Blackwell-Thermals-RTX-5070", new[] { "gpuNameShort" })]
         [DataRow("Blackwell-Thermals-RTX-5060", new[] { "gpuNameShort" })]
+        [DataRow("BLUELINE-Nova-Lake", new[] { "gpuNameShort", "cpuNameShort" })]
         [DataRow("Anime-Cherry-Blossom", new string[0])]
         [DataRow("Anime-Neon-Night", new string[0])]
         [DataRow("Anime-Lunar", new string[0])]
@@ -562,6 +566,52 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(document.Tiles[0].Y + document.Tiles[0].FrameHeight <= document.Tiles[1].Y, "The GPU block sits above the CPU block.");
             CollectionAssert.AreEqual(new[] { "frametimes", "fpsCurrent", "frametimeCurrent" },
                 document.Tiles[2].Children.Select(tile => tile.Key).ToArray());
+        }
+
+        [TestMethod]
+        public void BluelineStarterShowsTheLoadAndClockOfEveryCore()
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "BLUELINE-Nova-Lake");
+            var document = OsdDesignDocument.FromJson(starter.DesignJson);
+            document.Validate();
+            Assert.AreEqual(starter.DesignJson, OverlayRuntimeDesign.Canonicalize(document.ToJson()), "The starter is stored as the editor saves it.");
+            // P-cores in azure, E-cores in cyan, LP-E cores in ice blue. The loads: a card per core type, as
+            // wide as the 8 + 16 + 4 cores of the single compute tile flagship need, side by side in one
+            // container across the design, so all tiles below move alike when the bars wrap.
+            string[] types = { "P", "E", "LPE" }, colors = { "#3D8BFFFF", "#36D7F7FF", "#A9C2FFFF" };
+            var cores = document.Tiles.Single(tile => tile.Label == "CPU cores");
+            Assert.AreEqual((0.0, document.Width), (cores.X.Value, cores.FrameWidth.Value));
+            CollectionAssert.AreEqual(types.Select(type => "role:cpu-loads|" + type).ToArray(), cores.Children.Select(card => card.GroupKey).ToArray());
+            CollectionAssert.AreEqual(colors, cores.Children.Select(card => card.Color).ToArray());
+            CollectionAssert.AreEqual(new[] { 8, 16, 4 }, cores.Children.Select(card => card.GroupColumns.Value).ToArray());
+            Assert.IsTrue(cores.Children.All(card => card.Key == card.GroupKey && card.IsVerticalGroupBar && card.GroupBarHeight.HasValue
+                && card.GroupBarWidth == null && card.GroupShowValues == false && card.GroupShowLabels == false),
+                "The bars spread over their card: the layout derives their width from the readings.");
+            var widths = cores.Children.Select(card => document.GetGroupBarLayout(card).EffectiveWidth).ToArray();
+            Assert.IsTrue(widths.Max() / widths.Min() < 1.25, "The flagship's bars are about as wide on every card: " + string.Join(", ", widths));
+            // The blue header's rails, lighter than the cards so they show on it, stand above the cards.
+            var rails = document.Tiles[0].Children.Where(tile => tile.Label == "Core rail").ToArray();
+            Assert.AreEqual(cores.Children.Count, rails.Length);
+            for (int index = 0; index < rails.Length; index++)
+                Assert.IsTrue(rails[index].X >= cores.Children[index].X && rails[index].X + rails[index].FrameWidth
+                    <= cores.Children[index].X + cores.Children[index].FrameWidth, rails[index].BackgroundColor);
+
+            // The clocks as numbers, eight cells to a row and a row per core type under a title in its color,
+            // in a second container across the design below the loads. A bound group shows its source's unit,
+            // so the fixed cell width has room for "5650 MHz".
+            var clocks = document.Tiles.Single(tile => tile.Label == "CPU clocks");
+            Assert.AreEqual((0.0, document.Width), (clocks.X.Value, clocks.FrameWidth.Value));
+            Assert.IsTrue(clocks.Y >= cores.Y + cores.FrameHeight, "The clocks follow the loads.");
+            CollectionAssert.AreEqual(types.Select(type => "role:cpu-clocks|" + type).ToArray(), clocks.Children.Select(row => row.GroupKey).ToArray());
+            CollectionAssert.AreEqual(colors, clocks.Children.Select(row => row.TitleColor).ToArray());
+            for (int index = 0; index < clocks.Children.Count; index++)
+            {
+                var row = clocks.Children[index];
+                Assert.IsTrue(row.Key == row.GroupKey && row.GroupShowValues == true && row.GroupShowLabels == false && row.GroupColumns == 8
+                    && row.GroupBarWidth.HasValue && 8 * row.GroupBarWidth.Value + 7 * 4 <= row.FrameWidth, row.GroupKey + ": eight cells to a row.");
+                Assert.AreEqual(("MHz", 6000.0), (row.Unit, row.Maximum), row.GroupKey);
+                if (index > 0) Assert.IsTrue(row.Y >= clocks.Children[index - 1].Y + clocks.Children[index - 1].FrameHeight, row.GroupKey);
+            }
         }
 
         [TestMethod]

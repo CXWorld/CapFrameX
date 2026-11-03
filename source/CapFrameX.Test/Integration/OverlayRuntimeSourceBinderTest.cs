@@ -170,6 +170,76 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        [DataRow("P8 E16 L4")]
+        [DataRow("P6 E12 L4")]
+        [DataRow("P4 E8 L4")]
+        [DataRow("P16 E32 L4")]
+        public void BluelineStarterShowsEveryCoreOfAnyNovaLakeCpu(string cores)
+        {
+            // Runs of cores per type, L for the LP-E cores: the leaked single compute tile configurations
+            // and the dual compute tile flagship. Nova Lake has no Hyper-Threading.
+            var readings = new List<(string Type, int Core)>();
+            foreach (string run in cores.Split(' '))
+            {
+                string type = run[0] == 'L' ? "LPE" : run.Substring(0, 1);
+                readings.AddRange(Enumerable.Range(readings.Count + 1, int.Parse(run.Substring(1))).Select(core => (type, core)));
+            }
+            var catalog = new[] { ("cpu-loads", "%"), ("cpu-clocks", "MHz") }.SelectMany(family => readings.Select((reading, index) => new OverlayTelemetrySource
+            {
+                Id = $"cpu0/{family.Item1}/{reading.Core}", DeviceKey = "cpu0", HardwareName = "cpu0", Name = $"Core #{reading.Core} {reading.Type}",
+                GroupKey = "cpu0/" + family.Item1, Category = "CPU", Unit = family.Item2, GroupOrder = index, IsAvailable = true,
+                CoreType = reading.Type, CoreIndex = reading.Core
+            })).ToArray();
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "BLUELINE-Nova-Lake");
+            AssertEditorParity(OsdDesignDocument.FromJson(starter.DesignJson), catalog, cores);
+
+            var saved = JObject.Parse(OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson).TemplateJson);
+            var bound = JObject.Parse(OverlayRuntimeSourceBinder.Bind(
+                OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson), catalog).TemplateJson);
+            // The loads of every core type on a card of its own, in rows of at most 8 P-, 16 E- and 4 LP-E cores
+            // that hold the same number of bars and spread over the whole card; below them the clocks, a value
+            // per core in rows of eight cells, every row but the last one full.
+            var bars = bound.Descendants().OfType<JObject>().Where(node => catalog.Any(source => source.Id == (string)node["key"])).ToArray();
+            CollectionAssert.AreEquivalent(catalog.Select(source => source.Id).ToArray(), bars.Select(bar => (string)bar["key"]).ToArray());
+            var groups = bars.GroupBy(bar => bar.Ancestors().OfType<JObject>().First(node => (string)node["type"] == "panel"
+                && node["children"] is JArray children && (string)children[0]["type"] == "text")).ToArray();
+            CollectionAssert.AreEqual(new[] { "P-CORES", "E-CORES", "LP-E", "P-CORE CLOCKS", "E-CORE CLOCKS", "LP-E CLOCKS" },
+                groups.Select(group => (string)group.Key["children"][0]["text"]).ToArray());
+            var expected = new[] { ("cpu-loads", ("P", 8)), ("cpu-loads", ("E", 16)), ("cpu-loads", ("LPE", 4)),
+                ("cpu-clocks", ("P", 8)), ("cpu-clocks", ("E", 8)), ("cpu-clocks", ("LPE", 8)) };
+            foreach (var (group, (family, (type, columns))) in groups.Zip(expected))
+            {
+                string context = cores + ": " + family + " " + type;
+                var section = readings.Where(reading => reading.Type == type).ToArray();
+                CollectionAssert.AreEquivalent(section.Select(reading => $"cpu0/{family}/{reading.Core}").ToArray(),
+                    group.Select(bar => (string)bar["key"]).ToArray(), context);
+                var rows = group.GroupBy(bar => (double)bar["y"]).Select(row => row.Count()).ToArray();
+                Assert.AreEqual((section.Length + columns - 1) / columns, rows.Length, context);
+                if (family == "cpu-clocks")
+                {
+                    Assert.IsTrue(rows.Take(rows.Length - 1).All(count => count == columns), context + " must fill every row but the last.");
+                    Assert.IsTrue(group.All(bar => (bool)bar["showValue"]), context + " must show its values.");
+                    continue;
+                }
+                Assert.AreEqual(1, rows.Distinct().Count(), context + " must fill its rows evenly.");
+                var canvas = group.First().Ancestors().OfType<JObject>().First();
+                Assert.AreEqual((double)canvas["width"], group.Max(bar => (double)bar["x"] + (double)bar["frameWidth"]), .01,
+                    context + " must spread its bars over the whole card.");
+            }
+
+            // Wrapped readings grow their container, and every tile below it moves down by the same amount.
+            var before = saved["root"]["children"].Children<JObject>().ToArray();
+            var after = bound["root"]["children"].Children<JObject>().ToArray();
+            double shift = 0;
+            for (int index = 0; index < before.Length; index++)
+            {
+                Assert.AreEqual(shift, (double)after[index]["y"] - (double)before[index]["y"], .001, cores + ": tile " + index);
+                shift += (double)after[index]["frameHeight"] - (double)before[index]["frameHeight"];
+            }
+            Assert.AreEqual(readings.Count > 28, shift > 0, cores + ": only the dual compute tile wraps its readings.");
+        }
+
+        [TestMethod]
         [DataRow("bar", "horizontal", true)]
         [DataRow("bar", "vertical", true)]
         [DataRow("bar", "vertical", false)]
