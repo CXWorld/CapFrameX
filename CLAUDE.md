@@ -474,6 +474,50 @@ measure the height themselves; `OsdOverlayBridge` passes `OsdHost.DesignReferenc
 `OsdHost.SetReferenceHeight`, which survives a renderer restart. The pixel orbit offset is part of
 the margins, so its steps scale too. RTSS is not affected. Details: the OSD repo's CLAUDE.md.
 
+### Full-width designs
+
+A design with the top-level `"fullWidth": true` (`OsdDesignDocument.FullWidth`, the editor's Layout tab
+"Span the full screen width", the MCP tile document's `fullWidth`) spans the target between the left
+and right margin in every CapFrameX renderer: the native core arranges the scene at target width − 2 ×
+margin and its canvases scale the x and the width of every tile by that over the design width, heights
+and everything inside a tile keep their size (a chart gets longer, a right-aligned value moves with its
+tile edge, a grid spreads its columns). Every anchor then places the panel at the left margin, so the
+anchor only chooses the top or the bottom edge, unless the design names its own: `"edge": "top"` or
+`"bottom"` (`OsdDesignDocument.Edge`, "Edge" below the full-width switch, MCP `edge`; "anchor", the
+default, is not exported) wins over the anchored corner in every placement path (`Scene::placementAnchor`).
+The orbit offsets stay distances from the edge the panel sits at. The target is the same as for
+resolution-relative sizing, which still sets the zoom first; a new target width or margin (also a pixel
+orbit step) rebuilds the scene. The renderers read both fields themselves, so CapFrameX passes them
+through `TemplateJson` and needs no channel. The editor, its preview and the MCP render show the design
+at its own width. RTSS is not affected. The prebuilt core, hooks, Vulkan layers and Controls must
+contain this change: a Controls build without it rejects such designs, older renderers draw them at
+their own width and the anchored corner. Example: the "Performance Strip" starter
+(`overlay-templates/Performance-Strip.json`, catalog version 30, edge bottom), a frame time chart at the
+left, average, 1% low and current FPS at the right and, across the whole width below them, the counted
+frame rate (`framespersecond`), both charts with grid lines; authored at 1280 × scale 1.5 = 1920 px.
+Tests: OSD `design_test` (`fullWidthTests`, `countedFramerateTests`), `PerformanceStripSpansTheScreenWidth`,
+`FullWidthIsADocumentFieldTheRendererReads`.
+
+### Counted frame rates and grid lines
+
+A chart's series `framespersecond` ("Frames per second (counted)") draws the frames presented in the
+second before every instant, as a frame counter counts them, instead of 1000 / frame time of each frame
+(`framerates`). The native core (`CountedFramerate.h`) runs a frame counter linearly between frame
+timestamps, so a steady stream reads its exact rate and a frame-generation pair counts as two frames;
+it samples the count every 50 ms of stream time (aligned, so the shape does not change while it
+scrolls) and draws Steffen's monotone cubic through the samples, one point per pixel column: smooth,
+without peaks or dips the counts do not have. A 1920 px strip costs about 70 µs per rebuild including
+the coverage raster, whatever the frame rate (per-frame rates: 80 to 290 µs at 60 to 500 FPS;
+`chart_perf_bench`). The scale is the frame rate scale with the median at 70 % (60 FPS on 0..100), and
+the scene keeps one more second of history (`kCountedFramerateLookbackMs`). It is FPS like
+`framerates`: both may share a chart, a stutter threshold may not use it. `OverlayRuntimeDesign` feeds
+it frames (`NeedsFrametimes`). A chart's `gridLines` (`OsdDesignTile.ShowGridLines`, "Grid lines")
+draws horizontal lines at round values (`ChartGridStep`: 1, 2, 2.5 or 5 × 10ⁿ, as many as their labels
+have room for) in the outline color, labelled in a column right of the plot instead of the min/max
+corner labels. The bitmap preview builds its lines before it draws the panel, so a single render shows
+the scale it draws. The prebuilt core, hooks, layers and Controls must contain this change. Tests: OSD
+`design_test` (`countedFramerateTests`), `ACountedFramerateChartIsFedFramesAndDrawsGridLines`.
+
 ### Overlay fonts
 
 Two sources, RTSS untouched. A tile design carries one font: the design font

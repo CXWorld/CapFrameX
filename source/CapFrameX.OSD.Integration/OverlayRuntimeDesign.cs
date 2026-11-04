@@ -53,7 +53,7 @@ namespace CapFrameX.OSD.Integration
                     if (node["lines"] is JArray lines)
                         series.AddRange(lines.OfType<JObject>()
                             .Select(line => line["series"]?.Type == JTokenType.String ? (string)line["series"] : null));
-                    frame |= series.Any(name => name == "frametimes" || name == "framerates");
+                    frame |= series.Any(name => name == "frametimes" || name == "framerates" || name == "framespersecond");
                     display |= series.Contains("displaytimes");
                 }
                 // Group members are already expanded into native child widgets; disabled

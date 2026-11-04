@@ -126,6 +126,32 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(design.NeedsDisplayTimes, "A display time threshold needs the display time feed.");
         }
 
+        [TestMethod]
+        public void ACountedFramerateChartIsFedFramesAndDrawsGridLines()
+        {
+            var document = Grid(new OsdDesignTile
+            {
+                Kind = "chart", Key = "framespersecond", Label = "FPS", Unit = "FPS", ColumnSpan = 2, ShowGridLines = true
+            });
+            var design = OverlayRuntimeDesign.Parse("id", "Counted", document.ToJson());
+            Assert.IsTrue(design.NeedsFrametimes, "Frames per second are counted from the frame feed.");
+            Assert.IsFalse(design.NeedsDisplayTimes);
+            var chart = JObject.Parse(design.TemplateJson).Descendants().OfType<JObject>().Single(node => (string)node["type"] == "chart");
+            Assert.AreEqual(("framespersecond", true), ((string)chart["series"], (bool?)chart["gridLines"]));
+            Assert.AreEqual(document.ToJson(), OsdDesignDocument.FromJson(document.ToJson()).ToJson(), "The editor opens it unchanged.");
+
+            // Counted and per-frame rates share the FPS axis; a counted rate has no stutter threshold.
+            document.Tiles[0].ChartLines = new List<OsdChartLine>
+                { new OsdChartLine { Series = "framespersecond" }, new OsdChartLine { Series = "framerates" } };
+            document.Validate();
+            document.Tiles[0].ChartLines = new List<OsdChartLine>
+                { new OsdChartLine { Series = "framespersecond" }, new OsdChartLine { Series = "framespersecond", Kind = OsdChartLine.StutterKind } };
+            Assert.ThrowsExactly<FormatException>(() => document.Validate());
+            document.Tiles[0].ChartLines = new List<OsdChartLine>
+                { new OsdChartLine { Series = "framespersecond" }, new OsdChartLine { Series = "frametimes" } };
+            Assert.ThrowsExactly<FormatException>(() => document.Validate());
+        }
+
         private static OsdDesignDocument Grid(OsdDesignTile chart)
         {
             var document = new OsdDesignDocument { Width = 640, Columns = 2 };

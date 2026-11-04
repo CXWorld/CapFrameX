@@ -75,6 +75,43 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void FullWidthIsADocumentFieldTheRendererReads()
+        {
+            const string tiles = @"""tiles"": [ { ""kind"": ""chart"", ""key"": ""framerates"", ""unit"": ""FPS"" } ]";
+            var document = OverlayTileDocument.FromJson(JObject.Parse(@"{ ""width"": 1280, ""scale"": 1.5, ""fullWidth"": true, " + tiles + " }"),
+                "Strip", NoSources);
+            Assert.IsTrue(document.FullWidth);
+            Assert.AreEqual(true, (bool?)OverlayTileDocument.ToJson(document)["fullWidth"]);
+            var scene = JObject.Parse(document.ToJson());
+            Assert.AreEqual(true, (bool?)scene["fullWidth"], "The scene carries the request to the renderers.");
+            Assert.IsTrue(OsdDesignDocument.FromJson(document.ToJson()).FullWidth, "The editor opens it unchanged.");
+
+            var fixedWidth = OverlayTileDocument.FromJson(JObject.Parse("{ " + tiles + " }"), "Panel", NoSources);
+            Assert.IsFalse(fixedWidth.FullWidth);
+            Assert.IsNull(OverlayTileDocument.ToJson(fixedWidth)["fullWidth"], "Designs without it neither exchange nor export it.");
+            Assert.IsNull(JObject.Parse(fixedWidth.ToJson())["fullWidth"]);
+            var error = Assert.ThrowsExactly<OverlayDesignAuthoringException>(() => OverlayTileDocument.FromJson(
+                JObject.Parse(@"{ ""fullWidth"": ""yes"", " + tiles + " }"), "Strip", NoSources));
+            StringAssert.Contains(error.Message, "'fullWidth'");
+
+            // The edge a full-width design sits at goes with it; other designs follow the overlay placement.
+            var bottom = OverlayTileDocument.FromJson(JObject.Parse(@"{ ""fullWidth"": true, ""edge"": ""bottom"", " + tiles + " }"),
+                "Strip", NoSources);
+            Assert.AreEqual("bottom", bottom.Edge);
+            Assert.AreEqual("bottom", (string)OverlayTileDocument.ToJson(bottom)["edge"]);
+            Assert.AreEqual("bottom", (string)JObject.Parse(bottom.ToJson())["edge"], "The scene carries the edge to the renderers.");
+            Assert.AreEqual("bottom", OsdDesignDocument.FromJson(bottom.ToJson()).Edge, "The editor opens it unchanged.");
+            Assert.AreEqual("anchor", document.Edge);
+            Assert.IsNull(JObject.Parse(document.ToJson())["edge"], "Without an edge the overlay placement decides.");
+            bottom.FullWidth = false;
+            Assert.IsNull(JObject.Parse(bottom.ToJson())["edge"], "Only a full-width design names its edge.");
+            Assert.IsNull(OverlayTileDocument.ToJson(bottom)["edge"]);
+            error = Assert.ThrowsExactly<OverlayDesignAuthoringException>(() => OverlayTileDocument.FromJson(
+                JObject.Parse(@"{ ""fullWidth"": true, ""edge"": ""left"", " + tiles + " }"), "Strip", NoSources));
+            StringAssert.Contains(error.Message, "'edge'");
+        }
+
+        [TestMethod]
         public void ContainerChildrenAreSizedToTheContainerAndTheContainerGrows()
         {
             var document = OverlayTileDocument.FromJson(JObject.Parse(@"{

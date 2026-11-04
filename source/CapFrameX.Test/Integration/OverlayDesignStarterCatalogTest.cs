@@ -173,6 +173,7 @@ namespace CapFrameX.Test.Integration
         [DataRow(26, 27)]
         [DataRow(27, 28)]
         [DataRow(28, 29)]
+        [DataRow(29, 30)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -191,6 +192,7 @@ namespace CapFrameX.Test.Integration
                 27 => new[] { "Blackwell-Thermals-RTX-5090" },
                 28 => new[] { "Blackwell-Thermals-RTX-5080", "Blackwell-Thermals-RTX-5070", "Blackwell-Thermals-RTX-5060" },
                 29 => new[] { "BLUELINE-Nova-Lake" },
+                30 => new[] { "Performance-Strip" },
                 _ =>new[] { "NVIDIA-GeForce-RTX-GREENLINE", "ICELINE-Vertical" }
             };
             CollectionAssert.AreEquivalent(expectedIds,
@@ -298,6 +300,7 @@ namespace CapFrameX.Test.Integration
         [DataRow("Panther-Lake-Arc-Aurora", "Panther Lake - Arc Aurora", false, 6)]
         [DataRow("BLUELINE-Nova-Lake", "BLUELINE - Nova Lake", false, 29)]
         [DataRow("OLED-Minimal", "OLED Minimal", false, 6)]
+        [DataRow("Performance-Strip", "Performance Strip", false, 30)]
         [DataRow("NVIDIA-GeForce-RTX-GREENLINE", "GREENLINE - GeForce RTX", true, 7)]
         [DataRow("ICELINE-Vertical", "ICELINE - Vertical", true, 7)]
         [DataRow("DUOLINE-Radeon-Ryzen", "DUOLINE - Radeon + Ryzen", false, 25)]
@@ -328,6 +331,8 @@ namespace CapFrameX.Test.Integration
             var runtime = OverlayRuntimeDesign.Parse(starter.Id, starter.Name, document.ToJson());
             CollectionAssert.AreEqual(original.MetricKeys.ToArray(), runtime.MetricKeys.ToArray());
             Assert.AreEqual(original.PixelShift, runtime.PixelShift, "Editing must retain the design's pixel orbit request.");
+            Assert.AreEqual((bool?)JObject.Parse(original.TemplateJson)["fullWidth"], (bool?)JObject.Parse(runtime.TemplateJson)["fullWidth"],
+                "Editing must retain the design's full width.");
             string[] Images(string json) => JObject.Parse(json).Descendants().OfType<JProperty>()
                 .Where(property => property.Name == "dataUri").Select(property => (string)property.Value).ToArray();
             // Compare renderer scenes: editor metadata contains additional copies of each image.
@@ -480,6 +485,7 @@ namespace CapFrameX.Test.Integration
         [DataRow("Blackwell-Thermals-RTX-5070", new[] { "gpuNameShort" })]
         [DataRow("Blackwell-Thermals-RTX-5060", new[] { "gpuNameShort" })]
         [DataRow("BLUELINE-Nova-Lake", new[] { "gpuNameShort", "cpuNameShort" })]
+        [DataRow("Performance-Strip", new string[0])]
         [DataRow("Anime-Cherry-Blossom", new string[0])]
         [DataRow("Anime-Neon-Night", new string[0])]
         [DataRow("Anime-Lunar", new string[0])]
@@ -566,6 +572,43 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(document.Tiles[0].Y + document.Tiles[0].FrameHeight <= document.Tiles[1].Y, "The GPU block sits above the CPU block.");
             CollectionAssert.AreEqual(new[] { "frametimes", "fpsCurrent", "frametimeCurrent" },
                 document.Tiles[2].Children.Select(tile => tile.Key).ToArray());
+        }
+
+        [TestMethod]
+        public void PerformanceStripSpansTheScreenWidth()
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "Performance-Strip");
+            var document = OsdDesignDocument.FromJson(starter.DesignJson);
+            document.Validate();
+            Assert.AreEqual(starter.DesignJson, OverlayRuntimeDesign.Canonicalize(document.ToJson()), "The starter is stored as the editor saves it.");
+            // The renderer stretches the design to the screen between the margins and puts it at the bottom
+            // edge whatever corner the overlay is anchored to; the renderers read both requests.
+            Assert.IsTrue(document.FullWidth);
+            Assert.AreEqual("bottom", document.Edge);
+            var runtime = OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson);
+            var scene = JObject.Parse(runtime.TemplateJson);
+            Assert.AreEqual((true, "bottom"), ((bool?)scene["fullWidth"], (string)scene["edge"]));
+            Assert.IsTrue(runtime.NeedsFrametimes, "Both charts draw from the frame feed.");
+            Assert.AreEqual(1920.0, document.Width * document.Scale, "Authored at the width of a 1080p screen.");
+            Assert.IsTrue(document.Tiles.All(tile => tile.Children.Count == 0), "Plain tiles, so every one stretches on its own.");
+
+            // A frame time chart at the left edge, the frame rate values at the right edge, the middle free for the game,
+            // and below them, across the whole width, the frame rate as a frame counter counts it: the frames of the
+            // last second, as a smooth curve. Both charts draw labelled grid lines.
+            var charts = document.Tiles.Where(tile => tile.Kind == "chart").ToArray();
+            CollectionAssert.AreEqual(new[] { "frametimes", "framespersecond" }, charts.Select(chart => chart.Key).ToArray());
+            Assert.IsTrue(charts.All(chart => chart.ShowGridLines == true && chart.ShowLabels != false), "Both charts label their grid lines.");
+            Assert.AreEqual(0.0, charts[0].X.Value);
+            Assert.AreEqual((0.0, document.Width), (charts[1].X.Value, charts[1].FrameWidth.Value));
+            var values = document.Tiles.Where(tile => tile.Kind == "metric").ToArray();
+            CollectionAssert.AreEqual(new[] { "fps", "fps1pctLow", "fpsCurrent" }, values.Select(value => value.Key).ToArray());
+            Assert.AreEqual(document.Width, values[^1].X.Value + values[^1].FrameWidth.Value, "The current frame rate ends at the right edge.");
+            Assert.IsTrue(values.All(value => value.Align == "right" && value.LabelPosition == "bottom" && value.Digits == 1),
+                "Values keep to the right edge of their tiles, which grow on wider screens.");
+            Assert.IsTrue(values[^1].ValueSize > values[0].ValueSize, "The current frame rate is the largest value.");
+            Assert.IsTrue(charts[1].Y >= document.Tiles.Where(tile => tile != charts[1]).Max(tile => tile.Y + tile.FrameHeight),
+                "The frame rate history runs below every other tile.");
+            Assert.AreEqual(document.CanvasHeight, charts[1].Y + charts[1].FrameHeight);
         }
 
         [TestMethod]
