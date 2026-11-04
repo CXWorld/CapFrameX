@@ -125,6 +125,22 @@ kernel thread scheduling, replays the trace with the installed CX-PresentMon (Ca
 and summarizes the busiest swapchain, including the share of displayed frames within 1 ms of the
 previous one. `-ExtraProviders` adds providers a vendor asks for, `-EtlFile` re-analyzes a trace.
 
+### Capture helper for Windows 7
+`tools\CapFrameX.CaptureHelper\` (README there) is a separate WPF app on .NET Framework 4.8, outside
+`CapFrameX.sln`, for Windows 7, where neither CapFrameX (.NET 10) nor any PresentMon from 2.0.0 on
+starts. It bundles PresentMon 1.10.0, one build per bitness (`-p:Platform=x86|x64`; `build.ps1` builds
+and zips both), and runs it with `-output_stdout -qpc_time -no_track_display`. Captures are buffered as
+in `CaptureManager` (an archive of the last 500 rows, every row of the target from the start request on,
+cut 2.5 s after the end) and cut by `QPCTime` in `CaptureWindow`, which follows
+`GetAdjustedCaptureData` and `DropFramesOfFirstStartTime`. `-no_track_display` is required, since with
+display tracking 1.10.0 completes hardly any present on current Windows 11 builds. The target (the
+selection in the process list) is filtered by the app, not by PresentMon: `-process_id` needs a restart
+per target, after which rows arrived only 1 to 4 s later, and empties the list of other processes.
+Before it starts PresentMon, the app ends the session of one a crashed helper left behind and waits for
+it: with `-stop_existing_session` alone, the old instance's shutdown also ended the new session. Its
+window rules and its Average, P1 and P0.2 (`FrametimeStatisticProvider`, MathNet's R-8 quantile over
+1000 / frame time) follow the main app; keep them in step when `CaptureManager` or the metrics change.
+
 ## Architecture
 
 ### Solution Structure
