@@ -113,6 +113,18 @@ at least 15 s, and the verdict tells "keeps its plane", "composed for N s, then 
 composed at the end" apart. A GDI window over the game behaves differently: on the same PC it was
 composed throughout.
 
+### Frame generation trace for vendors
+`scripts\FrameGenTrace\` (`Run-FrameGenTrace.cmd` → `FrameGenTrace.ps1`, README for users) records a
+WPR trace of a running game for GPU vendors and the PresentMon team, written for AMD's FSR Frame
+Generation with Driver-Assisted Frame Pacing (Adrenalin 26.10.1+), where PresentMon sees each frame
+pair reach the screen at almost the same time while a camera shows even pacing. The profile it writes
+(`FrameGenTrace.wprp`) enables every provider PresentMon reads, with the keywords of
+`EnableProvidersListing` in `PresentMonTraceSession.cpp`, so the trace replays with `--etl_file`;
+keep it in step when PresentMon adds providers. It also records DxgKrnl GPU scheduling, the HAGS log and
+kernel thread scheduling, replays the trace with the installed CX-PresentMon (CapFrameX's arguments)
+and summarizes the busiest swapchain, including the share of displayed frames within 1 ms of the
+previous one. `-ExtraProviders` adds providers a vendor asks for, `-EtlFile` re-analyzes a trace.
+
 ## Architecture
 
 ### Solution Structure
