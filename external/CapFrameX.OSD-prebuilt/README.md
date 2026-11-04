@@ -12,6 +12,67 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Full-width scenes, counted frame rates and grid lines (2026-11-03)
+
+All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64 and
+x86) and Controls in `Release|x64`, .NET 10 (`dotnet build CapFrameX.OSD.sln -c Release
+--no-incremental`), from the OSD working tree on `40e48b38b01062c1129bd6a900f6af52da7e728d` that was
+committed right after the build as `fd54f84959e9d5548d58c22c12e4316bbd7c5a35`: `src/core/Scene.*`,
+`Widget.*`, `Config.cpp`, `LayoutScale.h`,
+`OsdInstance.*`, `PreviewInstance.cpp` and the new `CountedFramerate.h`, `apps/design_test` (with the
+new `counted_framerate.h`), `apps/chart_perf_bench`, the Controls sources (`OsdDesignDocument*`,
+`OsdChartLine`, `OsdDisplayLabels`, `OsdDesignPresets`, `OsdEditorControl.xaml`,
+`OsdEditorControl.ChartLines`, `OsdEditorState*`, `OsdTileStyle`), the five `Editor.*.json` catalogs, the
+editor demo's `DesignVerification` and the OSD repo's CLAUDE.md.
+
+- A scene with the top-level `"fullWidth": true` (the editor's Layout tab, "Span the full screen
+  width") spans the target between both horizontal margins: the core arranges it at target width − 2
+  × margin, and its canvases scale the x and the width of every tile by that over the design width,
+  while heights and everything inside a tile keep their size. Every anchor then places the panel at the
+  left margin, and a new target width or margin rebuilds the scene. `"edge": "top"` or `"bottom"`
+  ("Edge" below the switch) puts it at that edge whatever corner the host anchors it to. The hook-free
+  window takes the width of its monitor, the hooks and the Vulkan layer that of the back buffer.
+- The chart series `framespersecond` draws the frames presented in the second before every instant, as
+  a frame counter counts them, as a smooth monotone cubic through counts every 50 ms; its scale puts
+  the median at 70 % (60 FPS on 0..100). A 1920 px strip costs about 70 µs per rebuild with the coverage
+  raster, whatever the frame rate (`chart_perf_bench`, "strip" rows).
+- A chart's `"gridLines": true` draws horizontal lines at round values in the outline color, labelled
+  right of the plot instead of the min/max corner labels.
+- Chart captions follow a design's scale: at scale 1.5 the caption rows of 16 × uiScale clipped the
+  titles; the rows and the plot insets now take whichever is larger, so designs up to scale 1 and the
+  classic rows draw exactly as before. The bitmap preview builds its lines before it draws the panel,
+  so a single bitmap shows the scale it draws (the first one showed 0.0).
+
+`Editor_FullWidth*`, `Editor_Edge*`, `Editor_SeriesFramesPerSecond`, `Editor_ChartLineFramesPerSecond`,
+`Editor_ChartGridLines` and `Editor_StylePlotLines` were added in all five languages; `Editor.en.json`
+and `Editor.ko.json` are copied here. Interop (still the signed build), both Vulkan manifests (the
+build's copies differ in line endings only) and the template catalogs are unchanged. Older hooks and
+layers reject a design with `framespersecond` and draw other full-width designs at their own width and
+the anchored corner; a Controls build without this change rejects all of them.
+
+The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only registrations
+in both HKLM views) were replaced with these two layer DLLs; their hashes match the table. Those of the
+next entry (`DAF1D03A…`, `4A6320CB…`) are kept in the ignored `temp\vulkan-layer-backup-2026-11-03` of
+the CapFrameX checkout.
+
+Verification: all 16 core CTests pass (`design` with the full-width, caption and counted frame rate
+cases), as do the 33 hook and 10 Vulkan CTests on x64 and x86, all without compiler warnings. The editor
+demo's `--verify` (1768 checks) and `--verify-native` (1241 checks for 68 templates) pass. A CapFrameX
+Release build from source staged exactly these core and Controls DLLs into the test output and passed
+all 3507 tests outside the `Integration` category. No game ran with these binaries yet.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `1869FE2260375AD8523E2EDA971309CF664E0770B1A4612F86E935A4A07BC588` |
+| native\cfx_osd_hook.dll | `30F628B2A9FFF827FF2997AB6B4B946F30D53DA3102F8E3FCBD8CFA0BBA0CC84` |
+| native\x86\cfx_osd_hook.dll | `55F496E4F73CF7F0FF9BDDE9C5C8C87C47CD4223A01D0EA57FB6E71416EC5E7F` |
+| native\vk\cfx_osd_vklayer.dll | `0FBD2CDDA1448ACB2E786C2AA569DE6E7BBA83F77DF78DEFA26D25431AE3A9CE` |
+| native\vk\x86\cfx_osd_vklayer.dll | `53DD763E7BF3676C43AE93887A19DC11871E3B151A31E9F41E54FD2509AF004A` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `84B77F84B63E45F7F952D1B16E0E1B1541DF8D9A691CD3641A3515535F8EDCC4` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### A session log for every process (2026-11-02)
 
 All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64 and
