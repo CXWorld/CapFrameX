@@ -12,6 +12,45 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Full-width scenes only stretch (2026-11-04)
+
+All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64 and
+x86) from the OSD working tree on `fd54f84959e9d5548d58c22c12e4316bbd7c5a35` that was committed
+right after the build as `fee736af704d5ad333e2cdca80afeee7cc20b42f`: `src/core/LayoutScale.h`,
+`OsdInstance.*`, `apps/design_test` and the OSD repo's CLAUDE.md. Controls, Interop, both Vulkan
+manifests and the template catalogs are unchanged.
+
+- A full-width design no longer narrows its tiles on a target narrower than the design at the current
+  zoom. The core builds the whole scene smaller instead, in whole percent, until it fits (at least
+  0.25 of its own size), and stretches it by the rest. Narrowed tiles cut off the values that filled
+  them: the Performance Strip at zoom 1.5 in a 1968 px wide window drew its current frame rate in a
+  228 px tile, but the value needed 280 px, so its first digit was cut off. It is now built at scale
+  1.00. Wider targets stretch as before.
+- Extended OSD logging writes `[diag] full width shrinks the scene to scale …`, and the `scene
+  rebuild` lines log the scale the scene was built with instead of the zoom times the resolution factor.
+
+Verification: all 16 core CTests pass (`design` with ten new full-width checks), as do the 33 hook and
+10 Vulkan CTests on x64 and x86, all without compiler warnings. The Vulkan layer links with the
+LNK4199 notes for delay loads it does not import; its imports are the same as the previous build's.
+A CapFrameX Release build from source staged exactly this core into the test output and passed all
+3507 tests outside the `Integration` category. No game ran with these binaries yet.
+
+The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only registrations
+in both HKLM views) were replaced with these two layer DLLs; their hashes match the table. Those of the
+next entry (`0FBD2CDD…`, `53DD763E…`) are kept in the ignored `temp\vulkan-layer-backup-2026-11-04` of
+the CapFrameX checkout.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `6DFB76F9C23291101F6E43BC071ECA0F68801EF03A347BEC456D2DB864D55078` |
+| native\cfx_osd_hook.dll | `ACAD05DCABEEAC4046FD970B4F7B558FF977CFD5D40C8D04A64D2CBDA05CD904` |
+| native\x86\cfx_osd_hook.dll | `58DE3D992B6E72B3DF8B13F7B06606A5B35DAB07D6DD29162DF7C6E4683A2B42` |
+| native\vk\cfx_osd_vklayer.dll | `EC62A1F57067A5E28F09C3946ACE59CB98004E897C9D5E3F6C7450B0C0498414` |
+| native\vk\x86\cfx_osd_vklayer.dll | `3C9457D1367300438E82B782D47E94CF186DE0813BE4CDFD2A7FB5B9AEA11BD5` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Full-width scenes, counted frame rates and grid lines (2026-11-03)
 
 All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64 and
