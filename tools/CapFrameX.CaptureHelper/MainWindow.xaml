@@ -1,0 +1,162 @@
+<Window x:Class="CapFrameX.CaptureHelper.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:CapFrameX.CaptureHelper"
+        Title="CapFrameX Capture Helper" Width="1000" Height="660" MinWidth="780" MinHeight="500"
+        WindowStartupLocation="CenterScreen" Background="#F3F5F7" FontFamily="Segoe UI" FontSize="12">
+    <TabControl Margin="10">
+        <TabItem Header="Capture" Padding="16,5">
+            <Grid Margin="14">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <GroupBox Header="Settings">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="130" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Capture hotkey" VerticalAlignment="Center" Margin="0,0,0,8" />
+                        <StackPanel Grid.Column="1" Grid.ColumnSpan="3" Orientation="Horizontal" Margin="0,0,0,8">
+                            <ComboBox x:Name="HotkeyCombo" Width="200" SelectionChanged="OnHotkeyChanged" />
+                            <TextBlock x:Name="HotkeyWarning" Margin="10,0,0,0" VerticalAlignment="Center"
+                                       Foreground="{StaticResource ErrorBrush}" Visibility="Collapsed" />
+                        </StackPanel>
+
+                        <TextBlock Grid.Row="1" Text="Capture duration" VerticalAlignment="Center" Margin="0,0,0,8" />
+                        <ComboBox x:Name="DurationCombo" Grid.Row="1" Grid.Column="1" Width="200" HorizontalAlignment="Left"
+                                  Margin="0,0,0,8" SelectionChanged="OnDurationChanged" />
+
+                        <TextBlock Grid.Row="2" Text="Capture folder" VerticalAlignment="Center" />
+                        <TextBox x:Name="FolderText" Grid.Row="2" Grid.Column="1" IsReadOnly="True"
+                                 VerticalContentAlignment="Center" Padding="4,3" />
+                        <Button Grid.Row="2" Grid.Column="2" Content="Browse…" Margin="8,0,0,0" Click="OnBrowseFolder" />
+                        <Button Grid.Row="2" Grid.Column="3" Content="Open" Margin="6,0,0,0" Click="OnOpenFolder" />
+                    </Grid>
+                </GroupBox>
+
+                <GroupBox Grid.Row="1" Header="Processes PresentMon sees">
+                    <DockPanel>
+                        <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                            <Button DockPanel.Dock="Right" Content="Automatic target" Click="OnAutomaticTarget"
+                                    ToolTip="Clear the selection: the hotkey then captures the application in the foreground." />
+                            <TextBlock x:Name="TargetText" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,10,0" />
+                        </DockPanel>
+                        <Grid>
+                            <ListView x:Name="ProcessList" SelectionMode="Single" SelectionChanged="OnTargetChanged">
+                                <ListView.View>
+                                    <GridView>
+                                        <GridViewColumn Header="Process" Width="340" DisplayMemberBinding="{Binding Name}" />
+                                        <GridViewColumn Header="PID" Width="90" DisplayMemberBinding="{Binding ProcessId}" />
+                                        <GridViewColumn Header="FPS" Width="90" DisplayMemberBinding="{Binding FpsText}" />
+                                    </GridView>
+                                </ListView.View>
+                            </ListView>
+                            <TextBlock x:Name="NoProcessesText" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       TextAlignment="Center" IsHitTestVisible="False" Foreground="{StaticResource MutedBrush}"
+                                       Text="No process presents frames yet.&#x0a;Start the game: it appears here as soon as PresentMon sees its frames." />
+                        </Grid>
+                    </DockPanel>
+                </GroupBox>
+
+                <Border Grid.Row="2" Background="White" BorderBrush="{StaticResource LineBrush}" BorderThickness="1" Padding="12,10">
+                    <DockPanel>
+                        <Button x:Name="CaptureButton" DockPanel.Dock="Right" MinWidth="140" VerticalAlignment="Center"
+                                Content="Start capture" Click="OnCaptureButton" />
+                        <StackPanel Margin="0,0,12,0">
+                            <TextBlock x:Name="StatusText" FontSize="15" FontWeight="SemiBold" Text="Ready" TextWrapping="Wrap" />
+                            <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                                <TextBlock x:Name="PresentMonText" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" />
+                                <Button x:Name="RestartButton" Content="Restart PresentMon" Margin="10,0,0,0" Visibility="Collapsed"
+                                        Click="OnRestartPresentMon" />
+                            </StackPanel>
+                        </StackPanel>
+                    </DockPanel>
+                </Border>
+            </Grid>
+        </TabItem>
+
+        <TabItem Header="Analysis" Padding="16,5">
+            <Grid Margin="14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="280" MinWidth="160" />
+                    <ColumnDefinition Width="8" />
+                    <ColumnDefinition Width="*" MinWidth="320" />
+                </Grid.ColumnDefinitions>
+
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0,0,0,8">
+                        <Button Content="Refresh" Click="OnRefreshTree" />
+                        <Button Content="Open file…" Margin="6,0,0,0" Click="OnOpenFile" />
+                    </StackPanel>
+                    <TreeView x:Name="FileTree" SelectedItemChanged="OnFileSelected">
+                        <TreeView.ItemContainerStyle>
+                            <Style TargetType="TreeViewItem">
+                                <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                                <Setter Property="Padding" Value="2" />
+                            </Style>
+                        </TreeView.ItemContainerStyle>
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate DataType="{x:Type local:FileNode}" ItemsSource="{Binding Children}">
+                                <TextBlock x:Name="NodeText" Text="{Binding Name}" ToolTip="{Binding FullPath}" />
+                                <HierarchicalDataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsDirectory}" Value="True">
+                                        <Setter TargetName="NodeText" Property="FontWeight" Value="SemiBold" />
+                                    </DataTrigger>
+                                </HierarchicalDataTemplate.Triggers>
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+                    </TreeView>
+                </DockPanel>
+
+                <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="Transparent" />
+
+                <DockPanel Grid.Column="2">
+                    <StackPanel DockPanel.Dock="Top">
+                        <TextBlock x:Name="AnalysisTitle" FontSize="16" FontWeight="SemiBold" Text="No capture loaded"
+                                   TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="AnalysisInfo" Foreground="{StaticResource MutedBrush}" Margin="0,2,0,0"
+                                   Text="Select a capture file on the left." TextTrimming="CharacterEllipsis" />
+                        <UniformGrid Columns="3" Margin="0,12,0,12">
+                            <Border Style="{StaticResource MetricCard}" Margin="0,0,8,0"
+                                    ToolTip="Frames per second over the whole capture: frames × 1000 / sum of the frame times.">
+                                <StackPanel>
+                                    <TextBlock x:Name="AverageText" Style="{StaticResource MetricValue}" />
+                                    <TextBlock Text="Average FPS" Style="{StaticResource MetricLabel}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetricCard}" Margin="4,0,4,0"
+                                    ToolTip="1st percentile of the per-frame FPS: 1 % of the frames ran at a lower frame rate (CapFrameX P1).">
+                                <StackPanel>
+                                    <TextBlock x:Name="P1Text" Style="{StaticResource MetricValue}" />
+                                    <TextBlock Text="P1 FPS" Style="{StaticResource MetricLabel}" />
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource MetricCard}" Margin="8,0,0,0"
+                                    ToolTip="0.2nd percentile of the per-frame FPS: 0.2 % of the frames ran at a lower frame rate (CapFrameX P0.2).">
+                                <StackPanel>
+                                    <TextBlock x:Name="P02Text" Style="{StaticResource MetricValue}" />
+                                    <TextBlock Text="P0.2 FPS" Style="{StaticResource MetricLabel}" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+                    </StackPanel>
+                    <Border BorderBrush="{StaticResource LineBrush}" BorderThickness="1">
+                        <local:FrametimeGraph x:Name="Graph" />
+                    </Border>
+                </DockPanel>
+            </Grid>
+        </TabItem>
+    </TabControl>
+</Window>

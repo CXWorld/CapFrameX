@@ -113,6 +113,34 @@ at least 15 s, and the verdict tells "keeps its plane", "composed for N s, then 
 composed at the end" apart. A GDI window over the game behaves differently: on the same PC it was
 composed throughout.
 
+### Frame generation trace for vendors
+`scripts\FrameGenTrace\` (`Run-FrameGenTrace.cmd` → `FrameGenTrace.ps1`, README for users) records a
+WPR trace of a running game for GPU vendors and the PresentMon team, written for AMD's FSR Frame
+Generation with Driver-Assisted Frame Pacing (Adrenalin 26.10.1+), where PresentMon sees each frame
+pair reach the screen at almost the same time while a camera shows even pacing. The profile it writes
+(`FrameGenTrace.wprp`) enables every provider PresentMon reads, with the keywords of
+`EnableProvidersListing` in `PresentMonTraceSession.cpp`, so the trace replays with `--etl_file`;
+keep it in step when PresentMon adds providers. It also records DxgKrnl GPU scheduling, the HAGS log and
+kernel thread scheduling, replays the trace with the installed CX-PresentMon (CapFrameX's arguments)
+and summarizes the busiest swapchain, including the share of displayed frames within 1 ms of the
+previous one. `-ExtraProviders` adds providers a vendor asks for, `-EtlFile` re-analyzes a trace.
+
+### Capture helper for Windows 7
+`tools\CapFrameX.CaptureHelper\` (README there) is a separate WPF app on .NET Framework 4.8, outside
+`CapFrameX.sln`, for Windows 7, where neither CapFrameX (.NET 10) nor any PresentMon from 2.0.0 on
+starts. It bundles PresentMon 1.10.0, one build per bitness (`-p:Platform=x86|x64`; `build.ps1` builds
+and zips both), and runs it with `-output_stdout -qpc_time -no_track_display`. Captures are buffered as
+in `CaptureManager` (an archive of the last 500 rows, every row of the target from the start request on,
+cut 2.5 s after the end) and cut by `QPCTime` in `CaptureWindow`, which follows
+`GetAdjustedCaptureData` and `DropFramesOfFirstStartTime`. `-no_track_display` is required, since with
+display tracking 1.10.0 completes hardly any present on current Windows 11 builds. The target (the
+selection in the process list) is filtered by the app, not by PresentMon: `-process_id` needs a restart
+per target, after which rows arrived only 1 to 4 s later, and empties the list of other processes.
+Before it starts PresentMon, the app ends the session of one a crashed helper left behind and waits for
+it: with `-stop_existing_session` alone, the old instance's shutdown also ended the new session. Its
+window rules and its Average, P1 and P0.2 (`FrametimeStatisticProvider`, MathNet's R-8 quantile over
+1000 / frame time) follow the main app; keep them in step when `CaptureManager` or the metrics change.
+
 ## Architecture
 
 ### Solution Structure
@@ -445,6 +473,50 @@ hook-free window. The hook and the layer receive the switch as metrics header bi
 measure the height themselves; `OsdOverlayBridge` passes `OsdHost.DesignReferenceHeight` through
 `OsdHost.SetReferenceHeight`, which survives a renderer restart. The pixel orbit offset is part of
 the margins, so its steps scale too. RTSS is not affected. Details: the OSD repo's CLAUDE.md.
+
+### Full-width designs
+
+A design with the top-level `"fullWidth": true` (`OsdDesignDocument.FullWidth`, the editor's Layout tab
+"Span the full screen width", the MCP tile document's `fullWidth`) spans the target between the left
+and right margin in every CapFrameX renderer: the native core arranges the scene at target width − 2 ×
+margin and its canvases scale the x and the width of every tile by that over the design width, heights
+and everything inside a tile keep their size (a chart gets longer, a right-aligned value moves with its
+tile edge, a grid spreads its columns). Every anchor then places the panel at the left margin, so the
+anchor only chooses the top or the bottom edge, unless the design names its own: `"edge": "top"` or
+`"bottom"` (`OsdDesignDocument.Edge`, "Edge" below the full-width switch, MCP `edge`; "anchor", the
+default, is not exported) wins over the anchored corner in every placement path (`Scene::placementAnchor`).
+The orbit offsets stay distances from the edge the panel sits at. The target is the same as for
+resolution-relative sizing, which still sets the zoom first; a new target width or margin (also a pixel
+orbit step) rebuilds the scene. The renderers read both fields themselves, so CapFrameX passes them
+through `TemplateJson` and needs no channel. The editor, its preview and the MCP render show the design
+at its own width. RTSS is not affected. The prebuilt core, hooks, Vulkan layers and Controls must
+contain this change: a Controls build without it rejects such designs, older renderers draw them at
+their own width and the anchored corner. Example: the "Performance Strip" starter
+(`overlay-templates/Performance-Strip.json`, catalog version 30, edge bottom), a frame time chart at the
+left, average, 1% low and current FPS at the right and, across the whole width below them, the counted
+frame rate (`framespersecond`), both charts with grid lines; authored at 1280 × scale 1.5 = 1920 px.
+Tests: OSD `design_test` (`fullWidthTests`, `countedFramerateTests`), `PerformanceStripSpansTheScreenWidth`,
+`FullWidthIsADocumentFieldTheRendererReads`.
+
+### Counted frame rates and grid lines
+
+A chart's series `framespersecond` ("Frames per second (counted)") draws the frames presented in the
+second before every instant, as a frame counter counts them, instead of 1000 / frame time of each frame
+(`framerates`). The native core (`CountedFramerate.h`) runs a frame counter linearly between frame
+timestamps, so a steady stream reads its exact rate and a frame-generation pair counts as two frames;
+it samples the count every 50 ms of stream time (aligned, so the shape does not change while it
+scrolls) and draws Steffen's monotone cubic through the samples, one point per pixel column: smooth,
+without peaks or dips the counts do not have. A 1920 px strip costs about 70 µs per rebuild including
+the coverage raster, whatever the frame rate (per-frame rates: 80 to 290 µs at 60 to 500 FPS;
+`chart_perf_bench`). The scale is the frame rate scale with the median at 70 % (60 FPS on 0..100), and
+the scene keeps one more second of history (`kCountedFramerateLookbackMs`). It is FPS like
+`framerates`: both may share a chart, a stutter threshold may not use it. `OverlayRuntimeDesign` feeds
+it frames (`NeedsFrametimes`). A chart's `gridLines` (`OsdDesignTile.ShowGridLines`, "Grid lines")
+draws horizontal lines at round values (`ChartGridStep`: 1, 2, 2.5 or 5 × 10ⁿ, as many as their labels
+have room for) in the outline color, labelled in a column right of the plot instead of the min/max
+corner labels. The bitmap preview builds its lines before it draws the panel, so a single render shows
+the scale it draws. The prebuilt core, hooks, layers and Controls must contain this change. Tests: OSD
+`design_test` (`countedFramerateTests`), `ACountedFramerateChartIsFedFramesAndDrawsGridLines`.
 
 ### Overlay fonts
 

@@ -83,6 +83,14 @@ Document fields (all optional except tiles):
   longer shows these defaults, so prefer setting a tile's own colors.
 - pixelShift: { ""intervalSeconds"": 10..3600, ""radius"": 1..32 } moves the overlay by one pixel per
   interval (OLED burn-in protection). Omit or null for none.
+- fullWidth (default false): the overlay spans the screen between the left and right margins. The
+  renderer scales the x and the width of every tile by the screen width over the design width;
+  heights, text and padding keep their size, so charts get longer and text stays put. Design it at
+  the width of a 1080p screen (width x scale = 1920, e.g. width 1280 at scale 1.5) and keep values
+  and labels aligned to a tile edge, since a tile's interior grows on wider screens. The render tool
+  and the editor show the design at its own width.
+- edge (with fullWidth): ""top"" or ""bottom"" places the overlay at that edge whatever corner it is
+  anchored to; omitted, null or ""anchor"" follows the anchored corner.
 - tiles: the tiles, at most {MAXTILES} including nested ones.
 
 Colors are ""#RRGGBB"" or ""#RRGGBBAA"" with alpha last: ""#20242CEB"" is 92 % opaque,
@@ -140,15 +148,17 @@ Kinds:
 - bar: horizontal bar. key, unit, minimum, maximum (the bar's range), digits, showValue.
 - gauge: ring gauge. key, unit, minimum, maximum, digits, startAngle (degrees, -3600..3600),
   sweepAngle (1..360), thickness, showValue. In a grid, height (24..240) is the diameter.
-- chart: live line chart. key is the series: {SERIES} (frametimes in ms, framerates in FPS,
+- chart: live line chart. key is the series: {SERIES} (frametimes in ms, framerates in FPS per frame,
+  framespersecond in FPS as counted over the second before each instant and drawn as a smooth curve,
   displaytimes in ms). label is the title, unit the axis unit. showBackground, showBorder,
   showLabels (axis labels and, with several lines, a legend), currentValue (badge with the latest
-  value of key). In a grid, height 24..240.
+  value of key), showGridLines (horizontal lines at round values in the outline color, labelled
+  right of the plot instead of the min/max labels). In a grid, height 24..240.
   chartLines (optional, 1..4) draws several lines on one axis instead of the single line of key:
   [{""series"": ""frametimes"", ""kind"": ""value""}, {""series"": ""frametimes"", ""kind"": ""stutter"",
   ""factor"": 2.5, ""color"": ""#E5534BFF""}]. kind ""value"" draws the series, ""stutter"" its adaptive
   stutter threshold: factor (1..10, default 2.5) x the moving average of the analysis chart. A
-  threshold needs frametimes or displaytimes; the lines are all in ms or all framerates; key must be
+  threshold needs frametimes or displaytimes; the lines are all in ms or all in FPS; key must be
   the series of the first value line. color (default accent, threshold red) and label (legend text,
   up to 64 characters) are optional.
 - text: static text. text (up to 500 characters, ""\n"" for a line break), valueSize (font size),

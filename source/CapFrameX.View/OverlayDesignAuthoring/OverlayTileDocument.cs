@@ -32,7 +32,8 @@ namespace CapFrameX.View.OverlayDesignAuthoring
         private static readonly string[] DocumentFields =
         {
             "name", "layout", "width", "canvasHeight", "columns", "gap", "padding", "radius", "scale",
-            "gridSize", "showGrid", "snapToGrid", "accent", "tileColor", "textColor", "tileOpacity", "fontFamily", "pixelShift", "tiles"
+            "gridSize", "showGrid", "snapToGrid", "accent", "tileColor", "textColor", "tileOpacity", "fontFamily", "pixelShift",
+            "fullWidth", "edge", "tiles"
         };
         private static readonly Lazy<IReadOnlyDictionary<string, string>> TileFields =
             new Lazy<IReadOnlyDictionary<string, string>>(() => FieldsOf(typeof(OsdDesignTile)));
@@ -76,6 +77,8 @@ namespace CapFrameX.View.OverlayDesignAuthoring
                     ["intervalSeconds"] = document.PixelShiftInterval,
                     ["radius"] = document.PixelShiftRadius
                 };
+            if (document.FullWidth) result["fullWidth"] = true;
+            if (document.FullWidth && document.Edge != "anchor") result["edge"] = document.Edge;
             result["tiles"] = TilesToJson(document.Tiles, null);
             return result;
         }
@@ -147,6 +150,8 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             }
             else if (json["pixelShift"] != null && json["pixelShift"].Type != JTokenType.Null)
                 throw Error("The document field 'pixelShift' must be an object {\"intervalSeconds\": 10..3600, \"radius\": 1..32} or null.");
+            document.FullWidth = ReadBool(json, "fullWidth", "document") ?? false;
+            document.Edge = ReadString(json, "edge", "document") ?? "anchor";
             CheckDocumentRanges(document);
 
             if (json["tiles"] is not JArray tiles || tiles.Count == 0)
@@ -234,7 +239,8 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             Radius = document.Radius, Scale = document.Scale, IsCanvas = document.IsCanvas, CanvasHeight = document.CanvasHeight,
             GridSize = document.GridSize, ShowGrid = document.ShowGrid, SnapToGrid = document.SnapToGrid,
             PixelShiftEnabled = document.PixelShiftEnabled, PixelShiftInterval = document.PixelShiftInterval,
-            PixelShiftRadius = document.PixelShiftRadius, FontFamily = document.FontFamily, TileOpacity = document.TileOpacity
+            PixelShiftRadius = document.PixelShiftRadius, FontFamily = document.FontFamily, TileOpacity = document.TileOpacity,
+            FullWidth = document.FullWidth, Edge = document.Edge
         };
 
         /// <summary>Resolves a tile path such as "2" or "2/0" (container 2, its first child).</summary>
@@ -573,8 +579,8 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             {
                 case "chart":
                     if (Missing("key")) json["key"] = "frametimes";
-                    if (Missing("unit")) json["unit"] = (string)json["key"] == "framerates" ? "FPS" : "ms";
-                    if (Missing("label")) json["label"] = (string)json["key"] == "framerates" ? "Framerate"
+                    if (Missing("unit")) json["unit"] = OsdDesignDocument.IsFramerateSeries((string)json["key"]) ? "FPS" : "ms";
+                    if (Missing("label")) json["label"] = OsdDesignDocument.IsFramerateSeries((string)json["key"]) ? "Framerate"
                         : (string)json["key"] == "displaytimes" ? "Display time" : "Frame time";
                     break;
                 case "classicRows":
@@ -727,6 +733,8 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             Range(document.GridSize, 1, 128, "gridSize");
             Range(document.CanvasHeight, 64, 4096, "canvasHeight");
             Range(document.TileOpacity, 0, 1, "tileOpacity");
+            if (!OsdDesignDocument.Edges.Contains(document.Edge))
+                throw Error("The document field 'edge' must be \"top\", \"bottom\" or \"anchor\" (the overlay placement).");
             if (document.FontFamily.Length > OsdDesignDocument.MaximumFontFamilyLength)
                 throw Error($"The document field 'fontFamily' holds at most {OsdDesignDocument.MaximumFontFamilyLength} characters.");
             if (document.PixelShiftEnabled)

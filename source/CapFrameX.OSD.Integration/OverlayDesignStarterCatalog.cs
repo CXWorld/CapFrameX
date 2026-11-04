@@ -60,7 +60,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 29;
+        public const int Version = 30;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -100,7 +100,8 @@ namespace CapFrameX.OSD.Integration
                 // Everyday layouts
                 (Id: "benchmark", Version: 1), (Id: "compact", Version: 1), (Id: "minimal", Version: 1),
                 (Id: "OLED-Minimal", Version: 6),
-                (Id: "frame-pacing", Version: 1), (Id: "gpu-dashboard", Version: 1), (Id: "memory-watch", Version: 1),
+                (Id: "frame-pacing", Version: 1), (Id: "Performance-Strip", Version: 30),
+                (Id: "gpu-dashboard", Version: 1), (Id: "memory-watch", Version: 1),
                 // Vertical strips
                 (Id: "vertical-thread-strip", Version: 1), (Id: "vertical-clock-deck", Version: 1), (Id: "vertical-thermal-panel", Version: 1),
                 // Hybrid CPUs and core types
