@@ -481,7 +481,11 @@ A design with the top-level `"fullWidth": true` (`OsdDesignDocument.FullWidth`, 
 and right margin in every CapFrameX renderer: the native core arranges the scene at target width − 2 ×
 margin and its canvases scale the x and the width of every tile by that over the design width, heights
 and everything inside a tile keep their size (a chart gets longer, a right-aligned value moves with its
-tile edge, a grid spreads its columns). Every anchor then places the panel at the left margin, so the
+tile edge, a grid spreads its columns). Full width only stretches: a target narrower than the design at
+the current zoom builds the whole design smaller, in whole percent, until it fits (at least 0.25 of its
+own size), and stretches it by the rest. Until 2026-11-04 the tiles narrowed instead and cut off the
+values that filled them: the Performance Strip at zoom 1.5 in a 1968 px wide window showed its current
+frame rate without the first digit. Every anchor then places the panel at the left margin, so the
 anchor only chooses the top or the bottom edge, unless the design names its own: `"edge": "top"` or
 `"bottom"` (`OsdDesignDocument.Edge`, "Edge" below the full-width switch, MCP `edge`; "anchor", the
 default, is not exported) wins over the anchored corner in every placement path (`Scene::placementAnchor`).
@@ -495,7 +499,11 @@ their own width and the anchored corner. Example: the "Performance Strip" starte
 (`overlay-templates/Performance-Strip.json`, catalog version 30, edge bottom), a frame time chart at the
 left, average, 1% low and current FPS at the right and, across the whole width below them, the counted
 frame rate (`framespersecond`), both charts with grid lines; authored at 1280 × scale 1.5 = 1920 px.
-Tests: OSD `design_test` (`fullWidthTests`, `countedFramerateTests`), `PerformanceStripSpansTheScreenWidth`,
+Its values carry the unit the binder adds ("FPS"), and a menu shows four-digit frame rates: more than
+a tile may hold. Since 2026-11-06 a value wider than its tile shrinks with its unit until it fits, in
+every design and every CapFrameX renderer, instead of being clipped (OSD repo CLAUDE.md, "Values wider
+than their tile"); before, the strip read "|49.2 FPS" in Crysis Remastered.
+Tests: OSD `design_test` (`fullWidthTests`, `countedFramerateTests`, `metricFitTests`), `PerformanceStripSpansTheScreenWidth`,
 `FullWidthIsADocumentFieldTheRendererReads`.
 
 ### Counted frame rates and grid lines
