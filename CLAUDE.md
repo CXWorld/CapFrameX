@@ -499,7 +499,11 @@ their own width and the anchored corner. Example: the "Performance Strip" starte
 (`overlay-templates/Performance-Strip.json`, catalog version 30, edge bottom), a frame time chart at the
 left, average, 1% low and current FPS at the right and, across the whole width below them, the counted
 frame rate (`framespersecond`), both charts with grid lines; authored at 1280 × scale 1.5 = 1920 px.
-Tests: OSD `design_test` (`fullWidthTests`, `countedFramerateTests`), `PerformanceStripSpansTheScreenWidth`,
+Its values carry the unit the binder adds ("FPS"), and a menu shows four-digit frame rates: more than
+a tile may hold. Since 2026-11-06 a value wider than its tile shrinks with its unit until it fits, in
+every design and every CapFrameX renderer, instead of being clipped (OSD repo CLAUDE.md, "Values wider
+than their tile"); before, the strip read "|49.2 FPS" in Crysis Remastered.
+Tests: OSD `design_test` (`fullWidthTests`, `countedFramerateTests`, `metricFitTests`), `PerformanceStripSpansTheScreenWidth`,
 `FullWidthIsADocumentFieldTheRendererReads`.
 
 ### Counted frame rates and grid lines
