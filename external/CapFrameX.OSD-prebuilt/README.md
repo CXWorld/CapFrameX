@@ -12,6 +12,34 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Ryzen badges for every tier (2026-11-10)
+
+Controls was rebuilt in `Release|x64`, .NET 10 (`dotnet build CapFrameX.OSD.sln -c Release
+--no-incremental`), from the OSD working tree on `08d249fffae87f76f2b0e427f15faba04c3d44f5` (`main`)
+that was committed right after the build as `44e9468076c08d9a34c0ceb797884ad8b0acaa70`. The palette's single "Ryzen badge" (`ryzenBadge`, a
+Ryzen 5 9600X: housing, model lettering and tier numeral) became three badges, `ryzen5Badge`,
+`ryzen7Badge` and `ryzen9Badge` (`OsdHardwareBadgePresets`): a container with the housing and
+wordmarks and the tier numeral as two image layers. They have no model layer, so a badge fits every
+CPU of its tier. `Resources/HardwareBadges/Ryzen-9600X-Model.png` was removed; `Ryzen-7-Tier.png`
+(taken from CapFrameX's former 9800X3D starter) and `Ryzen-9-Tier.png` (90 × 80, rendered with WPF
+from the path of CapFrameX's `Resources/OverlayGraphics/AMD/Ryzen-Badge/Ryzen-9-Tier.svg`) were
+added. `Editor_RyzenBadge` and `Editor_RyzenBadgeTier` take the tier as `{0}` in all five languages,
+`Editor_RyzenBadgeModel` was removed; `Editor.en.json` and `Editor.ko.json` are copied here. A design
+holds one badge: its JSON stores the 640 × 640 housing three times (about 574 KB per badge), so a
+second one exceeds the 1 MB limit. The native DLLs, Interop (still the signed build), both Vulkan
+manifests and the template catalogs are unchanged.
+
+Verification: a CapFrameX Release build with `CfxOsdFromSource=false` staged exactly this DLL, the
+signed Interop and the prebuilt core into the test output and passed 3511 of the 3514 tests outside
+the `Integration` category, among them the 13 tests of `OverlayHardwareBadgeTest` (every tier in the
+palette, its layers, frames and images, placement in grids, canvases and containers, undo); the three
+`PackageSignatureTest` cases fail because the newest `CX-PresentMon-*.exe` in the repository
+(`9855474a`) is not signed. A build from source passed the same tests.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `43E5F23564ABBB2D0C0D441E9BAFC2470DAFB41DDA435AB9C54602F5C113EE9F` |
+
 ### Hook-free root repaints only changed tiles; the Vulkan layer keeps its chain through a hide (2026-11-10)
 
 All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64 and

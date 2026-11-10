@@ -93,6 +93,7 @@ PNGs are regenerated from the same corrected SVG geometry.
 | `Ryzen-9800X3D-Model.svg` | CapFrameX variant of the reference lettering for the requested Ryzen 7 9800X3D. All seven characters are vector paths, uniformly scaled to fit and already rotated -90 degrees (D at the top, 9 at the bottom); transparent 40 x 155 canvas. |
 | `Ryzen-7-Tier.svg` | CapFrameX reference-style orange tier numeral 7; transparent 45 x 40 canvas. |
 | `Ryzen-7-9800X3D.svg` | Complete Ryzen 7 9800X3D variant; 320 x 320. Reuses the exact same housing and AMD/Ryzen wordmark geometry as the Ryzen 5 badge. |
+| `Ryzen-9-Tier.svg` | CapFrameX orange tier numeral 9, drawn on 2026-11-10 with the bar and column widths and the rounded right corners of tier 5; transparent 45 x 40 canvas. |
 
 To reconstruct the complete badge as editable image tiles within a 320 x 320
 container, use the following frames and stretch each image to its frame. Scale
@@ -104,11 +105,17 @@ the frames together with their parent container.
 | Model | 260 | 86 | 40 | 155 |
 | Tier | 209 | 265 | 45 | 40 |
 
-The editor's **Ryzen badge** palette item creates this three-layer container.
-Its portable PNG resources are rendered from the template, model and tier SVGs
-at twice their tile size: 640 x 640, 80 x 310 and 90 x 80 pixels, respectively.
-The vector originals remain available here for editing or importing individual
-components. The model and tier are replaceable image layers, not live text fields.
+The editor palette offers a **Ryzen 5**, **Ryzen 7** and **Ryzen 9 badge**: a
+container with the template and the tier layer, without a model layer, so a badge
+fits every CPU of its tier. Their portable PNG resources are rendered from the
+template and tier SVGs at twice their tile size: 640 x 640 and 90 x 80 pixels.
+The tier 9 PNG was rendered with WPF from `Ryzen-9-Tier.svg`; rendered the same
+way, tiers 5 and 7 differ from their shipped PNGs only in the antialiasing of
+their edges. The tier is a replaceable image layer, not a live text field. The
+model lettering and the complete badges remain available here for importing as
+images.
+
+Until 2026-11-10 the palette offered one badge with the 9600X model and tier 5.
 
 The Ryzen 7 9800X3D variant uses the same three layer frames. Its longer model
 lettering is uniformly reduced and horizontally centered within the 40 x 155
