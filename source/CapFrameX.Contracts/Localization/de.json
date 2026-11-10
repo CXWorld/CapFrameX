@@ -215,6 +215,9 @@
     "Appxaml_EtwSessionConflictDetected": "ETW-Sitzungskonflikt erkannt",
     "Appxaml_FatalError": "Schwerwiegender Fehler",
     "Appxaml_FrameViewEtwSessionDetected": "ETW-Sitzung von FrameViewService erkannt.\n\nDas NVIDIA FrameView SDK führt gerade eine ETW-Trace-Sitzung aus, die mit PresentMon in Konflikt geraten kann. Falls CapFrameX während der Aufnahme keine Leistungsmetriken anzeigt, solltest du erwägen, das NVIDIA FrameView SDK zu deinstallieren.\n\nKlicke auf „Ja“, um fortzufahren und diese Warnung beim nächsten Mal erneut anzuzeigen.\nKlicke auf „Nein“, um fortzufahren und diese Warnung nie wieder anzuzeigen.",
+    "Appxaml_SettingsNotSavedInstalled0": "CapFrameX kann seine Einstellungen nicht in diesem Ordner speichern:\n{0}\n\nPrüfe, ob der Ordner existiert und ob ein Sicherheitsprogramm CapFrameX blockiert, zum Beispiel der überwachte Ordnerzugriff der Windows-Sicherheit.\n\nBis dahin gehen geänderte Einstellungen beim Beenden von CapFrameX verloren.",
+    "Appxaml_SettingsNotSavedPortable0": "CapFrameX kann seine Einstellungen nicht in diesem Ordner speichern:\n{0}\n\nVermutlich blockiert ein Sicherheitsprogramm den Ordner, zum Beispiel der überwachte Ordnerzugriff der Windows-Sicherheit. Lass CapFrameX dort zu oder verschiebe den CapFrameX-Ordner an einen anderen Ort, zum Beispiel nach C:\\CapFrameX.\n\nBis dahin gehen geänderte Einstellungen beim Beenden von CapFrameX verloren.",
+    "Appxaml_SettingsNotSavedTitle": "Einstellungen nicht gespeichert",
     "Appxaml_YourReportIdIs0": "Deine Berichts-ID lautet {0}.\nBitte gib diese ID in deiner Support-Anfrage an. Weitere Informationen findest du unter https://www.capframex.com/support.",
 
     // =========================================================================

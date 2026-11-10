@@ -25,6 +25,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
+using System.Reactive.Linq;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
@@ -234,6 +235,26 @@ namespace CapFrameX
                     RevealMainWindow(showSplash);
                 }
 
+                using (StartupPerformanceLogger.Measure("Settings save failure notice"))
+                {
+                    try
+                    {
+                        if (Container.Resolve<ISettingsStorage>() is JsonSettingsStorage settingsStorage)
+                        {
+                            // Once per session: every later failure is only logged.
+                            settingsStorage.SaveFailures
+                                .Take(1)
+                                .Subscribe(_ => Current.Dispatcher.BeginInvoke(
+                                    new Action(() => ShowSettingsSaveFailure(settingsStorage.FilePath)),
+                                    DispatcherPriority.ApplicationIdle));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(ex, "Error subscribing to failed configuration saves");
+                    }
+                }
+
                 // Check for conflicting ETW sessions (FrameViewService)
                 using (StartupPerformanceLogger.Measure("ETW conflict check scheduling"))
                 {
@@ -341,6 +362,27 @@ namespace CapFrameX
             finally
             {
                 SplashScreenHost.Close();
+            }
+        }
+
+        /// <summary>
+        /// Explains a configuration folder that cannot be written. In the portable version, the
+        /// folder is part of the extracted one, which may lie where Controlled folder access
+        /// blocks CapFrameX (Documents, Desktop, also in OneDrive).
+        /// </summary>
+        private static void ShowSettingsSaveFailure(string settingsFile)
+        {
+            try
+            {
+                string folder = Path.GetDirectoryName(settingsFile);
+                string text = PortableModeDetector.IsPortableMode
+                    ? CxLang.Format("Appxaml_SettingsNotSavedPortable0", folder)
+                    : CxLang.Format("Appxaml_SettingsNotSavedInstalled0", folder);
+                MessageBox.Show(text, CxLang.T("Appxaml_SettingsNotSavedTitle"), MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while showing the failed configuration save.");
             }
         }
 
