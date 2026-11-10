@@ -1136,6 +1136,27 @@ on the `OsdEditorControl`: every section header of the editor starts where its f
 keeps its chevron at the right edge, like the combo boxes. The OSD Controls stay free of MDIX; do
 not align these headers with margins. Test: `InspectorSectionHeadersStartWhereTheFieldsStart`.
 
+## Settings that cannot be saved, starts from a temporary folder
+
+A failed write of `AppSettings.json` does not end the app. `JsonSettingsStorage` tries a save four
+times; after the last attempt `.Catch` ends that save with `false`, so `WaitForPendingSaveAsync`
+(awaited by the window close) completes, and publishes the error on `SaveFailures`, which replays
+the latest one to a late subscriber. Before 2026-11-10 the error reached a `Subscribe()` without an
+error handler, and Rx threw it on the thread pool: crash reports of the portable version in
+`OneDrive\Documents`, where Controlled folder access denied every write (creating a file failed as
+"Could not find file"), and in a deleted WinRAR folder. `App` shows the first failure of a session
+(`Appxaml_SettingsNotSaved*`, one text for the portable and one for the installed version); the
+settings stay in memory and the next change tries again.
+
+An archive program that runs `CapFrameX.exe` from an archive extracts the archive to a temporary
+folder and deletes it once it considers the program finished. WinRAR (`%TEMP%\Rar$EXa…`) did so 3 s
+after the start while CapFrameX was running: the configuration and captures folders went with it,
+and every DLL not loaded yet (`System.Management`, `RAMSPDToolkit-NDD`). `TemporaryFolderStart`
+(`CapFrameX.Configuration`) recognizes a folder below `Path.GetTempPath()` (unless TEMP names a
+drive root) or below any `\AppData\Local\Temp\`. `App.OnStartup` then explains it
+(`Appxaml_TemporaryFolder*`, in the configured language, else in the one of Windows) and exits before
+anything is written. Tests: `JsonSettingsStorageSaveFailureTest`, `TemporaryFolderStartTest`.
+
 ## Configuration Files
 - User settings: `%appdata%/CapFrameX/Configuration/AppSettings.json`
 - Overlay config: `%appdata%/CapFrameX/Configuration/OverlayEntryConfiguration_(0/1/2).json`
