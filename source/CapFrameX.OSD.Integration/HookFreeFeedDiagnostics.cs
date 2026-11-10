@@ -16,7 +16,9 @@ namespace CapFrameX.OSD.Integration
     /// timeline or the delivery. Immediate lines cover rare state changes; everything that can
     /// repeat per row is aggregated into one summary per ten seconds. The summary also counts the
     /// target's present modes and AllowsTearing values: a game that drops from independent flip
-    /// to DWM composition while the hook-free window is visible shows up there.
+    /// to DWM composition while the hook-free window is visible shows up there. It ends with the
+    /// tile design feed: what reached the renderer and how many snapshots left their values to
+    /// the OSD refresh (<see cref="HookFreeDesignFeed"/>).
     /// </summary>
     /// <remarks>
     /// Everything is gated by <see cref="Enabled"/>, the "Extended OSD logging" switch. While it
@@ -68,6 +70,12 @@ namespace CapFrameX.OSD.Integration
         private readonly Dictionary<string, int> _perFrameType = new Dictionary<string, int>(StringComparer.Ordinal);
         private readonly Dictionary<string, int> _perPresentMode = new Dictionary<string, int>(StringComparer.Ordinal);
         private readonly Dictionary<string, int> _perAllowsTearing = new Dictionary<string, int>(StringComparer.Ordinal);
+        // The tile design feed: what reached the renderer, and how many snapshots left their values
+        // to the OSD refresh (HookFreeDesignFeed).
+        private int _designTemplates;
+        private int _designMetricsOnRefresh;
+        private int _designMetricsOnSnapshot;
+        private int _designSnapshotsWaiting;
 
         public HookFreeFeedDiagnostics(Action<string> log)
         {
@@ -233,6 +241,24 @@ namespace CapFrameX.OSD.Integration
             }
         }
 
+        /// <summary>
+        /// A design snapshot was looked at: what the renderer took over from it, and whether its
+        /// new values stay with the publisher until the OSD refresh.
+        /// </summary>
+        public void OnDesignFeed(HookFreeDesignTrigger trigger, HookFreeDesignUpdate update, bool waits)
+        {
+            if (!_enabled) return;
+            lock (_gate)
+            {
+                if (!_enabled) return;
+                if (update == HookFreeDesignUpdate.Template) _designTemplates++;
+                else if (update == HookFreeDesignUpdate.Metrics && trigger == HookFreeDesignTrigger.Refresh)
+                    _designMetricsOnRefresh++;
+                else if (update == HookFreeDesignUpdate.Metrics) _designMetricsOnSnapshot++;
+                if (waits) _designSnapshotsWaiting++;
+            }
+        }
+
         /// <summary>Periodic hook (call about once per second) so a summary is flushed even without rows.</summary>
         public void Tick(double nowSeconds)
         {
@@ -298,13 +324,15 @@ namespace CapFrameX.OSD.Integration
                 "10s: pid={0} rows={1} rejected={2} swapchains=[{3}] runtimes=[{4}] frametypes=[{5}] " +
                 "presentModes=[{6}] allowsTearing=[{7}] " +
                 "maxFrametime={8:F1}ms outliers={9}{10} sourceGaps={11}(max {12:F0}ms) " +
-                "arrivalGaps={13}(max {14:F1}s) backdated={15} label='{16}'",
+                "arrivalGaps={13}(max {14:F1}s) backdated={15} label='{16}' " +
+                "design=[templates:{17} metrics:{18} on refreshes, {19} on snapshots; {20} snapshots waited for a refresh]",
                 _targetPid, _rows, _rejectedRows, FormatCounts(_perSwapChain), FormatCounts(_perRuntime),
                 FormatCounts(_perFrameType), FormatCounts(_perPresentMode), FormatCounts(_perAllowsTearing),
                 _maxFrametimeMs, _outliers,
                 _outlierExample != null ? " (max " + _outlierExample + ")" : "",
                 _sourceGaps, _maxSourceGapMs, _arrivalGaps, _maxArrivalGapSeconds, _backdated,
-                _runtimeLabel ?? "<none>"));
+                _runtimeLabel ?? "<none>",
+                _designTemplates, _designMetricsOnRefresh, _designMetricsOnSnapshot, _designSnapshotsWaiting));
             ResetWindowLocked();
         }
 
@@ -325,6 +353,10 @@ namespace CapFrameX.OSD.Integration
             _perFrameType.Clear();
             _perPresentMode.Clear();
             _perAllowsTearing.Clear();
+            _designTemplates = 0;
+            _designMetricsOnRefresh = 0;
+            _designMetricsOnSnapshot = 0;
+            _designSnapshotsWaiting = 0;
         }
 
         private static void Increment(Dictionary<string, int> counts, string key)
