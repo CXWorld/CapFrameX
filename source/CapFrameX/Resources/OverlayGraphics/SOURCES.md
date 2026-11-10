@@ -115,7 +115,10 @@ their edges. The tier is a replaceable image layer, not a live text field. The
 model lettering and the complete badges remain available here for importing as
 images.
 
-Until 2026-11-10 the palette offered one badge with the 9600X model and tier 5.
+Until 2026-11-10 the palette offered one badge with the 9600X model and tier 5,
+and the starter catalog shipped two designs whose only tile was a complete badge:
+"AMD Ryzen 5 9600X Badge" and "AMD Ryzen 7 9800X3D Badge". Both left the catalog;
+libraries keep the copies they hold.
 
 The Ryzen 7 9800X3D variant uses the same three layer frames. Its longer model
 lettering is uniformly reduced and horizontally centered within the 40 x 155
