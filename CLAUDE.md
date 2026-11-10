@@ -223,6 +223,36 @@ toggles `IsOverlayActive`, which hides a visible overlay at any time but cannot 
 gate; the toggled state takes effect once a process is detected. RTSS and the in-game hook are not
 affected.
 
+### Hook-free tile values and root repaints
+
+Every present of the hook-free window costs the game frame in flight GPU time (Doom: The Dark Ages,
+RTX 5090, FSR FG, 2026-11-09: about 1.9 ms for a repaint of the root surface, 0.5 ms for a chart
+tick). A tile design made the window repaint its root 33 to 59 times in 10 s instead of 10: the
+design publisher delivers a snapshot with every sensor poll (`SensorLoggingRefreshPeriod` while a
+capture logs sensors) and with its 500 ms heartbeat, and each one reached the renderer.
+
+- **One update per OSD refresh.** `HookFreeDesignFeed.Decide` (pure) says what `OsdOverlayBridge`
+  takes over from a snapshot: a design that is new, changed or removed is applied at once (the
+  snapshot subscription), values alone wait for `OnEntries` (once per `OSDRefreshPeriod`) or a show.
+  So tile values in the hook-free window change as often as the classic rows always did. The
+  publisher keeps its cadence: it also feeds the in-game renderers and the heatmap averages.
+- **Only what changed.** The native core keeps what its root surface drew and repaints and
+  presents only the tiles that would draw something else, as rectangles (OSD repo CLAUDE.md,
+  "Hook-free root: retained surface, partial repaint"). A snapshot whose values format to the same
+  texts repaints nothing.
+- **A/B.** `OsdDebug.json` `"hookFreeRepaint"` (`"legacy"`, `"skip"`, `"partialPresent"`, default
+  `"partial"`) selects the native repaint mode; `"legacy"` also restores the former feed cadence
+  (`HookFreeDesignFeed.AppliesEverySnapshot`). Both sides read it when the renderer starts and at
+  every show, so toggling the overlay switches the mode. `"hookFreeWarp"` (device, at creation
+  only) draws on the CPU.
+- **Logs** (Extended OSD logging): the core's `tick 10s` line splits the content marks by feed and
+  the root repaints by reason, kind and cost; the `HookFree feed: 10s` summary ends with
+  `design=[templates:… metrics:… on refreshes, … on snapshots; … snapshots waited for a refresh]`.
+
+Measurements, the probe of DXGI's partial presents and the open device question:
+`dev-plans/HookFree_Partial_Repaint_DevPlan.md`. Tests: `HookFreeDesignFeedTest`; native:
+`design` (`partial_repaint.h`), `diagnostics`, `hook_free_pacing`.
+
 ### MPO warning
 
 The hook-free window is a topmost window, so a game below it keeps independent flip only on an MPO
