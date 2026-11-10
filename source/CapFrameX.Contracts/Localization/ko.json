@@ -217,6 +217,8 @@
     "Appxaml_SettingsNotSavedInstalled0": "CapFrameX가 이 폴더에 설정을 저장할 수 없습니다:\n{0}\n\n폴더가 있는지, 그리고 보안 프로그램(예: Windows 보안의 제어된 폴더 액세스)이 CapFrameX를 차단하지 않는지 확인하세요.\n\n그때까지 변경한 설정은 CapFrameX를 종료하면 사라집니다.",
     "Appxaml_SettingsNotSavedPortable0": "CapFrameX가 이 폴더에 설정을 저장할 수 없습니다:\n{0}\n\n보안 프로그램(예: Windows 보안의 제어된 폴더 액세스)이 이 폴더를 차단하고 있을 가능성이 높습니다. 그곳에서 CapFrameX를 허용하거나 CapFrameX 폴더를 다른 위치(예: C:\\CapFrameX)로 옮기세요.\n\n그때까지 변경한 설정은 CapFrameX를 종료하면 사라집니다.",
     "Appxaml_SettingsNotSavedTitle": "설정이 저장되지 않음",
+    "Appxaml_TemporaryFolderStart0": "CapFrameX가 임시 폴더에서 시작되었습니다:\n{0}\n\n압축 프로그램과 Windows는 CapFrameX가 실행 중일 때도 이러한 폴더를 삭제합니다. 그러면 설정과 캡처가 사라집니다.\n\n압축 파일을 별도의 폴더(예: C:\\CapFrameX)에 풀고 그곳에서 CapFrameX를 시작하세요. 이제 CapFrameX를 종료합니다.",
+    "Appxaml_TemporaryFolderTitle": "임시 폴더에서 시작됨",
     "Appxaml_YourReportIdIs0": "보고서 ID는 {0}입니다.\n지원 문의 시 이 ID를 포함하세요. 자세한 내용은 https://www.capframex.com/support 에서 확인하세요.",
 
     // =========================================================================

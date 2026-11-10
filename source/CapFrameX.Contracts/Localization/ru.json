@@ -202,6 +202,8 @@
     "Appxaml_SettingsNotSavedInstalled0": "CapFrameX не может сохранить настройки в этой папке:\n{0}\n\nУбедитесь, что папка существует и что программа защиты не блокирует CapFrameX, например контролируемый доступ к папкам в «Безопасности Windows».\n\nДо тех пор изменённые настройки будут потеряны при закрытии CapFrameX.",
     "Appxaml_SettingsNotSavedPortable0": "CapFrameX не может сохранить настройки в этой папке:\n{0}\n\nВероятно, папку блокирует программа защиты, например контролируемый доступ к папкам в «Безопасности Windows». Разрешите там CapFrameX или переместите папку CapFrameX в другое место, например в C:\\CapFrameX.\n\nДо тех пор изменённые настройки будут потеряны при закрытии CapFrameX.",
     "Appxaml_SettingsNotSavedTitle": "Настройки не сохранены",
+    "Appxaml_TemporaryFolderStart0": "CapFrameX запущен из временной папки:\n{0}\n\nАрхиваторы и Windows удаляют такие папки, даже пока CapFrameX работает. Настройки и захваты при этом будут потеряны.\n\nРаспакуйте архив в отдельную папку, например C:\\CapFrameX, и запустите CapFrameX оттуда. Сейчас CapFrameX закроется.",
+    "Appxaml_TemporaryFolderTitle": "Запуск из временной папки",
     "Appxaml_YourReportIdIs0": "Ваш идентификатор отчёта: {0}.\nУкажите его в обращении в поддержку. Подробнее: https://www.capframex.com/support",
     "BenchlabMetricsManager_W": "Вт",
     "CaptureViewModel_0AutoDetected": "«{0}» обнаружен автоматически.",

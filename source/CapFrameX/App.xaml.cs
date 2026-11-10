@@ -23,6 +23,7 @@ using Serilog;
 using System;
 using System.Configuration;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net.Http;
 using System.Reactive.Linq;
@@ -180,6 +181,18 @@ namespace CapFrameX
                     if (installerStarted)
                     {
                         // Nothing has been started yet, so there is nothing to shut down either.
+                        _skipShutdownSequence = true;
+                        Current.Shutdown();
+                        return;
+                    }
+                }
+
+                // Before anything is written: an archive program that runs CapFrameX.exe from its
+                // temporary folder deletes that folder while CapFrameX is still running.
+                using (StartupPerformanceLogger.Measure("Temporary folder check"))
+                {
+                    if (WarnAboutTemporaryFolderStart())
+                    {
                         _skipShutdownSequence = true;
                         Current.Shutdown();
                         return;
@@ -366,6 +379,42 @@ namespace CapFrameX
         }
 
         /// <summary>
+        /// Reads StartMinimized straight from AppSettings.json - at splash time the
+        /// container and with it the real configuration service do not exist yet.
+        /// When in doubt, show the splash - it closes on its own.
+        /// </summary>
+        private static bool PeekStartMinimized() => PeekSetting<bool?>("StartMinimized") ?? false;
+
+        /// <summary>
+        /// Shows why CapFrameX does not run from a temporary folder and how to start it instead.
+        /// True when it did, and the start has to be aborted.
+        /// </summary>
+        private static bool WarnAboutTemporaryFolderStart()
+        {
+            string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            try
+            {
+                if (!TemporaryFolderStart.IsTemporaryFolder(appDirectory))
+                    return false;
+
+                Log.Logger.Warning("CapFrameX was started from the temporary folder {Folder}, which archive programs delete while it runs. Asked to extract it first and closing.",
+                    appDirectory);
+
+                // The configured language, or the one of Windows before anything was configured:
+                // a freshly extracted folder holds no settings yet.
+                CxLang.Instance.SetUiLanguage(PeekSetting<string>("UiLanguage") ?? CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
+                MessageBox.Show(CxLang.Format("Appxaml_TemporaryFolderStart0", appDirectory.TrimEnd(Path.DirectorySeparatorChar)),
+                    CxLang.T("Appxaml_TemporaryFolderTitle"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while checking for a start from a temporary folder.");
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Explains a configuration folder that cannot be written. In the portable version, the
         /// folder is part of the extracted one, which may lie where Controlled folder access
         /// blocks CapFrameX (Documents, Desktop, also in OneDrive).
@@ -387,10 +436,11 @@ namespace CapFrameX
         }
 
         /// <summary>
-        /// Reads StartMinimized straight from AppSettings.json - at splash time the
-        /// container and with it the real configuration service do not exist yet.
+        /// Reads one value straight from AppSettings.json, before the container and with it the
+        /// configuration service exist. The default of <typeparamref name="T"/> when the file or
+        /// the value is missing or unreadable.
         /// </summary>
-        private static bool PeekStartMinimized()
+        private static T PeekSetting<T>(string key)
         {
             try
             {
@@ -417,15 +467,14 @@ namespace CapFrameX
 
                 var settingsFile = Path.Combine(configFolder, "AppSettings.json");
                 if (!File.Exists(settingsFile))
-                    return false;
+                    return default;
 
                 var settings = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(settingsFile));
-                return settings.Value<bool?>("StartMinimized") ?? false;
+                return settings.Value<T>(key);
             }
             catch
             {
-                // When in doubt, show the splash - it closes on its own.
-                return false;
+                return default;
             }
         }
 
