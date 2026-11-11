@@ -2,7 +2,7 @@
   <img src="https://raw.githubusercontent.com/CXWorld/CapFrameX/v1.9.2/images/CX_Header_Logo_Wide.jpg" alt="CapFrameX" width="100%">
 </p>
 
-<h3 align="center">Build your overlay from tiles. Pay less for showing it.</h3>
+<h3 align="center">Tile overlay and a lighter overlay renderer</h3>
 
 <p align="center">
   CapFrameX 1.9.2 adds the <b>tile overlay</b> with its own editor and makes the <b>CapFrameX overlay renderers</b> cheaper for the game.<br>
