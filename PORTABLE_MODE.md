@@ -99,8 +99,6 @@ The release bundles **CX-PresentMon 2.6.1**, the CapFrameX-maintained PresentMon
 
 **PC Latency correction:** Disabling PC Latency in the settings does not fix the PresentMon tracking problem, contrary to our [earlier post on X](https://x.com/CapFrameX/status/2105998858019078230). Application-timing tracking remains active independently of this setting; the fix is included in the bundled CX-PresentMon 2.6.1.
 
-**Reviewers:** Do not use the hook-free overlay for benchmark measurements. Hiding it can cause frametime spikes, and some AMD and Intel drivers can have DWM problems. Check the renderer actually in use.
-
 ## Updating to the revised v1.9.0 package
 
 The revised package contains application version **1.9.0.8**. Extract it into a new folder, then copy your existing `Portable` data folder and any customized `portable.json` into that folder. Overwriting an older application folder can leave removed in-game overlay and BENCHLAB service binaries behind.

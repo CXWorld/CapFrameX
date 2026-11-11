@@ -28,9 +28,6 @@
 
 Requires the **[.NET 10 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/10.0)**. Application version **1.9.2.4**, every binary Authenticode-signed. Close CapFrameX and your games before updating. Setup now installs into `C:\Program Files\CapFrameX`; an upgrade moves an existing installation out of `Program Files (x86)`.
 
-> [!IMPORTANT]
-> **Benchmarking?** Use the **CapFrameX in-game** or **RTSS** renderer. The hook-free overlay is a window above the game: hiding it can still cause frametime spikes, and some AMD and Intel drivers have DWM problems with it. Check which renderer is active, because Direct3D 9, anti-cheat and blacklisted games switch to hook-free on their own.
-
 ## Highlights
 
 <table>

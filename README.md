@@ -33,8 +33,6 @@ Install the **[.NET 10 Desktop Runtime (x64)](https://dotnet.microsoft.com/downl
 
 Both packages include signed application and dependency binaries, the in-game overlay, and BENCHLAB Service 2.4.0. See the [release notes](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.2), [package checksums](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.2/SHA256SUMS.txt), and [Portable Mode](PORTABLE_MODE.md). Development builds are available from the [build archive](https://archive.capframex.com/).
 
-> **Important for reviewers:** Do not use the **CapFrameX hook-free overlay** for benchmark measurements. Hiding it can cause frametime spikes, and some AMD and Intel driver versions can have problems with Windows Desktop Window Manager (DWM). Check the active renderer before measuring: with **CapFrameX in-game** selected, Direct3D 9 games, games with a detected anti-cheat (Easy Anti-Cheat, BattlEye, VAC, Call of Duty's Ricochet) and games on the injection blacklist (such as CS2 and VALORANT) show the hook-free overlay.
-
 > **PC Latency correction:** Disabling **PC Latency** in the settings does **not** fix the PresentMon tracking problem, contrary to our [earlier post on X](https://x.com/CapFrameX/status/2105998858019078230). Application-timing tracking remains active independently of this setting. The fix is part of CX-PresentMon 2.6.1, bundled since 1.9.2.
 
 # Troubleshooting & Known Issues
@@ -87,7 +85,7 @@ Choose a renderer under **Overlay → OSD options**. The following describes 1.9
 | Renderer | Behavior |
 | --- | --- |
 | **CapFrameX in-game** | The default for new configurations since 1.9.2, with DirectX and Vulkan integration and game compatibility profiles. Available again since v1.9.1. Direct3D 9 games, games with a detected anti-cheat and games on the injection blacklist, which it cannot draw in, get the hook-free overlay instead. |
-| **CapFrameX hook-free** | Built-in overlay without injecting into the game, with an output-display picker and chart refresh control. See the reviewer warning above before using it for measurements. |
+| **CapFrameX hook-free** | Built-in overlay without injecting into the game, with an output-display picker and chart refresh control. |
 | **RTSS** | Uses [RivaTuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html), which must be installed separately. |
 | **Off** | No overlay at all: CapFrameX injects nothing into games, creates no overlay window and does not feed RTSS. Captures, sensors and the remote API (`/api/osd`, `/ws/osd`) keep working. Use it for capture-only setups, or to rule out the overlay when a game misbehaves. |
 
