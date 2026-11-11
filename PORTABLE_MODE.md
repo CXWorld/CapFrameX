@@ -89,17 +89,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\vulkan\Register-CapFrameXV
 Deleting the portable folder leaves its registration behind without a manifest; the Vulkan loader skips
 it. Repair an installed CapFrameX to enable its own registration again.
 
-## 1.9.2 Beta
+## 1.9.2
 
-Installer and portable builds of **1.9.2.0-beta** include the in-game overlay again: keep the `hook` and `vulkan` folders, including their x86 subfolders, alongside the application. The `benchlab-service` folder contains the bundled service, which CapFrameX starts when needed; compatible separately installed services are also supported.
+Installer and portable builds of **1.9.2.4** include the in-game overlay: keep the `hook` and `vulkan` folders, including their x86 subfolders, alongside the application. The `benchlab-service` folder contains the bundled service, which CapFrameX starts when needed; compatible separately installed services are also supported.
 
-The current installer defaults to `C:\Program Files\CapFrameX`, with the x64 Vulkan layer and its manifest in `vulkan` and the x86 pair in `vulkan\x86` beneath that folder. It registers them in their respective HKLM registry views. Earlier installers used `C:\Program Files (x86)\CapFrameX`. Portable extraction does not register the layers; Vulkan integration requires the matching layers to be registered separately. Later builds offer this at startup, see [Vulkan layer registration](#vulkan-layer-registration).
+The installer defaults to `C:\Program Files\CapFrameX`, with the x64 Vulkan layer and its manifest in `vulkan` and the x86 pair in `vulkan\x86` beneath that folder. It registers them in their respective HKLM registry views. Earlier installers used `C:\Program Files (x86)\CapFrameX`. Portable extraction does not register the layers; the portable version offers this at startup, see [Vulkan layer registration](#vulkan-layer-registration).
 
-The beta bundles **CX-PresentMon 2.6.1**, the CapFrameX-maintained build based on Intel PresentMon 2.6.0, with fixes for accumulating stale timing data and stalled output after frame-generation changes. All shipped Windows binaries must pass the [release signature checks](scripts/RELEASE_SIGNING.md).
+The release bundles **CX-PresentMon 2.6.1**, the CapFrameX-maintained PresentMon build, with fixes for accumulating stale timing data, stalled output after frame-generation changes and display times under frame generation. All shipped Windows binaries must pass the [release signature checks](scripts/RELEASE_SIGNING.md).
 
 **PC Latency correction:** Disabling PC Latency in the settings does not fix the PresentMon tracking problem, contrary to our [earlier post on X](https://x.com/CapFrameX/status/2105998858019078230). Application-timing tracking remains active independently of this setting; the fix is included in the bundled CX-PresentMon 2.6.1.
-
-**Reviewers:** Do not use the hook-free overlay for benchmark measurements. Hiding it can cause frametime spikes, and some AMD and Intel drivers can have DWM problems. Check the renderer actually in use.
 
 ## Updating to the revised v1.9.0 package
 

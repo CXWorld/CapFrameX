@@ -4,7 +4,7 @@
 [`BenchLab-io/BENCHLAB.BENCHLAB_Service`](https://github.com/BenchLab-io/BENCHLAB.BENCHLAB_Service)
 revision `e481b8f6d23515be2e63ba166ce593ca8992b08e` (tag `v2.4.0`).
 
-The 2026-09-19 build uses .NET SDK 10.0.401, Release, `win-x64`, and a
+The 2026-09-27 release rebuild uses .NET SDK 10.0.401, Release, `win-x64`, and a
 self-contained compressed single-file publish with native libraries included.
 It contains .NET and ASP.NET Core 10.0.12, so this service does not require an
 additional ASP.NET runtime installation. CapFrameX itself still requires the
@@ -20,8 +20,8 @@ the bundled child process. CapFrameX connects through the `BenchlabDiscovery`
 named pipe. The application starts the service as a child process when needed;
 it does not install a Windows service.
 
-Validation: 536 unit tests passed; 7 external firmware-advisory tests were
-skipped. The published executable answered `ListDevices` and `GetServiceInfo`
+Validation of the earlier bundled build: 536 unit tests passed; 7 external
+firmware-advisory tests were skipped. That executable answered `ListDevices` and `GetServiceInfo`
 on an isolated discovery pipe. No BENCHLAB device was attached during that
 smoke test. See `LICENSE-BENCHLAB-Service.txt` for the upstream license.
 
@@ -37,3 +37,18 @@ dotnet publish .\BL_Service\BL_Service.csproj -c Release -r win-x64 --self-conta
 Keep Git available on `PATH` for MinVer. Copy the executable, production
 configuration and license deliberately; do not ship `appsettings.Development.json`.
 Sign the final executable before building the CapFrameX installer.
+
+## v1.9.1 release verification (2026-09-27)
+
+The pinned 2.4.0 production source was exported with `git archive` and rebuilt
+with `-p:MinVerVersionOverride=2.4.0` because the export contains no Git metadata.
+The bundled executable was signed again with SimplySign and its trusted
+signature/timestamp verified after extraction from the MSI.
+
+The upstream test checkout `0261d135545fe0c9747d62e17e6989fec3a5812d` differs from
+the pinned revision only by a test-harness fix. 535 tests passed and seven
+external firmware-advisory tests were skipped. The separate Windows-service
+start/stop test could not run because upstream's `Install-Debug.bat` is absent.
+CapFrameX bundles a child process, not that service installation workflow.
+The actual signed bundle passed `ListDevices` and `GetServiceInfo` on an isolated
+discovery pipe with its HTTP API disabled for the test.

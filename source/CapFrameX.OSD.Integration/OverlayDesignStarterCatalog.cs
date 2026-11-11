@@ -109,7 +109,9 @@ namespace CapFrameX.OSD.Integration
                 (Id: "core-types-overview", Version: 3), (Id: "core-types-compact", Version: 3), (Id: "core-types-thermal", Version: 3),
                 // Turquoise theme
                 (Id: "turquoise-reference", Version: 2), (Id: "turquoise-compact", Version: 2), (Id: "turquoise-wide", Version: 2),
-                // Hardware designs
+                // Hardware designs. Version four also shipped the Ryzen 5 9600X and Ryzen 7 9800X3D badges, a
+                // single picture each; the editor palette offers them as Ryzen 5, 7 and 9 badges instead, and
+                // libraries keep the copies they hold.
                 (Id: "RTX-50-Ryzen-3D-APEX", Version: 4),
                 (Id: "AMD-Ryzen-Radeon-REDLINE", Version: 4),
                 (Id: "RTX-50-Core-Ultra-FUSION-ARL", Version: 4),
@@ -128,8 +130,6 @@ namespace CapFrameX.OSD.Integration
                 (Id: "Blackwell-Thermals-RTX-5060", Version: 28),
                 (Id: "Panther-Lake-Arc-Aurora", Version: 6),
                 (Id: "BLUELINE-Nova-Lake", Version: 29),
-                (Id: "AMD-Ryzen-5-9600X-Badge", Version: 4),
-                (Id: "AMD-Ryzen-7-9800X3D-Badge", Version: 4),
                 // Anime artwork
                 (Id: "Anime-Cherry-Blossom", Version: 24),
                 (Id: "Anime-Neon-Night", Version: 24),
@@ -145,7 +145,7 @@ namespace CapFrameX.OSD.Integration
                     ?? throw OverlayDesignText.Error(new LocalizedText("OverlayDesignError_StarterMissing", entry.Id), message => new InvalidOperationException(message));
                 using var reader = new StreamReader(stream, Encoding.UTF8);
                 // Exact fingerprints of earlier exports a catalog upgrade replaces: the
-                // version-four REDLINE and Ryzen badges before their header and badge corrections,
+                // version-four REDLINE before its header and badge corrections,
                 // FUSION before its per-core-type rework (versions four and five), the version-seven
                 // GREENLINE and ICELINE whose framerate readouts adopted the bound "FPS" unit, and
                 // REDLINE, APEX, FUSION and Panther Lake at full scale before version nine reduced
@@ -208,8 +208,6 @@ namespace CapFrameX.OSD.Integration
                         "3246FFCF349F20977C404E787CA35449679879DE1E25C2CDCF519A1D37A76F65"
                     },
                     "Panther-Lake-Arc-Aurora" => new[] { "E717AF2FB7BDDF804AFF1918BA97CC560D251D648134522040A4F7591534C9ED" },
-                    "AMD-Ryzen-5-9600X-Badge" => new[] { "09795802837F766CB0350464E82B878EA4A361141F8FEC6CDB9343A314446E40" },
-                    "AMD-Ryzen-7-9800X3D-Badge" => new[] { "2B9D493E89D1A3CAFAE4B4CED21BF25D85BF3025FDA82E96893A24BD09A204A0" },
                     "NVIDIA-GeForce-RTX-GREENLINE" => new[]
                     {
                         "81B0EB48109F19427A3B7A9DC54883EAC83ACAEDEDDC3D7E64BFD35F5E6DDF17",

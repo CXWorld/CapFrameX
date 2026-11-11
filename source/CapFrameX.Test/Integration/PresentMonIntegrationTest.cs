@@ -41,6 +41,9 @@ namespace CapFrameX.Test.Integration
         private Mock<IRTSSService> _rtssServiceMock;
         private Mock<ISensorConfig> _sensorConfigMock;
         private Mock<ILogEntryManager> _logEntryManagerMock;
+        // What the capture manager logged. Written out by the cleanup, so a capture that ends
+        // without a file says why.
+        private readonly System.Collections.Concurrent.ConcurrentQueue<string> _captureLog = new();
 
         private Process _vkcubeProcess;
         private string _previousWorkingDir;
@@ -117,7 +120,8 @@ namespace CapFrameX.Test.Integration
             _sensorConfigMock.SetupProperty(x => x.IsCapturing, false);
 
             _logEntryManagerMock = new Mock<ILogEntryManager>();
-            _logEntryManagerMock.Setup(x => x.AddLogEntry(It.IsAny<string>(), It.IsAny<ELogMessageType>(), It.IsAny<bool>()));
+            _logEntryManagerMock.Setup(x => x.AddLogEntry(It.IsAny<string>(), It.IsAny<ELogMessageType>(), It.IsAny<bool>()))
+                .Callback<string, ELogMessageType, bool>((message, type, _) => _captureLog.Enqueue($"{DateTime.Now:HH:mm:ss.fff} [{type}] {message}"));
 
             var captureManagerLogger = new Mock<ILogger<CaptureManager>>();
             var soundManagerLogger = new Mock<ILogger<SoundManager>>();
@@ -159,6 +163,9 @@ namespace CapFrameX.Test.Integration
         [TestCleanup]
         public void Cleanup()
         {
+            foreach (var entry in _captureLog)
+                Console.WriteLine(entry);
+
             try
             {
                 if (_vkcubeProcess != null && !_vkcubeProcess.HasExited)

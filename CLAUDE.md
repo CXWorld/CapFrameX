@@ -223,6 +223,36 @@ toggles `IsOverlayActive`, which hides a visible overlay at any time but cannot 
 gate; the toggled state takes effect once a process is detected. RTSS and the in-game hook are not
 affected.
 
+### Hook-free tile values and root repaints
+
+Every present of the hook-free window costs the game frame in flight GPU time (Doom: The Dark Ages,
+RTX 5090, FSR FG, 2026-11-09: about 1.9 ms for a repaint of the root surface, 0.5 ms for a chart
+tick). A tile design made the window repaint its root 33 to 59 times in 10 s instead of 10: the
+design publisher delivers a snapshot with every sensor poll (`SensorLoggingRefreshPeriod` while a
+capture logs sensors) and with its 500 ms heartbeat, and each one reached the renderer.
+
+- **One update per OSD refresh.** `HookFreeDesignFeed.Decide` (pure) says what `OsdOverlayBridge`
+  takes over from a snapshot: a design that is new, changed or removed is applied at once (the
+  snapshot subscription), values alone wait for `OnEntries` (once per `OSDRefreshPeriod`) or a show.
+  So tile values in the hook-free window change as often as the classic rows always did. The
+  publisher keeps its cadence: it also feeds the in-game renderers and the heatmap averages.
+- **Only what changed.** The native core keeps what its root surface drew and repaints and
+  presents only the tiles that would draw something else, as rectangles (OSD repo CLAUDE.md,
+  "Hook-free root: retained surface, partial repaint"). A snapshot whose values format to the same
+  texts repaints nothing.
+- **A/B.** `OsdDebug.json` `"hookFreeRepaint"` (`"legacy"`, `"skip"`, `"partialPresent"`, default
+  `"partial"`) selects the native repaint mode; `"legacy"` also restores the former feed cadence
+  (`HookFreeDesignFeed.AppliesEverySnapshot`). Both sides read it when the renderer starts and at
+  every show, so toggling the overlay switches the mode. `"hookFreeWarp"` (device, at creation
+  only) draws on the CPU.
+- **Logs** (Extended OSD logging): the core's `tick 10s` line splits the content marks by feed and
+  the root repaints by reason, kind and cost; the `HookFree feed: 10s` summary ends with
+  `design=[templates:… metrics:… on refreshes, … on snapshots; … snapshots waited for a refresh]`.
+
+Measurements, the probe of DXGI's partial presents and the open device question:
+`dev-plans/HookFree_Partial_Repaint_DevPlan.md`. Tests: `HookFreeDesignFeedTest`; native:
+`design` (`partial_repaint.h`), `diagnostics`, `hook_free_pacing`.
+
 ### MPO warning
 
 The hook-free window is a topmost window, so a game below it keeps independent flip only on an MPO
@@ -1131,6 +1161,27 @@ MDIX indents every expander header by 24 px (`ExpanderAssist.HorizontalHeaderPad
 on the `OsdEditorControl`: every section header of the editor starts where its fields start and
 keeps its chevron at the right edge, like the combo boxes. The OSD Controls stay free of MDIX; do
 not align these headers with margins. Test: `InspectorSectionHeadersStartWhereTheFieldsStart`.
+
+## Settings that cannot be saved, starts from a temporary folder
+
+A failed write of `AppSettings.json` does not end the app. `JsonSettingsStorage` tries a save four
+times; after the last attempt `.Catch` ends that save with `false`, so `WaitForPendingSaveAsync`
+(awaited by the window close) completes, and publishes the error on `SaveFailures`, which replays
+the latest one to a late subscriber. Before 2026-11-10 the error reached a `Subscribe()` without an
+error handler, and Rx threw it on the thread pool: crash reports of the portable version in
+`OneDrive\Documents`, where Controlled folder access denied every write (creating a file failed as
+"Could not find file"), and in a deleted WinRAR folder. `App` shows the first failure of a session
+(`Appxaml_SettingsNotSaved*`, one text for the portable and one for the installed version); the
+settings stay in memory and the next change tries again.
+
+An archive program that runs `CapFrameX.exe` from an archive extracts the archive to a temporary
+folder and deletes it once it considers the program finished. WinRAR (`%TEMP%\Rar$EXa…`) did so 3 s
+after the start while CapFrameX was running: the configuration and captures folders went with it,
+and every DLL not loaded yet (`System.Management`, `RAMSPDToolkit-NDD`). `TemporaryFolderStart`
+(`CapFrameX.Configuration`) recognizes a folder below `Path.GetTempPath()` (unless TEMP names a
+drive root) or below any `\AppData\Local\Temp\`. `App.OnStartup` then explains it
+(`Appxaml_TemporaryFolder*`, in the configured language, else in the one of Windows) and exits before
+anything is written. Tests: `JsonSettingsStorageSaveFailureTest`, `TemporaryFolderStartTest`.
 
 ## Configuration Files
 - User settings: `%appdata%/CapFrameX/Configuration/AppSettings.json`

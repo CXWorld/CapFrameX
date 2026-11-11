@@ -12,6 +12,135 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Signed 1.9.2 release build (2026-11-11)
+
+For the CapFrameX 1.9.2 release (build 1.9.2.4) all five native DLLs, Interop and Controls were
+rebuilt from a clean checkout of OSD commit `44e9468076c08d9a34c0ceb797884ad8b0acaa70` (`main`): the
+native trees in fresh CMake output directories (VS 2026/v145, `RelWithDebInfo`, x64 and Win32, Vulkan
+SDK 1.4.335.0), Interop in `Release|x64` for `net10.0-windows`, Controls by the CapFrameX Release
+build from the sibling checkout. The sources are those of the entries below; only the build and the
+signatures are new. Every file carries the CapFrameX publisher's Certum signature
+(`C0D5481E2ACBB9DD104A825A81EECF55557BA783`) with an RFC 3161 timestamp. Both Vulkan manifests, the
+catalogs and the MinHook license are unchanged.
+
+Verification, with these binaries (before signing) staged into the test output: the native CTest
+suites passed 102 of 102 tests (16 core, 33 per hook bitness, 10 per layer bitness), the CapFrameX
+suite 3531 of 3537 (6 skipped without elevation), and the elevated PresentMon integration tests
+6 of 6 in the two final runs.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `CB5F183FB1ABBE6AA5BB4CF28929ECEDCAB0BCC3321870244CF395FE6BDB35C2` |
+| native\cfx_osd_hook.dll | `60E168181EB2C8C678B4CDF8F8693CB3BCC08D8FF85F8B88BCD710EC8D22BA89` |
+| native\x86\cfx_osd_hook.dll | `DA609F53CEEF5B5580B0ADDF9F81A1AE14B3B8FF7375190C6CF15480420B1F16` |
+| native\vk\cfx_osd_vklayer.dll | `D53C15469E2B8A8DE2F8ECC86E84CCEBA00B9442982C0E4F20BD1E742672E863` |
+| native\vk\x86\cfx_osd_vklayer.dll | `98B945BADCDEDFA080D381F0AB5879F8AD51849EC6F9638CBEDD747527F15BC3` |
+| net10.0-windows\CapFrameX.OSD.Interop.dll | `AFED570D9C0723CEE147E2B89836D0F3105A1ABC6628B71078FC487F732A33F3` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `279F0DCA724201EA493A901D07D56E7CC67DD18F741AD9C62717FCD57C3A1026` |
+
+### Ryzen badges for every tier (2026-11-10)
+
+Controls was rebuilt in `Release|x64`, .NET 10 (`dotnet build CapFrameX.OSD.sln -c Release
+--no-incremental`), from the OSD working tree on `08d249fffae87f76f2b0e427f15faba04c3d44f5` (`main`)
+that was committed right after the build as `44e9468076c08d9a34c0ceb797884ad8b0acaa70`. The palette's single "Ryzen badge" (`ryzenBadge`, a
+Ryzen 5 9600X: housing, model lettering and tier numeral) became three badges, `ryzen5Badge`,
+`ryzen7Badge` and `ryzen9Badge` (`OsdHardwareBadgePresets`): a container with the housing and
+wordmarks and the tier numeral as two image layers. They have no model layer, so a badge fits every
+CPU of its tier. `Resources/HardwareBadges/Ryzen-9600X-Model.png` was removed; `Ryzen-7-Tier.png`
+(taken from CapFrameX's former 9800X3D starter) and `Ryzen-9-Tier.png` (90 × 80, rendered with WPF
+from the path of CapFrameX's `Resources/OverlayGraphics/AMD/Ryzen-Badge/Ryzen-9-Tier.svg`) were
+added. `Editor_RyzenBadge` and `Editor_RyzenBadgeTier` take the tier as `{0}` in all five languages,
+`Editor_RyzenBadgeModel` was removed; `Editor.en.json` and `Editor.ko.json` are copied here. A design
+holds one badge: its JSON stores the 640 × 640 housing three times (about 574 KB per badge), so a
+second one exceeds the 1 MB limit. The native DLLs, Interop (still the signed build), both Vulkan
+manifests and the template catalogs are unchanged.
+
+Verification: a CapFrameX Release build with `CfxOsdFromSource=false` staged exactly this DLL, the
+signed Interop and the prebuilt core into the test output and passed 3511 of the 3514 tests outside
+the `Integration` category, among them the 13 tests of `OverlayHardwareBadgeTest` (every tier in the
+palette, its layers, frames and images, placement in grids, canvases and containers, undo); the three
+`PackageSignatureTest` cases fail because the newest `CX-PresentMon-*.exe` in the repository
+(`9855474a`) is not signed. A build from source passed the same tests.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `43E5F23564ABBB2D0C0D441E9BAFC2470DAFB41DDA435AB9C54602F5C113EE9F` |
+
+### Hook-free root repaints only changed tiles; the Vulkan layer keeps its chain through a hide (2026-11-10)
+
+All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64 and
+x86) from the sources of OSD commit `e80ab37ea62585c953958a45136c92e9a370da69` (`main`). They were
+built from the working tree before it was committed; the sources were not changed in between. Since
+the previous entry (`ece67a6`) the tree also holds the commits
+`82eaeafa7120deae0ccbf270b512eccd70973f32` (Vulkan layer),
+`25659fce592f526b509b3ec02688f56a3f40c89a` (hook-free diagnostics) and `c1ad7f8` (a probe program,
+in no DLL). Controls, Interop (still the signed build), both Vulkan manifests (the build's copies
+differ in line endings only) and the template catalogs are unchanged.
+
+- **Hook-free window (`e80ab37`).** The root surface keeps what it drew, and a tick repaints and
+  presents only the tiles that would draw something else: every widget that shows values has a
+  signature of what it draws, the renderer records the rectangle a tile paints from its values, and
+  those rectangles go to `Present1` on a root swap chain that is now `FLIP_SEQUENTIAL` (the back
+  buffer is brought up to date from the front buffer first). Content that changes no tile repaints
+  nothing. Every present of the window costs the game below GPU time, and a tile design repainted
+  its whole root with every design snapshot. `OsdDebug.json` `"hookFreeRepaint"` (`"legacy"`,
+  `"skip"`, `"partialPresent"`, default `"partial"`) keeps the former behavior for A/B runs and is
+  read again at every show. The `tick 10s` line splits content marks by feed and repaints by reason,
+  kind and cost. Details: the OSD repo's CLAUDE.md, "Hook-free root: retained surface, partial
+  repaint"; CapFrameX's part (one update of the tile values per OSD refresh) needs no new core.
+- **Hook-free diagnostics (`25659fc`).** `OsdDebug.json` `"hookFreeWarp"` creates the hook-free
+  device as WARP, `"hookFreeGpuPriority"` sets the GPU thread priority of the hardware device, and
+  the `tick 10s` line reports the GPU time of the overlay's own root repaints and chart updates
+  (`rootGpu=`, `chartGpu=`).
+- **Vulkan layer (`82eaeaf`).** A soft hide (ALT+O, "Auto hide while capture") stops the drawing and
+  keeps the present's semaphore chain with an empty submit. Going straight to the game's semaphores
+  changed how the frame reaches the driver at the frame the capture starts: in Doom: The Dark Ages
+  (RTX 5090, frame generation) 4 of 5 auto-hidden captures lost the even spacing of 1 to 3 frame
+  pairs. `"vkNoHideChain"` (or `CFX_VK_NO_HIDE_CHAIN`) restores the former hide. A hide no longer
+  applies the zeroed flags of its snapshot, which reset zoom, font and graph source and cost two
+  scene rebuilds at every show; the frametime ring is reopened when a target switch recreated it;
+  the layer log keeps one file handle per process instead of opening the file for every line (150
+  to 200 us each, inside the game's present).
+- **Shared code** that hooks and layers compile too (`e80ab37`): a scaled image is drawn once into
+  a bitmap of whole target pixels and copied from there, because a scaled draw came out one step
+  lighter or darker under another clip; `measureText` caches its results; a chart that draws its
+  lines with the panel builds them before its frame, which then shows their scale; widgets store
+  the signature of what they drew. The in-game renderers repaint at their text cadence as before.
+
+Verification: 15 of the 16 core CTests pass (`design` with 547 checks, among them chains of partial
+repaints that match full repaints byte for byte on the CPU raster and on WARP; `diagnostics` and
+`hook_free_pacing` with the new cases). `chart_gpu_raster` fails on this machine as in the entry of
+2026-10-24. The 33 hook and 10 Vulkan CTests pass on x64 and x86, all without compiler warnings; the
+Vulkan layer links with the LNK4199 notes as before. On the incremental build of the same sources the
+chains also ran over the 29 starter templates the native loader accepts and a saved FUSION profile
+(114 chains; on the hardware device single antialiased corner pixels differ by up to 5 of 255 in two
+designs, which the test allows there only). A CapFrameX Debug build from source staged exactly these
+five DLLs into the app and the test output. Its tests outside the `Integration` category passed 3505
+of 3517 in a run during which Visual Studio rebuilt the same output: nine record file tests found
+`TestRecordFiles` empty and pass on a rerun with the native render tests (51 of 51); the three
+`PackageSignatureTest` cases fail because the newest `CX-PresentMon-*.exe` in the repository is not
+signed. The evening before, on the incremental build of the same sources, 3514 of 3517 passed. A
+build with `CfxOsdFromSource=false` was not run. One capture ran in Doom with the hook-free changes
+(2026-11-10, `dev-plans/HookFree_Partial_Repaint_DevPlan.md`, section 16.8); the user confirmed the
+Vulkan layer fix in Doom on 2026-11-09 with a build of the same layer sources.
+
+The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only registrations
+in both HKLM views) were replaced with these two layer DLLs; their hashes match the table. The
+replaced ones (`42730108…`, `4C5CEE1C…`, a build of 2026-11-09 from the working tree with the layer
+fix, not one of this document's entries) are kept in the ignored `temp\vulkan-layer-backup-2026-11-10`
+of the CapFrameX checkout.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `B8F7838FBEE8AB347C828C432BB158B0533457FDCD84504D3D504CE4148CC32B` |
+| native\cfx_osd_hook.dll | `24494CEF215BFF37156F0E27A633991213BF4E6F1B6D80A1D4881420E2131A2F` |
+| native\x86\cfx_osd_hook.dll | `937762E545D6E1B71B890BA560C6598A4A5E0173D81710BB3A6964DB5A2373B5` |
+| native\vk\cfx_osd_vklayer.dll | `CE9D05F7009A6EC091BBA1B7918689A19234FBC7FB2ED7E170F8C76FE14F01E1` |
+| native\vk\x86\cfx_osd_vklayer.dll | `D1D83484EB008574D60D5E34ACDEA842D156EB346888291C4CA9C6F7EE005129` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Values that fit their tile (2026-11-06)
 
 All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64 and

@@ -181,8 +181,8 @@ namespace CapFrameX.Test.Integration
             string[] expectedIds = targetVersion switch
             {
                 3 => new[] { "core-types-overview", "core-types-compact", "core-types-thermal" },
-                4 => new[] { "RTX-50-Ryzen-3D-APEX", "AMD-Ryzen-Radeon-REDLINE", "RTX-50-Core-Ultra-FUSION-ARL",
-                    "AMD-Ryzen-5-9600X-Badge", "AMD-Ryzen-7-9800X3D-Badge" },
+                // Version four also added the Ryzen 9600X and 9800X3D badges, which the editor palette replaced.
+                4 => new[] { "RTX-50-Ryzen-3D-APEX", "AMD-Ryzen-Radeon-REDLINE", "RTX-50-Core-Ultra-FUSION-ARL" },
                 6 => new[] { "Panther-Lake-Arc-Aurora", "OLED-Minimal" },
                 17 => SlickPresetIds,
                 18 => new[] { "RTX-50-Core-FUSION-RPL", "RTX-50-Ryzen-FUSION" },
@@ -295,8 +295,6 @@ namespace CapFrameX.Test.Integration
         [DataRow("RTX-50-Core-Ultra-FUSION-ARL", "FUSION ARL - RTX 50 Series + Intel Core Ultra", true, 4)]
         [DataRow("RTX-50-Core-FUSION-RPL", "FUSION RPL - RTX 50 Series + Intel Core", true, 18)]
         [DataRow("RTX-50-Ryzen-FUSION", "FUSION Ryzen - RTX 50 Series + Ryzen", true, 18)]
-        [DataRow("AMD-Ryzen-5-9600X-Badge", "AMD Ryzen 5 9600X Badge", true, 4)]
-        [DataRow("AMD-Ryzen-7-9800X3D-Badge", "AMD Ryzen 7 9800X3D Badge", true, 4)]
         [DataRow("Panther-Lake-Arc-Aurora", "Panther Lake - Arc Aurora", false, 6)]
         [DataRow("BLUELINE-Nova-Lake", "BLUELINE - Nova Lake", false, 29)]
         [DataRow("OLED-Minimal", "OLED Minimal", false, 6)]

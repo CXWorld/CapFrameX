@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="45" height="40" viewBox="0 0 45 40">
+<title>Ryzen tier 9 lettering — reference-style numeral</title>
+<desc>CapFrameX Ryzen 9 tier numeral in the style of the tier 5 lettering adapted from the user-supplied Ryzen 5 9600X badge reference. Housing and model/tier lettering are reference-based drawings, not an unmodified AMD download. See ../../SOURCES.md.</desc>
+<g fill="#ec7719"><path fill-rule="evenodd" d="M 0 0 H 35 Q 45 0 45 9 V 31 Q 45 40 35 40 H 0 V 32 H 34 Q 36 32 36 30 V 25 H 0 Z M 9 8 V 17 H 36 V 10 Q 36 8 34 8 Z"/></g>
+</svg>

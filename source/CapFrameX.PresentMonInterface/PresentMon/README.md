@@ -3,15 +3,19 @@
 CapFrameX bundles its own build of the x64 console executable, `CX-PresentMon-2.6.1-x64.exe`:
 Intel's [PresentMon v2.6.0](https://github.com/GameTechDev/PresentMon/releases/tag/v2.6.0)
 release (September 21, 2026) plus the fixes below, which were tested as builds cfx.1 and
-cfx.2, and the frame generation fixes of parts 3 and 4.
+cfx.2, the frame generation fixes of parts 3 and 4, and the flip delay fix of part 5.
 `CaptureServiceConfiguration.PresentMonAppName` names the file, and CapFrameX shows the
 version taken from that name.
 
 - Source: branch `cfx/bugfixes` of [CXPresentMon](https://github.com/DevTechProfile/CXPresentMon),
   Intel tag v2.6.0 plus the fixes, with the version set to 2.6.1. `--help` prints
   "PresentMon 2.6.1 (CapFrameX build, based on Intel PresentMon 2.6.0)".
-- SHA-256: `88d88d37b557e145ce623082d690ff57eca60a20c9951d945fdaad85b13e5941` (build of
-  November 2, 2026, source revision `a57a4a5f`).
+- SHA-256: `e00e22fc3c27855cafde386bd9ee4510f2054e0ff260fee9e2a2cce5567b030b` (build of
+  November 8, 2026, signed on November 11; unsigned it was `9852ef97…`). It adds part 5 to
+  source revision `a57a4a5f`, the build of November 2 (`88d88d37…`). Its build tree is not on
+  `origin` yet, so its revision is still to be recorded here; the fix of part 5 is commit
+  `a3a01e2f` (branch `fix/nvidia-stale-flip-delay`). `--help` and the `PRESENTMON_DIAG_LOG`
+  switch are those of `cfx/bugfixes`, and the 25 tests of the upstream gold suite pass.
 - Signed by "Open Source Developer Mark Daniel Fangmeyer" (Certum, RFC 3161 timestamp). The
   unsigned build of October 31 (SHA-256 `ce7da452…`) was quarantined by Microsoft Defender as
   `Trojan:Win32/Bearfoos.B!ml`, a machine-learning detection; the signed builds were not.
@@ -107,6 +111,13 @@ list, which held its frame type, so it counted as an application frame and could
 the data; its frame type from the PresentFrameType event is now kept for this check. Both
 changes are upstream pull request
 [GameTechDev/PresentMon#725](https://github.com/GameTechDev/PresentMon/pull/725).
+
+## Changes, part 5 (flip delay on NVIDIA)
+
+NVIDIA `FlipRequest` events were stored per thread and an existing entry was kept. A flip that
+waits for VSync, such as DWM's, never has its delay applied, so its entry stayed and the request
+of the application's next flip on that thread was dropped. That flip then took DWM's delay,
+which moved its screen time. The newest request now replaces the entry.
 
 ## Capture compatibility
 

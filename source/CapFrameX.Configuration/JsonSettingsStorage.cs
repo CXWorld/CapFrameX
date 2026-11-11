@@ -15,10 +15,13 @@ namespace CapFrameX.Configuration
 {
     public class JsonSettingsStorage : ISettingsStorage
     {
+        private const int SaveAttempts = 4;
+
         private readonly object _iOLock = new object();
         private readonly string _jsonFilePath;
         private readonly ILogger<JsonSettingsStorage> _logger;
         private readonly Subject<int> _saveFileSubject = new Subject<int>();
+        private readonly ReplaySubject<Exception> _saveFailures = new ReplaySubject<Exception>(1);
 
         // Changed to ConcurrentDictionary for thread-safe access
         private readonly ConcurrentDictionary<string, object> _configDictionary = new ConcurrentDictionary<string, object>();
@@ -49,17 +52,56 @@ namespace CapFrameX.Configuration
                             Save();
                             return true;
                         })
+                        .Retry(SaveAttempts)
+                        // A save that failed every attempt must not end this subscription: the
+                        // error would reach Rx's default handler on the thread pool and terminate
+                        // the process (AppSettings.json in a folder that Controlled folder access
+                        // protects, or in an archive program's temporary folder that was deleted).
+                        .Catch<bool, Exception>(exception =>
+                        {
+                            OnSaveFailed(exception);
+                            return Observable.Return(false);
+                        })
                         .Do(result =>
                         {
+                            // Also after a failure, so that closing the window does not wait
+                            // for a save that never comes.
                             lock (_lock)
                             {
                                 if (_saveCompletionSource != null)
-                                    _saveCompletionSource.TrySetResult(true);
+                                    _saveCompletionSource.TrySetResult(result);
                             }
                         })
-                        .Retry(4)
                 )
                 .Subscribe();
+        }
+
+        /// <summary>
+        /// Path of the settings file, AppSettings.json in the configuration folder.
+        /// </summary>
+        public string FilePath => _jsonFilePath;
+
+        /// <summary>
+        /// The error of every save that failed all its attempts. The settings stay in memory, and
+        /// the next change tries again. Replays the latest failure to a late subscriber, so a
+        /// failure during startup is not missed.
+        /// </summary>
+        public IObservable<Exception> SaveFailures => _saveFailures.AsObservable();
+
+        private void OnSaveFailed(Exception exception)
+        {
+            _logger.LogError(exception, "Configuration was not saved to {Path} after {Attempts} attempts. The settings stay in memory, and the next change tries again.",
+                _jsonFilePath, SaveAttempts);
+
+            try
+            {
+                _saveFailures.OnNext(exception);
+            }
+            catch (Exception notifyException)
+            {
+                // A failing subscriber must not take the save pipeline down either.
+                _logger.LogError(notifyException, "Error while reporting a failed configuration save.");
+            }
         }
 
         public T GetValue<T>(string key)
@@ -197,6 +239,9 @@ namespace CapFrameX.Configuration
             }
         }
 
+        /// <summary>
+        /// Completes when the pending save has finished, successfully or not.
+        /// </summary>
         public Task WaitForPendingSaveAsync()
         {
             lock (_lock)

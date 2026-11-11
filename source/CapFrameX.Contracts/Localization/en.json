@@ -215,6 +215,11 @@
     "Appxaml_EtwSessionConflictDetected": "ETW Session Conflict Detected",
     "Appxaml_FatalError": "Fatal Error",
     "Appxaml_FrameViewEtwSessionDetected": "FrameViewService ETW session detected.\n\nThe NVIDIA FrameView SDK is currently running an ETW trace session that may conflict with PresentMon. If CapFrameX does not show performance metrics during capture, consider uninstalling the NVIDIA FrameView SDK.\n\nClick 'Yes' to continue and show this warning again next time.\nClick 'No' to continue and never show this warning again.",
+    "Appxaml_SettingsNotSavedInstalled0": "CapFrameX cannot save its settings in this folder:\n{0}\n\nCheck that the folder exists and that no security program blocks CapFrameX, for example Controlled folder access in Windows Security.\n\nUntil then, changed settings are lost when CapFrameX closes.",
+    "Appxaml_SettingsNotSavedPortable0": "CapFrameX cannot save its settings in this folder:\n{0}\n\nA security program probably blocks the folder, for example Controlled folder access in Windows Security. Allow CapFrameX there, or move the CapFrameX folder somewhere else, for example to C:\\CapFrameX.\n\nUntil then, changed settings are lost when CapFrameX closes.",
+    "Appxaml_SettingsNotSavedTitle": "Settings not saved",
+    "Appxaml_TemporaryFolderStart0": "CapFrameX was started from a temporary folder:\n{0}\n\nArchive programs and Windows delete such folders, even while CapFrameX is running. Settings and captures would be lost.\n\nExtract the archive to a folder of its own, for example C:\\CapFrameX, and start CapFrameX from there. CapFrameX closes now.",
+    "Appxaml_TemporaryFolderTitle": "Started from a temporary folder",
     "Appxaml_YourReportIdIs0": "Your Report-ID is {0}.\nPlease include this Id in your support inquiry. Visit https://www.capframex.com/support for further information.",
 
     // =========================================================================

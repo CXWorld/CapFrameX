@@ -52,6 +52,8 @@ namespace CapFrameX.OSD.Integration
         private readonly object _designGate = new object();
         private ulong _lastDesignRevision, _lastDesignMetricsRevision;
         private bool _customDesignLoaded;
+        // OsdDebug.json asks for the former feed cadence (HookFreeDesignFeed.AppliesEverySnapshot).
+        private volatile bool _designFeedEverySnapshot;
         private readonly int _ftIndex;
         private readonly int _runtimeIndex;
         private readonly int _displayChangedIndex;
@@ -226,7 +228,9 @@ namespace CapFrameX.OSD.Integration
                 _designSub = _designRuntime.Snapshots.Subscribe(snapshot =>
                 {
                     UpdateFrameFeedRequirements(_overlayService.CurrentOverlayEntries);
-                    ApplyDesignSnapshot(snapshot);
+                    // A new, changed or removed design is applied at once; values alone wait for
+                    // the OSD refresh (OnEntries), see HookFreeDesignFeed.
+                    ApplyDesignSnapshot(snapshot, HookFreeDesignTrigger.Snapshot);
                 });
         }
 
@@ -279,6 +283,7 @@ namespace CapFrameX.OSD.Integration
                 ApplyPosition(force: true);
                 UpdateFrameFeedRequirements(_overlayService.CurrentOverlayEntries);
                 ApplyDiagnosticsSwitch(); // applied natively right after the instance is created
+                _designFeedEverySnapshot = HookFreeDesignFeed.AppliesEverySnapshot();
                 _osd.Start();
                 _started = true;
                 UpdateFrameSubscription(running: true);
@@ -298,6 +303,14 @@ namespace CapFrameX.OSD.Integration
 
             if (!visible && _lastShown != false)
                 ChooseHideMethod();
+            if (visible && _lastShown == false)
+            {
+                // The native core reads its repaint mode again at a show, so an A/B run switches
+                // both by hiding and showing the overlay. The values that waited for a refresh
+                // while the overlay was hidden are due now: it is shown with what is known.
+                _designFeedEverySnapshot = HookFreeDesignFeed.AppliesEverySnapshot();
+                ApplyDesignSnapshot(_designRuntime?.Current, HookFreeDesignTrigger.Refresh);
+            }
             _lastShown = visible;
             // Old prebuilt core without the hidden API: fall back to the historic full stop.
             if (!_osd.SetHidden(!visible) && !visible)
@@ -350,7 +363,7 @@ namespace CapFrameX.OSD.Integration
             // OnDictionaryUpdated is published after this processed display list is ready.
             var entries = _overlayService.CurrentOverlayEntries;
             UpdateFrameFeedRequirements(entries);
-            ApplyDesignSnapshot(_designRuntime?.Current);
+            ApplyDesignSnapshot(_designRuntime?.Current, HookFreeDesignTrigger.Refresh);
             // An empty profile must clear a linked classic block as well as a standalone overlay.
             var list = OverlayEntryAdapter.ToOsdEntries(entries,
                 _appConfiguration.UseRunHistory,
@@ -425,30 +438,35 @@ namespace CapFrameX.OSD.Integration
             return requirements;
         }
 
-        private void ApplyDesignSnapshot(OverlayDesignRuntimeSnapshot snapshot)
+        private void ApplyDesignSnapshot(OverlayDesignRuntimeSnapshot snapshot, HookFreeDesignTrigger trigger)
         {
             if (!_started || !_osd.IsRunning || snapshot == null) return;
             bool rejected = false;
             lock (_designGate)
             {
                 if (!_started || !_osd.IsRunning) return;
-                if (snapshot.Design == null)
+                bool metricsChanged = snapshot.MetricsRevision != _lastDesignMetricsRevision;
+                HookFreeDesignUpdate update = HookFreeDesignFeed.Decide(trigger, snapshot.Design != null,
+                    _customDesignLoaded, snapshot.DesignRevision != _lastDesignRevision, metricsChanged,
+                    _designFeedEverySnapshot);
+                // Values of the loaded design that stay with the publisher until the refresh.
+                bool waits = update == HookFreeDesignUpdate.None && snapshot.Design != null &&
+                    _customDesignLoaded && snapshot.DesignRevision == _lastDesignRevision && metricsChanged;
+                _feedDiagnostics.OnDesignFeed(trigger, update, waits);
+                if (update == HookFreeDesignUpdate.None) return;
+                if (update == HookFreeDesignUpdate.Clear)
                 {
-                    if (_customDesignLoaded)
-                    {
-                        _osd.ClearTemplate();
-                        _customDesignLoaded = false;
-                        _lastDesignRevision = 0;
-                        _lastDesignMetricsRevision = 0;
-                        var entries = OverlayEntryAdapter.ToOsdEntries(_overlayService.CurrentOverlayEntries,
-                            _appConfiguration.UseRunHistory, _overlayService.RunHistory,
-                            _overlayService.RunHistoryOutlierFlags, _overlayService.RunHistoryAggregation);
-                        _osd.UpdateEntries(entries);
-                    }
+                    _osd.ClearTemplate();
+                    _customDesignLoaded = false;
+                    _lastDesignRevision = 0;
+                    _lastDesignMetricsRevision = 0;
+                    var entries = OverlayEntryAdapter.ToOsdEntries(_overlayService.CurrentOverlayEntries,
+                        _appConfiguration.UseRunHistory, _overlayService.RunHistory,
+                        _overlayService.RunHistoryOutlierFlags, _overlayService.RunHistoryAggregation);
+                    _osd.UpdateEntries(entries);
                     return;
                 }
-                bool newDesign = !_customDesignLoaded || snapshot.DesignRevision != _lastDesignRevision;
-                if (!newDesign && snapshot.MetricsRevision == _lastDesignMetricsRevision) return;
+                bool newDesign = update == HookFreeDesignUpdate.Template;
                 if (!_osd.ApplyDesignJson(newDesign ? snapshot.Design.TemplateJson : null, snapshot.MetricsJson))
                 {
                     rejected = true;
