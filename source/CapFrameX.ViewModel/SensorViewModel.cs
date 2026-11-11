@@ -1,5 +1,6 @@
-﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
@@ -46,8 +47,9 @@ namespace CapFrameX.ViewModel
         private bool _saveButtonIsEnable;
         private bool _isActive;
         private bool _aggregateButtonIsEnable = true;
-        private string _aggregationButtonText = "Evaluate" + Environment.NewLine + "multiple entries";
-        private string _sensorStatisticsText = "Sensor statistics for selected record";
+        // Kept as keys (LocalizedText) so the texts follow a UI language change.
+        private LocalizedText _aggregationButtonText = new LocalizedText("SensorViewModel_EvaluateMultipleEntries");
+        private LocalizedText _sensorStatisticsText = new LocalizedText("SensorViewModel_SensorStatisticsForSelectedRecord");
         private bool _selectedRecordChanged;
 
         public IFileRecordInfo RecordInfo { get; private set; }
@@ -135,24 +137,20 @@ namespace CapFrameX.ViewModel
 
         public bool CopyRawSensorsEnable { get; set; }
 
-        public string AggregateButtonText
+        public string AggregateButtonText => _aggregationButtonText.Resolve();
+
+        public string SensorStatisticsText => _sensorStatisticsText.Resolve();
+
+        private void SetAggregateButtonText(LocalizedText text)
         {
-            get { return _aggregationButtonText; }
-            set
-            {
-                _aggregationButtonText = value;
-                RaisePropertyChanged();
-            }
+            _aggregationButtonText = text;
+            RaisePropertyChanged(nameof(AggregateButtonText));
         }
 
-        public string SensorStatisticsText
+        private void SetSensorStatisticsText(LocalizedText text)
         {
-            get { return _sensorStatisticsText; }
-            set
-            {
-                _sensorStatisticsText = value;
-                RaisePropertyChanged();
-            }
+            _sensorStatisticsText = text;
+            RaisePropertyChanged(nameof(SensorStatisticsText));
         }
 
         public Array LoggingPeriodItemsSource => new[] { 250, 500 };
@@ -204,6 +202,15 @@ namespace CapFrameX.ViewModel
             // define submodels
             SensorSubModelGroupControl = new SensorGroupControl(this);
 
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage))
+                {
+                    RaisePropertyChanged(nameof(AggregateButtonText));
+                    RaisePropertyChanged(nameof(SensorStatisticsText));
+                }
+            };
+
             SaveConfigCommand = new DelegateCommand(
                 async () =>
                 {
@@ -222,7 +229,7 @@ namespace CapFrameX.ViewModel
                 {
                     if (_applicationState.SelectedRecords != null && _applicationState.SelectedRecords.Count > 1)
                     {
-                        AggregateButtonText = "Working";
+                        SetAggregateButtonText(new LocalizedText("SensorViewModel_Working"));
                         AggregateButtonIsEnable = false;
                         CopyRawSensorsEnable = false;
                         _selectedRecordChanged = false;
@@ -237,8 +244,8 @@ namespace CapFrameX.ViewModel
                         else
                             AggregateSensorDataOfSessions(sessions);
 
-                        AggregateButtonText = "Evaluate" + Environment.NewLine + "multiple entries";
-                        SensorStatisticsText = "Sensor statistics for multiple selected records";
+                        SetAggregateButtonText(new LocalizedText("SensorViewModel_EvaluateMultipleEntries"));
+                        SetSensorStatisticsText(new LocalizedText("SensorViewModel_SensorStatisticsForMultipleSelected"));
                         AggregateButtonIsEnable = true;
                     }
                 });
@@ -282,7 +289,7 @@ namespace CapFrameX.ViewModel
                     UpdateSensorSessionReport(msg.CurrentSession);
                     CopyRawSensorsEnable = true;
                     _selectedRecordChanged = true;
-                    SensorStatisticsText = "Sensor statistics for selected record";
+                    SetSensorStatisticsText(new LocalizedText("SensorViewModel_SensorStatisticsForSelectedRecord2"));
                 });
         }
 
@@ -365,21 +372,30 @@ namespace CapFrameX.ViewModel
             if (RecordInfo == null)
                 return;
 
+            // Built once: the query is deferred, and enumerated for each row it aggregated and sorted
+            // every sensor of every run again, O(n²), which froze the UI on long sensor logs.
             var data = SensorReport.GetSensorReportEntries(_session.Runs.Select(s => s.SensorData2))
-                .Where(x => x.Name != "BetweenMeasureTime");
+                .Where(x => x.Name != "BetweenMeasureTime")
+                .ToList();
+            if (data.Count == 0)
+                return;
+
+            var roundingDigits = data.Select(x =>
+            {
+                SensorReport.roundingDictionary.TryGetValue(x.Type, out var roundingDigit);
+                return roundingDigit;
+            }).ToArray();
 
             StringBuilder builder = new StringBuilder();
 
             // Header
             builder.AppendLine(string.Join("\t", data.Select(x => x.DisplayName)));
 
-            for (int i = 0; i < data.First().Values.Count(); i++)
+            int rowCount = data[0].Values.Length;
+            for (int i = 0; i < rowCount; i++)
             {
-                builder.AppendLine(string.Join("\t", data.Select(x =>
-                {
-                    SensorReport.roundingDictionary.TryGetValue(x.Type, out var roundingDigit);
-                    return Math.Round(x.Values.ElementAtOrDefault(i), roundingDigit);
-                })));
+                builder.AppendLine(string.Join("\t", data.Select((x, column) =>
+                    Math.Round(x.Values.ElementAtOrDefault(i), roundingDigits[column]))));
             }
 
             Clipboard.SetDataObject(builder.ToString(), false);

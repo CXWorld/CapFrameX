@@ -1,6 +1,7 @@
 ﻿using RJCP.IO.Ports;
 using System;
 using System.Buffers;
+using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using Microsoft.Extensions.Logging;
@@ -16,8 +17,7 @@ namespace CapFrameX.PMD.Powenetics
         private const int PacketFrameLength = 69;
 
         private SerialPortStream _pmd;
-        private long _sampleTimeStamp = 0;
-        private int _lostPacketsCounter = 0;
+        private readonly PoweneticsPacketClock _packetClock = new PoweneticsPacketClock();
         private readonly object _bufferLock = new object();
         private byte[] _receiveBuffer = new byte[4096];
         private int _receiveBufferCount = 0;
@@ -70,8 +70,12 @@ namespace CapFrameX.PMD.Powenetics
                 _pmd.Dispose();
             }
 
-            _sampleTimeStamp = 0;
-            _lostPacketsCounter = 0;
+            lock (_bufferLock)
+            {
+                _receiveBufferCount = 0;
+                _packetClock.Reset();
+            }
+
             _pmdstatusStream.OnNext(EPmdDriverStatus.Ready);
 
             return true;
@@ -96,18 +100,23 @@ namespace CapFrameX.PMD.Powenetics
                 var tempBuffer = ArrayPool<byte>.Shared.Rent(bytesToRead);
                 try
                 {
-                    int bytesRead = _pmd.Read(tempBuffer, 0, bytesToRead);
-                    if (bytesRead <= 0)
-                    {
-                        return;
-                    }
-
+                    // Read inside the lock: two handlers reading concurrently could append their
+                    // chunks in the wrong order, and the arrival times must follow the byte order.
                     lock (_bufferLock)
                     {
+                        int bytesRead = _pmd.Read(tempBuffer, 0, bytesToRead);
+                        if (bytesRead <= 0)
+                        {
+                            return;
+                        }
+
+                        // The device sends no time; the read time is all there is (see PoweneticsPacketClock).
+                        double arrivalSeconds = Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency;
+
                         EnsureReceiveBufferCapacity(_receiveBufferCount + bytesRead);
                         Buffer.BlockCopy(tempBuffer, 0, _receiveBuffer, _receiveBufferCount, bytesRead);
                         _receiveBufferCount += bytesRead;
-                        ProcessReceiveBuffer();
+                        ProcessReceiveBuffer(arrivalSeconds);
                     }
                 }
                 finally
@@ -118,16 +127,7 @@ namespace CapFrameX.PMD.Powenetics
             catch { throw; }
         }
 
-        // max = 65536
-        private int _previousPacketNumber = 0;
-        private int _currentPacketNumber = 0;
-
-        private int ExtractPacketNumber(byte[] data, int offset)
-        {
-            return ReadUInt16(data, offset);
-        }
-
-        private void ProcessReceiveBuffer()
+        private void ProcessReceiveBuffer(double arrivalSeconds)
         {
             int readIndex = 0;
             while (true)
@@ -158,7 +158,7 @@ namespace CapFrameX.PMD.Powenetics
                 }
 
                 int payloadOffset = headerIndex + 2;
-                ProcessData(_receiveBuffer, payloadOffset);
+                ProcessData(_receiveBuffer, payloadOffset, arrivalSeconds);
                 readIndex = headerIndex + PacketFrameLength;
 
                 if (readIndex >= _receiveBufferCount)
@@ -219,22 +219,20 @@ namespace CapFrameX.PMD.Powenetics
         {
             return ReadUInt24(data, offset) / 1000f;
         }
-        private void ProcessData(byte[] data, int offset)
+        private void ProcessData(byte[] data, int offset, double arrivalSeconds)
         {
             try
             {
-                _previousPacketNumber = _currentPacketNumber;
-                _currentPacketNumber = ExtractPacketNumber(data, offset);
-
-                if (_previousPacketNumber > 0)
+                int lostPackets = _packetClock.LostPackets;
+                double packetTime = _packetClock.OnPacket(ReadUInt16(data, offset), arrivalSeconds);
+                if (_packetClock.LostPackets != lostPackets)
                 {
-                    if (_currentPacketNumber - _previousPacketNumber != 1
-                        && _currentPacketNumber > _previousPacketNumber)
-                    {
-                        _lostPacketsCounter += _currentPacketNumber - _previousPacketNumber - 1;
-                        _lostPacketsCounterStream.OnNext(_lostPacketsCounter);
-                    }
+                    _lostPacketsCounterStream.OnNext(_packetClock.LostPackets);
                 }
+
+                // Milliseconds on the QPC clock. Flooring keeps the 1 ms bins of the downsampling
+                // exact: floor(floor(t) / n) == floor(t / n) for whole n.
+                long timeStamp = (long)Math.Floor(packetTime * 1000.0);
 
                 var pmdChannels = new PoweneticsChannel[PoweneticsChannelExtensions.PmdChannelIndexMapping.Length];
 
@@ -247,7 +245,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Voltage,
                     Name = "ATX_33V_Voltage",
                     PmdChannelType = PoweneticsChannelType.ATX,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltATX33V_Final
                 };
 
@@ -256,7 +254,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Current,
                     Name = "ATX_33V_Current",
                     PmdChannelType = PoweneticsChannelType.ATX,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = currentATX33V_Final
                 };
 
@@ -265,7 +263,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Power,
                     Name = "ATX_33V_Power",
                     PmdChannelType = PoweneticsChannelType.ATX,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltATX33V_Final * currentATX33V_Final
                 };
 
@@ -281,7 +279,7 @@ namespace CapFrameX.PMD.Powenetics
                         Measurand = PoweneticsMeasurand.Voltage,
                         Name = "ATX_STB_Voltage",
                         PmdChannelType = PoweneticsChannelType.ATX,
-                        TimeStamp = _sampleTimeStamp,
+                        TimeStamp = timeStamp,
                         Value = volt5VSB_Final
                     };
 
@@ -290,7 +288,7 @@ namespace CapFrameX.PMD.Powenetics
                         Measurand = PoweneticsMeasurand.Current,
                         Name = "ATX_STB_Current",
                         PmdChannelType = PoweneticsChannelType.ATX,
-                        TimeStamp = _sampleTimeStamp,
+                        TimeStamp = timeStamp,
                         Value = current5VSB_Final
                     };
 
@@ -299,7 +297,7 @@ namespace CapFrameX.PMD.Powenetics
                         Measurand = PoweneticsMeasurand.Power,
                         Name = "ATX_STB_Power",
                         PmdChannelType = PoweneticsChannelType.ATX,
-                        TimeStamp = _sampleTimeStamp,
+                        TimeStamp = timeStamp,
                         Value = volt5VSB_Final * current5VSB_Final
                     };
                 }
@@ -313,7 +311,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Voltage,
                     Name = "ATX_12V_Voltage",
                     PmdChannelType = PoweneticsChannelType.ATX,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltATX12V_Final
                 };
 
@@ -322,7 +320,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Current,
                     Name = "ATX_12V_Current",
                     PmdChannelType = PoweneticsChannelType.ATX,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = currentATX12V_Final
                 };
 
@@ -331,7 +329,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Power,
                     Name = "ATX_12V_Power",
                     PmdChannelType = PoweneticsChannelType.ATX,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltATX12V_Final * currentATX12V_Final
                 };
 
@@ -344,7 +342,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Voltage,
                     Name = "ATX_5V_Voltage",
                     PmdChannelType = PoweneticsChannelType.ATX,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltATX5V_Final
                 };
 
@@ -353,7 +351,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Current,
                     Name = "ATX_5V_Current",
                     PmdChannelType = PoweneticsChannelType.ATX,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = currentATX5V_Final
                 };
 
@@ -362,7 +360,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Power,
                     Name = "ATX_5V_Power",
                     PmdChannelType = PoweneticsChannelType.ATX,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltATX5V_Final * currentATX5V_Final
                 };
 
@@ -375,7 +373,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Voltage,
                     Name = "EPS_Voltage1",
                     PmdChannelType = PoweneticsChannelType.EPS,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltEPS12V1_Final
                 };
 
@@ -384,7 +382,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Current,
                     Name = "EPS_Current1",
                     PmdChannelType = PoweneticsChannelType.EPS,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = currentEPS12V1_Final
                 };
 
@@ -393,7 +391,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Power,
                     Name = "EPS_Power1",
                     PmdChannelType = PoweneticsChannelType.EPS,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltEPS12V1_Final * currentEPS12V1_Final
                 };
 
@@ -406,7 +404,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Voltage,
                     Name = "EPS_Voltage3",
                     PmdChannelType = PoweneticsChannelType.EPS,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltEPS12V3_Final
                 };
 
@@ -415,7 +413,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Current,
                     Name = "EPS_Current3",
                     PmdChannelType = PoweneticsChannelType.EPS,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = currentEPS12V3_Final
                 };
 
@@ -424,7 +422,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Power,
                     Name = "EPS_Power3",
                     PmdChannelType = PoweneticsChannelType.EPS,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltEPS12V3_Final * currentEPS12V3_Final
                 };
 
@@ -437,7 +435,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Voltage,
                     Name = "EPS_Voltage2",
                     PmdChannelType = PoweneticsChannelType.EPS,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltEPS12V2_Final
                 };
 
@@ -446,7 +444,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Current,
                     Name = "EPS_Current2",
                     PmdChannelType = PoweneticsChannelType.EPS,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = currentEPS12V2_Final
                 };
 
@@ -455,7 +453,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Power,
                     Name = "EPS_Power2",
                     PmdChannelType = PoweneticsChannelType.EPS,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltEPS12V2_Final * currentEPS12V2_Final
                 };
 
@@ -468,7 +466,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Voltage,
                     Name = "PCIe_12V_Voltage3",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltPCIe3_Final
                 };
 
@@ -477,7 +475,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Current,
                     Name = "PCIe_12V_Current3",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = currentPCIe3_Final
                 };
 
@@ -486,7 +484,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Power,
                     Name = "PCIe_12V_Power3",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltPCIe3_Final * currentPCIe3_Final
                 };
 
@@ -499,7 +497,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Voltage,
                     Name = "PCIe_12V_Voltage2",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltPCIe2_Final
                 };
 
@@ -508,7 +506,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Current,
                     Name = "PCIe_12V_Current2",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = currentPCIe2_Final
                 };
 
@@ -517,7 +515,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Power,
                     Name = "PCIe_12V_Power2",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltPCIe2_Final * currentPCIe2_Final
                 };
 
@@ -530,7 +528,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Voltage,
                     Name = "PCIe_Slot_33V_Voltage",
                     PmdChannelType = PoweneticsChannelType.PCIeSlot,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltPCIe_Slot_33_Final
                 };
 
@@ -539,7 +537,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Current,
                     Name = "PCIe_Slot_33V_Current",
                     PmdChannelType = PoweneticsChannelType.PCIeSlot,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = currentPCIe_Slot_33_Final
                 };
 
@@ -548,7 +546,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Power,
                     Name = "PCIe_Slot_33V_Power",
                     PmdChannelType = PoweneticsChannelType.PCIeSlot,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltPCIe_Slot_33_Final * currentPCIe_Slot_33_Final
                 };
 
@@ -561,7 +559,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Voltage,
                     Name = "PCIe_Slot_12V_Voltage",
                     PmdChannelType = PoweneticsChannelType.PCIeSlot,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltPCIe_Slot_12_Final
                 };
 
@@ -570,7 +568,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Current,
                     Name = "PCIe_Slot_12V_Current",
                     PmdChannelType = PoweneticsChannelType.PCIeSlot,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = currentPCIe_Slot_12_Final
                 };
 
@@ -579,7 +577,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Power,
                     Name = "PCIe_Slot_12V_Power",
                     PmdChannelType = PoweneticsChannelType.PCIeSlot,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltPCIe_Slot_12_Final * currentPCIe_Slot_12_Final
                 };
 
@@ -592,7 +590,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Voltage,
                     Name = "PCIe_12V_Voltage1",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltPCIe1_Final
                 };
 
@@ -601,7 +599,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Current,
                     Name = "PCIe_12V_Current1",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = currentPCIe1_Final
                 };
 
@@ -610,7 +608,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Power,
                     Name = "PCIe_12V_Power1",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = voltPCIe1_Final * currentPCIe1_Final
                 };
 
@@ -620,7 +618,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Voltage,
                     Name = "PCIe_12V_Voltage4",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = 0
                 };
 
@@ -629,7 +627,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Current,
                     Name = "PCIe_12V_Current4",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = 0
                 };
 
@@ -638,7 +636,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Power,
                     Name = "PCIe_12V_Power4",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = 0
                 };
 
@@ -648,7 +646,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Voltage,
                     Name = "PCIe_12V_Voltage5",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = 0
                 };
 
@@ -657,7 +655,7 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Current,
                     Name = "PCIe_12V_Current5",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = 0
                 };
 
@@ -666,12 +664,11 @@ namespace CapFrameX.PMD.Powenetics
                     Measurand = PoweneticsMeasurand.Power,
                     Name = "PCIe_12V_Power5",
                     PmdChannelType = PoweneticsChannelType.PCIe,
-                    TimeStamp = _sampleTimeStamp,
+                    TimeStamp = timeStamp,
                     Value = 0
                 };
 
                 _pmdChannelStream.OnNext(pmdChannels);
-                _sampleTimeStamp++;
             }
             catch { throw; }
         }

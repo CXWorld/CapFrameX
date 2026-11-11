@@ -1,5 +1,6 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.EventAggregation.Messages;
@@ -62,16 +63,21 @@ namespace CapFrameX.ViewModel
         // Repaint rate of the live telemetry on the Info tab.
         private const int LiveMetricsSampleMs = 1000;
 
-        private string _cpuName = "Detecting...";
+        private string _rawCpuDetails;
+        private string _rawRamName;
+        private string _rawDriverVersion;
+        private Dictionary<ISensorEntry, float> _lastSnapshot;
+
+        private string _cpuName = CxLang.T("InfoViewModel_Detecting");
         private string _cpuDetails = string.Empty;
         private VendorBadge _cpuVendorBadge;
-        private string _gpuName = "Detecting...";
+        private string _gpuName = CxLang.T("InfoViewModel_Detecting");
         private string _gpuDetails = string.Empty;
         private VendorBadge _gpuVendorBadge;
-        private string _mainboardName = "Detecting...";
+        private string _mainboardName = CxLang.T("InfoViewModel_Detecting");
         private string _mainboardDetails = string.Empty;
         private VendorBadge _mainboardVendorBadge;
-        private string _ramName = "Detecting...";
+        private string _ramName = CxLang.T("InfoViewModel_Detecting");
         private string _ramDetails = string.Empty;
         private VendorBadge _ramVendorBadge;
         private string _osVersion = string.Empty;
@@ -177,6 +183,7 @@ namespace CapFrameX.ViewModel
             _appVersionProvider = appVersionProvider;
             _logger = logger;
 
+            CxLang.Instance.PropertyChanged += OnLanguageChanged;
             CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfo);
 
             UpdateSensorEvaluationState();
@@ -188,6 +195,11 @@ namespace CapFrameX.ViewModel
                     _isShellVisible = msg.IsContentVisible;
                     UpdateSensorEvaluationState();
                 });
+
+            // The portable version registers the layers while this tab is already shown, so no
+            // navigation refreshes it. The layer status does not depend on the sensor service.
+            eventAggregator.GetEvent<PubSubEvent<AppMessages.VulkanLayerRegistrationChanged>>()
+                .Subscribe(_ => Task.Run(UpdateVulkanLayerStatus));
 
             // Two independent blocks: the board/memory/OS identification comes from WMI and is
             // available right away, while CPU and GPU identity have to wait for the sensor
@@ -246,6 +258,48 @@ namespace CapFrameX.ViewModel
             UpdateLiveMetricsSubscription();
         }
 
+        private void OnLanguageChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(CxLang.UiLanguage))
+            {
+                UpdateCpuDetails();
+                UpdateRamName();
+                UpdateGpuDetails();
+                RefreshSoftwareComponents();
+                // The security statuses are shared instances, so the periodic refresh assigns the
+                // same object and raises nothing; the bindings would keep the previous language.
+                RaisePropertyChanged(nameof(SecureBootStatus));
+                RaisePropertyChanged(nameof(TestSigningStatus));
+                RaisePropertyChanged(nameof(VbsStatus));
+                RaisePropertyChanged(nameof(MemoryIntegrityStatus));
+                if (_lastSnapshot != null)
+                {
+                    UpdateLiveMetrics(_lastSnapshot);
+                }
+            }
+        }
+
+        private void UpdateCpuDetails()
+        {
+            CpuDetails = !string.IsNullOrEmpty(_rawCpuDetails)
+                ? CxLang.Instance.TranslateUiText(_rawCpuDetails)
+                : string.Empty;
+        }
+
+        private void UpdateRamName()
+        {
+            RamName = !string.IsNullOrEmpty(_rawRamName)
+                ? CxLang.Instance.TranslateUiText(_rawRamName)
+                : string.Empty;
+        }
+
+        private void UpdateGpuDetails()
+        {
+            GpuDetails = IsUsable(_rawDriverVersion)
+                ? CxLang.Format("InfoView_Driver0", _rawDriverVersion)
+                : string.Empty;
+        }
+
         /// <summary>
         /// Everything WMI can answer without the sensor service. The first call collects the
         /// whole set in one go (see <c>SystemInfo</c>), so the individual getters below cost
@@ -255,17 +309,17 @@ namespace CapFrameX.ViewModel
         {
             try
             {
-                CpuDetails = _systemInfo.GetProcessorCoreCountInfo();
+                _rawCpuDetails = _systemInfo.GetProcessorCoreCountInfo();
+                UpdateCpuDetails();
 
                 MainboardName = _systemInfo.GetMotherboardName();
                 MainboardVendorBadge = VendorBadge.FromVendorName(_systemInfo.GetMotherboardManufacturerBrand());
                 var biosVersion = _systemInfo.GetBiosVersion();
                 MainboardDetails = IsUsable(biosVersion) ? $"BIOS {biosVersion}" : string.Empty;
 
-                RamName = _systemInfo.GetSystemRAMInfoName();
-                var ramManufacturer = _systemInfo.GetSystemRAMManufacturer();
-                RamVendorBadge = VendorBadge.FromVendorName(ramManufacturer);
-                RamDetails = ramManufacturer;
+                _rawRamName = _systemInfo.GetSystemRAMInfoName();
+                UpdateRamName();
+                UpdateRamManufacturer();
 
                 OsVersion = _systemInfo.GetOSVersion();
             }
@@ -289,6 +343,7 @@ namespace CapFrameX.ViewModel
                 CpuVendorBadge = VendorBadge.FromCpuVendor(_sensorService.GetCpuVendor());
 
                 UpdateGpuInfo();
+                UpdateRamManufacturer();
 
                 // PawnIO is installed and started while the sensor service opens the hardware,
                 // so its state is only meaningful from here on.
@@ -319,8 +374,8 @@ namespace CapFrameX.ViewModel
             {
                 GpuName = _sensorService.GetGpuName();
                 GpuVendorBadge = VendorBadge.FromGpuVendor(_sensorService.GetGpuVendor());
-                var driverVersion = _sensorService.GetGpuDriverVersion();
-                GpuDetails = IsUsable(driverVersion) ? $"Driver {driverVersion}" : string.Empty;
+                _rawDriverVersion = _sensorService.GetGpuDriverVersion();
+                UpdateGpuDetails();
             }
             catch (Exception ex)
             {
@@ -342,7 +397,7 @@ namespace CapFrameX.ViewModel
                     CaptureServiceConfiguration.GetPresentMonVersion(),
                     File.Exists(CaptureServiceConfiguration.GetPresentMonPath()));
                 RtssStatus = SoftwareComponentStatus.ForRtss(_rtssService.GetRTSSVersion());
-                VulkanLayerStatus = SoftwareComponentStatus.FromVulkanLayer(VulkanLayerRegistrationProbe.Query());
+                UpdateVulkanLayerStatus();
             }
             catch (Exception ex)
             {
@@ -350,13 +405,34 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        // The probe reports a registry it cannot read as Unknown instead of throwing.
+        private void UpdateVulkanLayerStatus()
+            => VulkanLayerStatus = SoftwareComponentStatus.FromVulkanLayer(VulkanLayerRegistrationProbe.Query());
+
+        private void UpdateRamManufacturer()
+        {
+            var manufacturer = _systemInfo.GetSystemRAMManufacturer() ?? string.Empty;
+            if (string.Equals(RamDetails, manufacturer, StringComparison.Ordinal))
+                return;
+
+            RamDetails = manufacturer;
+            RamVendorBadge = VendorBadge.FromVendorName(manufacturer);
+        }
+
         private static bool IsUsable(string value)
             => !string.IsNullOrWhiteSpace(value) && value != "Unknown";
 
         private void UpdateLiveMetrics(Dictionary<ISensorEntry, float> snapshot)
         {
+            _lastSnapshot = snapshot;
             try
             {
+                // SPD discovery can finish on a retry after sensor initialization. Refresh the
+                // cached identity while this tab is visible, using the existing telemetry tick.
+                // The base WMI snapshot must already be ready so this UI update never waits for it.
+                if (_rawRamName != null)
+                    UpdateRamManufacturer();
+
                 float? cpuLoad = null, cpuPower = null, cpuTemp = null, cpuMaxClock = null, cpuCoreClockMax = null;
                 float? gpuLoad = null, gpuPower = null, gpuTemp = null, gpuClock = null;
                 float? vramUsedGb = null, vramUsedMb = null, vramTotalGb = null, vramTotalMb = null;
@@ -488,7 +564,7 @@ namespace CapFrameX.ViewModel
         private static string FormatValue(float? value, string format, string unit)
         {
             return value.HasValue
-                ? value.Value.ToString(format, CultureInfo.InvariantCulture) + unit
+                ? value.Value.ToString(format, CultureInfo.InvariantCulture) + CxLang.Instance.TranslateUiText(unit)
                 : NoValue;
         }
 
@@ -526,10 +602,10 @@ namespace CapFrameX.ViewModel
             if (total.HasValue && total.Value > 0f)
             {
                 var totalText = total.Value.ToString("F0", CultureInfo.InvariantCulture);
-                return $"{usedText} / {totalText} GB";
+                return $"{usedText} / {totalText} {CxLang.Instance.TranslateUiText("GB")}";
             }
 
-            return $"{usedText} GB";
+            return $"{usedText} {CxLang.Instance.TranslateUiText("GB")}";
         }
 
         private void UpdateSystemStatus()
@@ -570,25 +646,26 @@ namespace CapFrameX.ViewModel
         private string BuildSystemReport()
         {
             var report = new StringBuilder();
-            report.AppendLine($"CapFrameX {_appVersionProvider.GetAppVersion()} ({_appVersionProvider.GetReleaseChannel()})");
-            AppendReportLine(report, "Operating system", OsVersion);
-            AppendReportLine(report, "Processor", DescribeWithDetails(CpuName, CpuDetails));
-            AppendReportLine(report, "Graphics card", DescribeWithDetails(GpuName, GpuDetails));
-            AppendReportLine(report, "Mainboard", DescribeWithDetails(MainboardName, MainboardDetails));
-            AppendReportLine(report, "Memory", DescribeWithDetails(RamName, RamDetails));
+            report.AppendLine(CxLang.Format("InfoViewModel_ReportHeader01",
+                _appVersionProvider.GetAppVersion(), _appVersionProvider.GetReleaseChannel()));
+            AppendReportLine(report, CxLang.T("InfoViewModel_OperatingSystem"), OsVersion);
+            AppendReportLine(report, CxLang.T("InfoViewModel_Processor"), DescribeWithDetails(CpuName, CpuDetails));
+            AppendReportLine(report, CxLang.T("InfoViewModel_GraphicsCard"), DescribeWithDetails(GpuName, GpuDetails));
+            AppendReportLine(report, CxLang.T("InfoViewModel_Mainboard"), DescribeWithDetails(MainboardName, MainboardDetails));
+            AppendReportLine(report, CxLang.T("InfoViewModel_Memory"), DescribeWithDetails(RamName, RamDetails));
             report.AppendLine();
-            AppendReportLine(report, "Resizable BAR", DescribeStatus(ResizableBarStatus));
-            AppendReportLine(report, "Hardware-accelerated GPU scheduling", DescribeStatus(_systemInfo.HardwareAcceleratedGPUSchedulingStatus));
-            AppendReportLine(report, "Windows Game Mode", DescribeStatus(_systemInfo.GameModeStatus));
-            AppendReportLine(report, "Secure Boot", SecureBootStatus.State);
-            AppendReportLine(report, "Test signing", TestSigningStatus.State);
-            AppendReportLine(report, "Virtualization-based security", VbsStatus.State);
-            AppendReportLine(report, "Memory integrity", MemoryIntegrityStatus.State);
+            AppendReportLine(report, CxLang.T("InfoView_ResizableBAR"), DescribeStatus(ResizableBarStatus));
+            AppendReportLine(report, CxLang.T("InfoView_HardwareAcceleratedGPUScheduling"), DescribeStatus(_systemInfo.HardwareAcceleratedGPUSchedulingStatus));
+            AppendReportLine(report, CxLang.T("InfoView_WindowsGameMode"), DescribeStatus(_systemInfo.GameModeStatus));
+            AppendReportLine(report, CxLang.T("InfoView_SecureBoot"), SecureBootStatus.State);
+            AppendReportLine(report, CxLang.T("InfoView_TestSigning"), TestSigningStatus.State);
+            AppendReportLine(report, CxLang.T("InfoViewModel_VirtualizationBasedSecurity"), VbsStatus.State);
+            AppendReportLine(report, CxLang.T("InfoView_MemoryIntegrity"), MemoryIntegrityStatus.State);
             report.AppendLine();
-            AppendReportLine(report, "PawnIO driver", DescribeComponent(PawnIoStatus));
-            AppendReportLine(report, "PresentMon", DescribeComponent(PresentMonStatus));
-            AppendReportLine(report, "RTSS", DescribeComponent(RtssStatus));
-            AppendReportLine(report, "Vulkan layer", DescribeComponent(VulkanLayerStatus));
+            AppendReportLine(report, CxLang.T("InfoView_PawnIODriver"), DescribeComponent(PawnIoStatus));
+            AppendReportLine(report, CxLang.T("InfoView_PresentMon"), DescribeComponent(PresentMonStatus));
+            AppendReportLine(report, CxLang.T("InfoView_RTSS"), DescribeComponent(RtssStatus));
+            AppendReportLine(report, CxLang.T("InfoView_VulkanLayer"), DescribeComponent(VulkanLayerStatus));
             return report.ToString();
         }
 
@@ -603,11 +680,11 @@ namespace CapFrameX.ViewModel
             switch (status)
             {
                 case ESystemInfoTertiaryStatus.Enabled:
-                    return "Enabled";
+                    return CxLang.T("InfoViewModel_Enabled");
                 case ESystemInfoTertiaryStatus.Disabled:
-                    return "Disabled";
+                    return CxLang.T("InfoViewModel_Disabled");
                 default:
-                    return "Unknown";
+                    return CxLang.T("InfoViewModel_Unknown");
             }
         }
 
@@ -639,7 +716,13 @@ namespace CapFrameX.ViewModel
         {
             _isViewActive = true;
             UpdateSensorEvaluationState();
+            RefreshSoftwareComponents();
+        }
 
+        // Cheap enough for every visit of the tab. It also rebuilds the texts that are resolved at
+        // query time (the Vulkan layer details), which is why a language switch takes this path too.
+        private void RefreshSoftwareComponents()
+        {
             if (_sensorService.SensorServiceCompletionSource.Task.IsCompleted)
                 _ = Task.Run(UpdateSoftwareComponents);
         }

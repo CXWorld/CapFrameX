@@ -1,5 +1,6 @@
-﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Capture.Contracts;
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
@@ -58,14 +59,22 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		/// <summary>
+		/// False while the overlay renderer is set to Off; the status bar toggle is disabled then.
+		/// </summary>
+		public bool CanSwitchOverlay => _appConfiguration.OverlayRenderer != EOverlayRenderer.Off;
+
 		public string OverlayToggleToolTip
 		{
 			get
 			{
+				if (!CanSwitchOverlay)
+					return CxLang.T("OverlayView_OverlayRendererIsOff");
+
 				string hotkey = _appConfiguration.OverlayHotKey;
 				return string.IsNullOrWhiteSpace(hotkey)
-					? "Switch the overlay on or off."
-					: $"Switch the overlay on or off (hotkey {hotkey}).";
+					? CxLang.T("StateViewModel_SwitchTheOverlayOnOrOff")
+					: CxLang.Format("StateViewModel_SwitchTheOverlayOnOrOffHotkey0", hotkey);
 			}
 		}
 
@@ -80,7 +89,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		public string HookOverlayStatusText
-			=> HookOverlayStatusLabel.ForState(_hookOverlayStatus?.State ?? EHookOverlayStatus.Waiting);
+			=> CxLang.TranslateEnum(_hookOverlayStatus?.State ?? EHookOverlayStatus.Waiting);
 
 		public string HookOverlayStatusColor
 		{
@@ -90,9 +99,10 @@ namespace CapFrameX.ViewModel
 				switch (_hookOverlayStatus.State)
 				{
 					case EHookOverlayStatus.Active: return "LimeGreen";
-					case EHookOverlayStatus.Fallback: return "DarkOrange";
-					// Needs the user to act (restart the game), so it must not read as a
-					// transient "Waiting" orange, but it is not a malfunction either.
+					case EHookOverlayStatus.Unavailable: return "DarkOrange";
+					// Deliberate and final for this process (restart the game, or the hook-free
+					// overlay standing in for an anti-cheat title or Direct3D 9), so it must not
+					// read as a transient "Waiting" orange, but it is not a malfunction either.
 					case EHookOverlayStatus.Blocked: return "Goldenrod";
 					// Same as Blocked: the next launch applies the next stage, nothing is broken.
 					case EHookOverlayStatus.RestartPending: return "Goldenrod";
@@ -106,7 +116,7 @@ namespace CapFrameX.ViewModel
 		}
 
 		public string HookOverlayStatusToolTip => _hookOverlayStatus?.Detail ??
-			"Waiting for hook status.";
+			CxLang.T("StateViewModel_WaitingForHookStatus");
 
 		public bool IsCaptureModeActive
 		{
@@ -174,11 +184,22 @@ namespace CapFrameX.ViewModel
 			_logger = logger;
 
 			UpdateStatusInfoCommand = new DelegateCommand(RefreshSystemInfo);
+			CxLang.Instance.PropertyChanged += (_, __) =>
+			{
+				RaisePropertyChanged(nameof(IsCaptureModeActive));
+				RaisePropertyChanged(nameof(IsOverlayActive));
+				RaisePropertyChanged(nameof(IsLoggingActive));
+				RaisePropertyChanged(nameof(IsLoggedIn));
+				RaisePropertyChanged(nameof(IsGameModeEnabled));
+				RaisePropertyChanged(nameof(IsHAGSEnabled));
+				RaisePropertyChanged(nameof(HookOverlayStatusText));
+				RaisePropertyChanged(nameof(ResizableBarStatus));
+				RaisePropertyChanged(nameof(OverlayToggleToolTip));
+			};
 
 			IsCaptureModeActive = false;
 			ShowOverlayActive(_appConfiguration.IsOverlayActive &&
-				(rTSSService.IsRTSSInstalled() || _appConfiguration.EnableHookFreeOverlay ||
-				 _appConfiguration.EnableHookOverlay));
+				_appConfiguration.CanShowOverlay(rTSSService.IsRTSSInstalled()));
 			IsHookOverlayStatusVisible = _appConfiguration.EnableHookOverlay;
 			ApplyHookOverlayStatus(hookOverlayStatusService.Current);
 			Dispatcher uiDispatcher = Dispatcher.CurrentDispatcher;
@@ -202,6 +223,19 @@ namespace CapFrameX.ViewModel
 			_appConfiguration.OnValueChanged
 				.Where(x => x.key == nameof(IAppConfiguration.OverlayHotKey))
 				.Subscribe(_ => RaisePropertyChanged(nameof(OverlayToggleToolTip)));
+
+			_appConfiguration.OnValueChanged
+				.Where(x => x.key == nameof(IAppConfiguration.OverlayRenderer))
+				.Subscribe(_ =>
+				{
+					Action apply = () =>
+					{
+						RaisePropertyChanged(nameof(CanSwitchOverlay));
+						RaisePropertyChanged(nameof(OverlayToggleToolTip));
+					};
+					if (uiDispatcher.CheckAccess()) apply();
+					else uiDispatcher.BeginInvoke(apply);
+				});
 
 			_captureService.IsCaptureModeActiveStream
 				.Subscribe(state => IsCaptureModeActive = state);
@@ -294,11 +328,11 @@ namespace CapFrameX.ViewModel
 			try
 			{
 				var version = _appVersionProvider.GetAppVersion();
-				info = $"Revision: {version.Revision}";
+				info = CxLang.Format("StateViewModel_Revision0", version.Revision);
 			}
 			catch
 			{
-				info = "No info available";
+				info = CxLang.T("StateViewModel_NoInfoAvailable");
 			}
 
 			return info;

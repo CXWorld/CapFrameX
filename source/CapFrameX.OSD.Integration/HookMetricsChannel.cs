@@ -16,8 +16,8 @@ namespace CapFrameX.OSD.Integration
     /// Layout is a fixed 32-byte header + up to <see cref="MaxEntries"/> fixed-size records (no
     /// offset math; only the first <c>EntryCount</c> records are written and read). The final
     /// four bytes of the v2 record carry the optional group color; v4 appends the per-entry text
-    /// scales (group / value font size in percent) and grows the record to 376 bytes. A reader
-    /// that predates v4 rejects the version and falls back to its local metrics rather than
+    /// scales (group / value font size in percent); v5 adds the value display mode (380 bytes). A reader
+    /// that predates v5 rejects the version and falls back to its local metrics rather than
     /// parsing misaligned records; a hook that old only exists in a game process that was
     /// injected before the app was updated. Updates use a
     /// SEQLOCK: the sequence counter is odd while writing, even when a consistent snapshot is
@@ -31,8 +31,8 @@ namespace CapFrameX.OSD.Integration
 
         // ---- shared layout (MUST match the native reader in overlay_metrics_shm.cpp) ----
         internal const uint Magic = 0x31584643u; // 'C''F''X''1'
-        // v2 = target PID in the header; v4 = 376-byte records with the text scales (2026-09).
-        internal const uint Version = 4;
+        // v2 = target PID; v4 = text scales; v5 = percentage value display mode.
+        internal const uint Version = 5;
         // Raised 64 -> 256 (2026-07-28): the Enthusiast template enables one entry per core clock
         // AND per core load (plus per-thread loads where the CPU exposes them), so a 24-core CPU
         // already produced 68 entries. Publish() truncates, and GetTemplateSortOrder puts the
@@ -55,6 +55,12 @@ namespace CapFrameX.OSD.Integration
         // bit4: bits 24..31 carry the PresentMon replay-buffer baseline in 50 ms units.
         // Absence preserves the old native core's 500 ms baseline.
         internal const uint FlagReplayBuffer = 16u;
+        // bit5: scale the panel and its margins with the back buffer's height over 1080 px
+        // (CFX_METRICS_FLAG_RESOLUTION_SCALE). Old hooks ignore it and keep fixed pixel sizes.
+        internal const uint FlagResolutionScale = 32u;
+        // bit6: the classic layout's font family follows the records at OffFontFamily
+        // (CFX_METRICS_FLAG_FONT_FAMILY). Publish sets it with the name; old hooks ignore both.
+        internal const uint FlagFontFamily = 64u;
         internal const int BackgroundAlphaShift = 8;
         internal const int ZoomShift = 16;
         internal const int ReplayBufferShift = 24;
@@ -66,16 +72,20 @@ namespace CapFrameX.OSD.Integration
                           OffTargetPid = 16, OffFlags = 20, OffWriteQpc = 24;
         internal const int HeaderSize = 32;
         // record field offsets (relative to the record start) + sizes. v4 appended the two
-        // text-scale fields (group / value font size in percent) behind the v2 group color,
-        // growing the record from 368 to 376 bytes; every older offset is unchanged.
+        // text-scale fields behind the v2 group color. v5 appends the display mode;
+        // every older field offset is unchanged.
         private const int RId = 0, SzId = 64, RGroup = 64, SzGroup = 64, RLabel = 128, SzLabel = 96,
                           RValueText = 224, SzValueText = 64, RUnit = 288, SzUnit = 16,
                           RValue = 304, RUpperLimit = 312, RLowerLimit = 320, RIsNumeric = 328,
                           RColor = 332, RShowGraph = 336, RDigits = 340, RHasUpper = 344,
                           RUpperColor = 348, RHasLower = 352, RLowerColor = 356, RSeparators = 360,
-                          RGroupColor = 364, RGroupScale = 368, RValueScale = 372;
-        internal const int RecordSize = 376;
-        private const int MapSize = 131072; // > HeaderSize + MaxEntries*RecordSize (96288)
+                          RGroupColor = 364, RGroupScale = 368, RValueScale = 372,
+                          RValueDisplayMode = 376;
+        internal const int RecordSize = 380;
+        private const int MapSize = 131072; // > HeaderSize + MaxEntries*RecordSize (97312)
+        // Behind the largest record area, so neither the record layout nor the version changes:
+        // UTF-8, NUL-terminated within SzFontFamily (CFX_METRICS_FONT_FAMILY_OFFSET / _BYTES).
+        internal const int OffFontFamily = 0x18000, SzFontFamily = 128;
 
         private const string Sddl = "D:(A;;GA;;;WD)S:(ML;;NW;;;LW)";
         private const uint SDDL_REVISION_1 = 1;
@@ -124,6 +134,11 @@ namespace CapFrameX.OSD.Integration
         private static extern IntPtr LocalFree(IntPtr handle);
 
         public static HookMetricsChannel Create(int targetPid = 0)
+            => Create(targetPid, MapName);
+
+        // Allow protocol tests to use an isolated session-local section without requiring
+        // SeCreateGlobalPrivilege or sharing the live application's metrics mapping.
+        internal static HookMetricsChannel Create(int targetPid, string mapName)
         {
             var ch = new HookMetricsChannel();
             try
@@ -142,11 +157,11 @@ namespace CapFrameX.OSD.Integration
                         lpSecurityDescriptor = psd,
                         bInheritHandle = 0
                     };
-                    ch._mapHandle = CreateFileMappingW(INVALID_HANDLE_VALUE, ref sa, PAGE_READWRITE, 0, MapSize, MapName);
+                    ch._mapHandle = CreateFileMappingW(INVALID_HANDLE_VALUE, ref sa, PAGE_READWRITE, 0, MapSize, mapName);
                     int err = Marshal.GetLastWin32Error();
                     if (ch._mapHandle == IntPtr.Zero)
                     {
-                        Log.Warning("HookOverlay: CreateFileMapping('{name}') failed ({err})", MapName, err);
+                        Log.Warning("HookOverlay: CreateFileMapping('{name}') failed ({err})", mapName, err);
                         return ch;
                     }
                     ch._view = MapViewOfFile(ch._mapHandle, FILE_MAP_WRITE, 0, 0, new UIntPtr(MapSize));
@@ -171,7 +186,7 @@ namespace CapFrameX.OSD.Integration
                     Thread.MemoryBarrier();
                     ch._seq++; // even => consistent empty snapshot ready
                     Marshal.WriteInt32(ch._view, OffSeq, ch._seq);
-                    Log.Information("HookOverlay: metrics channel '{name}' created", MapName);
+                    Log.Information("HookOverlay: metrics channel '{name}' created", mapName);
                 }
                 finally
                 {
@@ -188,12 +203,17 @@ namespace CapFrameX.OSD.Integration
         /// <summary>
         /// Seqlock-publish the current entry set (truncated to <see cref="MaxEntries"/>).
         /// <paramref name="flags"/> is stamped into the header (e.g. <see cref="FlagPresentMonGraph"/>)
-        /// so the hook knows which graph source to use.
+        /// so the hook knows which graph source to use. A non-empty <paramref name="fontFamily"/>
+        /// travels in the same snapshot and sets <see cref="FlagFontFamily"/>; without one the hook
+        /// keeps the classic layout on its default font.
         /// </summary>
-        public void Publish(System.Collections.Generic.IReadOnlyList<OsdEntry> entries, uint flags, int targetPid)
+        public void Publish(System.Collections.Generic.IReadOnlyList<OsdEntry> entries, uint flags, int targetPid,
+            string fontFamily = null)
         {
             if (entries == null) return;
             targetPid = NormalizePid(targetPid);
+            flags &= ~FlagFontFamily;
+            if (!string.IsNullOrWhiteSpace(fontFamily)) flags |= FlagFontFamily;
             lock (_gate)
             {
                 if (_view == IntPtr.Zero) return;
@@ -249,7 +269,10 @@ namespace CapFrameX.OSD.Integration
                     Marshal.WriteInt32(rec, RGroupColor, unchecked((int)e.GroupColor));
                     Marshal.WriteInt32(rec, RGroupScale, e.GroupScalePercent);
                     Marshal.WriteInt32(rec, RValueScale, e.ValueScalePercent);
+                    Marshal.WriteInt32(rec, RValueDisplayMode, (int)e.ValueDisplayMode);
                 }
+                WriteStr(_view, OffFontFamily, SzFontFamily,
+                    (flags & FlagFontFamily) != 0 ? TruncateUtf8(fontFamily.Trim(), SzFontFamily - 1) : null);
 
                 Thread.MemoryBarrier();
                 _seq++; // even => consistent snapshot ready
@@ -303,6 +326,22 @@ namespace CapFrameX.OSD.Integration
                 Array.Copy(bytes, buf, Math.Min(bytes.Length, size - 1));
             }
             Marshal.Copy(buf, 0, IntPtr.Add(recBase, off), size);
+        }
+
+        // WriteStr cuts at a byte boundary; a font name must not end in half a UTF-8 sequence,
+        // or the hook would ask DirectWrite for a family with a replacement character.
+        internal static string TruncateUtf8(string s, int maxBytes)
+        {
+            if (Encoding.UTF8.GetByteCount(s) <= maxBytes) return s;
+            var builder = new StringBuilder();
+            int bytes = 0;
+            foreach (var rune in s.EnumerateRunes())
+            {
+                bytes += rune.Utf8SequenceLength;
+                if (bytes > maxBytes) break;
+                builder.Append(rune.ToString());
+            }
+            return builder.ToString();
         }
 
         private static void WriteDouble(IntPtr recBase, int off, double v)

@@ -1,8 +1,8 @@
-﻿using AutoMapper;
-using CapFrameX.Statistics.NetStandard;
+﻿using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.Webservice.Data.Commands;
 using CapFrameX.Webservice.Data.DTO;
+using CapFrameX.Webservice.Data.Mappings;
 using CapFrameX.Webservice.Data.Extensions;
 using CapFrameX.Webservice.Data.Interfaces;
 using FluentValidation;
@@ -20,7 +20,6 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 	{
 		private readonly IValidator<UploadSessionsCommand> _validator;
 		private readonly ISessionService _capturesService;
-		private readonly IMapper _mapper;
 		private static IFrametimeStatisticProviderOptions _frametimeStatisticProviderOptions = new FrametimeStatisticProviderOptions()
 		{
 			MovingAverageWindowSize = 500,
@@ -29,11 +28,10 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 		};
 		private static FrametimeStatisticProvider _frametimeStatisticProvider =  new FrametimeStatisticProvider(_frametimeStatisticProviderOptions);
 
-		public UploadCapturesHandler(IValidator<UploadSessionsCommand> validator, ISessionService capturesService, IMapper mapper)
+		public UploadCapturesHandler(IValidator<UploadSessionsCommand> validator, ISessionService capturesService)
 		{
 			_validator = validator;
 			_capturesService = capturesService;
-			_mapper = mapper;
         }
 
 		public async Task<Guid> Handle(UploadSessionsCommand command, CancellationToken cancellationToken)
@@ -43,7 +41,7 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 			var sessions = new List<SqSessionData>();
 			foreach(var session in command.Sessions)
 			{
-				var sessionData = _mapper.Map<SqSessionData>(session);
+				var sessionData = session.ToSqSessionData();
 				var fileBytes = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(session));
 
 				var assetId = await _capturesService.UploadAsset(fileBytes.Compress(), session.Hash + ".json.gz");

@@ -1,6 +1,7 @@
 using System;
 using System.Globalization;
 using System.Windows.Input;
+using CapFrameX.Contracts.Localization;
 
 namespace CapFrameX.ViewModel
 {
@@ -27,21 +28,24 @@ namespace CapFrameX.ViewModel
 
         public bool CanRememberGameCaptureTime => AreButtonsActive && !string.IsNullOrWhiteSpace(_currentProcessToCapture);
 
-        public string CaptureTimeScopeLabel => HasGameCaptureTime ? "This game" : "Global";
+        public string CaptureTimeScopeLabel => HasGameCaptureTime
+            ? CxLang.T("CaptureViewModel_ThisGame")
+            : CxLang.T("CaptureViewModel_Global");
 
         public string CaptureTimeScopeToolTip => HasGameCaptureTime
-            ? $"Capture duration saved for {_currentGameNameToCapture} ({_currentProcessToCapture}). Click to use the global duration."
-            : "Global capture duration. Click to remember a separate duration for the selected game.";
+            ? string.Format(CxLang.T("CaptureViewModel_CaptureDurationSavedFor"), _currentGameNameToCapture, _currentProcessToCapture)
+            : CxLang.T("CaptureViewModel_GlobalCaptureDurationClick");
 
         public string CaptureTimeProcessLabel => string.IsNullOrWhiteSpace(_currentProcessToCapture)
-            ? "Global capture duration" : _currentProcessToCapture;
+            ? CxLang.T("CaptureViewModel_GlobalCaptureDuration") : _currentProcessToCapture;
 
         public string GlobalCaptureTimeDescription =>
-            (_appConfiguration.CaptureTime == 0 ? "No limit" : _appConfiguration.CaptureTime.ToString(CultureInfo.InvariantCulture) + " s")
-            + (HasGameCaptureTime ? " · Removes this game's custom duration" : " · Used by games without a custom duration");
+            (_appConfiguration.CaptureTime == 0 ? CxLang.T("CaptureViewModel_NoLimit") : _appConfiguration.CaptureTime.ToString(CultureInfo.InvariantCulture) + " s")
+            + (HasGameCaptureTime ? CxLang.T("CaptureViewModel_RemovesThisGamesCustom") : CxLang.T("CaptureViewModel_UsedByGamesWithoutA"));
 
         public string GameCaptureTimeDescription => string.IsNullOrWhiteSpace(_currentProcessToCapture)
-            ? "Select a process first" : $"Changes apply to {_currentGameNameToCapture} only";
+            ? CxLang.T("CaptureViewModel_SelectAProcessFirst")
+            : string.Format(CxLang.T("CaptureViewModel_ChangesApplyTo0Only"), _currentGameNameToCapture);
 
         public ICommand UseGlobalCaptureTimeCommand { get; }
 

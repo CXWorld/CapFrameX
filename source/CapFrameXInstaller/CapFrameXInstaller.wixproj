@@ -1,91 +1,33 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="WixToolset.Sdk/6.0.2">
+  <!-- WiX v6 is an MSBuild SDK restored from NuGet; nothing has to be installed on the build
+       machine. The file list comes from the <Files> element in Product.wxs, which replaces the
+       heat.exe pre-build step and filter.xslt of the WiX v3 project. -->
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>3.10</ProductVersion>
-    <ProjectGuid>77416b78-a34f-4cfc-9562-a2599d054c8f</ProjectGuid>
-    <SchemaVersion>2.0</SchemaVersion>
     <OutputName>CapFrameXInstaller</OutputName>
     <OutputType>Package</OutputType>
+    <ProjectGuid>{77416b78-a34f-4cfc-9562-a2599d054c8f}</ProjectGuid>
+    <Platforms>x64</Platforms>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <!-- Pinned because Product.wxs references the x64 flavours of the util extension's custom
+         actions (Wix4CloseApplications_X64, Wix4UtilCA_X64). -->
+    <InstallerPlatform>x64</InstallerPlatform>
     <RepoRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\..'))</RepoRoot>
+    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <!-- ICE61 is expected: downgrades are intentionally supported, see MajorUpgrade in Product.wxs. -->
+    <SuppressIces>ICE57;ICE61</SuppressIces>
   </PropertyGroup>
   <Import Project="$(RepoRoot)\version\Version.props" />
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
-    <OutputPath>bin\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug;CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\x64\$(Configuration)\net10.0-windows</DefineConstants>
-    <SuppressValidation>False</SuppressValidation>
-    <SuppressIces>ICE57;ICE61</SuppressIces>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <OutputPath>bin\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\x64\$(Configuration)\net10.0-windows</DefineConstants>
-    <SuppressIces>ICE57;ICE61</SuppressIces>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
-    <DefineConstants>Debug;CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\x64\$(Configuration)\net10.0-windows</DefineConstants>
-    <SuppressValidation>False</SuppressValidation>
-    <SuppressIces>ICE57;ICE61</SuppressIces>
-    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <DefineConstants>CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\x64\$(Configuration)\net10.0-windows</DefineConstants>
-    <SuppressIces>ICE57;ICE61</SuppressIces>
-    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
-    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
-  </PropertyGroup>
   <PropertyGroup>
+    <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);Debug</DefineConstants>
+    <DefineConstants>$(DefineConstants);CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\x64\$(Configuration)\net10.0-windows</DefineConstants>
     <DefineConstants>$(DefineConstants);CapFrameXVersion=$(CapFrameXVersion);CapFrameXInstallerVersion=$(CapFrameXInstallerVersion)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="CapFrameX.Binaries.wxs" />
-    <Compile Include="Product.wxs" />
+    <PackageReference Include="WixToolset.Util.wixext" />
   </ItemGroup>
   <ItemGroup>
-    <WixExtension Include="WixUtilExtension">
-      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
-      <Name>WixUtilExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixUIExtension">
-      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
-      <Name>WixUIExtension</Name>
-    </WixExtension>
+    <ProjectReference Include="..\CapFrameX.CustomInstallerActions\CapFrameX.CustomInstallerActions.csproj" />
+    <ProjectReference Include="..\CapFrameX\CapFrameX.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\CapFrameX.CustomInstallerActions\CapFrameX.CustomInstallerActions.csproj">
-      <Name>CapFrameX.CustomInstallerActions</Name>
-      <Project>{d26ea74f-8d44-453c-ad70-3789affdf85f}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-    <ProjectReference Include="..\CapFrameX\CapFrameX.csproj">
-      <Name>CapFrameX</Name>
-      <Project>{aaa73d26-5cd6-4066-b84c-5bd34057b346}</Project>
-      <Private>True</Private>
-      <DoNotHarvest>True</DoNotHarvest>
-      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
-      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
-  <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">
-    <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
-  </Target>
-  <PropertyGroup>
-    <PreBuildEvent>"%25WIX%25\bin\heat.exe" dir "$(RepoRoot)\source\CapFrameX\bin\x64\$(ConfigurationName)\net10.0-windows" -var var.CapFrameXInstaller.BinaryDir -dr INSTALLFOLDER -ag -cg CapFrameXBinaries -scom -sreg -sfrag -srd -o "$(RepoRoot)\source\CapFrameXInstaller\CapFrameX.Binaries.wxs" -t "$(RepoRoot)\source\CapFrameXInstaller\filter.xslt"</PreBuildEvent>
-  </PropertyGroup>
-  <!--
-	To modify your build process, add your task inside one of the targets below and uncomment it.
-	Other similar extension points exist, see Wix.targets.
-	<Target Name="BeforeBuild">
-	</Target>
-	<Target Name="AfterBuild">
-	</Target>
-	-->
 </Project>

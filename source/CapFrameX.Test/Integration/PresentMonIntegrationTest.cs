@@ -436,7 +436,31 @@ namespace CapFrameX.Test.Integration
             }
         }
 
+        [TestMethod]
+        [Timeout(30000)]
+        public void PresentMon_EndsWhenCapFrameXReleasesItsJob()
+        {
+            bool started = StartPresentMonService();
+            Assert.IsTrue(started, "PresentMon service failed to start");
+
+            var presentMon = GetCaptureServiceField<Process>("_presentMonProcess");
+            var job = GetCaptureServiceField<IDisposable>("_presentMonJob");
+            Assert.IsNotNull(job, "PresentMon was not assigned to a job");
+
+            // What Windows does when CapFrameX ends, however it ends: the last handle to the job closes.
+            job.Dispose();
+
+            Assert.IsTrue(presentMon.WaitForExit(5000), "PresentMon outlived the job of CapFrameX");
+        }
+
         #region Helpers
+
+        private T GetCaptureServiceField<T>(string name) where T : class
+        {
+            var field = typeof(PresentMonCaptureService).GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.IsNotNull(field, $"PresentMonCaptureService has no field {name}");
+            return field.GetValue(_captureService) as T;
+        }
 
         private Process StartVkcube()
         {

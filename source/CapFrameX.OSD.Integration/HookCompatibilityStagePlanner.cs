@@ -63,7 +63,7 @@ namespace CapFrameX.OSD.Integration
                 {
                     case HookCompatibilityStageId.VulkanGraphics: name = "Vulkan graphics composite"; break;
                     case HookCompatibilityStageId.VulkanCompute: name = "Vulkan compute composite"; break;
-                    case HookCompatibilityStageId.VulkanSuspended: name = "Vulkan hook-free fallback"; break;
+                    case HookCompatibilityStageId.VulkanSuspended: name = "Vulkan layer suspended"; break;
                     case HookCompatibilityStageId.VendorAware: name = "vendor-aware"; break;
                     case HookCompatibilityStageId.VendorAwareXeFgQueue:
                         name = "vendor-aware + XeSS-FG native queue"; break;
@@ -194,20 +194,23 @@ namespace CapFrameX.OSD.Integration
             string reason;
 
             HookCompatibilityStage pending = learnedCurrent ? learned.PendingStage() : null;
-            if (IsSupported(pending, evidence))
+            if (IsSupported(pending, evidence) &&
+                CanReuseLearnedStage(pending, catalogStage, ladder))
             {
                 startIndex = IndexOfOrInsert(ladder, pending);
                 reason = $"learned profile scheduled stage {startIndex + 1}/{ladder.Count} " +
                     $"({pending.DisplayName}) for this launch";
             }
-            else if (learnedCurrent && learned.Verified && learnedStage != null)
+            else if (learnedCurrent && learned.Verified && learnedStage != null &&
+                     CanReuseLearnedStage(learnedStage, catalogStage, ladder))
             {
                 // A verification is the preferred entry point, not proof that every other
                 // route failed. Keep the remaining ladder for subsequent routing changes.
                 startIndex = IndexOfOrInsert(ladder, learnedStage);
                 reason = $"learned profile ({learned.EvidenceSignature})";
             }
-            else if (learnedStage != null && !learnedCurrent)
+            else if (learnedStage != null && !learnedCurrent &&
+                     CanReuseLearnedStage(learnedStage, catalogStage, ladder))
             {
                 // The hook changed underneath a learned entry: re-verify from the stage that
                 // used to work rather than from the very beginning.
@@ -251,8 +254,49 @@ namespace CapFrameX.OSD.Integration
                     : "module list unreadable; starting vendor-aware";
             }
 
+            // Early injection only takes effect when the hook attaches at process start. A launch
+            // the hook joins late runs the stage's routing without it and is judged as exactly
+            // that, so its verdict neither verifies nor exhausts the early stage: the usual
+            // escalation (NoQueue, NoPresent, EarlyInjectionRequired) leads back to it.
+            HookCompatibilityStage start = ladder[startIndex];
+            if (start.RequiresEarlyInjection && evidence.AttachMode == HookAttachMode.Late)
+            {
+                startIndex = IndexOfOrInsert(ladder, start.WithEarlyInjection(null));
+                reason += "; the game was already running, so this launch runs it without " +
+                    "early injection";
+            }
+
             return new HookCompatibilityStagePlan(ladder, startIndex, reason,
                 probingEnabled: true, evidence);
+        }
+
+        /// <summary>
+        /// The stage a learned entry makes <see cref="Plan"/> start with before the evidence and
+        /// the catalog have their say: a pending stage of this hook build, else its verified
+        /// stage, else the stage an entry of an older hook build ran, which Plan re-verifies. The
+        /// manager registers early-injection targets from it, so they survive a hook update.
+        /// </summary>
+        internal static HookCompatibilityStage LearnedStartStage(HookLearnedProfileEntry learned,
+            string hookBuildHash)
+        {
+            if (learned == null) return null;
+            if (!learned.MatchesHookBuild(hookBuildHash)) return learned.ToStage();
+            return learned.PendingStage() ?? (learned.Verified ? learned.ToStage() : null);
+        }
+
+        private static bool CanReuseLearnedStage(HookCompatibilityStage stage,
+            HookCompatibilityStage catalogStage, IReadOnlyList<HookCompatibilityStage> ladder)
+        {
+            if (catalogStage == null) return true;
+            // The catalog removed earlier routes and owns its exact flags and timing. A learned
+            // entry may reuse that stage or a remaining escalation, but must not insert an old
+            // route or timing override before the catalog. Without a catalog, learned modifiers
+            // retain their existing behaviour.
+            foreach (HookCompatibilityStage candidate in ladder)
+            {
+                if (candidate.SameRouting(stage)) return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -298,8 +342,10 @@ namespace CapFrameX.OSD.Integration
 
         internal static bool AllowsGenericRoute(HookTargetEvidence evidence)
         {
-            // Under the generic route the hook never draws on a D3D11 swapchain
-            // (overlay.cpp: knownD3D12Route suppresses OverlayD3D11OnPresent).
+            // The generic route only changes how the hook draws on D3D12; a known D3D11 title gets
+            // no generic stages. A loaded d3d12.dll is only a hint: a D3D11 title may load it for
+            // other work. The hook then draws D3D11 under the generic route anyway, like RTSS, and a
+            // hook from before that ends the stage with NoD3D12Swapchain.
             if (string.Equals(evidence.Runtime, "D3D11", StringComparison.OrdinalIgnoreCase))
                 return false;
             if (string.Equals(evidence.Runtime, "D3D12", StringComparison.OrdinalIgnoreCase))
@@ -367,6 +413,16 @@ namespace CapFrameX.OSD.Integration
                 return null;
             }
 
+            // The first untried stage of the ladder, in ladder order, that fits.
+            HookCompatibilityStage FirstUntried(Predicate<HookCompatibilityStage> fits)
+            {
+                foreach (HookCompatibilityStage candidate in ladder)
+                {
+                    if (fits(candidate) && !tried.Contains(candidate.Key)) return candidate;
+                }
+                return Exhausted();
+            }
+
             HookCompatibilityStage Resolve()
             {
                 switch (verdict)
@@ -426,6 +482,14 @@ namespace CapFrameX.OSD.Integration
                         if (early) return Exhausted();
                         if (vendor) return Escalate((HookCompatibilityStageId.Generic, false));
                         return Escalate((id, true));
+
+                    case HookCompatibilityVerdict.NoD3D12Swapchain:
+                        // A hook that still refuses D3D11 under the generic route: to it every
+                        // generic stage is D3D12-only, whatever put it on the ladder (the evidence,
+                        // a learned entry, a profile or a live escalation). Continue on the routes
+                        // that also draw on D3D11, vendor-aware before its early injection.
+                        // Leaving the generic route always takes a fresh process.
+                        return FirstUntried(candidate => !candidate.IsGeneric);
 
                     case HookCompatibilityVerdict.NoPresent:
                         if (early) return Exhausted();

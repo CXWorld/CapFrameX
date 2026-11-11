@@ -14,9 +14,19 @@ namespace CapFrameX.OSD.Integration
         StatusTimeout,
         NoPresent,
         NoQueue,
+        /// <summary>
+        /// Generic route: Presents arrived, but none proved a D3D12 or a D3D11 device. The title
+        /// presents through D3D11 and loaded d3d12.dll for other work, and the hook still refuses
+        /// D3D11 under the generic route (builds before it drew D3D11 there like RTSS), so no
+        /// generic stage can draw on it.
+        /// </summary>
+        NoD3D12Swapchain,
         RendererStalled,
         OsdCreateFailed,
-        /// <summary>Paused / minimized / host dormant: the stage clock stops.</summary>
+        /// <summary>
+        /// Paused / minimized / host dormant, or a title PresentMon sees no Present from before the
+        /// hook saw its first: the stage clock stops.
+        /// </summary>
         Inconclusive,
         /// <summary>A replacement swapchain has no proven presentation queue yet.</summary>
         QueueRebinding
@@ -41,6 +51,12 @@ namespace CapFrameX.OSD.Integration
         public ulong ActiveElapsedMs;
         /// <summary>Wall time since the stage started observing, pauses included.</summary>
         public ulong TotalElapsedMs;
+        /// <summary>
+        /// PresentMon sees no recent Present from the target. Only read while the hook has not
+        /// seen its first Present: a title that is loading or showing an intro presents nothing
+        /// the hook could have missed. The default (false) keeps the clocks running.
+        /// </summary>
+        public bool TargetNotPresenting;
     }
 
     /// <summary>
@@ -54,6 +70,19 @@ namespace CapFrameX.OSD.Integration
         internal const ulong ProbeNoQueueMs = 5000;
         internal const ulong ProbeStageBudgetMs = 20000;
         internal const ulong ProbeInconclusiveMaxMs = 60000;
+        // A target counts as presenting while PresentMon delivered one of its frame rows within
+        // this window. Generous on purpose: a wrong "not presenting" only delays a verdict,
+        // while a wrong "presenting" brings back the false NoPresent of a slow-loading title.
+        internal const ulong ProbeTargetPresentRecentMs = 3000;
+
+        /// <summary>
+        /// True while PresentMon still sees Presents from the target. <paramref name="lastRowTickMs"/>
+        /// is the tick of its latest frame row, zero if it never delivered one; a row stamped just
+        /// after <paramref name="nowTickMs"/> was read counts as current.
+        /// </summary>
+        internal static bool IsTargetPresenting(ulong lastRowTickMs, ulong nowTickMs)
+            => lastRowTickMs != 0 &&
+               (nowTickMs <= lastRowTickMs || nowTickMs - lastRowTickMs <= ProbeTargetPresentRecentMs);
 
         internal static HookCompatibilityVerdict Classify(HookCompatibilityStage stage,
             bool hasStatus, NativeHookStatusSnapshot snapshot, EHookOverlayStatus? nativeState,
@@ -95,16 +124,29 @@ namespace CapFrameX.OSD.Integration
                 (flags & NativeHookStatusFlags.Dormant) != 0)
                 return HookCompatibilityVerdict.Inconclusive;
 
+            // The hook cannot miss a Present nobody makes: while PresentMon sees none either (a
+            // title that is still loading), "no Present observed" is no verdict and no clock runs.
+            if ((flags & NativeHookStatusFlags.PresentSeen) == 0 && timings.TargetNotPresenting)
+                return HookCompatibilityVerdict.Inconclusive;
+
             if (snapshot.Version >= HookStatusProbe.Version2 &&
                 (flags & NativeHookStatusFlags.PresentSeen) != 0 &&
                 snapshot.QueueState == NativeHookQueueState.BindingUnavailable)
                 return HookCompatibilityVerdict.QueueRebinding;
 
+            // Only a D3D12 swapchain needs a queue. The generic route proves the device (Api) on
+            // every Present it handles: a D3D12 one before the queue lookup, a D3D11 one in the D3D11
+            // renderer, which the route uses like RTSS. Presents that proved neither come from a hook
+            // that still refuses D3D11 there, and the d3d12.dll that put the generic stages on the
+            // ladder was loaded for other work (Metro 2033 Redux with FSR presents D3D11).
             if (stage != null && stage.IsGeneric && snapshot.Version >= HookStatusProbe.Version2 &&
+                snapshot.Api != NativeHookApi.D3D11 &&
                 (flags & NativeHookStatusFlags.PresentSeen) != 0 &&
                 snapshot.QueueState == NativeHookQueueState.None &&
                 Elapsed(timings.NoQueueSinceTickMs, timings.NowTickMs) >= ProbeNoQueueMs)
-                return HookCompatibilityVerdict.NoQueue;
+                return snapshot.Api == NativeHookApi.D3D12
+                    ? HookCompatibilityVerdict.NoQueue
+                    : HookCompatibilityVerdict.NoD3D12Swapchain;
 
             if ((flags & NativeHookStatusFlags.PresentSeen) == 0 &&
                 HookOverlayManager.HasFirstPresentTimedOut(timings.WaitingSinceTickMs,
@@ -135,7 +177,7 @@ namespace CapFrameX.OSD.Integration
             return HookCompatibilityVerdict.Pending;
         }
 
-        /// <summary>The wording the hook-free fallback carries for a failed stage.</summary>
+        /// <summary>The wording the in-game overlay status carries for a failed stage.</summary>
         internal static string DescribeVerdict(HookCompatibilityVerdict verdict,
             NativeHookStatusSnapshot snapshot, ulong lastNativeStatusTickMs)
         {
@@ -180,6 +222,10 @@ namespace CapFrameX.OSD.Integration
                 case HookCompatibilityVerdict.NoQueue:
                     return "no compatible D3D12 command queue was observed within " +
                         $"{ProbeNoQueueMs / 1000} seconds";
+                case HookCompatibilityVerdict.NoD3D12Swapchain:
+                    return "the game presents without a D3D12 swapchain (no D3D12 Present " +
+                        $"within {ProbeNoQueueMs / 1000} seconds); the generic D3D12 route " +
+                        "cannot draw on it";
                 case HookCompatibilityVerdict.QueueRebinding:
                     return "waiting for the replacement swapchain's presentation queue; " +
                         "live recovery remains enabled";

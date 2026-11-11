@@ -5,6 +5,7 @@ using CapFrameX.Contracts.Sensor;
 using CapFrameX.Mcp.Tools;
 using CapFrameX.Overlay;
 using CapFrameX.PresentMonInterface;
+using CapFrameX.Test.Mocks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
@@ -121,6 +122,10 @@ namespace CapFrameX.Test.Mcp
                 marginX: 40,
                 marginY: 50,
                 zoom: 130,
+                scaleWithResolution: true,
+                pixelOrbitEnabled: true,
+                pixelOrbitIntervalSeconds: 240,
+                pixelOrbitRadius: 4,
                 useValueSmoothing: false,
                 overlayPositionHotkey: "Control+P",
                 refreshPeriodMs: 750,
@@ -141,6 +146,14 @@ namespace CapFrameX.Test.Mcp
             Assert.AreEqual(40, config.Object.OsdMarginX);
             Assert.AreEqual(50, config.Object.OsdMarginY);
             Assert.AreEqual(130, config.Object.OsdZoom);
+            Assert.IsTrue(config.Object.OsdScaleWithResolution);
+            Assert.IsTrue(result.Options.ScaleWithResolution);
+            Assert.IsTrue(config.Object.OsdPixelOrbitEnabled);
+            Assert.AreEqual(240, config.Object.OsdPixelOrbitInterval);
+            Assert.AreEqual(4, config.Object.OsdPixelOrbitRadius);
+            Assert.IsTrue(result.Options.PixelOrbitEnabled);
+            Assert.AreEqual(240, result.Options.PixelOrbitIntervalSeconds);
+            Assert.AreEqual(4, result.Options.PixelOrbitRadius);
             Assert.IsFalse(config.Object.UseOsdValueSmoothing);
             Assert.AreEqual("Control+P", config.Object.OverlayPositionHotkey);
             Assert.AreEqual(750, config.Object.OSDRefreshPeriod);
@@ -196,6 +209,31 @@ namespace CapFrameX.Test.Mcp
         }
 
         [TestMethod]
+        public void SetOsdOptions_FontFamilySetsTheClassicFontAndAnEmptyNameRestoresTheDefault()
+        {
+            var config = CreateConfiguration();
+            config.Object.OsdFontFamily = "Segoe UI";
+            var tool = CreateOsdOptionsTool(config);
+
+            var set = tool.SetOsdOptions(fontFamily: "  Consolas ");
+            Assert.AreEqual("Consolas", config.Object.OsdFontFamily);
+            Assert.AreEqual("Consolas", set.Options.FontFamily);
+            CollectionAssert.Contains(set.ChangedProperties, nameof(IAppConfiguration.OsdFontFamily));
+
+            Assert.AreEqual(0, tool.SetOsdOptions(fontFamily: "Consolas").ChangedCount);
+
+            var restored = tool.SetOsdOptions(fontFamily: string.Empty);
+            Assert.AreEqual("Segoe UI", config.Object.OsdFontFamily);
+            Assert.AreEqual(1, restored.ChangedCount);
+
+            Assert.ThrowsExactly<ArgumentException>(() => tool.SetOsdOptions(fontFamily: new string('A', 101)));
+            Assert.ThrowsExactly<ArgumentException>(() => tool.SetOsdOptions(fontFamily: new string('é', 64)),
+                "The name must fit the 127 UTF-8 bytes the in-game renderers receive.");
+            Assert.ThrowsExactly<ArgumentException>(() => tool.SetOsdOptions(fontFamily: "Segoe\nUI"));
+            Assert.AreEqual("Segoe UI", config.Object.OsdFontFamily);
+        }
+
+        [TestMethod]
         public void SetOsdOptions_InvalidInputDoesNotPartiallyApply()
         {
             var config = CreateConfiguration();
@@ -210,15 +248,19 @@ namespace CapFrameX.Test.Mcp
             overlayService.SetupGet(service => service.IsOverlayActiveStream).Returns(activeStream);
             var tool = CreateOsdOptionsTool(config, overlayService);
 
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
                 tool.SetOsdOptions(autoDisableOverlay: false, zoom: 201));
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
                 tool.SetOsdOptions(autoDisableOverlay: false, replayBufferSizeMs: 499));
-            Assert.ThrowsException<ArgumentOutOfRangeException>(() =>
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
+                tool.SetOsdOptions(autoDisableOverlay: false, pixelOrbitIntervalSeconds: 9));
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
+                tool.SetOsdOptions(autoDisableOverlay: false, pixelOrbitRadius: 33));
+            Assert.ThrowsExactly<ArgumentOutOfRangeException>(() =>
                 tool.SetOsdOptions(autoDisableOverlay: false, hookFreeRefreshRate: 3));
-            Assert.ThrowsException<ArgumentException>(() =>
+            Assert.ThrowsExactly<ArgumentException>(() =>
                 tool.SetOsdOptions(autoDisableOverlay: false, overlayPositionHotkey: "Alt+NotAKey"));
-            Assert.ThrowsException<ArgumentException>(() =>
+            Assert.ThrowsExactly<ArgumentException>(() =>
                 tool.SetOsdOptions(overlayHotkey: string.Empty, overlayPositionHotkey: "Alt+NotAKey"));
 
             Assert.IsTrue(config.Object.AutoDisableOverlay);
@@ -241,10 +283,50 @@ namespace CapFrameX.Test.Mcp
             rtss.Setup(service => service.IsRTSSInstalled()).Returns(false);
             var tool = CreateOsdOptionsTool(config, rtss: rtss);
 
-            Assert.ThrowsException<InvalidOperationException>(() =>
+            Assert.ThrowsExactly<InvalidOperationException>(() =>
                 tool.SetOsdOptions(renderer: OsdRendererMode.Rtss, isOverlayActive: true));
 
             Assert.IsFalse(config.Object.IsOverlayActive);
+        }
+
+        [TestMethod]
+        public void SetOsdOptions_CannotActivateTheOsdWithTheRendererOff()
+        {
+            var config = CreateConfiguration();
+            config.Object.OverlayRenderer = EOverlayRenderer.InGame;
+            config.Object.IsOverlayActive = false;
+            var rtss = new Mock<IRTSSService>();
+            rtss.Setup(service => service.IsRTSSInstalled()).Returns(true);
+            var tool = CreateOsdOptionsTool(config, rtss: rtss);
+
+            Assert.ThrowsExactly<InvalidOperationException>(() =>
+                tool.SetOsdOptions(renderer: OsdRendererMode.Off, isOverlayActive: true));
+
+            Assert.AreEqual(EOverlayRenderer.InGame, config.Object.OverlayRenderer);
+            Assert.IsFalse(config.Object.IsOverlayActive);
+        }
+
+        // Selecting Off while the OSD is visible is no activation: OverlayService hides the OSD.
+        [TestMethod]
+        public void SetOsdOptions_SelectsOffWhileTheOsdIsVisible()
+        {
+            var config = CreateConfiguration();
+            config.Object.OverlayRenderer = EOverlayRenderer.InGame;
+            config.Object.IsOverlayActive = true;
+            var tool = CreateOsdOptionsTool(config);
+
+            var result = tool.SetOsdOptions(renderer: OsdRendererMode.Off);
+
+            Assert.AreEqual(EOverlayRenderer.Off, config.Object.OverlayRenderer);
+            Assert.AreEqual("Off", result.Options.Renderer);
+            Assert.IsTrue(result.Options.RendererConfigurationValid);
+            Assert.IsFalse(result.Options.EnableHookOverlay);
+            Assert.IsFalse(result.Options.EnableHookFreeOverlay);
+            CollectionAssert.AreEqual(new[]
+            {
+                nameof(IAppConfiguration.OverlayRenderer),
+                nameof(IAppConfiguration.EnableHookOverlay),
+            }, result.ChangedProperties.ToArray());
         }
 
         [TestMethod]
@@ -294,15 +376,17 @@ namespace CapFrameX.Test.Mcp
         }
 
         [TestMethod]
-        public async Task SetOverlayEntry_UpdatesEveryEditableFieldAndPersistsActiveSlot()
+        public async Task SetOverlayEntry_DetachedOutputUpdatesProviderEntryAndPersistsActiveSlot()
         {
             var entry = CreateEntry("Frametime", "0", "Frame Time");
             entry.IsNumeric = true;
+            var outputEntry = CreateEntry("Frametime", "0", "Frame Time");
             var secondEntry = CreateEntry("Framerate", "1", "Frame Rate");
             var overlayService = new Mock<IOverlayService>();
             overlayService.SetupGet(service => service.CurrentOverlayEntries)
-                .Returns(new IOverlayEntry[] { entry, secondEntry });
+                .Returns(new IOverlayEntry[] { outputEntry, secondEntry });
             var provider = new Mock<IOverlayEntryProvider>();
+            provider.Setup(service => service.GetOverlayEntry("Frametime")).Returns(entry);
             provider.Setup(service => service.SaveOverlayEntriesToJson(2)).Returns(Task.CompletedTask);
             var config = CreateConfiguration();
             config.Object.OverlayEntryConfigurationFile = 2;
@@ -342,8 +426,12 @@ namespace CapFrameX.Test.Mcp
             Assert.IsTrue(result.Persisted);
             Assert.AreEqual(result.ChangedProperties.Count, result.ChangedCount);
             Assert.AreEqual(1, result.Entry.OrderIndex);
+            Assert.IsTrue(outputEntry.IsEntryEnabled);
+            Assert.IsFalse(outputEntry.ShowOnOverlay);
+            Assert.AreEqual("Frame Time", outputEntry.GroupName);
             provider.Verify(service => service.MoveEntry(0, 1), Times.Once);
             provider.Verify(service => service.SaveOverlayEntriesToJson(2), Times.Once);
+            overlayService.Verify(service => service.RequestRefresh(), Times.Once);
         }
 
         [TestMethod]
@@ -354,19 +442,132 @@ namespace CapFrameX.Test.Mcp
             overlayService.SetupGet(service => service.CurrentOverlayEntries)
                 .Returns(new IOverlayEntry[] { entry });
             var provider = new Mock<IOverlayEntryProvider>();
+            provider.Setup(service => service.GetOverlayEntry("Frametime")).Returns(entry);
             var tool = new OverlayConfigTools(overlayService.Object, provider.Object, CreateConfiguration().Object);
 
-            await Assert.ThrowsExceptionAsync<ArgumentException>(() =>
+            await Assert.ThrowsExactlyAsync<ArgumentException>(() =>
                 tool.SetOverlayEntry("Frametime", groupName: "Changed", color: "not-a-color"));
 
             Assert.AreEqual("Original", entry.GroupName);
             provider.Verify(service => service.SaveOverlayEntriesToJson(It.IsAny<int>()), Times.Never);
         }
 
+        [TestMethod]
+        public async Task SetOverlayEntry_PercentageDisplay_PersistsAndReportsCapability()
+        {
+            var entry = CreateEntry("GpuLoad", "0", "GPU");
+            entry.ValueUnitFormat = "%";
+            var overlayService = new Mock<IOverlayService>();
+            overlayService.SetupGet(service => service.CurrentOverlayEntries).Returns(new IOverlayEntry[] { entry });
+            var provider = new Mock<IOverlayEntryProvider>();
+            provider.Setup(service => service.GetOverlayEntry("GpuLoad")).Returns(entry);
+            provider.Setup(service => service.SaveOverlayEntriesToJson(0)).Returns(Task.CompletedTask);
+            var tool = new OverlayConfigTools(overlayService.Object, provider.Object, CreateConfiguration().Object);
+
+            var result = await tool.SetOverlayEntry("GpuLoad", valueDisplayMode: EOverlayValueDisplayMode.TextAndBar);
+
+            Assert.AreEqual(EOverlayValueDisplayMode.TextAndBar, entry.ValueDisplayMode);
+            Assert.AreEqual("TextAndBar", result.Entry.ValueDisplayMode);
+            Assert.IsTrue(result.Entry.SupportsPercentageBar);
+            Assert.IsTrue(result.Persisted);
+            provider.Verify(service => service.MarkPendingChanges(), Times.Once);
+            provider.Verify(service => service.SaveOverlayEntriesToJson(0), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task SetOverlayEntry_PercentageBarOnFps_RejectsBeforeApplyingOtherChanges()
+        {
+            var entry = CreateEntry("Online1PercentLow", "0", "Original");
+            entry.ValueUnitFormat = "FPS";
+            var overlayService = new Mock<IOverlayService>();
+            overlayService.SetupGet(service => service.CurrentOverlayEntries).Returns(new IOverlayEntry[] { entry });
+            var provider = new Mock<IOverlayEntryProvider>();
+            provider.Setup(service => service.GetOverlayEntry("Online1PercentLow")).Returns(entry);
+            var tool = new OverlayConfigTools(overlayService.Object, provider.Object, CreateConfiguration().Object);
+
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() => tool.SetOverlayEntry(
+                entry.Identifier, groupName: "Changed", valueDisplayMode: EOverlayValueDisplayMode.TextAndBar));
+
+            Assert.AreEqual("Original", entry.GroupName);
+            provider.Verify(service => service.MarkPendingChanges(), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task SetOverlayEntry_DetachedAppNamePreservesConfiguredPlaceholder()
+        {
+            var entry = CreateEntry("Framerate", "0", "<APP>");
+            var outputEntry = CreateEntry("Framerate", "0", "game.exe");
+            var overlayService = new Mock<IOverlayService>();
+            overlayService.SetupGet(service => service.CurrentOverlayEntries)
+                .Returns(new IOverlayEntry[] { outputEntry });
+            var provider = new Mock<IOverlayEntryProvider>();
+            provider.Setup(service => service.GetOverlayEntry("Framerate")).Returns(entry);
+            provider.Setup(service => service.SaveOverlayEntriesToJson(0)).Returns(Task.CompletedTask);
+            var tool = new OverlayConfigTools(overlayService.Object, provider.Object, CreateConfiguration().Object);
+
+            var result = await tool.SetOverlayEntry("framerate", showOnOverlay: true);
+
+            Assert.IsTrue(entry.ShowOnOverlay);
+            Assert.AreEqual("<APP>", entry.GroupName);
+            Assert.AreEqual("<APP>", result.Entry.GroupName);
+            Assert.AreEqual("game.exe", tool.GetOverlayEntries().Entries[0].GroupName);
+            provider.Verify(service => service.SaveOverlayEntriesToJson(0), Times.Once);
+        }
+
+        [TestMethod]
+        public void ToggleOverlayEntry_DetachedOutputUpdatesProviderEntryAndRefreshes()
+        {
+            var entry = CreateEntry("Framerate", "0", "<APP>");
+            var outputEntry = CreateEntry("Framerate", "0", "game.exe");
+            var overlayService = new Mock<IOverlayService>();
+            overlayService.SetupGet(service => service.CurrentOverlayEntries)
+                .Returns(new IOverlayEntry[] { outputEntry });
+            var provider = new Mock<IOverlayEntryProvider>();
+            provider.Setup(service => service.GetOverlayEntry("Framerate")).Returns(entry);
+            var tool = new ConfigWriteTools(CreateConfiguration().Object, overlayService.Object,
+                provider.Object, null, null, null);
+
+            var result = tool.ToggleOverlayEntry("framerate", showOnOverlay: true, isEntryEnabled: false);
+
+            Assert.IsTrue(entry.ShowOnOverlay);
+            Assert.IsFalse(entry.IsEntryEnabled);
+            Assert.IsFalse(outputEntry.ShowOnOverlay);
+            Assert.IsTrue(outputEntry.IsEntryEnabled);
+            Assert.IsFalse(result.OldShowOnOverlay);
+            Assert.IsTrue(result.OldIsEntryEnabled);
+            Assert.IsTrue(result.NewShowOnOverlay);
+            Assert.IsFalse(result.NewIsEntryEnabled);
+            overlayService.Verify(service => service.RequestRefresh(), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task OverlayEntryWrites_MissingProviderEntryNeverMutateOutputSnapshot()
+        {
+            var outputEntry = CreateEntry("Framerate", "0", "game.exe");
+            var overlayService = new Mock<IOverlayService>();
+            overlayService.SetupGet(service => service.CurrentOverlayEntries)
+                .Returns(new IOverlayEntry[] { outputEntry });
+            var provider = new Mock<IOverlayEntryProvider>();
+            var config = CreateConfiguration();
+            var configTool = new ConfigWriteTools(config.Object, overlayService.Object,
+                provider.Object, null, null, null);
+            var entryTool = new OverlayConfigTools(overlayService.Object, provider.Object, config.Object);
+
+            Assert.ThrowsExactly<InvalidOperationException>(() =>
+                configTool.ToggleOverlayEntry("framerate", showOnOverlay: true));
+            await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
+                entryTool.SetOverlayEntry("framerate", showOnOverlay: true));
+
+            Assert.IsFalse(outputEntry.ShowOnOverlay);
+            provider.Verify(service => service.SaveOverlayEntriesToJson(It.IsAny<int>()), Times.Never);
+            overlayService.Verify(service => service.RequestRefresh(), Times.Never);
+        }
+
         private static Mock<IAppConfiguration> CreateConfiguration()
         {
             var config = new Mock<IAppConfiguration>();
             config.SetupAllProperties();
+            config.WireOverlayRenderer(EOverlayRenderer.Rtss);
             config.Object.OsdBackgroundOpacity = 97;
             config.Object.OsdReplayBufferSize = 750;
             config.Object.HookFreeRefreshRate = 1;

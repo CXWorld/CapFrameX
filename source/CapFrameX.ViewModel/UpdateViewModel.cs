@@ -1,5 +1,7 @@
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Update;
 using CapFrameX.MVVM.Dialogs;
 using Microsoft.Extensions.Logging;
@@ -31,13 +33,20 @@ namespace CapFrameX.ViewModel
 		private readonly IAppVersionProvider _appVersionProvider;
 		private readonly ILogger<UpdateViewModel> _logger;
 		private readonly Dispatcher _dispatcher;
+		private readonly Func<bool> _isCaptureBusy;
+		private readonly Action _shutdownApplication;
 
 		private UpdateStatus _status = new UpdateStatus(EUpdateState.Unknown);
 		private bool _isUpdateDialogOpen;
 		private UpdatePackageInfo _selectedVersion;
 		private ICollectionView _availableVersionsView;
+		private UpdateDialog _updateDialogContent;
+		private DispatcherTimer _installWaitTimer;
+		private bool _isWaitingForCapture;
+		private bool _isRestartingToInstall;
 
-		public UpdateDialog UpdateDialogContent { get; }
+		/// <summary>Created on first use, which is the shell binding it on the UI thread.</summary>
+		public UpdateDialog UpdateDialogContent => _updateDialogContent ?? (_updateDialogContent = new UpdateDialog());
 
 		public bool IsUpdateDialogOpen
 		{
@@ -95,7 +104,7 @@ namespace CapFrameX.ViewModel
 			&& !IsDownloading
 			&& Normalize(SelectedVersion.Version) != Normalize(_appVersionProvider.GetAppVersion());
 
-		public string VersionSelectionActionText => IsSelectedVersionRollback ? "ROLL BACK" : "INSTALL VERSION";
+		public string VersionSelectionActionText => CxLang.T(IsSelectedVersionRollback ? "UpdateViewModel_RollBack" : "UpdateViewModel_InstallVersion");
 
 		/// <summary>Full sentence for the tab and the status bar tooltip.</summary>
 		public string StatusText
@@ -103,17 +112,28 @@ namespace CapFrameX.ViewModel
 			get
 			{
 				if (!IsUpdateServerConfigured)
-					return "No update server is configured.";
+					return CxLang.T("UpdateViewModel_NoUpdateServerIsConfigured");
 
+				if (_isRestartingToInstall)
+					return new LocalizedText("UpdateViewModel_RestartingToInstall", AvailableVersionString).Resolve();
+
+				if (_isWaitingForCapture && IsUpdateReadyToInstall)
+					return new LocalizedText("UpdateViewModel_InstallAfterCapture", AvailableVersionString).Resolve();
+
+				if (_status.LocalizedMessage != null)
+					return _status.LocalizedMessage.Resolve();
+
+				// Messages without a catalog key (e.g. technical reasons for rejecting the
+				// release catalog) are shown in English.
 				if (!string.IsNullOrWhiteSpace(_status.Message))
 					return _status.Message;
 
 				switch (_status.State)
 				{
-					case EUpdateState.Checking: return "Looking for updates...";
-					case EUpdateState.UpToDate: return "CapFrameX is up to date.";
-					case EUpdateState.Failed: return "The update check failed.";
-					default: return "CapFrameX has not checked for updates yet.";
+					case EUpdateState.Checking: return CxLang.T("UpdateViewModel_LookingForUpdates");
+					case EUpdateState.UpToDate: return CxLang.T("UpdateViewModel_CapFrameXIsUpToDate");
+					case EUpdateState.Failed: return CxLang.T("UpdateViewModel_TheUpdateCheckFailed");
+					default: return CxLang.T("UpdateViewModel_CapFrameXHasNotCheckedFor");
 				}
 			}
 		}
@@ -129,15 +149,15 @@ namespace CapFrameX.ViewModel
 		public bool IsRollback => Package != null
 			&& Normalize(Package.Version) < Normalize(_appVersionProvider.GetAppVersion());
 
-		public string UpdateDialogTitle => IsRollback ? "Roll back CapFrameX" : "CapFrameX update";
+		public string UpdateDialogTitle => CxLang.T(IsRollback ? "UpdateViewModel_RollBackCapFrameX" : "UpdateViewModel_CapFrameXUpdate");
 
-		public string ConfirmActionText => IsRollback ? "ROLL BACK" : "UPDATE";
+		public string ConfirmActionText => CxLang.T(IsRollback ? "UpdateViewModel_RollBack" : "UpdateViewModel_Update");
 
-		public string InstallConfirmationText => IsRollback
-			? "The selected version replaces the current installation on the next launch. Captures and settings remain, but settings created by newer versions may not be understood by the older release."
+		public string InstallConfirmationText => CxLang.T(IsRollback
+			? "UpdateViewModel_InstallConfirmationRollback"
 			: Package?.Channel == EUpdateChannel.Beta
-				? "This beta build is downloaded now and installed the next time CapFrameX starts. Beta builds may be less stable than regular releases."
-				: "The update is downloaded now and installed the next time CapFrameX starts.";
+				? "UpdateViewModel_InstallConfirmationBeta"
+				: "UpdateViewModel_InstallConfirmationRegular");
 
 		/// <summary>Drives the download icon in the status bar.</summary>
 		public bool IsUpdateIndicatorVisible => IsUpdateAvailable || IsDownloading || IsUpdateReadyToInstall;
@@ -148,7 +168,7 @@ namespace CapFrameX.ViewModel
 			=> DownloadProgressPercent.ToString("F0", CultureInfo.InvariantCulture) + " %";
 
 		public string ReleaseSummary => string.IsNullOrWhiteSpace(Package?.Summary)
-			? "No description was provided for this update."
+			? CxLang.T("UpdateViewModel_NoDescriptionWasProvidedFor")
 			: Package.Summary;
 
 		public IReadOnlyList<string> ReleaseHighlights
@@ -173,7 +193,7 @@ namespace CapFrameX.ViewModel
 
 				return sizeInBytes <= 0L
 					? string.Empty
-					: $"Download size: {sizeInBytes / (1024d * 1024d):F1} MB";
+					: string.Format(CultureInfo.CurrentCulture, CxLang.T("UpdateViewModel_DownloadSize0MB"), (sizeInBytes / (1024d * 1024d)).ToString("F1", CultureInfo.CurrentCulture));
 			}
 		}
 
@@ -209,15 +229,28 @@ namespace CapFrameX.ViewModel
 		public UpdateViewModel(IUpdateService updateService,
 			IAppConfiguration appConfiguration,
 			IAppVersionProvider appVersionProvider,
-			ILogger<UpdateViewModel> logger)
+			ILogger<UpdateViewModel> logger,
+			Lazy<CaptureManager> captureManager)
+			: this(updateService, appConfiguration, appVersionProvider, logger,
+				() => IsCaptureBusy(captureManager.Value),
+				() => Application.Current?.Shutdown())
+		{
+		}
+
+		internal UpdateViewModel(IUpdateService updateService,
+			IAppConfiguration appConfiguration,
+			IAppVersionProvider appVersionProvider,
+			ILogger<UpdateViewModel> logger,
+			Func<bool> isCaptureBusy,
+			Action shutdownApplication)
 		{
 			_updateService = updateService;
 			_appConfiguration = appConfiguration;
 			_appVersionProvider = appVersionProvider;
 			_logger = logger;
+			_isCaptureBusy = isCaptureBusy;
+			_shutdownApplication = shutdownApplication;
 			_dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
-
-			UpdateDialogContent = new UpdateDialog();
 
 			var checkForUpdateCommand = new DelegateCommand(
 				() => _ = CheckForUpdateAsync(), () => IsUpdateServerConfigured && !IsChecking && !IsDownloading);
@@ -236,6 +269,22 @@ namespace CapFrameX.ViewModel
 			CancelDownloadCommand = cancelDownloadCommand;
 			InstallSelectedVersionCommand = installSelectedVersionCommand;
 			OpenReleaseNotesCommand = new DelegateCommand(OnOpenReleaseNotes, () => HasReleaseNotesLink);
+
+			CxLang.Instance.PropertyChanged += (_, __) =>
+			{
+				Action apply = () =>
+				{
+					RaisePropertyChanged(nameof(StatusText));
+					RaisePropertyChanged(nameof(VersionSelectionActionText));
+					RaisePropertyChanged(nameof(UpdateDialogTitle));
+					RaisePropertyChanged(nameof(ConfirmActionText));
+					RaisePropertyChanged(nameof(InstallConfirmationText));
+					RaisePropertyChanged(nameof(ReleaseSummary));
+					RaisePropertyChanged(nameof(PackageSizeText));
+				};
+				if (_dispatcher.CheckAccess()) apply();
+				else _dispatcher.BeginInvoke(apply);
+			};
 
 			// BehaviorSubject replays the current status, so this also seeds the initial state.
 			_updateService.StatusStream.Subscribe(status =>
@@ -307,13 +356,105 @@ namespace CapFrameX.ViewModel
 		{
 			try
 			{
-				await _updateService.DownloadUpdateAsync().ConfigureAwait(false);
+				var status = await _updateService.DownloadUpdateAsync().ConfigureAwait(false);
+				if (status?.State != EUpdateState.ReadyToInstall)
+					return;
+
+				// Every download is one the user asked for, so the app restarts into the installer now
+				// instead of leaving it to the next launch. Queued behind the status update.
+				Action install = InstallStagedUpdateWhenIdle;
+				if (_dispatcher.CheckAccess()) install();
+				else _ = _dispatcher.BeginInvoke(install);
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Error while downloading the update package.");
 			}
 		}
+
+		private void InstallStagedUpdateWhenIdle()
+		{
+			if (TryInstallStagedUpdate())
+				return;
+
+			if (_installWaitTimer == null)
+			{
+				_installWaitTimer = new DispatcherTimer(DispatcherPriority.Background, _dispatcher)
+				{
+					Interval = TimeSpan.FromSeconds(1)
+				};
+				_installWaitTimer.Tick += (_, __) =>
+				{
+					if (TryInstallStagedUpdate())
+						_installWaitTimer.Stop();
+				};
+			}
+
+			_installWaitTimer.Start();
+		}
+
+		/// <summary>
+		/// Hands the staged package to a new instance and shuts the app down, unless a capture is
+		/// running or still being saved.
+		/// </summary>
+		/// <returns>False while a capture holds the installation back.</returns>
+		internal bool TryInstallStagedUpdate()
+		{
+			if (!IsUpdateReadyToInstall)
+			{
+				// A new check or download replaced the staged update in the meantime. Whatever is
+				// staged still installs on the next start.
+				SetWaitingForCapture(false);
+				return true;
+			}
+
+			if (IsCaptureBusySafe())
+			{
+				SetWaitingForCapture(true);
+				return false;
+			}
+
+			SetWaitingForCapture(false);
+
+			// On failure the package stays staged, and the status already names the next start.
+			if (!_updateService.StartInstallAfterExit())
+				return true;
+
+			_isRestartingToInstall = true;
+			RaisePropertyChanged(nameof(StatusText));
+			_logger.LogInformation("Shutting down to install version {targetVersion}.", AvailableVersionString);
+			_shutdownApplication();
+			return true;
+		}
+
+		private bool IsCaptureBusySafe()
+		{
+			try
+			{
+				return _isCaptureBusy();
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Unable to read the capture state; installing the update anyway.");
+				return false;
+			}
+		}
+
+		private void SetWaitingForCapture(bool isWaiting)
+		{
+			if (_isWaitingForCapture == isWaiting)
+				return;
+
+			_isWaitingForCapture = isWaiting;
+			RaisePropertyChanged(nameof(StatusText));
+		}
+
+		/// <summary>
+		/// A capture counts until its file is written: <see cref="CaptureManager.IsCapturing"/> turns
+		/// false before that, <see cref="CaptureManager.LockCaptureService"/> only after.
+		/// </summary>
+		private static bool IsCaptureBusy(CaptureManager captureManager)
+			=> captureManager.IsCapturing || captureManager.LockCaptureService || captureManager.DelayCountdownRunning;
 
 		private void OnOpenReleaseNotes()
 		{

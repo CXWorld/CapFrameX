@@ -35,6 +35,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: InternalsVisibleTo("CapFrameX.Test")]
+[assembly: InternalsVisibleTo("CapFrameX.PresentMonInterface")]
 
 // The Windows-specific target framework implies this attribute, but the SDK only emits it when GenerateAssemblyInfo is
 // on, and this project keeps that off for the hand-written attributes above. Without it CA1416

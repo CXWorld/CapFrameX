@@ -94,11 +94,14 @@ public class Motherboard : IHardware
         SubHardware = subHardwareList.ToArray();
     }
 
-    /// <inheritdoc />
-    public event SensorEventHandler SensorAdded;
+    // The motherboard's sensors belong to its sub-hardware (super I/O chips, embedded
+    // controller); the motherboard itself never adds or removes a sensor.
 
     /// <inheritdoc />
-    public event SensorEventHandler SensorRemoved;
+    public event SensorEventHandler SensorAdded { add { } remove { } }
+
+    /// <inheritdoc />
+    public event SensorEventHandler SensorRemoved { add { } remove { } }
 
     /// <inheritdoc />
     public HardwareType HardwareType => HardwareType.Motherboard;

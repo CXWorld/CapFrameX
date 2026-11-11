@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
@@ -17,16 +18,21 @@ namespace CapFrameX.Data
         private readonly IPathService _pathService;
         private readonly ILogger<RecordDirectoryObserver> _logger;
         private readonly Func<FileInfo, bool> _validFileFilterFunc = (FileInfo fi) => fi.Extension == ".csv" || fi.Extension == ".json";
-        private readonly ISubject<FileInfo> _fileCreatedSubject = new ReplaySubject<FileInfo>();
-        private readonly ISubject<FileInfo> _fileChangedSubject = new ReplaySubject<FileInfo>();
-        private readonly ISubject<FileInfo> _fileDeletedSubject = new ReplaySubject<FileInfo>();
-        private readonly ISubject<IEnumerable<FileInfo>> _directoryFilesSubject = new BehaviorSubject<IEnumerable<FileInfo>>(new FileInfo[] { });
+        // Plain subjects: replay subjects kept every file event of the session in memory. A late
+        // subscriber gets the current files from DirectoryFilesStream instead.
+        private readonly ISubject<FileInfo> _fileCreatedSubject = new Subject<FileInfo>();
+        private readonly ISubject<FileInfo> _fileChangedSubject = new Subject<FileInfo>();
+        private readonly ISubject<FileInfo> _fileDeletedSubject = new Subject<FileInfo>();
+        // Signals a new listing. Each subscriber gets a copy of the files at that moment: the
+        // watcher thread changes the list while the record list is still reading the files.
+        private readonly ISubject<Unit> _directoryFilesSubject = new BehaviorSubject<Unit>(Unit.Default);
+        private readonly object _filesLock = new object();
         private readonly ISubject<DirectoryInfo> _observingDirectorySubject = new BehaviorSubject<DirectoryInfo>(null);
 
         public IObservable<FileInfo> FileCreatedStream => _fileCreatedSubject.AsObservable();
         public IObservable<FileInfo> FileChangedStream => _fileChangedSubject.AsObservable();
         public IObservable<FileInfo> FileDeletedStream => _fileDeletedSubject.AsObservable();
-        public IObservable<IEnumerable<FileInfo>> DirectoryFilesStream => _directoryFilesSubject.AsObservable();
+        public IObservable<IEnumerable<FileInfo>> DirectoryFilesStream => _directoryFilesSubject.Select(_ => CopyCurrentFiles());
         public IObservable<DirectoryInfo> ObservingDirectoryStream => _observingDirectorySubject.AsObservable();
 
         [DllImport("shlwapi.dll")]
@@ -46,7 +52,8 @@ namespace CapFrameX.Data
 
         public void Dispose()
         {
-            _watcher.Dispose();
+            // There is no watcher while the observed folder does not exist.
+            _watcher?.Dispose();
             _directoryFilesSubject.OnCompleted();
             _fileCreatedSubject.OnCompleted();
             _fileChangedSubject.OnCompleted();
@@ -59,7 +66,13 @@ namespace CapFrameX.Data
             if (string.IsNullOrWhiteSpace(_currentDir))
                 return;
 
-            _directoryFilesSubject.OnNext(_currentFiles);
+            _directoryFilesSubject.OnNext(Unit.Default);
+        }
+
+        private IEnumerable<FileInfo> CopyCurrentFiles()
+        {
+            lock (_filesLock)
+                return _currentFiles.ToArray();
         }
 
         public void ObserveDirectory(string dir)
@@ -100,8 +113,10 @@ namespace CapFrameX.Data
             _watcher.Deleted += OnFileDeleted;
             _watcher.Renamed += OnFileRenamed;
             _observingDirectorySubject.OnNext(directory);
-            _currentFiles = directory.GetFiles("*.*", SearchOption.TopDirectoryOnly).Where(_validFileFilterFunc).ToList();
-            _directoryFilesSubject.OnNext(_currentFiles);
+            var files = directory.GetFiles("*.*", SearchOption.TopDirectoryOnly).Where(_validFileFilterFunc).ToList();
+            lock (_filesLock)
+                _currentFiles = files;
+            _directoryFilesSubject.OnNext(Unit.Default);
             _logger.LogInformation("Now observing directory: {path}", directory.FullName);
 
             void OnFileCreated(object sender, FileSystemEventArgs e)
@@ -112,15 +127,18 @@ namespace CapFrameX.Data
                 var fileInfo = new FileInfo(e.FullPath);
                 _logger.LogInformation("File created: {path}", fileInfo.FullName);
                 _fileCreatedSubject.OnNext(fileInfo);
-                _currentFiles.Add(fileInfo);
+                lock (_filesLock)
+                    _currentFiles.Add(fileInfo);
             }            
 
             void OnFileChanged(object sender, FileSystemEventArgs e)
             {
-                if (_currentFiles == null || !_currentFiles.Any() || !CheckRelevantFiles(e.FullPath))
+                if (!CheckRelevantFiles(e.FullPath))
                     return;
 
-                var fileInfo = _currentFiles.FirstOrDefault(f => f.FullName.Equals(e.FullPath));
+                FileInfo fileInfo;
+                lock (_filesLock)
+                    fileInfo = _currentFiles.FirstOrDefault(f => f.FullName.Equals(e.FullPath));
                 if (fileInfo is FileInfo)
                 {
                     _logger.LogInformation("File changed: {path}", fileInfo.FullName);
@@ -131,28 +149,31 @@ namespace CapFrameX.Data
 
             void OnFileRenamed(object sender, RenamedEventArgs e)
             {
-                if (_currentFiles == null || !_currentFiles.Any() || !CheckRelevantFiles(e.OldFullPath))
-                    return;
-
-                var oldFileInfo = new FileInfo(e.OldFullPath);
-                _fileDeletedSubject.OnNext(oldFileInfo);
-                var item = _currentFiles.First(f => f.FullName.Equals(oldFileInfo.FullName));
-                if (item is FileInfo)
+                // The old name need not be listed: the listing leaves out temp files, and the folder
+                // may have held no records. The new name is reported either way.
+                if (CheckRelevantFiles(e.OldFullPath))
                 {
-                    _currentFiles.Remove(item);
+                    var oldFileInfo = new FileInfo(e.OldFullPath);
+                    _fileDeletedSubject.OnNext(oldFileInfo);
+                    lock (_filesLock)
+                        _currentFiles.RemoveAll(f => f.FullName.Equals(oldFileInfo.FullName));
                 }
                 OnFileCreated(sender, e);
             }
 
             void OnFileDeleted(object sender, FileSystemEventArgs e)
             {
-                if (_currentFiles == null || !_currentFiles.Any() || !CheckRelevantFiles(e.FullPath))
-                    return;
+                lock (_filesLock)
+                {
+                    if (!_currentFiles.Any() || !CheckRelevantFiles(e.FullPath))
+                        return;
+                }
                 try
                 {
                     var fileInfo = new FileInfo(e.FullPath);
                     _fileDeletedSubject.OnNext(fileInfo);
-                    _currentFiles.Remove(_currentFiles.First(f => f.FullName.Equals(fileInfo.FullName)));
+                    lock (_filesLock)
+                        _currentFiles.Remove(_currentFiles.First(f => f.FullName.Equals(fileInfo.FullName)));
                     _logger.LogInformation("File deleted: {path}", fileInfo.FullName);
                 }
                 catch 

@@ -167,6 +167,41 @@ namespace CapFrameX.Test.Updater
 		}
 
 		[TestMethod]
+		public void TryStartPendingUpdate_UnsignedPackage_DiscardsStagedUpdate()
+		{
+			// A matching checksum only proves the package is the one the server announced.
+			var package = WritePackage("CapFrameX-1.9.1.0-setup.exe");
+			StageMarker("1.9.1.0", Path.GetFileName(package), PackageSha256(package));
+
+			Assert.IsFalse(Run());
+			Assert.IsFalse(File.Exists(package), "A package without the publisher's signature must not survive.");
+			AssertMarkerIsGone();
+			Assert.IsTrue(_errorMessages.Exists(message => message.Contains("not signed by the CapFrameX publisher")),
+				string.Join(Environment.NewLine, _errorMessages));
+		}
+
+		[TestMethod]
+		public void TryStartPendingUpdate_ArgumentOutsideAllowlist_DiscardsStagedUpdate()
+		{
+			// Any process of the user can rewrite the marker, and the installer runs elevated.
+			var package = WritePackage("CapFrameX-1.9.1.0-setup.msi");
+			new PendingUpdate
+			{
+				Version = "1.9.1.0",
+				PackageFile = Path.GetFileName(package),
+				Sha256 = PackageSha256(package),
+				Arguments = @"/passive /l*v C:\Windows\System32\evil.dll",
+				StagedUtc = DateTime.UtcNow
+			}.Save(_updatesFolder);
+
+			Assert.IsFalse(Run());
+			Assert.IsFalse(File.Exists(package), "A package with a foreign command line must not survive.");
+			AssertMarkerIsGone();
+			Assert.IsTrue(_errorMessages.Exists(message => message.Contains("not on the allowlist")),
+				string.Join(Environment.NewLine, _errorMessages));
+		}
+
+		[TestMethod]
 		public void TryStartPendingUpdate_PackagePathOutsideUpdatesFolder_DiscardsStagedUpdate()
 		{
 			// The marker is written from remote manifest data, so a package name must never be

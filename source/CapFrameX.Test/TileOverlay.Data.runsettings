@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <!-- Use dotnet test on CapFrameX.Test.csproj with this settings file after a
+       Release|x64 build. The project resolves the NuGet coverage collector.
+       Cobertura output is attached to the test results. No native renderer is started. -->
+  <RunConfiguration>
+    <TargetPlatform>x64</TargetPlatform>
+    <TestCaseFilter>FullyQualifiedName~CapFrameX.Test.Integration.OverlayDesignRuntimeTest|FullyQualifiedName~CapFrameX.Test.Integration.OverlayDesignPublisherLifecycleTest|FullyQualifiedName~CapFrameX.Test.Integration.OverlayRuntimeSourceBinderTest|FullyQualifiedName~CapFrameX.Test.Integration.OverlayRuntimeDataContractTest|FullyQualifiedName~CapFrameX.Test.Integration.OverlayTelemetryServiceTest|FullyQualifiedName~CapFrameX.Test.Integration.OverlayTelemetrySnapshotTest|FullyQualifiedName~CapFrameX.Test.Integration.OverlayDesignProfileStoreTest|FullyQualifiedName~CapFrameX.Test.Integration.OverlayDesignStarterCatalogTest|FullyQualifiedName~CapFrameX.Test.Integration.HookDesignChannelTest</TestCaseFilter>
+  </RunConfiguration>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="Code Coverage">
+        <Configuration>
+          <Format>Cobertura</Format>
+          <CodeCoverage>
+            <ModulePaths>
+              <Include>
+                <ModulePath>.*CapFrameX\.OSD\.Integration\.dll$</ModulePath>
+              </Include>
+            </ModulePaths>
+            <IncludeTestAssembly>false</IncludeTestAssembly>
+            <EnableStaticNativeInstrumentation>false</EnableStaticNativeInstrumentation>
+            <EnableDynamicNativeInstrumentation>false</EnableDynamicNativeInstrumentation>
+          </CodeCoverage>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

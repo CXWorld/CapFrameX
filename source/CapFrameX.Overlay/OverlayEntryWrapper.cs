@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.Localization;
+using CapFrameX.Contracts.Overlay;
 using Newtonsoft.Json;
 using Prism.Mvvm;
 using System;
@@ -17,6 +18,7 @@ namespace CapFrameX.Overlay
         private volatile string _groupName;
         private volatile bool _showGraph;
         private volatile bool _showGraphIsEnabled;
+        private volatile EOverlayValueDisplayMode _valueDisplayMode;
         private volatile string _color;
         private volatile int _valueFontSize;
         private volatile string _upperLimitValue = string.Empty;
@@ -44,6 +46,27 @@ namespace CapFrameX.Overlay
         public EOverlayEntryType OverlayEntryType { get; set; }
 
         public string Description { get; set; }
+
+        /// <summary>
+        /// OSD and overlay-list label. The stored <see cref="Description"/> stays the English
+        /// catalog name so saved profiles and sensor matching do not depend on the overlay language.
+        /// </summary>
+        [JsonIgnore]
+        public string LocalizedDescription
+        {
+            get => CxLang.Instance.TranslateOverlayDescription(this);
+            set
+            {
+                if (value == null)
+                    return;
+                var shown = CxLang.Instance.TranslateOverlayDescription(this);
+                if (value == shown || value == Description)
+                    return;
+                Description = value;
+                RaisePropertyChanged();
+                RaisePropertyChanged(nameof(LocalizedDescription));
+            }
+        }
 
         [JsonIgnore]
         public Action PropertyChangedAction { set; get; }
@@ -86,7 +109,29 @@ namespace CapFrameX.Overlay
         public string ValueUnitFormat
         {
             get => _valueUnitFormat;
-            set => _valueUnitFormat = value;
+            set
+            {
+                if (_valueUnitFormat == value)
+                    return;
+                _valueUnitFormat = value;
+                RaisePropertyChanged(nameof(SupportsPercentageBar));
+            }
+        }
+
+        [JsonIgnore]
+        public bool SupportsPercentageBar => ValueUnitFormat?.Trim() == "%";
+
+        public EOverlayValueDisplayMode ValueDisplayMode
+        {
+            get => _valueDisplayMode;
+            set
+            {
+                if (_valueDisplayMode == value)
+                    return;
+                _valueDisplayMode = value;
+                FormatChanged = true;
+                RaisePropertyChanged();
+            }
         }
 
         [JsonIgnore]
@@ -199,9 +244,15 @@ namespace CapFrameX.Overlay
 
         [JsonIgnore]
         public string FormattedGroupName
-        => string.IsNullOrWhiteSpace(GroupNameFormat) ?
-            (GroupName == null ? string.Empty : GroupName.ToString())
-            : string.Format(CultureInfo.InvariantCulture, GroupNameFormat, GroupName);
+        {
+            get
+            {
+                var name = CxLang.Instance.TranslateOverlay(GroupName ?? string.Empty);
+                return string.IsNullOrWhiteSpace(GroupNameFormat)
+                    ? name
+                    : string.Format(CultureInfo.InvariantCulture, GroupNameFormat, name);
+            }
+        }
 
         public string UpperLimitValue
         {
@@ -289,12 +340,24 @@ namespace CapFrameX.Overlay
                 // not make an otherwise unchanged overlay profile appear dirty.
                 if (e.PropertyName != nameof(ShowOnOverlayIsEnabled)
                     && e.PropertyName != nameof(ShowGraphIsEnabled)
-                    && e.PropertyName != nameof(GroupNameFormat))
+                    && e.PropertyName != nameof(SupportsPercentageBar)
+                    && e.PropertyName != nameof(GroupNameFormat)
+                    && e.PropertyName != nameof(LocalizedDescription)
+                    && e.PropertyName != nameof(FormattedGroupName))
                 {
                     PropertyChangedAction?.Invoke();
                 }
             };
             PropertyChanged += _propertyChangedHandler;
+        }
+
+        public void RefreshLocalization()
+        {
+            if (!_disposed)
+            {
+                RaisePropertyChanged(nameof(LocalizedDescription));
+                RaisePropertyChanged(nameof(FormattedGroupName));
+            }
         }
 
         public IOverlayEntry Clone()
@@ -313,6 +376,7 @@ namespace CapFrameX.Overlay
                 GroupName = GroupName,
                 ShowGraph = ShowGraph,
                 ShowGraphIsEnabled = ShowGraphIsEnabled,
+                ValueDisplayMode = ValueDisplayMode,
                 Color = Color,
                 ValueFontSize = ValueFontSize,
                 GroupNameFormat = GroupNameFormat,

@@ -4,12 +4,22 @@
        outside this folder and must not inherit central package management from here. -->
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-    <!-- In-game rendering and its signed native payloads are enabled for 1.9.1. -->
-    <CfxEnableInGameOverlay Condition="'$(CfxEnableInGameOverlay)' == ''">true</CfxEnableInGameOverlay>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(CfxEnableInGameOverlay)' == 'true'">
-    <DefineConstants>$(DefineConstants);CFX_INGAME_OVERLAY</DefineConstants>
+  <!-- Select the optional OSD dependency before conditional project references are evaluated.
+       Explicit new/legacy paths win; otherwise use the sibling checkout.
+       Public clones without that checkout use the matching prebuilt assemblies. -->
+  <PropertyGroup>
+    <CfxOsdSourceDir Condition="'$(CfxOsdSourceDir)' == '' And '$(CfxOsdSubmoduleDir)' != ''">$(CfxOsdSubmoduleDir)</CfxOsdSourceDir>
+    <CfxOsdSourceDir Condition="'$(CfxOsdSourceDir)' == ''">$(MSBuildThisFileDirectory)..\..\CapFrameX.OSD\</CfxOsdSourceDir>
+    <!-- Command-line properties cannot be reassigned. Always consume the normalized effective
+         path so either /p override also accepts a directory without a trailing separator.
+         Relative overrides retain MSBuild's project-relative interpretation. -->
+    <_CfxOsdSourceDir>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(CfxOsdSourceDir)'))</_CfxOsdSourceDir>
+    <CfxOsdSourceDir>$(_CfxOsdSourceDir)</CfxOsdSourceDir>
+    <CfxOsdSubmoduleDir Condition="'$(CfxOsdSubmoduleDir)' == ''">$(_CfxOsdSourceDir)</CfxOsdSubmoduleDir>
+    <CfxOsdFromSource Condition="'$(CfxOsdFromSource)' == '' And Exists('$(_CfxOsdSourceDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj') And Exists('$(_CfxOsdSourceDir)CapFrameX.OSD.Controls\CapFrameX.OSD.Controls.csproj')">true</CfxOsdFromSource>
+    <CfxOsdFromSource Condition="'$(CfxOsdFromSource)' == ''">false</CfxOsdFromSource>
   </PropertyGroup>
 
 </Project>

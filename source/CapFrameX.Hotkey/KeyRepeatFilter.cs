@@ -20,10 +20,15 @@ namespace CapFrameX.Hotkey
     public sealed class KeyRepeatFilter
     {
         /// <summary>
-        /// Longer than the slowest repeat interval Windows can be configured for (500 ms at the
-        /// minimum repeat rate), so a repeat is always recognized as one.
+        /// Longer than the longest wait before Windows repeats a held key, so a repeat is always
+        /// recognized as one. That wait is the keyboard delay, 250 ms to about 1 s (settings 0 to
+        /// 3); the repeats after it come 33 to 400 ms apart. 700 ms covered only those intervals:
+        /// with delay 2 or 3 the first repeat of a held hotkey passed as a second press and
+        /// flipped a toggle straight back. The stamps are taken when the hook thread handles a
+        /// key-down, so the margin above 1 s also covers a short stall between a press and its
+        /// first repeat.
         /// </summary>
-        public const long HeldExpiryMs = 700;
+        public const long HeldExpiryMs = 1500;
 
         private readonly Dictionary<Keys, long> _lastKeyDown = new Dictionary<Keys, long>();
         private readonly object _sync = new object();

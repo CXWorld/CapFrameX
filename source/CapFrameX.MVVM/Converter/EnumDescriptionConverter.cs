@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CapFrameX.Contracts.Localization;
+using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Reflection;
@@ -8,23 +9,6 @@ namespace CapFrameX.MVVM.Converter
 {
 	public class EnumDescriptionConverter : IValueConverter
 	{
-		private string GetEnumDescription(Enum enumObj)
-		{
-			FieldInfo fieldInfo = enumObj.GetType().GetField(enumObj.ToString());
-
-			object[] attribArray = fieldInfo.GetCustomAttributes(false);
-
-			if (attribArray.Length == 0)
-			{
-				return enumObj.ToString();
-			}
-			else
-			{
-				DescriptionAttribute attrib = attribArray[0] as DescriptionAttribute;
-				return attrib.Description;
-			}
-		}
-
 		object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
 		{
 			try
@@ -32,8 +16,7 @@ namespace CapFrameX.MVVM.Converter
                 if (!(value is Enum myEnum))
                     return string.Empty;
 
-                string description = GetEnumDescription(myEnum);
-				return description;
+				return CxLang.TranslateEnum(myEnum);
 			}
 			catch { return string.Empty; }
 		}

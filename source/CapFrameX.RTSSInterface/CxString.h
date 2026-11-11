@@ -10,7 +10,7 @@
 #include <cstring>
 
 #ifdef __cplusplus_cli
-#include <msclr/marshal_cppstd.h>
+#include <vcclr.h>
 #endif
 
 class CString
@@ -22,10 +22,17 @@ public:
 
 #ifdef __cplusplus_cli
 	CString(System::String^ value)
-		: m_value(value == nullptr
-			? std::string()
-			: msclr::interop::marshal_as<std::string>(value))
 	{
+		if (System::String::IsNullOrEmpty(value))
+			return;
+
+		// Match the codepage used by RTSS, independent of the current thread locale.
+		// Flags must be zero when Windows uses UTF-8 as its active ANSI codepage.
+		pin_ptr<const wchar_t> characters = PtrToStringChars(value);
+		int size = WideCharToMultiByte(CP_ACP, 0, characters, value->Length, nullptr, 0, nullptr, nullptr);
+		m_value.resize(size);
+		if (size > 0)
+			WideCharToMultiByte(CP_ACP, 0, characters, value->Length, &m_value[0], size, nullptr, nullptr);
 	}
 #endif
 

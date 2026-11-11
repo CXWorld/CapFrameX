@@ -7,6 +7,7 @@ using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Monitoring.Contracts;
+using CapFrameX.PMD;
 using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
@@ -17,7 +18,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
@@ -77,9 +77,11 @@ namespace CapFrameX.Data
         private IDisposable _disposablePoweneticsDataStream;
         private IDisposable _disposableBenchlabDataStream;
         private IDisposable _rTSSFrameTimesIntervalStream;
-        private EventLoopScheduler _captureStreamScheduler;
-        private EventLoopScheduler _poweneticsScheduler;
-        private EventLoopScheduler _benchlabScheduler;
+        // Disposed right after their subscriptions while a producer may still be in OnNext; see
+        // DisposeSafeEventLoopScheduler.
+        private DisposeSafeEventLoopScheduler _captureStreamScheduler;
+        private DisposeSafeEventLoopScheduler _poweneticsScheduler;
+        private DisposeSafeEventLoopScheduler _benchlabScheduler;
         private List<string[]> _captureData = new List<string[]>();
         private bool _fillArchive;
         private double _qpcTimeStart;
@@ -91,9 +93,12 @@ namespace CapFrameX.Data
         private ISubject<CaptureStatus> _captureStatusChange =
             new BehaviorSubject<CaptureStatus>(new CaptureStatus { Status = ECaptureStatus.Stopped });
         private List<float> _aggregatedRTSSFrameTimes;
-        private LinkedList<float> _pmdDataGpuPower;
-        private LinkedList<float> _pmdDataCpuPower;
-        private LinkedList<float> _pmdDataSystemPower;
+        // PMD samples of the running capture: time in seconds on the QPC clock, power per rail.
+        private readonly object _pmdSamplesLock = new object();
+        private List<double> _pmdSampleTimes = new List<double>();
+        private List<float> _pmdDataGpuPower = new List<float>();
+        private List<float> _pmdDataCpuPower = new List<float>();
+        private List<float> _pmdDataSystemPower = new List<float>();
 
         public IObservable<CaptureStatus> CaptureStatusChange
             => _captureStatusChange.AsObservable();
@@ -112,6 +117,9 @@ namespace CapFrameX.Data
         public bool DelayCountdownRunning { get; set; }
 
         public bool OSDAutoDisabled { get; set; } = false;
+
+        // Whether the auto-disable also switched RTSS' global OSD off.
+        private bool _rtssOsdAutoDisabled;
 
         /// <summary>
         /// Indicates whether a capture is currently active. For external components to check capture status.
@@ -172,6 +180,9 @@ namespace CapFrameX.Data
         public IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter)
             => _captureService.GetAllFilteredProcesses(filter);
 
+        public IReadOnlyList<CaptureProcessActivity> GetProcessActivity()
+            => _captureService.GetProcessActivity() ?? Array.Empty<CaptureProcessActivity>();
+
         public IEnumerable<(string, int)> GetAllNonBlacklistedProcesses()
         {
             var filter = new HashSet<string>(
@@ -196,14 +207,28 @@ namespace CapFrameX.Data
             if (options.RecordDirectory != null && !Directory.Exists(options.RecordDirectory))
                 throw new Exception($"RecordDirectory {options.RecordDirectory} does not exist");
 
+            // Before the start time is taken, so the PMD samples cover the first frame.
+            StartPmdLogging();
+
+            // The capture starts at the request; the frames shown until the frame data subscription
+            // below is up come from the archive. A capture delay moves the start (see below).
             QueryPerformanceCounter(out long startCounter);
             QueryPerformanceFrequency(out long lpFrequency);
             _qpcTimeStart = (double)startCounter / lpFrequency;
 
-            var atomicTime = AtomicTime.Now.TimeOfDay;
-
             var delayStopwatch = new Stopwatch();
             delayStopwatch.Start();
+
+            // On its first use AtomicTime asks five NIST time servers and, when none answers, waits
+            // until all of them gave up (21 s when they are unreachable). It used to run right here,
+            // holding back the timers, the frame subscription and the sensor logging of the first
+            // capture of a session.
+            var requestStopwatch = Stopwatch.StartNew();
+            var atomicTimeOnRequest = Task.Run(() =>
+            {
+                var atomicNow = AtomicTime.Now;
+                return atomicNow == DateTime.MinValue ? (TimeSpan?)null : atomicNow.TimeOfDay - requestStopwatch.Elapsed;
+            });
 
             if (options.CaptureDelay > 0d)
             {
@@ -222,6 +247,7 @@ namespace CapFrameX.Data
                 }
                 catch (OperationCanceledException) when (_cancelDelay.IsCancellationRequested)
                 {
+                    StopPmdLogging();
                     _overlayService.SetCaptureServiceStatus("Ready to capture...");
                     _captureStatusChange.OnNext(new CaptureStatus() { Status = ECaptureStatus.Stopped });
                     delayStopwatch.Reset();
@@ -230,6 +256,12 @@ namespace CapFrameX.Data
                     _cancelDelay = new CancellationTokenSource();
                     return;
                 }
+
+                // The delay holds the capture back, so the frames shown meanwhile do not belong to
+                // it. With the request time as start, GetAdjustedCaptureData took them from the
+                // archive (as far as its 500 frames reach) and the capture ended that much early.
+                QueryPerformanceCounter(out long delayEndCounter);
+                _qpcTimeStart = (double)delayEndCounter / lpFrequency;
             }
 
             IsCapturing = true;
@@ -237,7 +269,11 @@ namespace CapFrameX.Data
 
             if (_appConfiguration.IsOverlayActive && _appConfiguration.AutoDisableOverlay)
             {
-                _rtssService.OnOSDOff();
+                // RTSS' OSD switch is global and also hides other RTSS clients. Only the RTSS
+                // renderer needs it; the CapFrameX renderers follow IsOverlayActive.
+                _rtssOsdAutoDisabled = _appConfiguration.UsesRtss();
+                if (_rtssOsdAutoDisabled)
+                    _rtssService.OnOSDOff();
                 _appConfiguration.IsOverlayActive = false;
                 _overlayService.IsOverlayActiveStream.OnNext(false);
                 OSDAutoDisabled = true;
@@ -247,7 +283,12 @@ namespace CapFrameX.Data
             _timestampStartCapture = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeMilliseconds();
             _currentCaptureOptions = options;
 
-            _captureData = new List<string[]>();
+            // PresentMon reports every process, and all of their rows used to stay in memory until
+            // the next capture. Only the target's rows are kept; all of its PIDs are, so
+            // GetAdjustedCaptureData still rejects a capture of several instances.
+            var captureData = new List<string[]>();
+            _captureData = captureData;
+            string targetProcess = options.ProcessInfo.Item1;
 
             _overlayService.SetCaptureServiceStatus("Recording frametimes");
 
@@ -260,33 +301,12 @@ namespace CapFrameX.Data
 
             bool intializedStartTime = false;
             double captureDataArchiveLastTime = 0;
-
-            if (_appConfiguration.UsePmdDataLogging)
-            {
-                _pmdDataGpuPower = new LinkedList<float>();
-                _pmdDataCpuPower = new LinkedList<float>();
-                _pmdDataSystemPower = new LinkedList<float> { };
-
-                // Create schedulers that we can dispose later
-                _poweneticsScheduler = new EventLoopScheduler();
-                _benchlabScheduler = new EventLoopScheduler();
-
-                _disposablePoweneticsDataStream = _poweneticsService.PmdChannelStream
-                    .Where(x => IsCapturing)
-                    .ObserveOn(_poweneticsScheduler)
-                    .Subscribe(channels => FillPmdDataLists(channels));
-
-                _disposableBenchlabDataStream = _benchlabService.PmdSensorStream
-                    .Where(x => IsCapturing)
-                    .ObserveOn(_benchlabScheduler)
-                    .Subscribe(sensorSample => FillPmdDataLists(sensorSample));
-            }
+            string[] firstRow = null;
 
             // Replace the previous subscription instead of assigning over it, the way
             // StartFillArchive already does. The handle is the only way to dispose one, so
-            // overwriting a live subscription orphans it forever — and its handler appends to
-            // _captureData, the FIELD, so it goes on filling whatever list the CURRENT capture
-            // uses. Each orphan adds one more copy of every frame for the rest of the session.
+            // overwriting a live subscription orphans it forever, and it goes on filling its
+            // list with every frame for the rest of the session.
             //
             // This is reachable: the IsCapturing guard in StartCapture is a check-then-act
             // across the awaits below it, so several hotkey presses a few hundred ms apart can
@@ -298,7 +318,7 @@ namespace CapFrameX.Data
                 _captureStreamScheduler?.Dispose();
 
                 // Create scheduler for capture stream
-                _captureStreamScheduler = new EventLoopScheduler();
+                _captureStreamScheduler = new DisposeSafeEventLoopScheduler();
 
                 _disposableCaptureStream = _captureService
                     .FrameDataStream
@@ -306,14 +326,19 @@ namespace CapFrameX.Data
                     .ObserveOn(_captureStreamScheduler)
                     .Subscribe(lineSplit =>
                     {
-                        _captureData.Add(lineSplit);
+                        if (GetProcessNameFromDataLine(lineSplit) == targetProcess)
+                            captureData.Add(lineSplit);
 
-                        if (!intializedStartTime && _captureData.Any())
+                        // The archive stops once the stream overlaps it. The first row of any
+                        // process shows that, so the archive stops as early as it always did.
+                        firstRow ??= lineSplit;
+
+                        if (!intializedStartTime)
                         {
                             double captureDataFirstTime = 0;
                             try
                             {
-                                captureDataFirstTime = GetCpuStartQpcFromDataLine(_captureData.First());
+                                captureDataFirstTime = GetCpuStartQpcFromDataLine(firstRow);
                             }
                             catch { return; }
 
@@ -374,9 +399,12 @@ namespace CapFrameX.Data
                 _logEntryManager.AddLogEntry($"Capturing of process \"{options.ProcessInfo.Item1}\" started", ELogMessageType.BasicInfo, options.CaptureDelay > 0d ? false : true);
             }
 
-            _logEntryManager.AddLogEntry($"Atomic time(UTC) on capture start request: {atomicTime}" + Environment.NewLine
-                + $"Performance counter on capture start request: {startCounter}" + Environment.NewLine
+            _logEntryManager.AddLogEntry($"Performance counter on capture start request: {startCounter}" + Environment.NewLine
                 + $"Time between capture start request and execution in ms: {delayStopwatch.ElapsedMilliseconds}", ELogMessageType.AdvancedInfo, false);
+
+            _ = atomicTimeOnRequest.ContinueWith(task => _logEntryManager.AddLogEntry(
+                $"Atomic time(UTC) on capture start request: {(task.Result.HasValue ? task.Result.Value.ToString() : "unavailable")}",
+                ELogMessageType.AdvancedInfo, false), TaskContinuationOptions.OnlyOnRanToCompletion);
         }
 
         public async Task StopCapture()
@@ -408,18 +436,28 @@ namespace CapFrameX.Data
 
             if (_appConfiguration.AutoDisableOverlay && OSDAutoDisabled)
             {
-                _appConfiguration.IsOverlayActive = true;
-                _overlayService.IsOverlayActiveStream.OnNext(true);
-                _rtssService.OnOSDOn();
+                // The renderer may have been switched off during the capture; then the overlay stays off.
+                if (_appConfiguration.OverlayRenderer != EOverlayRenderer.Off)
+                {
+                    _appConfiguration.IsOverlayActive = true;
+                    _overlayService.IsOverlayActiveStream.OnNext(true);
+                }
+                // Gives back what the start took, also after a switch to another renderer.
+                if (_rtssOsdAutoDisabled)
+                    _rtssService.OnOSDOn();
+                _rtssOsdAutoDisabled = false;
                 OSDAutoDisabled = false;
             }
 
-            if (_appConfiguration.IsOverlayActive)
+            if (_appConfiguration.FeedsRtss())
                 _rtssService.Refresh();
 
             _logEntryManager.AddLogEntry($"Running offset of {PRESICE_OFFSET}ms to gather latest frames", ELogMessageType.AdvancedInfo, false);
 
             await Task.Delay(TimeSpan.FromMilliseconds(PRESICE_OFFSET));
+            // This capture's rows. A capture that starts once IsCapturing is false puts its own
+            // list in place, which must neither be written here nor released.
+            var captureData = _captureData;
             IsCapturing = false;
 
             // Stop Present logging
@@ -431,20 +469,14 @@ namespace CapFrameX.Data
                 _captureStreamScheduler = null;
             }
 
-            // Stop PMD logging
-            _disposablePoweneticsDataStream?.Dispose();
-            _disposableBenchlabDataStream?.Dispose();
-            _poweneticsScheduler?.Dispose();
-            _benchlabScheduler?.Dispose();
-            _poweneticsScheduler = null;
-            _benchlabScheduler = null;
+            StopPmdLogging();
 
             _logEntryManager.AddLogEntry("Processing captured data", ELogMessageType.BasicInfo, false);
 
-            if (_appConfiguration.IsOverlayActive)
+            if (_appConfiguration.FeedsRtss())
                 _rtssService.Refresh();
 
-            await WriteExtractedCaptureDataToFileAsync();
+            await WriteExtractedCaptureDataToFileAsync(captureData);
             LockCaptureService = false;
         }
 
@@ -549,28 +581,130 @@ namespace CapFrameX.Data
             _logEntryManager.AddLogEntry("Started filling archive.", ELogMessageType.AdvancedInfo, false);
         }
 
+        // Collects PMD samples from before the capture start on. The capture window is cut out by
+        // the sample times when the file is written, so the subscription neither has to start at
+        // the first frame nor to stop at the last one.
+        private void StartPmdLogging()
+        {
+            StopPmdLogging();
+
+            if (!_appConfiguration.UsePmdDataLogging)
+                return;
+
+            lock (_pmdSamplesLock)
+            {
+                _pmdSampleTimes = new List<double>();
+                _pmdDataGpuPower = new List<float>();
+                _pmdDataCpuPower = new List<float>();
+                _pmdDataSystemPower = new List<float>();
+            }
+
+            // Create schedulers that we can dispose later
+            _poweneticsScheduler = new DisposeSafeEventLoopScheduler();
+            _benchlabScheduler = new DisposeSafeEventLoopScheduler();
+
+            _disposablePoweneticsDataStream = _poweneticsService.PmdChannelStream
+                .ObserveOn(_poweneticsScheduler)
+                .Subscribe(channels => FillPmdDataLists(channels));
+
+            _disposableBenchlabDataStream = _benchlabService.PmdSensorStream
+                .ObserveOn(_benchlabScheduler)
+                .Subscribe(sensorSample => FillPmdDataLists(sensorSample));
+        }
+
+        private void StopPmdLogging()
+        {
+            _disposablePoweneticsDataStream?.Dispose();
+            _disposableBenchlabDataStream?.Dispose();
+            _disposablePoweneticsDataStream = null;
+            _disposableBenchlabDataStream = null;
+            _poweneticsScheduler?.Dispose();
+            _benchlabScheduler?.Dispose();
+            _poweneticsScheduler = null;
+            _benchlabScheduler = null;
+        }
+
         private void FillPmdDataLists(PoweneticsChannel[] channel)
         {
-            _pmdDataGpuPower.AddLast(PoweneticsChannelExtensions.GPUPowerIndexGroup.Sum(index => channel[index].Value));
-            _pmdDataCpuPower.AddLast(PoweneticsChannelExtensions.EPSPowerIndexGroup.Sum(index => channel[index].Value));
-            _pmdDataSystemPower.AddLast(PoweneticsChannelExtensions.SystemPowerIndexGroup.Sum(index => channel[index].Value));
+            // The time stamp is the start of the downsampling bin; the sample stands for its centre.
+            AddPmdSample((channel[0].TimeStamp + 0.5 * _poweneticsService.DownSamplingSize) * 1E-03,
+                PoweneticsChannelExtensions.GPUPowerIndexGroup.Sum(index => channel[index].Value),
+                PoweneticsChannelExtensions.EPSPowerIndexGroup.Sum(index => channel[index].Value),
+                PoweneticsChannelExtensions.SystemPowerIndexGroup.Sum(index => channel[index].Value));
         }
 
         private void FillPmdDataLists(SensorSample sensorSample)
         {
-            _pmdDataGpuPower.AddLast((float)sensorSample.Sensors[_benchlabService.GpuPowerSensorIndex].Value);
-            _pmdDataCpuPower.AddLast((float)sensorSample.Sensors[_benchlabService.CpuPowerSensorIndex].Value);
-            _pmdDataSystemPower.AddLast((float)sensorSample.Sensors[_benchlabService.SytemPowerSensorIndex].Value);
+            AddPmdSample(sensorSample.TimeStamp * 1E-03,
+                (float)sensorSample.Sensors[_benchlabService.GpuPowerSensorIndex].Value,
+                (float)sensorSample.Sensors[_benchlabService.CpuPowerSensorIndex].Value,
+                (float)sensorSample.Sensors[_benchlabService.SytemPowerSensorIndex].Value);
         }
 
-        private async Task WriteExtractedCaptureDataToFileAsync()
+        private void AddPmdSample(double time, float gpuPower, float cpuPower, float systemPower)
+        {
+            lock (_pmdSamplesLock)
+            {
+                _pmdSampleTimes.Add(time);
+                _pmdDataGpuPower.Add(gpuPower);
+                _pmdDataCpuPower.Add(cpuPower);
+                _pmdDataSystemPower.Add(systemPower);
+            }
+        }
+
+        /// <summary>
+        /// Puts the PMD samples on the grid of the capture file, where value i belongs to
+        /// i * SampleTime after the first frame. The sample times are on the QPC clock, like the
+        /// frame times, so the series lines up with the frames whatever rate the device ran at.
+        /// </summary>
+        private void AddPmdData(ISessionRun sessionRun, double captureStartTime, double captureLengthMs)
+        {
+            double[] times;
+            float[] gpuPower, cpuPower, systemPower;
+            lock (_pmdSamplesLock)
+            {
+                times = _pmdSampleTimes.ToArray();
+                gpuPower = _pmdDataGpuPower.ToArray();
+                cpuPower = _pmdDataCpuPower.ToArray();
+                systemPower = _pmdDataSystemPower.ToArray();
+            }
+
+            if (times.Length == 0)
+                return;
+
+            int count = (int)(captureLengthMs / sessionRun.SampleTime) + 1;
+            double step = sessionRun.SampleTime * 1E-03;
+
+            sessionRun.PmdGpuPower = PmdTimeSeriesResampler.Resample(times, gpuPower, captureStartTime, step, count);
+            sessionRun.PmdCpuPower = PmdTimeSeriesResampler.Resample(times, cpuPower, captureStartTime, step, count);
+            sessionRun.PmdSystemPower = PmdTimeSeriesResampler.Resample(times, systemPower, captureStartTime, step, count);
+
+            double first = times[0] - captureStartTime;
+            double last = times[^1] - captureStartTime;
+            double captureEnd = (count - 1) * step;
+            // BENCHLAB samples are about one step apart, so its first one may come a step late.
+            double slack = Math.Max(2 * step, 0.25);
+
+            _logEntryManager.AddLogEntry(string.Format(CultureInfo.InvariantCulture,
+                "PMD: {0} samples from {1:F2} s to {2:F2} s, stored as {3} values every {4} ms",
+                times.Length, first, last, count, sessionRun.SampleTime), ELogMessageType.AdvancedInfo, false);
+
+            if (first > slack || last < captureEnd - slack)
+            {
+                _logEntryManager.AddLogEntry(string.Format(CultureInfo.InvariantCulture,
+                    "PMD data only covers {0:F2} s to {1:F2} s of the capture; the uncovered part repeats the nearest value.",
+                    first, last), ELogMessageType.BasicInfo, false);
+            }
+        }
+
+        private async Task WriteExtractedCaptureDataToFileAsync(List<string[]> captureData)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(_currentCaptureOptions.ProcessInfo.Item1))
                     throw new InvalidDataException("Invalid process name!");
 
-                var adjustedCaptureData = GetAdjustedCaptureData();
+                var adjustedCaptureData = GetAdjustedCaptureData(captureData);
 
                 if (!adjustedCaptureData.Any())
                 {
@@ -581,8 +715,9 @@ namespace CapFrameX.Data
 
                 PrepareForNextCapture();
 
-                // Skip first line to compensate the first frametime being one frame before original capture start point.
-                var normalizedAdjustedCaptureData = NormalizeTimes(adjustedCaptureData.Skip(1));
+                // Skip the first frame to compensate the first frametime being one frame before original capture start point.
+                var capturedFrames = DropFramesOfFirstStartTime(adjustedCaptureData);
+                var normalizedAdjustedCaptureData = NormalizeTimes(capturedFrames);
                 var sessionRun = _recordManager.ConvertPresentDataLinesToSessionRun(normalizedAdjustedCaptureData);
                 var finalCaptureTime = GetTimeFromDataLine(normalizedAdjustedCaptureData?.Last());
 
@@ -593,29 +728,13 @@ namespace CapFrameX.Data
                 if (_appConfiguration.UsePmdDataLogging)
                 {
                     if (_poweneticsService.IsServiceRunning)
-                    {
                         sessionRun.SampleTime = _poweneticsService.DownSamplingSize;
-                        int count = (int)(finalCaptureTime / sessionRun.SampleTime) + 1;
-
-                        if (_pmdDataGpuPower.Any())
-                            sessionRun.PmdGpuPower = _pmdDataGpuPower.Take(count).ToArray();
-                        if (_pmdDataCpuPower.Any())
-                            sessionRun.PmdCpuPower = _pmdDataCpuPower.Take(count).ToArray();
-                        if (_pmdDataSystemPower.Any())
-                            sessionRun.PmdSystemPower = _pmdDataSystemPower.Take(count).ToArray();
-                    }
                     else if (_benchlabService.IsServiceRunning)
-                    {
                         sessionRun.SampleTime = _benchlabService.MonitoringInterval;
-                        int count = (int)(finalCaptureTime / sessionRun.SampleTime) + 1;
 
-                        if (_pmdDataGpuPower.Any())
-                            sessionRun.PmdGpuPower = _pmdDataGpuPower.Take(count).ToArray();
-                        if (_pmdDataCpuPower.Any())
-                            sessionRun.PmdCpuPower = _pmdDataCpuPower.Take(count).ToArray();
-                        if (_pmdDataSystemPower.Any())
-                            sessionRun.PmdSystemPower = _pmdDataSystemPower.Take(count).ToArray();
-                    }
+                    // Time 0 of the file is the first frame NormalizeTimes kept.
+                    if (sessionRun.SampleTime > 0)
+                        AddPmdData(sessionRun, GetCpuStartQpcFromDataLine(capturedFrames[0]), finalCaptureTime);
                 }
 
                 if (_appConfiguration.UseRunHistory)
@@ -649,11 +768,21 @@ namespace CapFrameX.Data
                 _logger.LogError(e, "Error writing capture data");
                 PrepareForNextCapture();
             }
+            finally
+            {
+                // Otherwise the buffer stays referenced until the next capture. MCP and REST start
+                // captures without waiting for LockCaptureService, so a new capture may already
+                // have put its own list in place; that one is kept.
+                Interlocked.CompareExchange(ref _captureData, new List<string[]>(), captureData);
+            }
         }
 
-        private List<string[]> GetAdjustedCaptureData()
+        // The buffer of the running capture; empty between captures.
+        internal IReadOnlyList<string[]> CaptureBuffer => _captureData;
+
+        private List<string[]> GetAdjustedCaptureData(List<string[]> captureData)
         {
-            if (!_captureData.Any())
+            if (!captureData.Any())
             {
                 _logEntryManager.AddLogEntry($"No available capture Data...", ELogMessageType.Error, false);
                 return Enumerable.Empty<string[]>().ToList();
@@ -678,7 +807,7 @@ namespace CapFrameX.Data
 
             var uniqueProcessIdDict = new Dictionary<string, HashSet<string>>();
 
-            foreach (var filteredCaptureDataLine in _captureData)
+            foreach (var filteredCaptureDataLine in captureData)
             {
                 var currentProcess = GetProcessNameFromDataLine(filteredCaptureDataLine);
                 var currentProcessId = GetProcessIdFromDataLine(filteredCaptureDataLine);
@@ -698,7 +827,7 @@ namespace CapFrameX.Data
             if (uniqueProcessIdDict.Any(dict => dict.Value.Count() > 1))
                 _logEntryManager.AddLogEntry($"Multi instances detected. Capture data will be filtered.", ELogMessageType.BasicInfo, false);
 
-            _logEntryManager.AddLogEntry($"Raw data counts - Archive: {_captureDataArchive.Count} frames, Capture: {_captureData.Count} frames",
+            _logEntryManager.AddLogEntry($"Raw data counts - Archive: {_captureDataArchive.Count} frames, Capture: {captureData.Count} frames of the target process",
                 ELogMessageType.AdvancedInfo, false);
 
             var filteredArchive = _captureDataArchive.Where(line =>
@@ -707,7 +836,7 @@ namespace CapFrameX.Data
                 return currentProcess == _currentCaptureOptions.ProcessInfo.Item1 && uniqueProcessIdDict[currentProcess].Count() == 1;
             }).ToList();
 
-            var filteredCaptureData = _captureData.Where(line =>
+            var filteredCaptureData = captureData.Where(line =>
             {
                 var currentProcess = GetProcessNameFromDataLine(line);
                 return currentProcess == _currentCaptureOptions.ProcessInfo.Item1 && uniqueProcessIdDict[currentProcess].Count() == 1;
@@ -850,8 +979,10 @@ namespace CapFrameX.Data
                     {
                         captureInterval.Add(unionCaptureData[i]);
 
-                        if (captureInterval.Count == 2)
-                            normalizeTimeOffset = GetCpuStartQpcFromDataLine(captureInterval[1]) - startTime;
+                        // The file starts with the first frame after startTime (see
+                        // DropFramesOfFirstStartTime), so the defined time counts from it.
+                        if (normalizeTimeOffset == 0 && currentStartTime > startTime)
+                            normalizeTimeOffset = currentStartTime - startTime;
                     }
                 }
             }
@@ -889,6 +1020,23 @@ namespace CapFrameX.Data
             var lineSplit = line.Split(',');
             var length = Convert.ToDouble(lineSplit[_captureService.CPUStartQPCTimeInMs_Index], CultureInfo.InvariantCulture);
             return Math.Round(length, 2, MidpointRounding.AwayFromZero);
+        }
+
+        /// <summary>
+        /// Drops the frames of the capture interval's first start time. Frame generation presents
+        /// a generated and a real frame with one CPUStartQPCTime, so dropping only the first row
+        /// left the real frame of the pair in flight at the capture start as the file's first
+        /// frame, without its partner.
+        /// </summary>
+        internal List<string[]> DropFramesOfFirstStartTime(List<string[]> captureInterval)
+        {
+            int timeIndex = _captureService.CPUStartQPCTimeInMs_Index;
+            string firstStartTime = captureInterval[0][timeIndex];
+            int skip = 1;
+            while (skip < captureInterval.Count &&
+                   string.Equals(captureInterval[skip][timeIndex], firstStartTime, StringComparison.Ordinal))
+                skip++;
+            return captureInterval.Skip(skip).ToList();
         }
 
         /// <summary>

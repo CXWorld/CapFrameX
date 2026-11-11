@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using Microsoft.Extensions.Logging;
-using CapFrameX.Contracts.Overlay;
 using System;
 using System.Collections.Generic;
 using LibreHardwareMonitor.Hardware.Simulation;
@@ -16,6 +15,9 @@ namespace CapFrameX.Configuration
     {
         private readonly ISettingsStorage _settingsStorage;
         private readonly ISubject<(string key, object value)> _onValueChanged = new Subject<(string key, object value)>();
+        private readonly object _overlayRendererLock = new object();
+        private volatile EOverlayRenderer _overlayRenderer;
+        private volatile bool _overlayRendererStored;
         public IObservable<(string key, object value)> OnValueChanged => _onValueChanged.AsObservable();
 
         // Directories
@@ -66,6 +68,18 @@ namespace CapFrameX.Configuration
         public string HardwareInfoSource
         {
             get => Get<string>("Auto");
+            set => Set(value);
+        }
+
+        public string UiLanguage
+        {
+            get => Get<string>("en");
+            set => Set(value);
+        }
+
+        public string OverlayLanguage
+        {
+            get => Get<string>("en");
             set => Set(value);
         }
 
@@ -225,6 +239,12 @@ namespace CapFrameX.Configuration
         public bool SuppressFrameViewServiceWarning
         {
             get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public string DeclinedPortableVulkanLayerSignature
+        {
+            get => Get<string>(string.Empty);
             set => Set(value);
         }
 
@@ -765,11 +785,16 @@ namespace CapFrameX.Configuration
             set => Set(value);
         }
 
+        public EOverlayRenderer OverlayRenderer
+        {
+            get => ReadOverlayRenderer();
+            set => SelectOverlayRenderer(_ => value);
+        }
+
         public bool EnableHookFreeOverlay
         {
-            // Use hook-free by default while preserving an existing in-game selection.
-            get => Get<bool>(!EnableHookOverlay);
-            set => Set(value);
+            get => OverlayRendererSelection.EnablesHookFreeOverlay(ReadOverlayRenderer());
+            set => SelectOverlayRenderer(current => OverlayRendererSelection.WithHookFreeOverlay(current, value));
         }
 
         public string HookFreeDisplayDeviceName
@@ -795,8 +820,8 @@ namespace CapFrameX.Configuration
 
         public bool EnableHookOverlay
         {
-            get => OverlayAvailability.IsInGameAvailable && Get<bool>(false);
-            set => Set(value && OverlayAvailability.IsInGameAvailable);
+            get => OverlayRendererSelection.EnablesHookOverlay(ReadOverlayRenderer());
+            set => SelectOverlayRenderer(current => OverlayRendererSelection.WithHookOverlay(current, value));
         }
 
         public bool HookOverlayUsePresentMonFrametimes
@@ -831,6 +856,32 @@ namespace CapFrameX.Configuration
             set => Set(Math.Max(50, Math.Min(200, value)));
         }
 
+        public bool OsdScaleWithResolution
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public const string DefaultOsdFontFamily = "Segoe UI";
+
+        public string OsdFontFamily
+        {
+            get => Get<string>(DefaultOsdFontFamily);
+            set => Set(string.IsNullOrWhiteSpace(value) ? DefaultOsdFontFamily : value.Trim());
+        }
+
+        public string ActiveOverlayDesignProfileId
+        {
+            get => Get<string>(null);
+            set => Set(string.IsNullOrWhiteSpace(value) ? null : value);
+        }
+
+        public string LastOverlayDesignProfileId
+        {
+            get => Get<string>(null);
+            set => Set(string.IsNullOrWhiteSpace(value) ? null : value);
+        }
+
         // 0..4 = cfx_osd_anchor. The native reader rejects anything outside that range and keeps
         // the previous placement, so clamping here is what makes a bad value visible as "no move".
         public int OsdAnchor
@@ -849,6 +900,24 @@ namespace CapFrameX.Configuration
         {
             get => Get<int>(30);
             set => Set(Math.Max(0, Math.Min(2000, value)));
+        }
+
+        public bool OsdPixelOrbitEnabled
+        {
+            get => Get<bool>(false);
+            set => Set(value);
+        }
+
+        public int OsdPixelOrbitInterval
+        {
+            get => Get<int>(OsdPixelOrbit.DefaultIntervalSeconds);
+            set => Set(OsdPixelOrbit.ClampInterval(value));
+        }
+
+        public int OsdPixelOrbitRadius
+        {
+            get => Get<int>(OsdPixelOrbit.DefaultRadius);
+            set => Set(OsdPixelOrbit.ClampRadius(value));
         }
 
         public bool UseOsdValueSmoothing
@@ -1082,19 +1151,103 @@ namespace CapFrameX.Configuration
             _onValueChanged.OnNext((key, value));
         }
 
+        // Overlay renderer: the renderer is stored together with both flag mirrors, and the
+        // changes are raised only once all three are written. Every subscriber therefore reads
+        // the final selection, whichever key it watches; the two flags used to be written one
+        // after the other and briefly selected both renderers or none.
+        private void SelectOverlayRenderer(Func<EOverlayRenderer, EOverlayRenderer> select)
+        {
+            EOverlayRenderer previous;
+            EOverlayRenderer next;
+            lock (_overlayRendererLock)
+            {
+                previous = _overlayRenderer;
+                next = select(previous);
+                if (!Enum.IsDefined(typeof(EOverlayRenderer), next))
+                    throw new ArgumentOutOfRangeException(nameof(OverlayRenderer), next, "Unknown overlay renderer.");
+                if (next == previous)
+                    return;
+
+                StoreOverlayRenderer(next);
+                _overlayRenderer = next;
+                _overlayRendererStored = true;
+            }
+
+            _onValueChanged.OnNext((nameof(OverlayRenderer), next));
+            bool hook = OverlayRendererSelection.EnablesHookOverlay(next);
+            if (hook != OverlayRendererSelection.EnablesHookOverlay(previous))
+                _onValueChanged.OnNext((nameof(EnableHookOverlay), hook));
+            bool hookFree = OverlayRendererSelection.EnablesHookFreeOverlay(next);
+            if (hookFree != OverlayRendererSelection.EnablesHookFreeOverlay(previous))
+                _onValueChanged.OnNext((nameof(EnableHookFreeOverlay), hookFree));
+        }
+
+        // Like every other setting, the loaded selection is written on its first read, not while
+        // loading: then a migrated or reconciled renderer reaches the file, and the flags with it.
+        private EOverlayRenderer ReadOverlayRenderer()
+        {
+            if (!_overlayRendererStored)
+            {
+                lock (_overlayRendererLock)
+                {
+                    if (!_overlayRendererStored)
+                    {
+                        StoreOverlayRenderer(_overlayRenderer);
+                        _overlayRendererStored = true;
+                    }
+                }
+            }
+
+            return _overlayRenderer;
+        }
+
+        private void StoreOverlayRenderer(EOverlayRenderer renderer)
+        {
+            _settingsStorage.SetValue(nameof(OverlayRenderer), renderer.ToString());
+            _settingsStorage.SetValue(nameof(EnableHookOverlay), OverlayRendererSelection.EnablesHookOverlay(renderer));
+            _settingsStorage.SetValue(nameof(EnableHookFreeOverlay), OverlayRendererSelection.EnablesHookFreeOverlay(renderer));
+        }
+
+        // Settings written before the renderer setting existed only hold the flags. A stored
+        // renderer is kept unless an older build changed the flags since (after a rollback).
+        private EOverlayRenderer LoadOverlayRenderer()
+        {
+            EOverlayRenderer? storedRenderer = null;
+            if (TryGetStoredValue(nameof(OverlayRenderer), out string text)
+                && Enum.TryParse(text, ignoreCase: true, out EOverlayRenderer parsed)
+                && Enum.IsDefined(typeof(EOverlayRenderer), parsed))
+                storedRenderer = parsed;
+
+            return OverlayRendererSelection.Reconcile(storedRenderer,
+                TryGetStoredValue(nameof(EnableHookOverlay), out bool hook) ? hook : (bool?)null,
+                TryGetStoredValue(nameof(EnableHookFreeOverlay), out bool hookFree) ? hookFree : (bool?)null);
+        }
+
+        private bool TryGetStoredValue<T>(string key, out T value)
+        {
+            try
+            {
+                value = _settingsStorage.GetValue<T>(key);
+                return true;
+            }
+            catch (KeyNotFoundException)
+            {
+            }
+            catch (InvalidOperationException)
+            {
+                // A hand-edited value of the wrong type counts as missing.
+            }
+
+            value = default;
+            return false;
+        }
+
         public CapFrameXConfiguration(ILogger<CapFrameXConfiguration> logger, ISettingsStorage settingsStorage)
         {
             _settingsStorage = settingsStorage;
             try
             {
                 _settingsStorage.Load().Wait();
-                if (!OverlayAvailability.IsInGameAvailable &&
-                    Get<bool>(false, nameof(EnableHookOverlay)))
-                {
-                    // Migrate the earlier 1.9.0 selection before any renderer subscribes.
-                    EnableHookFreeOverlay = true;
-                    EnableHookOverlay = false;
-                }
             }
             catch (Exception ex)
             {
@@ -1104,6 +1257,8 @@ namespace CapFrameX.Configuration
                     " and then restart CapFrameX.", "Error");
                 throw;
             }
+
+            _overlayRenderer = LoadOverlayRenderer();
         }
     }
 

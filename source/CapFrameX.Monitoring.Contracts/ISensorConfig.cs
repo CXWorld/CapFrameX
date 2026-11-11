@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System;
 
 namespace CapFrameX.Monitoring.Contracts
 {
@@ -39,6 +40,22 @@ namespace CapFrameX.Monitoring.Contracts
         /// is visible; the flag also keeps the sensor snapshot stream running.
         /// </summary>
         bool EvaluateAllSensors { get; set; }
+
+        /// <summary>
+        /// Keeps every sensor available for an independent live consumer until the returned
+        /// lease is disposed. Leases compose with each other and with EvaluateAllSensors.
+        /// </summary>
+        IDisposable AcquireAllSensors();
+
+        /// <summary>
+        /// Keeps only the sensors with the given runtime identifiers available for an
+        /// independent live consumer until the returned lease is disposed. The function is read
+        /// on every evaluation and returns the current identifiers; null stands for every sensor,
+        /// as <see cref="AcquireAllSensors"/> does. A leased hardware or PmcReader sensor counts
+        /// as a selected overlay sensor for the polling gates
+        /// (<see cref="HasSelectedOverlaySensors"/>, <see cref="HasSelectedPmcOverlaySensors"/>).
+        /// </summary>
+        IDisposable AcquireSensors(Func<IReadOnlySet<string>> identifiers);
 
         int SensorLoggingRefreshPeriod { get; set; }
 

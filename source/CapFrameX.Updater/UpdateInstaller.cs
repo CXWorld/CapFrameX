@@ -73,6 +73,14 @@ namespace CapFrameX.Updater
 					return false;
 				}
 
+				// The signature covers the package, not the command line it is started with.
+				if (!PackageIntegrity.AreAllowedInstallerArguments(pending.Arguments, out var rejectedArgument))
+				{
+					logError(null, $"Pending update carries the installer argument '{rejectedArgument}', which is not on the allowlist. Discarding it.");
+					Discard(updatesFolder, logError);
+					return false;
+				}
+
 				// Path.GetFileName strips any directory part a hand-edited marker might carry, so
 				// the package can only ever be started from the updates folder.
 				var packagePath = Path.Combine(updatesFolder, Path.GetFileName(pending.PackageFile));
@@ -84,31 +92,52 @@ namespace CapFrameX.Updater
 					return false;
 				}
 
-				if (!PackageIntegrity.HashMatches(pending.Sha256, PackageIntegrity.ComputeSha256(packagePath)))
+				string rejectReason;
+
+				// The updates folder is writable without elevation while the installer runs
+				// elevated, so checksum, signature and start all go through one handle that
+				// denies writers: what was checked is what gets started.
+				using (var package = new FileStream(packagePath, FileMode.Open, FileAccess.Read, FileShare.Read))
 				{
-					logError(null, "Pending update package has no valid checksum or failed its checksum check. Discarding it.");
-					Discard(updatesFolder, logError);
-					return false;
+					if (!PackageIntegrity.HashMatches(pending.Sha256, PackageIntegrity.ComputeSha256(package)))
+					{
+						rejectReason = "Pending update package has no valid checksum or failed its checksum check.";
+					}
+					else
+					{
+						var signature = PackageSignature.Verify(package);
+						rejectReason = signature.IsTrusted
+							? null
+							: $"Pending update package is not signed by the CapFrameX publisher: {signature.Reason}";
+
+						if (rejectReason == null)
+						{
+							// Clear the marker before launching: if the installer fails to start, or the user
+							// cancels it, the next start must not retry forever.
+							PendingUpdate.Clear(updatesFolder);
+
+							var startInfo = new ProcessStartInfo(packagePath)
+							{
+								// Required to let the installer's own manifest request elevation.
+								UseShellExecute = true,
+								Arguments = pending.Arguments ?? string.Empty,
+								WorkingDirectory = updatesFolder
+							};
+
+							Process.Start(startInfo);
+							var operation = currentVersion != null && UpdatePolicy.IsDowngrade(pendingVersion, currentVersion)
+								? "rollback"
+								: "update";
+							logInfo($"Started the CapFrameX {operation} installer for version {pendingVersion} ({signature.Reason}) and shutting down.");
+							return true;
+						}
+					}
 				}
 
-				// Clear the marker before launching: if the installer fails to start, or the user
-				// cancels it, the next start must not retry forever.
-				PendingUpdate.Clear(updatesFolder);
-
-				var startInfo = new ProcessStartInfo(packagePath)
-				{
-					// Required to let the installer's own manifest request elevation.
-					UseShellExecute = true,
-					Arguments = pending.Arguments ?? string.Empty,
-					WorkingDirectory = updatesFolder
-				};
-
-				Process.Start(startInfo);
-				var operation = currentVersion != null && UpdatePolicy.IsDowngrade(pendingVersion, currentVersion)
-					? "rollback"
-					: "update";
-				logInfo($"Started the CapFrameX {operation} installer for version {pendingVersion} and shutting down.");
-				return true;
+				// Discarding deletes the package, so it runs once the handle is closed.
+				logError(null, rejectReason + " Discarding it.");
+				Discard(updatesFolder, logError);
+				return false;
 			}
 			catch (Exception ex)
 			{

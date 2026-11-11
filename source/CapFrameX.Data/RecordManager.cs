@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -57,6 +58,8 @@ namespace CapFrameX.Data
 
         private readonly TimeSpan _fileAccessIntervalTimespan = TimeSpan.FromMilliseconds(200);
         private readonly int _fileAccessIntervalRetryLimit = 50;
+        // Runs the waits and reads of GetFileRecordInfo; tests use a virtual clock.
+        internal IScheduler FileAccessScheduler { get; set; } = Scheduler.Default;
         private readonly ILogger<RecordManager> _logger;
         private readonly IAppConfiguration _appConfiguration;
         private readonly IRecordDirectoryObserver _recordObserver;
@@ -68,6 +71,8 @@ namespace CapFrameX.Data
         private readonly IEventAggregator _eventAggregator;
         private readonly ICaptureService _captureService;
         private readonly IHookOverlayStatusService _hookOverlayStatusService;
+        // Metadata of the records read so far, kept across runs; null keeps none.
+        private readonly RecordInfoIndex _recordInfoIndex;
         private readonly object _sessionCacheSync = new object();
         private readonly Dictionary<string, SessionCacheEntry> _sessionCache =
             new Dictionary<string, SessionCacheEntry>(StringComparer.OrdinalIgnoreCase);
@@ -87,9 +92,11 @@ namespace CapFrameX.Data
             IRTSSService rTSSService,
             IEventAggregator eventAggregator,
             ICaptureService captureService,
-            IHookOverlayStatusService hookOverlayStatusService)
+            IHookOverlayStatusService hookOverlayStatusService,
+            RecordInfoIndex recordInfoIndex = null)
         {
             _hookOverlayStatusService = hookOverlayStatusService;
+            _recordInfoIndex = recordInfoIndex;
             _logger = logger;
             _appConfiguration = appConfiguration;
             _recordObserver = recordObserver;
@@ -117,6 +124,11 @@ namespace CapFrameX.Data
             customMainboardInfo = customMainboardInfo ?? string.Empty;
             customGameName = customGameName ?? string.Empty;
             customComment = customComment ?? string.Empty;
+
+            // The views keep showing the session loaded before the edit; it takes the new values,
+            // so the record does not have to be parsed and analysed again for them.
+            var loadedSession = GetLoadedSession(recordInfo.FullPath);
+            bool motherboardWritten = true;
 
             try
             {
@@ -158,7 +170,8 @@ namespace CapFrameX.Data
                         // Motherboard — records written before the mainboard became editable may
                         // not carry the header at all, so skip it instead of losing the whole edit
                         int motherboardNameHeaderIndex = FindHeaderIndex(lines, "Motherboard");
-                        if (motherboardNameHeaderIndex > -1)
+                        motherboardWritten = motherboardNameHeaderIndex > -1;
+                        if (motherboardWritten)
                             lines[motherboardNameHeaderIndex] = $"{FileRecordInfo.HEADER_MARKER}Motherboard{FileRecordInfo.INFO_SEPERATOR}{customMainboardInfo}";
 
                         // GameName
@@ -199,12 +212,63 @@ namespace CapFrameX.Data
                         File.WriteAllLines(recordInfo.FullPath, headerLines.Concat(lines));
                         InvalidateSessionCache(recordInfo.FullPath);
                     }
+
+                    // CSV records have no resolution header.
+                    customResolution = null;
+                }
+                else
+                {
+                    return;
+                }
+
+                if (loadedSession?.Info is ISessionInfo info)
+                {
+                    info.Processor = customCpuInfo;
+                    info.GPU = customGpuInfo;
+                    info.SystemRam = customRamInfo;
+                    if (motherboardWritten)
+                        info.Motherboard = customMainboardInfo;
+                    info.GameName = customGameName;
+                    info.Comment = customComment;
+                    if (customResolution != null)
+                        info.ResolutionInfo = customResolution;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error writing Lines");
             }
+        }
+
+        /// <summary>
+        /// The cached session of the file as it is on disk now, if one is still in use.
+        /// </summary>
+        private ISession GetLoadedSession(string path)
+        {
+            try
+            {
+                var fileInfo = new FileInfo(Path.GetFullPath(path));
+                if (!fileInfo.Exists)
+                    return null;
+
+                lock (_sessionCacheSync)
+                {
+                    if (_sessionCache.TryGetValue(fileInfo.FullName, out var entry)
+                        && entry.Length == fileInfo.Length
+                        && entry.LastWriteTimeUtcTicks == fileInfo.LastWriteTimeUtc.Ticks
+                        && entry.Session != null
+                        && entry.Session.TryGetTarget(out var session))
+                    {
+                        return session;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Unable to look up the cached session of {path}", path);
+            }
+
+            return null;
         }
 
         private int GetHeaderIndex(string[] lines, string headerEntry)
@@ -465,36 +529,29 @@ namespace CapFrameX.Data
 
         private ISession LoadSessionFromJSON(FileInfo fileInfo)
         {
-            try
+            using (var stream = new StreamReader(fileInfo.FullName))
             {
-                using (var stream = new StreamReader(fileInfo.FullName))
+                using (JsonReader jsonReader = new JsonTextReader(stream))
                 {
-                    using (JsonReader jsonReader = new JsonTextReader(stream))
+                    JsonSerializer serializer = new JsonSerializer();
+                    var session = serializer.Deserialize<Session.Classes.Session>(jsonReader);
+
+                    // Handle corrupt/incomplete JSON files (e.g., from disk full during write)
+                    if (session?.Runs == null)
                     {
-                        JsonSerializer serializer = new JsonSerializer();
-                        var session = serializer.Deserialize<Session.Classes.Session>(jsonReader);
-
-                        // Handle corrupt/incomplete JSON files (e.g., from disk full during write)
-                        if (session?.Runs == null)
-                        {
-                            _logger.LogWarning("Failed to load session from {path}: file is corrupt or incomplete", fileInfo.FullName);
-                            return null;
-                        }
-
-                        foreach (var sessionrun in session.Runs)
-                        {
-                            if (sessionrun.SensorData != null && sessionrun.SensorData2 == null)
-                            {
-                                SessionSensorDataConverter.ConvertToSensorData2(sessionrun);
-                            }
-                        }
-                        return session;
+                        _logger.LogWarning("Failed to load session from {path}: file is corrupt or incomplete", fileInfo.FullName);
+                        return null;
                     }
+
+                    foreach (var sessionrun in session.Runs)
+                    {
+                        if (sessionrun.SensorData != null && sessionrun.SensorData2 == null)
+                        {
+                            SessionSensorDataConverter.ConvertToSensorData2(sessionrun);
+                        }
+                    }
+                    return session;
                 }
-            }
-            catch (Exception ex)
-            {
-                throw;
             }
         }
 
@@ -593,7 +650,7 @@ namespace CapFrameX.Data
                 && presentId != 0;
         }
 
-        public async Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo)
+        public async Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo, bool fileMayStillBeWritten = false)
         {
             fileInfo.Refresh();
             if (TryGetCachedRecordInfo(fileInfo, out var cachedRecordInfo))
@@ -603,7 +660,30 @@ namespace CapFrameX.Data
             long expectedLength = fileInfo.Length;
             long expectedLastWriteTimeUtcTicks = fileInfo.LastWriteTimeUtc.Ticks;
 
-            var recordInfo = await Observable.Timer(_fileAccessIntervalTimespan)
+            // A record read before, by this or an earlier run of the app, is listed from the
+            // index without reading the file, as long as the file still has the stamp it was
+            // read at.
+            if (_recordInfoIndex != null && _recordInfoIndex.TryGet(fileInfo.FullName,
+                    expectedLength, expectedLastWriteTimeUtcTicks, out var indexedEntry))
+            {
+                var indexedRecordInfo = FileRecordInfo.FromIndexEntry(fileInfo, indexedEntry);
+                ApplyProcessListGameName(indexedRecordInfo);
+                StoreRecordInfo(fileInfo, indexedRecordInfo, expectedLength, expectedLastWriteTimeUtcTicks);
+                return indexedRecordInfo;
+            }
+
+            // Only a file reported by a Created or Changed event may still be written, so only
+            // its first read waits. Waiting in front of every file made each record folder load
+            // take ceil(N / 30) x 200 ms. A retry after an IOException always waits.
+            bool firstAttempt = true;
+            var recordInfo = await Observable.Defer(() =>
+                {
+                    var delay = firstAttempt && !fileMayStillBeWritten
+                        ? TimeSpan.Zero
+                        : _fileAccessIntervalTimespan;
+                    firstAttempt = false;
+                    return Observable.Timer(delay, FileAccessScheduler);
+                })
                 .SelectMany(_ =>
                 {
                     switch (fileInfo.Extension)
@@ -640,26 +720,34 @@ namespace CapFrameX.Data
                     }
                 })
                 .Retry(_fileAccessIntervalRetryLimit)
-                .DefaultIfEmpty()
-                .Do(fileRecordInfo =>
-                {
-                    if (fileRecordInfo != null)
-                    {
-                        bool usesProcessListName = fileRecordInfo.ProcessName == fileRecordInfo.GameName
-                            || fileRecordInfo.GameName.IsNullOrEmpty();
-                        if (fileRecordInfo is FileRecordInfo concreteRecordInfo)
-                            concreteRecordInfo.UsesProcessListGameName = usesProcessListName;
-                        if (usesProcessListName)
-                            fileRecordInfo.GameName = GetGameNameFromProcessList(fileRecordInfo.ProcessName);
-                    }
-                });
+                .DefaultIfEmpty();
 
             if (recordInfo != null)
             {
-                StoreRecordInfo(fileInfo, recordInfo, expectedLength, expectedLastWriteTimeUtcTicks);
+                // The index keeps the game name as stored in the file; the process list's name
+                // is applied on every listing.
+                var indexEntry = (recordInfo as FileRecordInfo)?.ToIndexEntry();
+                ApplyProcessListGameName(recordInfo);
+                if (StoreRecordInfo(fileInfo, recordInfo, expectedLength, expectedLastWriteTimeUtcTicks)
+                    && indexEntry != null)
+                {
+                    _recordInfoIndex?.Store(fileInfo.FullName, expectedLength, expectedLastWriteTimeUtcTicks, indexEntry);
+                }
             }
 
             return recordInfo;
+        }
+
+        // The record list shows the process list's display name for a record whose stored game
+        // name is just its process name, and follows the list when the name changes.
+        private void ApplyProcessListGameName(IFileRecordInfo recordInfo)
+        {
+            bool usesProcessListName = recordInfo.ProcessName == recordInfo.GameName
+                || recordInfo.GameName.IsNullOrEmpty();
+            if (recordInfo is FileRecordInfo concreteRecordInfo)
+                concreteRecordInfo.UsesProcessListGameName = usesProcessListName;
+            if (usesProcessListName)
+                recordInfo.GameName = GetGameNameFromProcessList(recordInfo.ProcessName);
         }
 
         private IFileRecordInfo LoadRecordInfoFromJSON(FileInfo fileInfo)
@@ -837,14 +925,15 @@ namespace CapFrameX.Data
             return false;
         }
 
-        private void StoreRecordInfo(FileInfo fileInfo, IFileRecordInfo recordInfo,
+        /// <summary>False if the file changed while it was read; nothing is kept then.</summary>
+        private bool StoreRecordInfo(FileInfo fileInfo, IFileRecordInfo recordInfo,
             long expectedLength, long expectedLastWriteTimeUtcTicks)
         {
             fileInfo.Refresh();
             if (!fileInfo.Exists || fileInfo.Length != expectedLength
                 || fileInfo.LastWriteTimeUtc.Ticks != expectedLastWriteTimeUtcTicks)
             {
-                return;
+                return false;
             }
 
             string path = Path.GetFullPath(fileInfo.FullName);
@@ -864,6 +953,8 @@ namespace CapFrameX.Data
                     _recordInfoCache.Remove(oldest.Key);
                 }
             }
+
+            return true;
         }
 
         public async Task SavePresentmonRawToFile(IEnumerable<string> lines, string process, string recordDirectory = null)
@@ -901,7 +992,7 @@ namespace CapFrameX.Data
         }
 
         /// <summary>
-        /// Graphics API of the captured game — "DX11", "DX12", "Vulkan" — or "unknown".
+        /// Graphics API of the captured game — "D3D11", "D3D12", "Vulkan" — or "unknown".
         ///
         /// Same problem as the render resolution: RTSS answers only for processes it hooked
         /// itself and is not running at all while the in-game overlay renders, which is why this
@@ -1081,7 +1172,18 @@ namespace CapFrameX.Data
             }
         }
 
-        public async Task DuplicateSession(ISession session, bool inverse, double startTime = 0, double endTime = double.PositiveInfinity)
+        /// <summary>
+        /// The folder new records are written to now, or null while none is observed.
+        /// </summary>
+        public async Task<string> GetRecordDirectory()
+            => (await _recordObserver.ObservingDirectoryStream.Take(1))?.FullName;
+
+        /// <summary>
+        /// Saves the part of the record inside (or, inverse, outside) the range as a new record, in
+        /// <paramref name="recordDirectory"/> or, without one, in the folder observed when it is written.
+        /// </summary>
+        public async Task DuplicateSession(ISession session, bool inverse, double startTime = 0, double endTime = double.PositiveInfinity,
+            string recordDirectory = null)
         {
             if (session == null)
             {
@@ -1150,22 +1252,56 @@ namespace CapFrameX.Data
 
                     if (sourceSessionRun.SensorData2 != null)
                     {
-                        var sensorIndicesToKeep = DetermineIndicesToKeep(sourceSessionRun.SensorData2.MeasureTime.Values.ToArray());
-                        clone.Runs[sessionRunIndex].SensorData2 = new SessionSensorData2(initialAdd: false);
+                        var measureTimes = sourceSessionRun.SensorData2.MeasureTime.Values.ToArray();
+                        var sensorIndicesToKeep = DetermineIndicesToKeep(measureTimes);
+                        var clonedSensorData = new SessionSensorData2(initialAdd: false);
+                        clone.Runs[sessionRunIndex].SensorData2 = clonedSensorData;
                         foreach (var collection in sourceSessionRun.SensorData2)
                         {
 
-                            var clonedSensorEntry = new SessionSensorEntry(collection.Value.Name, collection.Value.Type);
+                            var clonedSensorEntry = new SessionSensorEntry(collection.Value.Name, collection.Value.Type)
+                            {
+                                StableIdentifier = collection.Value.StableIdentifier
+                            };
 
-                            if (collection.Value.Values.Count() >= sensorIndicesToKeep.LastOrDefault())
+                            // Values is a linked list: ElementAt walked it from the start for every kept
+                            // sample, O(n²) per sensor, which froze the UI for seconds on long captures.
+                            var values = collection.Value.Values.ToArray();
+                            // A sensor can miss its last slots, e.g. when a capture stopped between
+                            // AddMeasureTime and CompleteMeasure. Those slots become NaN, as
+                            // SessionSensorDataLive logs them, so the series stays aligned with MeasureTime
+                            // and keeps the values it has. A sensor without any value stays empty.
+                            if (values.Length > 0)
                             {
                                 foreach (var indexToKeep in sensorIndicesToKeep)
                                 {
-                                    clonedSensorEntry.Values.AddLast(collection.Value.Values.ElementAt(indexToKeep));
+                                    clonedSensorEntry.Values.AddLast(indexToKeep < values.Length ? values[indexToKeep] : double.NaN);
                                 }
                             }
 
                             clone.Runs[sessionRunIndex].SensorData2.Add(collection.Key, clonedSensorEntry);
+                        }
+
+                        // NormalizeStartTimesOfSessionRuns rebuilds MeasureTime as the running sum of
+                        // BetweenMeasureTime. Copied, a short BetweenMeasureTime left a cut with sensor
+                        // values but no time axis, and its first kept interval put the first sample one
+                        // logging interval after the first frame. The intervals are derived from the kept
+                        // measure times instead, which always cover the kept samples: each is the gap to the
+                        // preceding sample of the source, as SessionSensorDataLive logs it, and the first one
+                        // is the gap to the first kept frame, which the frames' normalization makes 0.
+                        if (!clonedSensorData.ContainsKey(nameof(SessionSensorData2.BetweenMeasureTime)))
+                            clonedSensorData.Add(nameof(SessionSensorData2.BetweenMeasureTime),
+                                new SessionSensorEntry(nameof(SessionSensorData2.BetweenMeasureTime), "Time"));
+                        var keptIntervals = clonedSensorData.BetweenMeasureTime.Values;
+                        keptIntervals.Clear();
+                        double firstFrameTime = dataIndicesToKeep.Length > 0
+                            ? sourceSessionRun.CaptureData.TimeInSeconds[dataIndicesToKeep[0]] : 0;
+                        for (int keptIndex = 0; keptIndex < sensorIndicesToKeep.Length; keptIndex++)
+                        {
+                            int sourceIndex = sensorIndicesToKeep[keptIndex];
+                            keptIntervals.AddLast(keptIndex == 0
+                                ? Math.Max(0, measureTimes[sourceIndex] - firstFrameTime)
+                                : measureTimes[sourceIndex] - (sourceIndex > 0 ? measureTimes[sourceIndex - 1] : 0));
                         }
                     }
 
@@ -1184,7 +1320,7 @@ namespace CapFrameX.Data
                 clone.Info.Id = Guid.NewGuid();
                 NormalizeStartTimesOfSessionRuns(clone.Runs);
                 clone.Info.Comment = $"(Cut) {clone.Info.Comment}";
-                var filePath = await GetOutputFilename(clone.Info.ProcessName.StripExeExtension(), null);
+                var filePath = await GetOutputFilename(clone.Info.ProcessName.StripExeExtension(), recordDirectory);
                 SaveSessionToFile(filePath, clone);
             }
             catch (Exception e)
@@ -1290,7 +1426,8 @@ namespace CapFrameX.Data
                 try
                 {
                     string mainWindoTitle = processes.First()?.MainWindowTitle?.TrimEnd();
-                    string fileDescription = processes.First()?.MainModule?.FileVersionInfo?.FileDescription?.TrimEnd();
+                    // From the file: protected processes (Ricochet) deny MainModule.
+                    string fileDescription = ProcessHelper.GetFileDescription(processes.First().Id);
 
                     // prefer file description
                     if (!fileDescription.IsNullOrEmpty())
@@ -1996,7 +2133,7 @@ namespace CapFrameX.Data
             var buffer = new byte[256];
             var delimiter = new byte[] { (byte)',' };
 
-            using (var sha1 = new SHA1Managed())
+            using (var sha1 = SHA1.Create())
             {
                 for (int i = 0; i < lines.Count; i++)
                 {
@@ -2048,10 +2185,13 @@ namespace CapFrameX.Data
             {
                 foreach (var sessionRun in sessionRuns)
                 {
-                    var tmpMeasureTimeArray = new double[sessionRun.SensorData2.BetweenMeasureTimes.Count()];
-                    for (int i = 0; i < sessionRun.SensorData2.BetweenMeasureTimes.Count(); i++)
+                    // BetweenMeasureTimes copies the linked list into a new array on every access, and
+                    // the loop read it twice per sample: O(n²) time and allocations. Read it once.
+                    var betweenMeasureTimes = sessionRun.SensorData2.BetweenMeasureTimes;
+                    var tmpMeasureTimeArray = new double[betweenMeasureTimes.Length];
+                    for (int i = 0; i < betweenMeasureTimes.Length; i++)
                     {
-                        lastSensorMeasureTime += sessionRun.SensorData2.BetweenMeasureTimes[i];
+                        lastSensorMeasureTime += betweenMeasureTimes[i];
                         tmpMeasureTimeArray[i] = lastSensorMeasureTime;
                     }
                     sessionRun.SensorData2.MeasureTime.Values.Clear();

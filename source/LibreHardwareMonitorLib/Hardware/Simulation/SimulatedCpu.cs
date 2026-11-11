@@ -183,6 +183,7 @@ internal static class SimulatedCpuModels
 internal abstract class SimulatedCpuBase : Hardware
 {
     private readonly List<SimulatedSensorSlot> _simulatedSensors = new();
+    private CoreTypeClockSensor[] _coreTypeClockSensors = [];
     private readonly DateTime _startTime = DateTime.UtcNow;
     private readonly Random _random;
 
@@ -197,7 +198,7 @@ internal abstract class SimulatedCpuBase : Hardware
 
     public SimulatedCpuModel Model { get; }
 
-    protected void AddSimulatedSensor(
+    protected Sensor AddSimulatedSensor(
         string name,
         int index,
         SensorType type,
@@ -218,11 +219,25 @@ internal abstract class SimulatedCpuBase : Hardware
 
         ActivateSensor(sensor);
         _simulatedSensors.Add(new SimulatedSensorSlot(sensor, min, max, speed, SimulationHelpers.NextPhase(_random), noise));
+        return sensor;
+    }
+
+    protected void AddCoreTypeClockSensors(Sensor[] clocks, Sensor[] effectiveClocks, ref int sensorIndex)
+    {
+        CoreTypeClockSensor[] raw = CoreTypeClockSensor.Create(Model.IsHybrid, this, _settings,
+            clocks.Select((sensor, core) => (Model.Cores[core].Type, (ISensor)sensor)), false, ref sensorIndex);
+        CoreTypeClockSensor[] effective = CoreTypeClockSensor.Create(Model.IsHybrid, this, _settings,
+            effectiveClocks.Select((sensor, core) => (Model.Cores[core].Type, (ISensor)sensor)), true, ref sensorIndex);
+        _coreTypeClockSensors = [.. raw, .. effective];
+        foreach (CoreTypeClockSensor aggregate in _coreTypeClockSensors)
+            ActivateSensor(aggregate.Sensor);
     }
 
     public override void Update()
     {
         SimulationHelpers.UpdateSensors(_simulatedSensors, _startTime, _random);
+        foreach (CoreTypeClockSensor aggregate in _coreTypeClockSensors)
+            aggregate.Update();
     }
 }
 
@@ -242,10 +257,11 @@ internal sealed class SimulatedAmd17Cpu : SimulatedCpuBase
         SimulatedCoreClass fastest = model.FastestCore;
 
         // Per-core Clock sensors - matches Amd17Cpu Core class (IsPresentationDefault=true, sortkey 0_0_0_{id})
+        Sensor[] clocks = new Sensor[model.CoreCount];
         for (int core = 0; core < model.CoreCount; core++)
         {
             SimulatedCoreClass coreClass = model.Cores[core];
-            AddSimulatedSensor(model.GetCoreName(core), sensorIndex++, SensorType.Clock, coreClass.MinClock, coreClass.MaxClock, 0.18f, 35f, true, $"0_0_0_{core}");
+            clocks[core] = AddSimulatedSensor(model.GetCoreName(core), sensorIndex++, SensorType.Clock, coreClass.MinClock, coreClass.MaxClock, 0.18f, 35f, true, $"0_0_0_{core}");
         }
 
         // Bus and aggregate Clock sensors - matches Amd17Cpu Processor class
@@ -271,7 +287,17 @@ internal sealed class SimulatedAmd17Cpu : SimulatedCpuBase
 
         // Voltage sensors - matches Amd17Cpu Processor class
         AddSimulatedSensor("CPU Core (SVI2 TFN)", sensorIndex++, SensorType.Voltage, 0.9f, 1.35f, 0.22f, 0.02f, false, "4_1_0");
-        AddSimulatedSensor("CPU SoC (SVI2 TFN)", sensorIndex, SensorType.Voltage, 0.85f, 1.2f, 0.18f, 0.02f, false, "4_1_1");
+        AddSimulatedSensor("CPU SoC (SVI2 TFN)", sensorIndex++, SensorType.Voltage, 0.85f, 1.2f, 0.18f, 0.02f, false, "4_1_1");
+
+        // Append the sources for hybrid effective maxima without shifting existing identifiers.
+        Sensor[] effectiveClocks = model.IsHybrid ? new Sensor[model.CoreCount] : [];
+        for (int core = 0; core < effectiveClocks.Length; core++)
+        {
+            SimulatedCoreClass coreClass = model.Cores[core];
+            effectiveClocks[core] = AddSimulatedSensor($"{model.GetCoreName(core)} (Effective)", sensorIndex++, SensorType.Clock,
+                Math.Max(0f, coreClass.MinClock - 400f), coreClass.MaxClock, 0.18f, 45f, false, $"0_0_1_{core}");
+        }
+        AddCoreTypeClockSensors(clocks, effectiveClocks, ref sensorIndex);
     }
 }
 
@@ -294,17 +320,19 @@ internal sealed class SimulatedIntelCpu : SimulatedCpuBase
         AddSimulatedSensor("Bus Speed", sensorIndex++, SensorType.Clock, 99f, 101f, 0.02f, 0.5f, false, "0_0");
 
         // Per-core Clock sensors - matches IntelCpu.cs (IsPresentationDefault=true, sortkey 0_1_0_{core})
+        Sensor[] clocks = new Sensor[model.CoreCount];
         for (int core = 0; core < model.CoreCount; core++)
         {
             SimulatedCoreClass coreClass = model.Cores[core];
-            AddSimulatedSensor(model.GetCoreName(core), sensorIndex++, SensorType.Clock, coreClass.MinClock, coreClass.MaxClock, 0.17f, 40f, true, $"0_1_0_{core}");
+            clocks[core] = AddSimulatedSensor(model.GetCoreName(core), sensorIndex++, SensorType.Clock, coreClass.MinClock, coreClass.MaxClock, 0.17f, 40f, true, $"0_1_0_{core}");
         }
 
         // Per-core effective Clock sensors - matches IntelCpu.cs (sortkey 0_1_1_{core})
+        Sensor[] effectiveClocks = new Sensor[model.CoreCount];
         for (int core = 0; core < model.CoreCount; core++)
         {
             SimulatedCoreClass coreClass = model.Cores[core];
-            AddSimulatedSensor($"{model.GetCoreName(core)} (Effective)", sensorIndex++, SensorType.Clock, Math.Max(0f, coreClass.MinClock - 400f), coreClass.MaxClock, 0.18f, 45f, false, $"0_1_1_{core}");
+            effectiveClocks[core] = AddSimulatedSensor($"{model.GetCoreName(core)} (Effective)", sensorIndex++, SensorType.Clock, Math.Max(0f, coreClass.MinClock - 400f), coreClass.MaxClock, 0.18f, 45f, false, $"0_1_1_{core}");
         }
 
         // Aggregate Clock sensors - matches IntelCpu.cs
@@ -340,6 +368,7 @@ internal sealed class SimulatedIntelCpu : SimulatedCpuBase
         AddSimulatedSensor("CPU Package", sensorIndex++, SensorType.Temperature, model.MinPackageTemperature, model.MaxPackageTemperature, 0.13f, 1.3f, true, "3_3");
 
         // Voltage sensors - matches IntelCpu.cs
-        AddSimulatedSensor("CPU Core", sensorIndex, SensorType.Voltage, 0.85f, 1.4f, 0.23f, 0.02f, false, "4_0");
+        AddSimulatedSensor("CPU Core", sensorIndex++, SensorType.Voltage, 0.85f, 1.4f, 0.23f, 0.02f, false, "4_0");
+        AddCoreTypeClockSensors(clocks, effectiveClocks, ref sensorIndex);
     }
 }

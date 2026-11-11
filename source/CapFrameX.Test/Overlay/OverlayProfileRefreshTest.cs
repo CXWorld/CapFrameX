@@ -8,6 +8,8 @@ using System.Reactive.Subjects;
 using System.Reactive.Threading.Tasks;
 using System.Threading;
 using System.Threading.Tasks;
+using CapFrameX.ApiInterface;
+using CapFrameX.Capture.Contracts;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Logging;
@@ -15,8 +17,11 @@ using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Overlay;
+using CapFrameX.PresentMonInterface;
 using CapFrameX.Sensor;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.Test.Mocks;
+using EmbedIO.WebSockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -26,6 +31,259 @@ namespace CapFrameX.Test.Overlay
     [TestClass]
     public class OverlayProfileRefreshTest
     {
+        [TestMethod]
+        public async Task WebsocketOnlyDemand_UpdatesPresentMonWhileHiddenUntilLastDisconnect()
+        {
+            using var fixture = new RefreshFixture(overlayActive: false, liveFrameMetrics: true);
+            fixture.Provider.Setup(provider => provider.GetOverlayEntries(true)).ReturnsAsync(FrameEntries());
+            var module = new TestableOsdWebsocketModule(fixture.Service, fixture.Demand);
+            var first = new Mock<IWebSocketContext>();
+            first.SetupGet(context => context.Id).Returns("first");
+            var second = new Mock<IWebSocketContext>();
+            second.SetupGet(context => context.Id).Returns("second");
+            Assert.IsFalse(fixture.Demand.IsActive);
+            Assert.IsFalse(fixture.Frames.HasObservers);
+
+            await module.Connect(first.Object);
+            await module.Connect(second.Object);
+            var ready = fixture.Service.OnDictionaryUpdated.Take(1).ToTask();
+            fixture.Start();
+            await ready.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.IsTrue(fixture.Frames.HasObservers);
+
+            fixture.Frames.OnNext(FrameRow(42, "8", "10", "DXGI"));
+            fixture.Frames.OnNext(FrameRow(42, "12", "20", "DXGI"));
+            var update = fixture.Service.OnDictionaryUpdated.Take(1).ToTask();
+            fixture.Service.RequestRefresh();
+            await update.WaitAsync(TimeSpan.FromSeconds(5));
+            CollectionAssert.AreEqual(new[] { "DXGI  100FPS 10.0ms 15.0ms" },
+                OSDController.GetEntries(fixture.Service, false));
+            Assert.IsFalse(fixture.Service.IsOverlayActive);
+
+            await module.Disconnect(first.Object);
+            // No HTTP request registers a lease: the remaining WebSocket alone owns this demand.
+            fixture.DemandClock.AdvanceBy(TimeSpan.FromHours(1));
+            Assert.IsTrue(fixture.Demand.IsActive);
+            Assert.IsTrue(fixture.Frames.HasObservers);
+            fixture.Frames.OnNext(FrameRow(42, "20", "40", "DXGI"));
+            update = fixture.Service.OnDictionaryUpdated.Take(1).ToTask();
+            fixture.Service.RequestRefresh();
+            await update.WaitAsync(TimeSpan.FromSeconds(5));
+            CollectionAssert.AreEqual(new[] { "DXGI  50FPS 20.0ms 40.0ms" },
+                OSDController.GetEntries(fixture.Service, false));
+
+            await module.Disconnect(second.Object);
+            Assert.IsFalse(fixture.Demand.IsActive);
+            Assert.IsFalse(fixture.Frames.HasObservers, "The last disconnect must stop frame processing immediately.");
+            fixture.Rtss.Verify(service => service.SetOverlayEntries(It.IsAny<IOverlayEntry[]>()), Times.Never);
+            fixture.Rtss.Verify(service => service.CheckRTSSRunning(), Times.Never);
+        }
+
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public async Task PresentMonScalars_ReachHttpAndWebsocketBeforeRendererNotification(bool overlayActive)
+        {
+            using var fixture = new RefreshFixture(overlayActive: overlayActive, liveFrameMetrics: true);
+            var entries = FrameEntries();
+            fixture.Provider.Setup(provider => provider.GetOverlayEntries(true)).ReturnsAsync(entries);
+            var controller = new OSDController(fixture.Service, fixture.Demand);
+            // An HTTP request must keep frame metrics alive even with the overlay switched off.
+            await controller.GetOsd(showAll: true);
+            var ready = fixture.Service.OnDictionaryUpdated.Take(1).ToTask();
+            fixture.Start();
+            await ready.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.IsTrue(fixture.Frames.HasObservers);
+
+            fixture.Frames.OnNext(FrameRow(42, "8", "10", "DXGI"));
+            fixture.Frames.OnNext(FrameRow(42, "12", "20", "DXGI"));
+            string[] websocketLines = null;
+            fixture.Service.OSDUpdateNotifier = _ =>
+                websocketLines = OSDController.GetEntries(fixture.Service, false);
+            var update = fixture.Service.OnDictionaryUpdated.Take(1).ToTask();
+            fixture.Service.RequestRefresh();
+            await update.WaitAsync(TimeSpan.FromSeconds(5));
+
+            var httpLines = await controller.GetOsd(showAll: false);
+            CollectionAssert.AreEqual(new[] { "DXGI  100FPS 10.0ms 15.0ms" }, httpLines);
+            CollectionAssert.AreEqual(httpLines, websocketLines,
+                "The WebSocket callback must see the same completed values before the renderer event.");
+            Assert.AreEqual(overlayActive, fixture.Service.IsOverlayActive);
+            Assert.AreEqual("<APP>", entries[0].GroupName, "The stored profile must keep its RTSS macro.");
+            Assert.AreEqual(0d, entries[0].Value, "Output projection must not mutate provider entries.");
+            fixture.Rtss.Verify(service => service.SetOverlayEntries(It.IsAny<IOverlayEntry[]>()), Times.Never);
+            fixture.Rtss.Verify(service => service.CheckRTSSRunning(), Times.Never);
+
+            fixture.Configuration.Object.IsOverlayActive = false;
+            fixture.Service.IsOverlayActiveStream.OnNext(false);
+            Assert.IsTrue(fixture.Frames.HasObservers, "The remote lease outlives overlay visibility.");
+            fixture.DemandClock.AdvanceBy(RemoteOverlayDemand.DefaultRequestLease);
+            Assert.IsFalse(fixture.Frames.HasObservers, "No frame work after the last consumer leaves.");
+        }
+
+        [TestMethod]
+        public async Task RtssRenderer_PreservesProviderValuesAndDoesNotSubscribeToPresentMon()
+        {
+            using var fixture = new RefreshFixture(rtssRenderer: true, liveFrameMetrics: true);
+            var entries = FrameEntries();
+            entries[0].Value = 144d;
+            entries[1].Value = 1000d / 144d;
+            fixture.Provider.Setup(provider => provider.GetOverlayEntries(true)).ReturnsAsync(entries);
+            var update = fixture.Service.OnDictionaryUpdated.Take(1).ToTask();
+            fixture.Start();
+            await update.WaitAsync(TimeSpan.FromSeconds(5));
+
+            Assert.IsFalse(fixture.Frames.HasObservers);
+            Assert.AreSame(entries, fixture.Service.CurrentOverlayEntries);
+            CollectionAssert.AreEqual(new[] { "<APP>  144FPS 6.9ms 0.0ms" },
+                OSDController.GetEntries(fixture.Service, false));
+        }
+
+        // With the renderers off, nothing renders, but the remote API keeps its values: CapFrameX
+        // measures the frame scalars itself, as for its own renderers, and leaves RTSS alone.
+        [TestMethod]
+        public async Task RendererOff_ServesPresentMonScalarsToTheRemoteApiWithoutTouchingRtss()
+        {
+            using var fixture = new RefreshFixture(overlayActive: false, liveFrameMetrics: true,
+                renderer: EOverlayRenderer.Off);
+            fixture.Provider.Setup(provider => provider.GetOverlayEntries(true)).ReturnsAsync(FrameEntries());
+            var controller = new OSDController(fixture.Service, fixture.Demand);
+            await controller.GetOsd(showAll: true);
+            var ready = fixture.Service.OnDictionaryUpdated.Take(1).ToTask();
+            fixture.Start();
+            await ready.WaitAsync(TimeSpan.FromSeconds(5));
+            Assert.IsTrue(fixture.Frames.HasObservers);
+
+            fixture.Frames.OnNext(FrameRow(42, "8", "10", "DXGI"));
+            fixture.Frames.OnNext(FrameRow(42, "12", "20", "DXGI"));
+            var update = fixture.Service.OnDictionaryUpdated.Take(1).ToTask();
+            fixture.Service.RequestRefresh();
+            await update.WaitAsync(TimeSpan.FromSeconds(5));
+
+            CollectionAssert.AreEqual(new[] { "DXGI  100FPS 10.0ms 15.0ms" }, await controller.GetOsd(showAll: false));
+            Assert.IsFalse(fixture.Service.IsOverlayActive);
+            fixture.Rtss.Verify(service => service.SetOverlayEntries(It.IsAny<IOverlayEntry[]>()), Times.Never);
+            fixture.Rtss.Verify(service => service.CheckRTSSRunning(), Times.Never);
+            fixture.Rtss.Verify(service => service.OnOSDOn(), Times.Never);
+        }
+
+        // RTSS keeps the rows it was fed last, also after a switch to another renderer. The
+        // countdowns and the capture timer refreshed it while any renderer showed the overlay, so
+        // the frozen RTSS rows came back next to the tile overlay.
+        [TestMethod]
+        [DataRow(EOverlayRenderer.Rtss, false, 1)]
+        [DataRow(EOverlayRenderer.Rtss, true, 0)]
+        [DataRow(EOverlayRenderer.InGame, false, 0)]
+        [DataRow(EOverlayRenderer.HookFree, false, 0)]
+        public void CancelledDelayCountdown_RefreshesRtssOnlyWhileItShowsTheOverlay(EOverlayRenderer renderer,
+            bool hideOsdOnRtss, int expectedRefreshes)
+        {
+            using var fixture = new RefreshFixture(overlayActive: true, renderer: renderer);
+            fixture.Configuration.Object.HideOverlay = hideOsdOnRtss;
+
+            fixture.Service.CancelDelayCountdown();
+
+            fixture.Rtss.Verify(service => service.Refresh(), Times.Exactly(expectedRefreshes));
+        }
+
+        [TestMethod]
+        [DataRow(EOverlayRenderer.Rtss, true)]
+        [DataRow(EOverlayRenderer.InGame, false)]
+        [DataRow(EOverlayRenderer.HookFree, false)]
+        public async Task CaptureTimer_RefreshesRtssOnlyWhileItShowsTheOverlay(EOverlayRenderer renderer,
+            bool refreshesRtss)
+        {
+            using var fixture = new RefreshFixture(overlayActive: true, renderer: renderer);
+            int ticks = 0;
+            fixture.Provider.Setup(provider => provider.GetOverlayEntry("CaptureTimer"))
+                .Callback(() => Interlocked.Increment(ref ticks))
+                .Returns((IOverlayEntry)null);
+
+            fixture.Service.StartCaptureTimer();
+            // Ticks never overlap, so the first one has completed once the second starts.
+            await WaitUntil(() => Volatile.Read(ref ticks) >= 2, "The capture timer did not tick twice.");
+            fixture.Service.StopCaptureTimer();
+
+            fixture.Rtss.Verify(service => service.Refresh(), refreshesRtss ? Times.AtLeastOnce() : Times.Never());
+        }
+
+        [TestMethod]
+        public void RendererOff_DoesNotStartWithAnActiveOverlay()
+        {
+            using var fixture = new RefreshFixture(overlayActive: true, renderer: EOverlayRenderer.Off);
+
+            Assert.IsFalse(fixture.Configuration.Object.IsOverlayActive);
+            Assert.IsFalse(fixture.Service.IsOverlayActive);
+            Assert.AreEqual(EOverlayRenderer.Off, fixture.Configuration.Object.OverlayRenderer);
+        }
+
+        [TestMethod]
+        public async Task SwitchingTheRendererOff_SwitchesTheOverlayOffAndReleasesRtss()
+        {
+            using var fixture = new RefreshFixture(overlayActive: true, rtssRenderer: true);
+            var firstFeed = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            fixture.Rtss.Setup(service => service.SetOverlayEntries(It.IsAny<IOverlayEntry[]>()))
+                .Callback(() => firstFeed.TrySetResult(true));
+            fixture.Provider.Setup(provider => provider.GetOverlayEntries(true))
+                .ReturnsAsync(CreateEntries("Overlay"));
+            fixture.Start();
+            await firstFeed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+            var published = new List<bool>();
+            using var subscription = fixture.Service.IsOverlayActiveStream.Subscribe(published.Add);
+
+            fixture.Configuration.Object.OverlayRenderer = EOverlayRenderer.Off;
+            fixture.Changes.OnNext((nameof(IAppConfiguration.OverlayRenderer), EOverlayRenderer.Off));
+
+            Assert.IsFalse(fixture.Configuration.Object.IsOverlayActive);
+            Assert.IsFalse(published.Last(), "Every overlay toggle follows the stream.");
+            fixture.Rtss.Verify(service => service.ReleaseOSD(), Times.Once);
+        }
+
+        [TestMethod]
+        public async Task RtssFeed_SendsOnlyEntriesRtssCanDraw()
+        {
+            using var fixture = new RefreshFixture(overlayActive: true, rtssRenderer: true);
+            var fed = new TaskCompletionSource<IOverlayEntry[]>(TaskCreationOptions.RunContinuationsAsynchronously);
+            fixture.Rtss.Setup(service => service.SetOverlayEntries(It.IsAny<IOverlayEntry[]>()))
+                .Callback((IOverlayEntry[] entries) => fed.TrySetResult(entries));
+            fixture.Provider.Setup(provider => provider.GetOverlayEntries(true)).ReturnsAsync(new IOverlayEntry[]
+            {
+                new OverlayEntryWrapper("Framerate") { ShowOnOverlay = false, ShowGraph = true },
+                new OverlayEntryWrapper("CpuLoad") { ShowOnOverlay = true },
+                new OverlayEntryWrapper("CpuTemp") { ShowOnOverlay = false },
+                new OverlayEntryWrapper("GpuLoad") { ShowOnOverlay = true, IsEntryEnabled = false },
+            });
+            fixture.Start();
+
+            var sent = await fed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+            CollectionAssert.AreEqual(new[] { "Framerate", "CpuLoad" },
+                sent.Select(entry => entry.Identifier).ToArray());
+            // The CapFrameX renderers and the remote API still receive every entry.
+            CollectionAssert.AreEqual(new[] { "Framerate", "CpuLoad", "CpuTemp", "GpuLoad" },
+                fixture.Service.CurrentOverlayEntries.Select(entry => entry.Identifier).ToArray());
+        }
+
+        private static IOverlayEntry[] FrameEntries() => new IOverlayEntry[]
+        {
+            new OverlayEntryWrapper("Framerate") { GroupName = "<APP>", Value = 0d, IsNumeric = true,
+                ShowOnOverlay = true, ValueAlignmentAndDigits = "{0:F0}", ValueUnitFormat = "FPS" },
+            new OverlayEntryWrapper("Frametime") { GroupName = "<APP>", Value = 0d, IsNumeric = true,
+                ShowOnOverlay = true, ValueAlignmentAndDigits = "{0:F1}", ValueUnitFormat = "ms" },
+            new OverlayEntryWrapper("DisplayTime") { GroupName = "<APP>", Value = 0d, IsNumeric = true,
+                ShowOnOverlay = true, ValueAlignmentAndDigits = "{0:F1}", ValueUnitFormat = "ms" }
+        };
+
+        private static string[] FrameRow(int pid, string ft, string dt, string runtime)
+        {
+            var row = new string[32];
+            row[PresentMonCaptureService.ProcessID_INDEX] = pid.ToString();
+            row[PresentMonCaptureService.MsBetweenPresents_INDEX] = ft;
+            row[PresentMonCaptureService.MsBetweenDisplayChange_INDEX] = dt;
+            row[PresentMonCaptureService.PresentRuntime_INDEX] = runtime;
+            return row;
+        }
+
         [TestMethod]
         public async Task RequestRefresh_PublishesCompletedProfileWithoutWaitingForSensorTick()
         {
@@ -305,6 +563,18 @@ namespace CapFrameX.Test.Overlay
         private static IOverlayEntry[] CreateEntries(string group)
             => new IOverlayEntry[] { new OverlayEntryWrapper("Framerate") { GroupName = group } };
 
+        private sealed class TestableOsdWebsocketModule : OSDWebsocketModule
+        {
+            public TestableOsdWebsocketModule(IOverlayService overlay, IRemoteOverlayDemand demand)
+                : base("/ws/osd", overlay, demand)
+            {
+            }
+
+            public Task Connect(IWebSocketContext context) => OnClientConnectedAsync(context);
+
+            public Task Disconnect(IWebSocketContext context) => OnClientDisconnectedAsync(context);
+        }
+
         private sealed class RefreshFixture : IDisposable
         {
             private readonly TaskCompletionSource<IEnumerable<ISensorEntry>> _sensors =
@@ -322,16 +592,23 @@ namespace CapFrameX.Test.Overlay
                 new BehaviorSubject<(DateTime, Dictionary<ISensorEntry, float>)>(
                     (DateTime.UtcNow, new Dictionary<ISensorEntry, float>()));
             public OverlayService Service { get; }
+            public Subject<string[]> Frames { get; } = new Subject<string[]>();
+            public BehaviorSubject<int> ProcessIds { get; } = new BehaviorSubject<int>(42);
+            // Configuration changes only arrive when a test pushes them.
+            public Subject<(string key, object value)> Changes { get; } = new Subject<(string key, object value)>();
 
-            public RefreshFixture(bool overlayActive = true, bool rtssRenderer = false)
+            public RefreshFixture(bool overlayActive = true, bool rtssRenderer = false, bool liveFrameMetrics = false,
+                EOverlayRenderer? renderer = null)
             {
+                var selected = renderer ?? (rtssRenderer ? EOverlayRenderer.Rtss : EOverlayRenderer.HookFree);
                 Configuration.SetupAllProperties();
-                Configuration.SetupGet(config => config.OnValueChanged)
-                    .Returns(Observable.Never<(string key, object value)>());
-                Configuration.Object.EnableHookFreeOverlay = !rtssRenderer;
+                Configuration.WireOverlayRenderer(selected);
+                Configuration.SetupGet(config => config.OnValueChanged).Returns(Changes);
                 Configuration.Object.IsOverlayActive = overlayActive;
                 Configuration.Object.SelectedHistoryRuns = 3;
-                Rtss.Setup(service => service.IsRTSSInstalled()).Returns(rtssRenderer);
+                // RTSS is installed unless the hook-free renderer is tested, so the Off tests
+                // prove that an installed RTSS stays untouched.
+                Rtss.Setup(service => service.IsRTSSInstalled()).Returns(selected != EOverlayRenderer.HookFree);
 
                 Demand = new RemoteOverlayDemand(DemandClock, RemoteOverlayDemand.DefaultRequestLease);
                 var sensors = new Mock<ISensorService>();
@@ -341,9 +618,26 @@ namespace CapFrameX.Test.Overlay
                 sensors.SetupGet(service => service.OsdUpdateStream).Returns(OsdTicks);
                 sensors.SetupGet(service => service.SensorSnapshotStream).Returns(Snapshots);
 
+                IOverlayFrameMetrics metrics;
+                if (liveFrameMetrics)
+                {
+                    var capture = new Mock<ICaptureService>();
+                    capture.SetupGet(service => service.FrameDataStream).Returns(Frames);
+                    capture.SetupGet(service => service.CaptureServiceRunningStream).Returns(Observable.Return(true));
+                    Rtss.SetupGet(service => service.ProcessIdStream).Returns(ProcessIds);
+                    metrics = new PresentMonOverlayMetrics(capture.Object, Rtss.Object);
+                }
+                else
+                {
+                    var passthrough = new Mock<IOverlayFrameMetrics>();
+                    passthrough.Setup(service => service.ApplySnapshot(It.IsAny<IOverlayEntry[]>()))
+                        .Returns((IOverlayEntry[] entries) => entries);
+                    metrics = passthrough.Object;
+                }
+
                 Service = new OverlayService(Mock.Of<IStatisticProvider>(), sensors.Object,
                     Provider.Object, Configuration.Object, Mock.Of<ILogger<OverlayService>>(),
-                    Mock.Of<IRecordManager>(), Rtss.Object, Core, Mock.Of<ILogEntryManager>(), Demand);
+                    Mock.Of<IRecordManager>(), Rtss.Object, Core, Mock.Of<ILogEntryManager>(), Demand, metrics);
             }
 
             public void Start(params ISensorEntry[] sensors) => _sensors.SetResult(sensors);
@@ -351,8 +645,11 @@ namespace CapFrameX.Test.Overlay
             public void Dispose()
             {
                 Service.ShutdownOverlayService();
+                Changes.Dispose();
                 OsdTicks.Dispose();
                 Snapshots.Dispose();
+                Frames.Dispose();
+                ProcessIds.Dispose();
             }
         }
     }

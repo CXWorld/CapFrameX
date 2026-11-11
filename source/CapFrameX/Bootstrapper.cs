@@ -39,6 +39,7 @@ using System;
 using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
@@ -49,7 +50,6 @@ namespace CapFrameX
     {
         // Keeps the hook-free OSD bridge alive for the app lifetime.
         private OSD.Integration.OsdOverlayBridge _osdOverlayBridge;
-#if CFX_INGAME_OVERLAY
         // Manages in-game hook injection into the detected game process.
         private OSD.Integration.HookOverlayManager _hookOverlayManager;
         // Publishes CapFrameX's overlay entries to the in-game hook via shared memory.
@@ -59,12 +59,20 @@ namespace CapFrameX
         // Learned in-game compatibility profiles (JSON in the configuration folder).
         private OSD.Integration.HookLearnedProfileStore _hookLearnedProfileStore;
         private OSD.Integration.HookProfileReportService _hookProfileReports;
-#endif
         private OSD.Integration.HookOverlayStatusService _hookOverlayStatusService;
+        private OSD.Integration.OverlayDesignService _overlayDesignService;
+        private OSD.Integration.OverlayDesignRuntimePublisher _overlayDesignRuntime;
+        private OSD.Integration.OverlayPixelOrbitResolver _pixelOrbit;
 
         // The existing composition root uses DryIoc-specific registration APIs. PrismApplication
         // exposes the container through Prism's abstraction, so unwrap it in one place.
         private new IContainer Container => ((DryIocContainerExtension)base.Container).Instance;
+
+        // The first step of ApplicationExit. Withdrawing the hook's row feed before the design
+        // keeps the in-game hook and the Vulkan layer from falling back to the row overlay.
+        private void ShutdownOverlayRenderers() => OSD.Integration.OverlayRendererShutdown.Run(
+            rowFeed: _hookMetricsPublisher, designFeed: _overlayDesignRuntime,
+            _hookFrametimePublisher, _hookOverlayManager, _osdOverlayBridge);
 
         /// <summary>
         /// While the splash screen is up, the shell stays minimized after its warm-up
@@ -107,9 +115,10 @@ namespace CapFrameX
                     ConfigurationProvider.AppConfiguration = config;
                 }
 
+                IPathService pathService;
                 using (StartupPerformanceLogger.Measure("Path service resolution"))
                 {
-                    var pathService = Container.Resolve<IPathService>();
+                    pathService = Container.Resolve<IPathService>();
                     PathServiceProvider.PathService = pathService;
                 }
 
@@ -141,12 +150,13 @@ namespace CapFrameX
                 rtssService.VulkanPresentationProbe =
                     OSD.Integration.VulkanPresentation.IsActive;
 
-#if CFX_INGAME_OVERLAY
                 // In-game hook overlay: inject cfx_osd_hook.dll into the game CapFrameX already
                 // detected. The PID flows through IRTSSService.ProcessIdStream (IProcessService),
                 // the same stream the overlay/capture pipeline uses — so we address the process
-                // directly, no manual injector. It also publishes the transient hook-free fallback
-                // state when injection is unsafe, fails its handshake, or the runtime is unsupported.
+                // directly, no manual injector. When injection is unsafe, fails its handshake, or the
+                // runtime is unsupported, its status reports the in-game overlay as unavailable. A
+                // game the target policy refuses for good (anti-cheat, blacklist) or a Direct3D 9 game
+                // publishes HookFreeFallbackStream instead (see below).
                 using (StartupPerformanceLogger.Measure("Hook overlay manager initialization"))
                 {
                     _hookOverlayManager = new OSD.Integration.HookOverlayManager(
@@ -157,17 +167,27 @@ namespace CapFrameX
                         PresentMonCaptureService.PresentRuntime_INDEX,
                         statusService: _hookOverlayStatusService,
                         learnedStore: _hookLearnedProfileStore,
-                        profileReports: _hookProfileReports);
+                        profileReports: _hookProfileReports,
+                        configurationFolder: pathService.ConfigFolder);
                 }
-
-#endif
 
                 // CapFrameX.OSD: hook-free DWM/DirectComposition overlay. Scalars come from the
                 // same IOverlayEntry[] stream RTSS uses; per-present frametimes from the capture
-                // service. Besides the explicit hook-free mode, it takes over transiently when the
-                // selected in-game renderer cannot safely become operational (including D3D9).
+                // service. It runs in the hook-free mode, and in the in-game mode only while that
+                // can never draw in the target: the target policy refuses the hook for good
+                // (anti-cheat, blacklist), or the game presents through Direct3D 9
+                // (HookFreeFallbackStream). Any other in-game overlay that cannot draw is not
+                // replaced by it.
                 using (StartupPerformanceLogger.Measure("OSD overlay bridge initialization"))
                 {
+                    _overlayDesignRuntime = new OSD.Integration.OverlayDesignRuntimePublisher(
+                        _overlayDesignService,
+                        Container.Resolve<OSD.Integration.IOverlayTelemetryService>(), config,
+                        rtssService.ProcessIdStream, rtssService.ProcessCountStream);
+                    // Disposed by ShutdownOverlayRenderers, after the hook's row feed.
+                    // One resolver for both placement paths: hook-free window and hook channel.
+                    _pixelOrbit = new OSD.Integration.OverlayPixelOrbitResolver(
+                        config, () => _overlayDesignService?.CurrentDesign);
                     _osdOverlayBridge = new OSD.Integration.OsdOverlayBridge(
                         osdOverlayService,
                         config, // IAppConfiguration (resolved above) — gates OSD vs RTSS
@@ -176,9 +196,6 @@ namespace CapFrameX
                         PresentMonCaptureService.PresentRuntime_INDEX,
                         PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
                         () => osdCaptureService.CPUStartQPCTimeInMs_Index,
-#if CFX_INGAME_OVERLAY
-                        hookFreeFallbackStream: _hookOverlayManager.HookFreeFallbackStream,
-#endif
                         processIdStream: rtssService.ProcessIdStream,
                         processIdColumnIndex:
                             PresentMonCaptureService.ProcessID_INDEX,
@@ -186,10 +203,18 @@ namespace CapFrameX
                             PresentMonCaptureService.SwapChainAddress_INDEX,
                         frameTypeColumnIndex:
                             PresentMonCaptureService.FrameType_INDEX,
-                        processCountStream: rtssService.ProcessCountStream);
+                        presentModeColumnIndex:
+                            PresentMonCaptureService.PresentMode_INDEX,
+                        allowsTearingColumnIndex:
+                            PresentMonCaptureService.AllowsTearing_INDEX,
+                        processCountStream: rtssService.ProcessCountStream,
+                        designRuntime: _overlayDesignRuntime,
+                        pixelOrbit: _pixelOrbit,
+                        hookFreeFallbackStream: _hookOverlayManager.HookFreeFallbackStream,
+                        presentModeOfProcess: processId => osdCaptureService.GetProcessActivity()?
+                            .FirstOrDefault(activity => activity.ProcessId == processId)?.DominantPresentMode);
                 }
 
-#if CFX_INGAME_OVERLAY
                 // While the in-game hook overlay is on, mirror CapFrameX's processed overlay entries
                 // (fps/lows/sensors/static rows — the same set RTSS/hook-free render) into shared memory
                 // so the injected hook shows authoritative values, not just its local frame ring.
@@ -198,7 +223,8 @@ namespace CapFrameX
                     _hookMetricsPublisher = new OSD.Integration.HookMetricsPublisher(
                         osdOverlayService,
                         config,
-                        rtssService.ProcessIdStream);
+                        rtssService.ProcessIdStream,
+                        _pixelOrbit);
                 }
 
                 // Optional PresentMon graph source for the hook: stream the SAME per-frame frametime +
@@ -216,8 +242,6 @@ namespace CapFrameX
                         PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
                         () => osdCaptureService.CPUStartQPCTimeInMs_Index);
                 }
-
-#endif
 
                 using (StartupPerformanceLogger.Measure("Shell configuration"))
                 {
@@ -257,6 +281,59 @@ namespace CapFrameX
         {
             // InitializeShell already applies the persisted minimized/tray state. Prism's default
             // implementation calls Show() and would reveal a window that was deliberately hidden.
+            if (Array.Exists(Environment.GetCommandLineArgs(), argument =>
+                string.Equals(argument, "--overlay-designer", StringComparison.OrdinalIgnoreCase)))
+            {
+                Dispatcher.BeginInvoke(new Action(() => OpenOverlayDesigner()),
+                    System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            }
+        }
+
+        private async void OpenOverlayDesigner(string profileId = null) => await OpenOverlayDesignerAsync(profileId);
+
+        private async Task OpenOverlayDesignerAsync(string profileId = null)
+        {
+            var existing = Windows.OfType<View.OverlayDesignerWindow>().FirstOrDefault();
+            if (existing != null)
+            {
+                await existing.OpenProfileAsync(profileId);
+                return;
+            }
+            var capture = Container.Resolve<ICaptureService>();
+            var processes = Container.Resolve<IRTSSService>();
+            var window = new View.OverlayDesignerWindow(
+                Container.Resolve<OSD.Integration.IOverlayTelemetryService>(),
+                OSD.Integration.OverlayPreviewFrameFeed.Observe(capture.FrameDataStream,
+                    processes.ProcessIdStream, PresentMonCaptureService.ProcessID_INDEX,
+                    PresentMonCaptureService.MsBetweenPresents_INDEX,
+                    PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
+                    () => capture.CPUStartQPCTimeInMs_Index),
+                Container.Resolve<IPathService>().ConfigFolder, _overlayDesignService,
+                new OSD.Integration.OverlayClassicPreviewFeed(Container.Resolve<IOverlayEntryProvider>(),
+                    Container.Resolve<IOverlayService>(), Container.Resolve<IAppConfiguration>()),
+                OpenClassicOverlayProfile)
+            {
+                Owner = MainWindow
+            };
+            await window.OpenProfileAsync(profileId);
+        }
+
+        private void OpenClassicOverlayProfile()
+        {
+            var regions = Container.Resolve<IRegionManager>();
+            var colorbar = regions.Regions["ColorbarRegion"].Views.OfType<FrameworkElement>()
+                .Select(view => view.DataContext).OfType<ColorbarViewModel>().FirstOrDefault();
+            if (colorbar != null) colorbar.OverlayIsChecked = true;
+            else regions.RequestNavigate("DataRegion", "OverlayView");
+            foreach (var view in regions.Regions["DataRegion"].ActiveViews.OfType<View.OverlayView>())
+                view.ShowClassicProfile();
+            // Owned windows stay above their owner. Minimize the designer while editing rows;
+            // its working design remains open and can be restored with Open designer.
+            foreach (var designer in Windows.OfType<View.OverlayDesignerWindow>())
+                designer.WindowState = WindowState.Minimized;
+            MainWindow.Show();
+            if (MainWindow.WindowState == WindowState.Minimized) MainWindow.WindowState = WindowState.Normal;
+            MainWindow.Activate();
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
@@ -291,6 +368,11 @@ namespace CapFrameX
                     using (StartupPerformanceLogger.Measure("Settings and application configuration loading"))
                     {
                         appConfiguration = Container.Resolve<IAppConfiguration>();
+                        var localization = CapFrameX.Contracts.Localization.CxLang.Instance;
+                        foreach (var error in localization.LoadErrors)
+                            Log.Logger.Warning("{localizationError}", error);
+                        localization.SetUiLanguage(appConfiguration.UiLanguage);
+                        localization.SetOverlayLanguage(appConfiguration.OverlayLanguage);
                     }
 
                     Container.RegisterInstance<IFrametimeStatisticProviderOptions>(appConfiguration);
@@ -298,15 +380,21 @@ namespace CapFrameX
                     _hookOverlayStatusService = new OSD.Integration.HookOverlayStatusService();
                     Container.RegisterInstance<IHookOverlayStatusService>(
                         _hookOverlayStatusService);
-#if CFX_INGAME_OVERLAY
                     // Same folder as the other per-user stores; portable mode redirects it.
                     _hookLearnedProfileStore =
                         OSD.Integration.HookLearnedProfileStore.Create(pathService.ConfigFolder);
                     Container.RegisterInstance<IHookLearnedProfileService>(_hookLearnedProfileStore);
-#else
-                    Container.RegisterInstance<IHookLearnedProfileService>(
-                        NullHookLearnedProfileService.Instance);
-#endif
+                    _overlayDesignService = new OSD.Integration.OverlayDesignService(
+                        pathService.ConfigFolder, appConfiguration, () =>
+                        {
+                            // Resolve lazily: the designer is registered before the shared
+                            // row feed. Both renderers and all visibility toggles follow it.
+                            var overlay = Container.Resolve<IOverlayService>();
+                            appConfiguration.IsOverlayActive = true;
+                            overlay.IsOverlayActiveStream.OnNext(true);
+                        });
+                    Container.RegisterInstance<IOverlayDesignService>(_overlayDesignService);
+                    Exit += (_, _) => _overlayDesignService.Dispose();
                 }
 
                 using (StartupPerformanceLogger.Measure("Prism and core service registrations"))
@@ -319,9 +407,12 @@ namespace CapFrameX
                     Container.Register<IRTSSService, RTSSService>(Reuse.Singleton);
                     Container.Register<IOverlayEntryCore, OverlayEntryCore>(Reuse.Singleton);
                     Container.Register<IRemoteOverlayDemand, RemoteOverlayDemand>(Reuse.Singleton);
+                    Container.Register<IOverlayFrameMetrics, PresentMonOverlayMetrics>(Reuse.Singleton);
                     Container.Register<IOverlayService, OverlayService>(Reuse.Singleton);
                     Container.Register<IOnlineMetricService, OnlineMetricService>(Reuse.Singleton);
                     Container.Register<ISensorService, SensorService>(Reuse.Singleton);
+                    Container.Register<OSD.Integration.IOverlayTelemetryService,
+                        OSD.Integration.OverlayTelemetryService>(Reuse.Singleton);
                 }
 
                 using (StartupPerformanceLogger.Measure("Sensor and overlay configuration registration"))
@@ -334,6 +425,13 @@ namespace CapFrameX
                     Container.Register<IOverlayEntryProvider, OverlayEntryProvider>(Reuse.Singleton);
                     Container.Register<IOverlayTemplateService, OverlayTemplateService>(Reuse.Singleton);
                     Container.Register<IRecordManager, RecordManager>(Reuse.Singleton);
+                    // The metadata of the records read so far, so the next start lists a record
+                    // folder without reading its files again. The exit writes what is pending.
+                    Container.RegisterDelegate(resolver => new RecordInfoIndex(
+                        System.IO.Path.Combine(pathService.ConfigFolder, "RecordInfoIndex.json"),
+                        resolver.Resolve<ILoggerFactory>().CreateLogger<RecordInfoIndex>()), Reuse.Singleton);
+                    // One queue for the whole app: the exit waits for it.
+                    Container.Register<RecordWriteQueue>(Reuse.Singleton);
                 }
 
                 using (StartupPerformanceLogger.Measure("MCP tool registrations"))
@@ -353,13 +451,20 @@ namespace CapFrameX
                     Container.Register<SensorConfigTools>(Reuse.Singleton);
                     Container.Register<OverlayConfigTools>(Reuse.Singleton);
                     Container.Register<OsdOptionsTools>(Reuse.Singleton);
+                    // Tile profiles are edited on the UI thread, which owns the designer and the native preview.
+                    Container.RegisterDelegate<IOverlayDesignAuthoringService>(resolver =>
+                        new View.OverlayDesignAuthoring.OverlayDesignAuthoringService(
+                            pathService.ConfigFolder, _overlayDesignService,
+                            resolver.Resolve<OSD.Integration.IOverlayTelemetryService>(), Dispatcher,
+                            new View.OverlayDesignAuthoring.OverlayDesignerWindowHost(OpenOverlayDesignerAsync)),
+                        Reuse.Singleton);
+                    Container.Register<TileProfileTools>(Reuse.Singleton);
                 }
 
                 using (StartupPerformanceLogger.Measure("Application service registrations and initialization"))
                 {
                     Container.Register<ISystemInfo, SystemInfo.NetStandard.SystemInfo>(Reuse.Singleton);
                     Container.Register<IAppVersionProvider, AppVersionProvider>(Reuse.Singleton);
-#if CFX_INGAME_OVERLAY
                     var reportVersionProvider = Container.Resolve<IAppVersionProvider>();
                     _hookProfileReports = new OSD.Integration.HookProfileReportService(
                         appConfiguration, pathService.ConfigFolder,
@@ -367,7 +472,6 @@ namespace CapFrameX
                         reportVersionProvider.GetAppVersion().ToString(),
                         reportVersionProvider.GetReleaseChannel().ToString());
                     Exit += (_, _) => _hookProfileReports.Dispose();
-#endif
 
 					// The update service needs its catalog URI and the staging folder, neither of
 					// which the container can supply, so it is built here like the process list below.
@@ -407,6 +511,8 @@ namespace CapFrameX
 
                     using (StartupPerformanceLogger.Measure("Application event subscriptions"))
                     {
+                        Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<ViewMessages.OpenOverlayDesigner>>()
+                            .Subscribe(request => OpenOverlayDesigner(request.ProfileId), ThreadOption.UIThread);
                         Container.Resolve<IEventAggregator>().GetEvent<PubSubEvent<AppMessages.OpenLoginWindow>>()
                             .Subscribe(async _ =>
                             {

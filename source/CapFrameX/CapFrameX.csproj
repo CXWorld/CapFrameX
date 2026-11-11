@@ -4,8 +4,6 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
-    <RootNamespace>CapFrameX</RootNamespace>
-    <AssemblyName>CapFrameX</AssemblyName>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <!-- General assembly attributes remain in Properties\AssemblyInfo.cs. Version and
          release-channel attributes are generated from the files under version\. -->
@@ -16,8 +14,6 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
     <GenerateAssemblyTrademarkAttribute>false</GenerateAssemblyTrademarkAttribute>
-    <Deterministic>true</Deterministic>
-    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -34,8 +30,12 @@
     <Resource Include="Icons\cx_icon_BUC.ico" />
     <Resource Include="Icons\CX_Icon.png" />
     <Resource Include="Icons\CX_Screen_Logo_Name.png" />
-    <Content Include="HelpTexts\ChartControls.rtf">
+    <Content Include="HelpTexts\ChartControls*.rtf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Resources\OverlayGraphics\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </Content>
     <None Include="..\..\LICENSE">
       <Link>LICENSE</Link>
@@ -44,18 +44,6 @@
     <None Include="Files\bf0822e8-2e55-4b99-82ee-939d8ac2384e.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <COMReference Include="Shell32">
-      <Guid>{50A7E9B0-70EF-11D1-B75A-00A0C90564FE}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </COMReference>
   </ItemGroup>
 
   <Import Project="benchlab-service.items" Condition="Exists('benchlab-service.items')" />
@@ -67,18 +55,13 @@
     <PackageReference Include="Jot" />
     <PackageReference Include="MaterialDesignColors" />
     <PackageReference Include="MaterialDesignThemes" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Prism.Core" />
     <PackageReference Include="Prism.DryIoc" />
     <PackageReference Include="Serilog" />
-    <PackageReference Include="Serilog.Extensions.Logging" />
     <PackageReference Include="Serilog.Formatting.Compact" />
     <PackageReference Include="Serilog.Sinks.File" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <PackageReference Include="System.Reactive" />
-    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -98,10 +81,12 @@
     <ProjectReference Include="..\CapFrameX.PMD\CapFrameX.PMD.csproj" />
     <ProjectReference Include="..\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj" />
     <ProjectReference Include="..\CapFrameX.OSD.Integration\CapFrameX.OSD.Integration.csproj" />
-    <ProjectReference Include="..\..\external\CapFrameX.OSD\CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj" Condition="'$(CfxOsdFromSource)' == 'true'">
-      <!-- The optional submodule project is not listed in CapFrameX.sln, so Visual Studio
+    <ProjectReference Include="$(_CfxOsdSourceDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj" Condition="'$(CfxOsdFromSource)' == 'true'">
+      <!-- The optional OSD project is not listed in CapFrameX.sln, so Visual Studio
            cannot apply a solution platform mapping to this x64-only reference. -->
       <SetPlatform>Platform=x64</SetPlatform>
+      <CfxOptionalOsd>true</CfxOptionalOsd>
+      <AdditionalProperties>ShouldUnsetParentConfigurationAndPlatform=false</AdditionalProperties>
     </ProjectReference>
     <ProjectReference Include="..\CapFrameX.RTSSIntegration\CapFrameX.RTSSIntegration.csproj" />
     <ProjectReference Include="..\CapFrameX.RTSSInterface\CapFrameX.RTSSInterface.vcxproj" />
@@ -115,11 +100,9 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <!-- CapFrameX.OSD lives in a private repo, consumed as an optional submodule under
-         external\CapFrameX.OSD. With the submodule checked out the OSD is built from
-         source; otherwise the prebuilt binaries in external\CapFrameX.OSD-prebuilt
-         are used so the app always builds with full OSD functionality. -->
-    <CfxOsdFromSource Condition="'$(CfxOsdFromSource)' == '' And Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD\CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj')">true</CfxOsdFromSource>
+    <!-- Directory.Build.props selects the sibling OSD checkout or an explicit source path.
+         Builds without source use the matching binaries
+         in external\CapFrameX.OSD-prebuilt. -->
     <!-- Preserve the explicit x64 mapping on the optional project reference. Visual Studio
          otherwise removes the platform for projects that are not listed in the solution. -->
     <ShouldUnsetParentConfigurationAndPlatform Condition="'$(CfxOsdFromSource)' == 'true' And '$(ShouldUnsetParentConfigurationAndPlatform)' == ''">false</ShouldUnsetParentConfigurationAndPlatform>
@@ -131,34 +114,66 @@
     </Reference>
   </ItemGroup>
 
-  <!-- Native renderer: staged from the submodule's CMake output when built from source
-       (via the Interop project's content items); otherwise use the prebuilt DLL. -->
-  <ItemGroup Condition="!Exists('$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD\CapFrameX.OSD\build\bin\RelWithDebInfo\cfx_osd_core.dll')">
+  <!-- Interop stages the selected source checkout's native core. Match its explicit native
+       directory override when checking for that output; otherwise stage the prebuilt DLL. -->
+  <PropertyGroup>
+    <_CfxOsdCoreSourcePath>$(_CfxOsdSourceDir)CapFrameX.OSD\build\bin\RelWithDebInfo\cfx_osd_core.dll</_CfxOsdCoreSourcePath>
+    <_CfxOsdCoreSourcePath Condition="'$(CfxOsdNativeDir)' != ''">$([MSBuild]::NormalizePath('$(CfxOsdNativeDir)', 'cfx_osd_core.dll'))</_CfxOsdCoreSourcePath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(CfxOsdFromSource)' != 'true' Or !Exists('$(_CfxOsdCoreSourcePath)')">
     <Content Include="..\..\external\CapFrameX.OSD-prebuilt\native\cfx_osd_core.dll">
       <Link>cfx_osd_core.dll</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
-  <!-- The native C++ projects are built by solution dependencies and their post-build steps
-       stage the DLLs in the configuration directory ABOVE the target-framework-specific app
-       output — the layout that existed before the SDK-style .NET migration. Copy them next to
-       CapFrameX.exe, otherwise every P/Invoke into them throws DllNotFoundException.
-       That failure is silent: the sensor groups catch it and fall back, so the only symptom is
-       missing hardware. Without CapFrameX.IGCL.dll an Intel Arc drops to LibreHardwareMonitor's
-       integrated-GPU path (two D3D memory counters, no temperature/power/clock/load and an
-       unknown driver version); without CapFrameX.ADLX.dll the same happens to AMD cards. -->
+  <!-- The source checkout's core is only as current as its last CMake build, and MSBuild does not
+       run CMake. After a pull with native changes the old renderer is staged silently: newer widgets
+       and fonts then fail to load or draw, in the app and in the tests. Warn while a source is newer. -->
+  <Target Name="WarnStaleCfxOsdCore" BeforeTargets="Build"
+          Condition="'$(CfxOsdFromSource)' == 'true' And Exists('$(_CfxOsdCoreSourcePath)')">
+    <PropertyGroup>
+      <_CfxOsdCoreTicks>$([System.IO.File]::GetLastWriteTime('$(_CfxOsdCoreSourcePath)').Ticks)</_CfxOsdCoreTicks>
+    </PropertyGroup>
+    <ItemGroup>
+      <_CfxOsdNativeSource Include="$(_CfxOsdSourceDir)CapFrameX.OSD\src\**\*.*;$(_CfxOsdSourceDir)CapFrameX.OSD\include\**\*.*;$(_CfxOsdSourceDir)CapFrameX.OSD\CMakeLists.txt" />
+      <_CfxOsdNewerNativeSource Include="@(_CfxOsdNativeSource)"
+                                Condition="$([System.IO.File]::GetLastWriteTime('%(_CfxOsdNativeSource.FullPath)').Ticks) &gt; $(_CfxOsdCoreTicks)" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_CfxOsdNewerNativeSourceCount>@(_CfxOsdNewerNativeSource->Count())</_CfxOsdNewerNativeSourceCount>
+    </PropertyGroup>
+    <Warning Condition="'$(_CfxOsdNewerNativeSourceCount)' != '0'"
+             Text="CapFrameX: $(_CfxOsdCoreSourcePath) is older than $(_CfxOsdNewerNativeSourceCount) of its source files. Rebuild it (cmake --build build --config RelWithDebInfo in $(_CfxOsdSourceDir)CapFrameX.OSD) or build with /p:CfxOsdFromSource=false to stage the prebuilt core." />
+  </Target>
+
+  <!-- CapFrameX.Hwinfo, CapFrameX.IGCL and CapFrameX.ADLX are reached through P/Invoke only, so
+       they are solution build dependencies rather than project references and nothing copies
+       their output. Stage the DLLs from the native projects' own output directories
+       (<project>\x64\<Configuration>\) next to CapFrameX.exe, otherwise every P/Invoke into
+       them throws DllNotFoundException. That failure is silent: the sensor groups catch it and
+       fall back, so the only symptom is missing hardware. Without CapFrameX.IGCL.dll an Intel Arc
+       drops to LibreHardwareMonitor's integrated-GPU path (two D3D memory counters, no
+       temperature/power/clock/load and an unknown driver version); without CapFrameX.ADLX.dll
+       the same happens to AMD cards. A build of this project alone, without the native
+       projects, reports which DLL it could not stage. -->
   <ItemGroup>
-    <CfxNativeRuntimeDll Include="CapFrameX.Hwinfo.dll" />
-    <CfxNativeRuntimeDll Include="CapFrameX.IGCL.dll" />
-    <CfxNativeRuntimeDll Include="CapFrameX.ADLX.dll" />
+    <CfxNativeRuntimeDll Include="CapFrameX.Hwinfo" />
+    <CfxNativeRuntimeDll Include="CapFrameX.IGCL" />
+    <CfxNativeRuntimeDll Include="CapFrameX.ADLX" />
   </ItemGroup>
 
   <Target Name="StageCapFrameXNativeRuntime" AfterTargets="Build" Condition="'$(Platform)' == 'x64'">
     <ItemGroup>
-      <CfxNativeRuntimeSource Include="$(OutputPath)..\%(CfxNativeRuntimeDll.Identity)"
-                              Condition="Exists('$(OutputPath)..\%(CfxNativeRuntimeDll.Identity)')" />
+      <CfxNativeRuntimeDll Update="@(CfxNativeRuntimeDll)"
+                           SourcePath="$(MSBuildThisFileDirectory)..\%(Identity)\$(Platform)\$(Configuration)\%(Identity).dll" />
+      <CfxNativeRuntimeSource Include="%(CfxNativeRuntimeDll.SourcePath)"
+                              Condition="Exists('%(CfxNativeRuntimeDll.SourcePath)')" />
+      <CfxNativeRuntimeMissing Include="%(CfxNativeRuntimeDll.SourcePath)"
+                               Condition="!Exists('%(CfxNativeRuntimeDll.SourcePath)')" />
     </ItemGroup>
+    <Message Importance="high" Text="CapFrameX: native DLL not staged, build its project first: %(CfxNativeRuntimeMissing.Identity)"
+             Condition="'@(CfxNativeRuntimeMissing)' != ''" />
     <Copy SourceFiles="@(CfxNativeRuntimeSource)"
           DestinationFolder="$(TargetDir)"
           SkipUnchangedFiles="true" />

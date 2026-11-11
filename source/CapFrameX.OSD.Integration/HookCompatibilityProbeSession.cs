@@ -17,7 +17,7 @@ namespace CapFrameX.OSD.Integration
         InvalidateVerification,
         /// <summary>No stage left (or the failure is not a routing problem).</summary>
         GiveUp,
-        /// <summary>Hook-free fallback reason for the manager; null clears it.</summary>
+        /// <summary>Reason the in-game overlay stands down, for the manager; null clears it.</summary>
         SetFallback,
         SetPollInterval,
         LogVerdict
@@ -28,7 +28,7 @@ namespace CapFrameX.OSD.Integration
         internal HookProbeAction(HookProbeActionKind kind, HookCompatibilityStage stage = null,
             string reason = null, int pollIntervalMs = 0,
             HookCompatibilityVerdict verdict = HookCompatibilityVerdict.Pending,
-            bool exhausted = false)
+            bool exhausted = false, bool reconfirmation = false)
         {
             Kind = kind;
             Stage = stage;
@@ -36,6 +36,7 @@ namespace CapFrameX.OSD.Integration
             PollIntervalMs = pollIntervalMs;
             Verdict = verdict;
             Exhausted = exhausted;
+            Reconfirmation = reconfirmation;
         }
 
         internal HookProbeActionKind Kind { get; }
@@ -44,6 +45,13 @@ namespace CapFrameX.OSD.Integration
         internal int PollIntervalMs { get; }
         internal HookCompatibilityVerdict Verdict { get; }
         internal bool Exhausted { get; }
+
+        /// <summary>
+        /// The verdict and learn actions of a route that was verified earlier in this session and
+        /// confirmed again after a pause or a context change. Nothing new was learned unless the
+        /// title's evidence changed meanwhile.
+        /// </summary>
+        internal bool Reconfirmation { get; }
     }
 
     internal enum HookProbeSettlement
@@ -81,13 +89,18 @@ namespace CapFrameX.OSD.Integration
         private ulong _awaitingLiveApplyUntilTickMs;
         private bool _stageClockPaused;
         private int? _recoveryCoverageBaseline;
+        // A learned route left Learned for a pause or a context change (a swapchain replacement,
+        // a renderer rebuild) and has to be confirmed again. The stored verification stays until
+        // a real failure replaces it: quitting a game usually passes through exactly such a
+        // moment, and an unverified entry is not reused on the next launch.
+        private bool _reconfirming;
         private readonly HookRenderProgressVerifier _renderProgress = new HookRenderProgressVerifier();
 
         internal HookCompatibilityProbeSession(int processId, HookCompatibilityStagePlan plan,
-            bool hasRendered = false)
+            bool hasRenderedD3D12 = false)
         {
             ProcessId = processId;
-            HasRendered = hasRendered;
+            HasRenderedD3D12 = hasRenderedD3D12;
             Plan = plan ?? throw new ArgumentNullException(nameof(plan));
             StageIndex = plan.StartIndex;
             if (!plan.IsEmpty) _tried.Add(CurrentStage.Key);
@@ -108,7 +121,8 @@ namespace CapFrameX.OSD.Integration
         internal HookCompatibilityVerdict LastVerdict { get; private set; }
         internal NativeHookStatusSnapshot LastSnapshot { get; private set; }
         internal bool HasStatusSample { get; private set; }
-        internal bool HasRendered { get; private set; }
+        /// <summary>The route drew on a D3D12 swapchain in this process (see <see cref="Observe"/>).</summary>
+        internal bool HasRenderedD3D12 { get; private set; }
         internal bool Observing =>
             Settlement == HookProbeSettlement.None && _timings.InjectionSucceeded &&
             !Plan.IsEmpty;
@@ -132,6 +146,7 @@ namespace CapFrameX.OSD.Integration
         {
             _timings = default;
             _renderProgress.Reset();
+            _reconfirming = false;
             _timings.InjectionSucceeded = true;
             _timings.InjectionSucceededTickMs = nowTickMs;
             _observingSinceTickMs = nowTickMs;
@@ -153,8 +168,40 @@ namespace CapFrameX.OSD.Integration
                     pollIntervalMs: ProbePollIntervalMs) };
         }
 
+        /// <summary>
+        /// The manager selects this session's process again after another process was the
+        /// overlay target (<see cref="HookProbeSessionShelf"/>). Nothing was observed in between,
+        /// so that interval counts as a pause, as hidden samples do: the phase clocks restart,
+        /// the first-Present wait keeps what it counted, the hook gets a fresh status handshake
+        /// window and a live stage change a fresh echo grace.
+        /// </summary>
+        internal IReadOnlyList<HookProbeAction> ResumeAfterParking(ulong nowTickMs)
+        {
+            if (Plan.IsEmpty || !_timings.InjectionSucceeded) return Array.Empty<HookProbeAction>();
+            if (_timings.WaitingSinceTickMs != 0 && nowTickMs > _lastObservationTickMs)
+                _timings.WaitingSinceTickMs += nowTickMs - _lastObservationTickMs;
+            _timings.InitializingSinceTickMs = 0;
+            _timings.NoQueueSinceTickMs = 0;
+            _timings.SuccessSinceTickMs = 0;
+            _timings.LastNativeStatusTickMs = nowTickMs;
+            _lastObservationTickMs = nowTickMs;
+            _renderProgress.Reset();
+            if (_awaitingLiveApplyUntilTickMs != 0)
+                _awaitingLiveApplyUntilTickMs = nowTickMs + LiveApplyGraceMs;
+            return new[]
+            {
+                new HookProbeAction(HookProbeActionKind.SetPollInterval,
+                    pollIntervalMs: Observing ? ProbePollIntervalMs : IdlePollIntervalMs)
+            };
+        }
+
+        /// <param name="targetPresenting">
+        /// PresentMon still sees Presents from the target (<see cref="HookCompatibilityVerdictClassifier.IsTargetPresenting"/>).
+        /// While it does not and the hook has seen no Present either, the stage clock is paused.
+        /// </param>
         internal IReadOnlyList<HookProbeAction> Observe(bool hasStatus,
-            NativeHookStatusSnapshot snapshot, EHookOverlayStatus? nativeState, ulong nowTickMs)
+            NativeHookStatusSnapshot snapshot, EHookOverlayStatus? nativeState, ulong nowTickMs,
+            bool targetPresenting = true)
         {
             if (Plan.IsEmpty || !_timings.InjectionSucceeded)
                 return Array.Empty<HookProbeAction>();
@@ -215,16 +262,20 @@ namespace CapFrameX.OSD.Integration
                         HookCompatibilityVerdict.Pending);
                 }
             }
+            _timings.TargetNotPresenting = !targetPresenting;
             UpdateClocks(hasStatus, snapshot, nativeState, nowTickMs);
             _timings.NowTickMs = nowTickMs;
             _timings.RenderProgressConfirmed = !ProbingEnabled || _renderProgress.Observe(snapshot,
                 hasStatus && nativeState == EHookOverlayStatus.Active, (uint)stage.Flags, nowTickMs);
             HookCompatibilityVerdict verdict = HookCompatibilityVerdictClassifier.Classify(
                 stage, hasStatus, snapshot, nativeState, in _timings);
+            // Only a D3D12 draw says anything about the queue binding that NoQueue questions; a D3D11
+            // splash or launcher in the same process is drawn without one.
             if (hasStatus && nativeState == EHookOverlayStatus.Active &&
                 (snapshot.Flags & NativeHookStatusFlags.Rendered) != 0 &&
+                snapshot.Api == NativeHookApi.D3D12 &&
                 snapshot.QueueState != NativeHookQueueState.BindingUnavailable)
-                HasRendered = true;
+                HasRenderedD3D12 = true;
             // Coverage is cumulative for the process. Old draws before an FG switch cannot
             // verify the recovery; require submissions after the fallback was lifted.
             if (verdict == HookCompatibilityVerdict.Success && _recoveryCoverageBaseline.HasValue &&
@@ -249,11 +300,12 @@ namespace CapFrameX.OSD.Integration
                     verdict == HookCompatibilityVerdict.Pending && !_timings.RenderProgressConfirmed))
                 {
                     // Pauses and context changes require fresh confirmation, not another route.
+                    // Leaving Learned lets the stage clocks run again, so a renderer that stays
+                    // stalled still fails; the stored verification is only revoked then.
                     Settlement = HookProbeSettlement.None;
+                    _reconfirming = true;
                     return new[]
                     {
-                        new HookProbeAction(HookProbeActionKind.InvalidateVerification, stage,
-                            verdict: HookCompatibilityVerdict.Inconclusive),
                         new HookProbeAction(HookProbeActionKind.SetPollInterval,
                             pollIntervalMs: ProbePollIntervalMs)
                     };
@@ -294,15 +346,22 @@ namespace CapFrameX.OSD.Integration
                     return Array.Empty<HookProbeAction>();
 
                 case HookCompatibilityVerdict.Success:
+                {
+                    bool reconfirmed = _reconfirming;
+                    _reconfirming = false;
                     Settlement = HookProbeSettlement.Learned;
                     _recoveryCoverageBaseline = null;
                     FallbackReason = null;
+                    // A reconfirmation still learns: the evidence may have changed meanwhile (a
+                    // provider DLL loaded), which makes it a new entry. The manager skips the
+                    // write when the stored entry already records this outcome.
                     return ProbingEnabled
                         ? new[]
                         {
                             new HookProbeAction(HookProbeActionKind.LogVerdict, stage,
-                                verdict: verdict),
-                            new HookProbeAction(HookProbeActionKind.Learn, stage),
+                                verdict: verdict, reconfirmation: reconfirmed),
+                            new HookProbeAction(HookProbeActionKind.Learn, stage,
+                                reconfirmation: reconfirmed),
                             new HookProbeAction(HookProbeActionKind.SetFallback),
                             new HookProbeAction(HookProbeActionKind.SetPollInterval,
                                 pollIntervalMs: IdlePollIntervalMs)
@@ -313,9 +372,27 @@ namespace CapFrameX.OSD.Integration
                             new HookProbeAction(HookProbeActionKind.SetPollInterval,
                                 pollIntervalMs: IdlePollIntervalMs)
                         };
+                }
 
                 default:
-                    return Fail(stage, verdict, snapshot, nowTickMs);
+                {
+                    bool reconfirming = _reconfirming;
+                    _reconfirming = false;
+                    IReadOnlyList<HookProbeAction> failureActions = Fail(stage, verdict, snapshot, nowTickMs);
+                    if (!reconfirming || !ProbingEnabled ||
+                        Settlement != HookProbeSettlement.None &&
+                        Settlement != HookProbeSettlement.QueueRecovery)
+                        return failureActions;
+                    // The route failed its reconfirmation, as a failure while Learned would: live
+                    // recovery has no final outcome to replace the old verified entry yet.
+                    var actions = new List<HookProbeAction>
+                    {
+                        new HookProbeAction(HookProbeActionKind.InvalidateVerification, stage,
+                            verdict: LastVerdict)
+                    };
+                    actions.AddRange(failureActions);
+                    return actions;
+                }
             }
         }
 
@@ -326,7 +403,7 @@ namespace CapFrameX.OSD.Integration
             // injection should happen earlier at the next launch. Keep this stage and
             // never persist an early-injection retry or exhaust the learned profile.
             if (verdict == HookCompatibilityVerdict.QueueRebinding ||
-                (verdict == HookCompatibilityVerdict.NoQueue && HasRendered))
+                (verdict == HookCompatibilityVerdict.NoQueue && HasRenderedD3D12))
             {
                 Settlement = HookProbeSettlement.QueueRecovery;
                 LastVerdict = HookCompatibilityVerdict.QueueRebinding;
@@ -459,22 +536,36 @@ namespace CapFrameX.OSD.Integration
         private void UpdateClocks(bool hasStatus, NativeHookStatusSnapshot snapshot,
             EHookOverlayStatus? nativeState, ulong nowTickMs)
         {
-            ulong delta = !_stageClockPaused && nowTickMs > _lastObservationTickMs
+            bool wasPaused = _stageClockPaused;
+            ulong interval = nowTickMs > _lastObservationTickMs
                 ? nowTickMs - _lastObservationTickMs
                 : 0;
+            ulong delta = !wasPaused ? interval : 0;
             _lastObservationTickMs = nowTickMs;
             _timings.TotalElapsedMs = nowTickMs > _observingSinceTickMs
                 ? nowTickMs - _observingSinceTickMs
                 : 0;
+            // The first-Present wait is paused like the budget while the title does not present:
+            // the paused interval moves its start along instead of resetting it, so the wait
+            // stays comparable to the budget (NoPresent has to come before RendererStalled).
+            if (wasPaused && _timings.WaitingSinceTickMs != 0)
+                _timings.WaitingSinceTickMs += interval;
 
-            bool inconclusive = hasStatus &&
+            bool statusPause = hasStatus &&
                 (nativeState == EHookOverlayStatus.Idle || nativeState == EHookOverlayStatus.Hidden ||
                  (snapshot.Flags & NativeHookStatusFlags.Dormant) != 0);
+            // An armed hook that has seen no Present is only at fault while the title presents:
+            // one that is still loading gives it nothing to see, and its budget must not run.
+            bool presentPause = !statusPause && _timings.TargetNotPresenting && hasStatus &&
+                (snapshot.Flags & NativeHookStatusFlags.HooksArmed) != 0 &&
+                (snapshot.Flags & NativeHookStatusFlags.PresentSeen) == 0;
+            bool inconclusive = statusPause || presentPause;
             _stageClockPaused = inconclusive;
             if (inconclusive)
             {
                 // Paused, deliberately hidden or dormant: the phase clocks restart afterwards.
-                _timings.WaitingSinceTickMs = 0;
+                // A title that is not presenting only pauses the first-Present wait (see above).
+                if (!presentPause) _timings.WaitingSinceTickMs = 0;
                 _timings.InitializingSinceTickMs = 0;
                 _timings.NoQueueSinceTickMs = 0;
                 _timings.SuccessSinceTickMs = 0;
@@ -496,7 +587,10 @@ namespace CapFrameX.OSD.Integration
             _timings.InitializingSinceTickMs = nativeState == EHookOverlayStatus.Initializing
                 ? (_timings.InitializingSinceTickMs == 0 ? nowTickMs : _timings.InitializingSinceTickMs)
                 : 0;
+            // A D3D11 swapchain needs no queue: a D3D11 splash before the game's D3D12 swapchain
+            // must not have used up the D3D12 swapchain's queue window.
             bool noQueue = presentSeen && snapshot.Version >= HookStatusProbe.Version2 &&
+                snapshot.Api != NativeHookApi.D3D11 &&
                 snapshot.QueueState == NativeHookQueueState.None;
             _timings.NoQueueSinceTickMs = noQueue
                 ? (_timings.NoQueueSinceTickMs == 0 ? nowTickMs : _timings.NoQueueSinceTickMs)

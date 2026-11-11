@@ -6,7 +6,7 @@ namespace CapFrameX.Test.Sensor
     [TestClass]
     public class MainboardNameShortenerTest
     {
-        [DataTestMethod]
+        [TestMethod]
         // The strings in these rows are what Win32_BaseBoard actually reports.
         [DataRow("ASUSTeK COMPUTER INC.", "ROG MAXIMUS XI HERO", "ASUS ROG MAXIMUS XI HERO")]
         [DataRow("ASUSTeK Computer Inc.", "PRIME X570-PRO", "ASUS PRIME X570-PRO")]
@@ -42,7 +42,7 @@ namespace CapFrameX.Test.Sensor
                 MainboardNameShortener.Shorten("ASUSTeK COMPUTER INC.", "ASUSTeK TUF GAMING B650-PLUS"));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("To be filled by O.E.M.", "To be filled by O.E.M.", "")]
         [DataRow("To Be Filled By O.E.M.", "B650M Pro RS", "B650M Pro RS")]
         [DataRow("System manufacturer", "System Product Name", "")]
@@ -55,7 +55,7 @@ namespace CapFrameX.Test.Sensor
             Assert.AreEqual(expected, MainboardNameShortener.Shorten(manufacturer, product));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         // Unmapped vendors keep their name, minus the legal form and trailing filler words.
         [DataRow("Shenzhen Wingtech Electronics Co., Ltd.", "WTM01", "Shenzhen Wingtech WTM01")]
         [DataRow("Contoso GmbH", "Board 1", "Contoso Board 1")]
@@ -87,27 +87,6 @@ namespace CapFrameX.Test.Sensor
 
             Assert.IsFalse(result.Contains(","));
             Assert.AreEqual("Some Odd Vendor Model X", result);
-        }
-
-        [DataTestMethod]
-        [DataRow("ASUSTeK COMPUTER INC.", "ASUS")]
-        [DataRow("ASUS", "ASUS")]
-        [DataRow("Micro-Star International Co., Ltd.", "MSI")]
-        [DataRow("ASUSTEKX SOMETHING", "ASUSTEKX SOMETHING")]
-        public void ToBrand_MatchesOnWordBoundariesOnly(string manufacturer, string expected)
-        {
-            Assert.AreEqual(expected, MainboardNameShortener.ToBrand(manufacturer));
-        }
-
-        [DataTestMethod]
-        [DataRow("G Skill In", "G.SKILL")]
-        [DataRow("G Skill Intl", "G.SKILL")]
-        [DataRow("G.Skill", "G.SKILL")]
-        [DataRow("G-Skill", "G.SKILL")]
-        [DataRow("GSkill", "G.SKILL")]
-        public void ToBrand_MapsMemoryVendorSpellings(string manufacturer, string expected)
-        {
-            Assert.AreEqual(expected, MainboardNameShortener.ToBrand(manufacturer));
         }
     }
 }

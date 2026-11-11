@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -68,6 +69,7 @@ namespace CapFrameX.OSD.Integration
 
     internal static class HookCompatibilityProfileCatalog
     {
+        internal const string FileName = "HookCompatibilityProfiles.xml";
         private const string ResourceName =
             "CapFrameX.OSD.Integration.HookCompatibilityProfiles.xml";
 
@@ -76,15 +78,17 @@ namespace CapFrameX.OSD.Integration
                 LoadEmbeddedProfiles);
 
         internal static bool TryGet(string executablePathOrName,
-            out HookCompatibilityProfile profile)
+            out HookCompatibilityProfile profile,
+            IReadOnlyDictionary<string, HookCompatibilityProfile> profiles = null)
         {
             profile = null;
             string key = NormalizeExecutableName(executablePathOrName);
-            return key != null && Profiles.Value.TryGetValue(key, out profile);
+            return key != null && (profiles ?? Profiles.Value).TryGetValue(key, out profile);
         }
 
         internal static bool TryGetForProcess(int processId,
-            out HookCompatibilityProfile profile)
+            out HookCompatibilityProfile profile,
+            IReadOnlyDictionary<string, HookCompatibilityProfile> profiles = null)
         {
             profile = null;
             if (processId <= 0) return false;
@@ -92,7 +96,7 @@ namespace CapFrameX.OSD.Integration
             try
             {
                 using (var process = Process.GetProcessById(processId))
-                    return TryGet(process.ProcessName, out profile);
+                    return TryGet(process.ProcessName, out profile, profiles);
             }
             catch (Exception ex) when (ex is ArgumentException ||
                                        ex is InvalidOperationException ||
@@ -103,14 +107,115 @@ namespace CapFrameX.OSD.Integration
             }
         }
 
-        internal static IReadOnlyList<HookCompatibilityProfile> GetEarlyInjectionProfiles()
+        internal static IReadOnlyList<HookCompatibilityProfile> GetEarlyInjectionProfiles(
+            IReadOnlyDictionary<string, HookCompatibilityProfile> profiles = null)
         {
             var result = new List<HookCompatibilityProfile>();
-            foreach (HookCompatibilityProfile profile in Profiles.Value.Values)
+            foreach (HookCompatibilityProfile profile in (profiles ?? Profiles.Value).Values)
             {
                 if (profile.RequiresEarlyInjection) result.Add(profile);
             }
             return result;
+        }
+
+        /// <summary>
+        /// A startup snapshot: external profiles replace entire matching embedded profiles,
+        /// and user profiles take precedence over profiles shipped beside the executable.
+        /// </summary>
+        internal static IReadOnlyDictionary<string, HookCompatibilityProfile> LoadProfiles(
+            string applicationProfilesPath = null, string userProfilesPath = null)
+        {
+            var profiles = new Dictionary<string, HookCompatibilityProfile>(
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var entry in Profiles.Value)
+                profiles.Add(entry.Key, entry.Value);
+
+            EnsureUserProfilesFile(userProfilesPath);
+
+            foreach (string path in new[] { applicationProfilesPath, userProfilesPath })
+            {
+                if (string.IsNullOrWhiteSpace(path)) continue;
+                try
+                {
+                    IReadOnlyDictionary<string, HookCompatibilityProfile> external;
+                    using (Stream stream = File.OpenRead(path))
+                        external = ParseProfiles(stream);
+
+                    // Parse the whole source before merging, so an invalid entry cannot leave
+                    // only part of a file applied. Omitted attributes use the external profile's
+                    // defaults rather than inheriting flags or timing from the replaced profile.
+                    foreach (var entry in external)
+                        profiles[entry.Key] = entry.Value;
+                    Log.Information(
+                        "HookOverlay: loaded {count} external compatibility profiles from {path}",
+                        external.Count, path);
+                }
+                catch (Exception ex) when (ex is FileNotFoundException || ex is DirectoryNotFoundException)
+                {
+                    // Both external sources are optional.
+                }
+                catch (Exception ex)
+                {
+                    Log.Warning(ex,
+                        "HookOverlay: ignoring external compatibility profiles at {path}; keeping profiles from the other sources",
+                        path);
+                }
+            }
+
+            return new ReadOnlyDictionary<string, HookCompatibilityProfile>(profiles);
+        }
+
+        private static void EnsureUserProfilesFile(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path) || File.Exists(path)) return;
+
+            string temporaryPath = null;
+            try
+            {
+                string targetPath = Path.GetFullPath(path);
+                string directory = Path.GetDirectoryName(targetPath);
+                Directory.CreateDirectory(directory);
+                temporaryPath = Path.Combine(directory,
+                    $".{FileName}.{Guid.NewGuid():N}.tmp");
+                var template = new XDocument(
+                    new XDeclaration("1.0", "utf-8", null),
+                    new XElement("HookCompatibilityProfiles", new XAttribute("version", 1),
+                        new XComment(" Add custom Profile elements here. Restart CapFrameX and the game after editing. ")));
+                using (var stream = new FileStream(temporaryPath, FileMode.CreateNew,
+                    FileAccess.Write, FileShare.None))
+                    template.Save(stream);
+
+                try
+                {
+                    // Publish a complete file, and never replace an existing user file even if
+                    // another CapFrameX instance created it after the check above.
+                    File.Move(temporaryPath, targetPath, overwrite: false);
+                    Log.Information("HookOverlay: created empty user compatibility profiles at {path}",
+                        targetPath);
+                }
+                catch (IOException) when (File.Exists(targetPath))
+                {
+                    // Another instance or the user supplied a file first; keep its contents.
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "HookOverlay: could not create user compatibility profiles at {path}",
+                    path);
+            }
+            finally
+            {
+                if (temporaryPath != null)
+                {
+                    try { File.Delete(temporaryPath); }
+                    catch (Exception ex)
+                    {
+                        Log.Warning(ex,
+                            "HookOverlay: could not remove temporary compatibility profile file {path}",
+                            temporaryPath);
+                    }
+                }
+            }
         }
 
         internal static IReadOnlyDictionary<string, HookCompatibilityProfile>

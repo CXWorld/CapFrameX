@@ -41,9 +41,6 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             SetAggregationSeparators(session, plotModel, plotSettings.ShowAggregationSeparators);
 
-
-            UpdateYAxisMaxBorder(frametimeDistributionPoints.Max(p => p.Y));
-
             // draw refresh rate separators
             plotModel.Annotations.Clear();
             var refreshRates = new List<int> { 30, 60, 90, 120, 144, 240 };
@@ -97,14 +94,18 @@ namespace CapFrameX.Statistics.PlotBuilder
 
             distributionSeries.Points.AddRange(distributionDataPoints);
 
-
+            // Extreme frames such as long stalls stay in the series but outside the default range.
+            double readableMaximum = FrametimeDistributionRange.GetReadableMaximum(frametimeDistributionPoints);
 
             UpdateAxis(EPlotAxis.XAXISFRAMETIMES, (axis) =>
             {
                 axis.Minimum = frametimeDistributionPoints.First().X - 1;
-                axis.Maximum = frametimeDistributionPoints.Last().X + 1;
+                axis.Maximum = readableMaximum + 1;
                 axis.MajorStep = GetXAxisMajorStep(axis.Maximum - axis.Minimum);
             }, false);
+            UpdateYAxisMaxBorder(frametimeDistributionPoints
+                .Where(point => point.X <= readableMaximum)
+                .Max(point => point.Y));
             plotModel.Series.Add(distributionSeries);
         }
 

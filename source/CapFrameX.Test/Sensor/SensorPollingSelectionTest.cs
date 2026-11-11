@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using CapFrameX.Monitoring.Contracts;
 using LibreHardwareMonitor.Hardware;
@@ -5,7 +6,6 @@ using LibreHardwareMonitor.Hardware.Cpu;
 using LibreHardwareMonitor.Hardware.Memory.Sensors;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using RAMSPDToolkit.SPD.Interfaces;
 
 namespace CapFrameX.Test.Sensor
 {
@@ -86,32 +86,112 @@ namespace CapFrameX.Test.Sensor
         public void SpdThermalSensorPollsOnlyWhenSelected()
         {
             bool selected = false;
+            int reads = 0;
+            var sensor = CreateSpdThermalSensor(
+                () => selected,
+                () => { reads++; return 42.5f; },
+                new RefreshThrottle(TimeSpan.FromSeconds(2), clockMilliseconds: () => 0));
+
+            Assert.IsFalse(sensor.UpdateSensor());
+            Assert.AreEqual(0, reads);
+
+            selected = true;
+
+            Assert.IsTrue(sensor.UpdateSensor());
+            Assert.AreEqual(1, reads);
+            Assert.AreEqual(42.5f, sensor.Value);
+        }
+
+        [TestMethod]
+        public void SpdThermalSensorKeepsItsValueBetweenThrottledReads()
+        {
+            long now = 0;
+            float temperature = 40f;
+            int reads = 0;
+            var sensor = CreateSpdThermalSensor(
+                () => true,
+                () => { reads++; return temperature; },
+                new RefreshThrottle(TimeSpan.FromSeconds(2), clockMilliseconds: () => now));
+
+            Assert.IsTrue(sensor.UpdateSensor());
+
+            temperature = 41f;
+            for (now = 250; now < 2000; now += 250)
+                Assert.IsFalse(sensor.UpdateSensor());
+
+            Assert.AreEqual(1, reads);
+            Assert.AreEqual(40f, sensor.Value);
+
+            Assert.IsTrue(sensor.UpdateSensor());
+            Assert.AreEqual(2, reads);
+            Assert.AreEqual(41f, sensor.Value);
+        }
+
+        [TestMethod]
+        public void SpdThermalSensorDoesNotUseUpItsThrottleWhileUnselected()
+        {
+            long now = 0;
+            bool selected = true;
+            int reads = 0;
+            var sensor = CreateSpdThermalSensor(
+                () => selected,
+                () => { reads++; return 40f; },
+                new RefreshThrottle(TimeSpan.FromSeconds(2), clockMilliseconds: () => now));
+
+            Assert.IsTrue(sensor.UpdateSensor());
+
+            selected = false;
+            for (now = 250; now <= 5000; now += 250)
+                Assert.IsFalse(sensor.UpdateSensor());
+
+            // Selected again long after the last read: it reads in the very next poll.
+            selected = true;
+            now = 5250;
+            Assert.IsTrue(sensor.UpdateSensor());
+            Assert.AreEqual(2, reads);
+        }
+
+        [TestMethod]
+        public void SpdThermalSensorRetriesAFailedReadOnlyAfterTheInterval()
+        {
+            long now = 0;
+            float? temperature = null;
+            int reads = 0;
+            var sensor = CreateSpdThermalSensor(
+                () => true,
+                () => { reads++; return temperature; },
+                new RefreshThrottle(TimeSpan.FromSeconds(2), clockMilliseconds: () => now));
+
+            Assert.IsFalse(sensor.UpdateSensor());
+            Assert.IsNull(sensor.Value);
+
+            temperature = 40f;
+            for (now = 250; now < 2000; now += 250)
+                Assert.IsFalse(sensor.UpdateSensor());
+
+            Assert.AreEqual(1, reads);
+
+            Assert.IsTrue(sensor.UpdateSensor());
+            Assert.AreEqual(2, reads);
+            Assert.AreEqual(40f, sensor.Value);
+        }
+
+        private static SpdThermalSensor CreateSpdThermalSensor(Func<bool> selected, Func<float?> readTemperature, RefreshThrottle throttle)
+        {
             var sensorConfig = new Mock<ISensorConfig>();
             sensorConfig
                 .Setup(config => config.GetSensorEvaluate(It.IsAny<string>()))
-                .Returns(() => selected);
+                .Returns(() => selected());
 
-            var thermalSensor = new Mock<IThermalSensor>();
-            thermalSensor.Setup(sensor => sensor.UpdateTemperature()).Returns(true);
-            thermalSensor.SetupGet(sensor => sensor.Temperature).Returns(42.5f);
-
-            var sensor = new SpdThermalSensor(
+            return new SpdThermalSensor(
                 "DIMM #0",
                 0,
                 SensorType.Temperature,
                 new TestHardware(),
                 new TestSettings(),
-                thermalSensor.Object,
+                readTemperature,
+                throttle,
                 sensorConfig.Object);
-
-            Assert.IsFalse(sensor.UpdateSensor());
-            thermalSensor.Verify(item => item.UpdateTemperature(), Times.Never);
-
-            selected = true;
-
-            Assert.IsTrue(sensor.UpdateSensor());
-            thermalSensor.Verify(item => item.UpdateTemperature(), Times.Once);
-            Assert.AreEqual(42.5f, sensor.Value);
         }
 
         private sealed class TestHardware : LibreHardwareMonitor.Hardware.Hardware

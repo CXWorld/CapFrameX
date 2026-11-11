@@ -9,6 +9,11 @@ namespace CapFrameX.Statistics.NetStandard
 {
     public static class SessionExtensions
     {
+        /// <summary>
+        /// Width in milliseconds of a bin of the frametime and display time distributions.
+        /// </summary>
+        public const double DistributionBinWidth = 0.1;
+
 		private static IList<double> FilterDataWithinTimeWindow(IList<double> startTimes, IList<double> data,
             double startTime, double endTime, FrametimeStatisticProvider statisticProvider = null,
             ERemoveOutlierMethod removeOutlierMethod = ERemoveOutlierMethod.None,
@@ -113,18 +118,6 @@ namespace CapFrameX.Statistics.NetStandard
 			return FilterDataWithinTimeWindow(frameStartTimes, gpuActiveTimes, startTime, endTime,
                 frametimeStatisticProvider, eRemoveOutlierMethod, IsValidActiveTimeValue);
 		}
-
-        public static IList<double> GetCpuActiveTimeTimeWindow(this ISession session, double startTime, double endTime,
-            IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
-        {
-            var frametimeStatisticProvider = new FrametimeStatisticProvider(options);
-            var frameStartTimes = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).ToArray();
-
-            var cpuActiveTimes = session.Runs.SelectMany(r => r.CaptureData.CpuActive).ToArray();
-
-            return FilterDataWithinTimeWindow(frameStartTimes, cpuActiveTimes, startTime, endTime,
-                frametimeStatisticProvider, eRemoveOutlierMethod, IsValidActiveTimeValue);
-        }
 
         public static IList<double> GetAnimationErrorTimeWindow(this ISession session, double startTime, double endTime)
         {
@@ -683,8 +676,16 @@ namespace CapFrameX.Statistics.NetStandard
         public static double GetGpuActiveDeviationPercentage(this ISession session, double startTime, double endTime,
             IFrametimeStatisticProviderOptions options, ERemoveOutlierMethod eRemoveOutlierMethod = ERemoveOutlierMethod.None)
         {
-            var frametimesAverage = GetFrametimeTimeWindow(session, startTime, endTime, options).Average();
-            var gpuActiveTimesAverage = GetGpuActiveTimeTimeWindow(session, startTime, endTime, options).Average();
+            return GetGpuActiveDeviationPercentage(GetFrametimeTimeWindow(session, startTime, endTime, options),
+                GetGpuActiveTimeTimeWindow(session, startTime, endTime, options));
+        }
+
+        /// <param name="frametimes">The frame times of the window, without outlier removal.</param>
+        /// <param name="gpuActiveTimes">The GPU active times of the window, without outlier removal.</param>
+        public static double GetGpuActiveDeviationPercentage(IList<double> frametimes, IList<double> gpuActiveTimes)
+        {
+            var frametimesAverage = frametimes.Average();
+            var gpuActiveTimesAverage = gpuActiveTimes.Average();
 
             return Math.Round(Math.Abs((gpuActiveTimesAverage - frametimesAverage) / frametimesAverage  * 100), MidpointRounding.AwayFromZero);
         }
@@ -721,45 +722,31 @@ namespace CapFrameX.Statistics.NetStandard
                 return new List<Point>();
 
             // Bin increments
-            const double increments = 0.1;
-            double maxValue = filteredFrameTimes.Max();
+            const double increments = DistributionBinWidth;
 
+            // Sum per bin in one pass; bin k covers [k * increments, (k + 1) * increments).
+            // Creating every bin up to the maximum and rescanning all values for each one
+            // froze the UI for minutes on a capture with a 22.7 s stall. The rounding absorbs
+            // the representation error of the division (0.3 / 0.1 = 2.9999999999999996).
+            var binSums = new SortedDictionary<long, double>();
+            double totalSum = 0;
 
-            // Create Bins (start, end)
-            List<(double start, double end)> bins = new List<(double, double)>();
-            for (double start = 0; start < maxValue; start += increments)
+            foreach (var value in filteredFrameTimes)
             {
-                double end = Math.Round(start + increments, 10);
-                bins.Add((start, end));
+                long binIndex = (long)Math.Floor(Math.Round(value / increments, 9));
+                binSums.TryGetValue(binIndex, out double binSum);
+                binSums[binIndex] = binSum + value;
+                totalSum += value;
             }
-
-            // Expand last bin if maxValue doesn't fit
-            if (bins.Count == 0 || bins.Last().end < maxValue)
-            {
-                double start = bins.Count > 0 ? bins.Last().end : 0;
-                double end = Math.Round(start + increments, 10);
-                bins.Add((start, end));
-            }
-
 
             // Distribution list (X = bin threshold, Y = percentage)
-            double totalSum = filteredFrameTimes.Sum();
-            List<Point> frametimeDistribution = new List<Point>();
+            List<Point> frametimeDistribution = new List<Point>(binSums.Count);
 
-            foreach (var (start, end) in bins)
+            foreach (var bin in binSums)
             {
-                bool isLastBin = (start, end) == bins.Last();
-
-                // sum of values in bin
-                double binSum = filteredFrameTimes
-                    .Where(w => isLastBin ? (w >= start && w <= end) : (w >= start && w < end))
-                    .Sum();
-
-                if (binSum > 0 )
-                {
-                    double percentage = (binSum / totalSum) * 100;
-                    frametimeDistribution.Add(new Point(end, percentage));
-                }
+                double end = Math.Round((bin.Key + 1) * increments, 10);
+                double percentage = (bin.Value / totalSum) * 100;
+                frametimeDistribution.Add(new Point(end, percentage));
             }
 
             return frametimeDistribution;

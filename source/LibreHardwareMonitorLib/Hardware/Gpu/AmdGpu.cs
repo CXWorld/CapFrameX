@@ -44,6 +44,7 @@ internal sealed class AmdGpu : GenericGpu
 
     // Memory sensors (VRAM)
     private readonly Sensor _memoryUsed;
+    private readonly Sensor _memoryTotal;
     private readonly Sensor _sharedMemory;
 
     // System-wide AMD SmartShift; only on the adapter chosen by AmdGpuGroup, null elsewhere
@@ -110,8 +111,17 @@ internal sealed class AmdGpu : GenericGpu
         // Memory sensors
         _memoryUsed = new Sensor("GPU Memory Dedicated", 0, SensorType.Data, this, settings)
         { IsPresentationDefault = true, PresentationSortKey = $"{index}_6_0" };
+        _memoryTotal = new Sensor("GPU Memory Total", 2, SensorType.Data, this, settings)
+        { PresentationSortKey = $"{index}_6_2" };
         _sharedMemory = new Sensor("GPU Memory Shared", 3, SensorType.Data, this, settings)
         { PresentationSortKey = $"{index}_6_1" };
+
+        // Capacity is static device information and does not depend on telemetry support.
+        if (deviceInfo.TotalVramMB > 0)
+        {
+            _memoryTotal.Value = deviceInfo.TotalVramMB / 1024f;
+            ActivateSensor(_memoryTotal);
+        }
 
         // SmartShift: -100 (power shifted to the CPU) .. +100 (shifted to the GPU)
         if (reportsSystemMetrics)
@@ -396,6 +406,10 @@ internal sealed class AmdGpu : GenericGpu
             : "Unavailable");
         r.Append("UniqueId: ");
         r.AppendLine(_deviceInfo.Id.ToString(CultureInfo.InvariantCulture));
+        r.Append("Total VRAM (MB): ");
+        r.AppendLine(_deviceInfo.TotalVramMB > 0
+            ? _deviceInfo.TotalVramMB.ToString(CultureInfo.InvariantCulture)
+            : "Unavailable");
         r.AppendLine();
 
         r.AppendLine("ADLX Telemetry Support");

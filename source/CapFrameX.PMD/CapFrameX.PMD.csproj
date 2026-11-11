@@ -4,11 +4,7 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
-    <RootNamespace>CapFrameX.PMD</RootNamespace>
-    <AssemblyName>CapFrameX.PMD</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Deterministic>true</Deterministic>
-    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
@@ -17,8 +13,6 @@
     <PackageReference Include="System.ServiceProcess.ServiceController" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="OxyPlot.Core" />
-    <PackageReference Include="OxyPlot.Wpf" />
-    <PackageReference Include="OxyPlot.Wpf.Shared" />
     <PackageReference Include="Prism.Core" />
     <PackageReference Include="SerialPortStream" />
     <PackageReference Include="System.Reactive" />

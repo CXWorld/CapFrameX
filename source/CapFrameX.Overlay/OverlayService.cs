@@ -36,6 +36,7 @@ namespace CapFrameX.Overlay
         private readonly IOverlayEntryCore _overlayEntryCore;
         private readonly ILogEntryManager _logEntryManager;
         private readonly IRemoteOverlayDemand _remoteOverlayDemand;
+        private readonly IOverlayFrameMetrics _frameMetrics;
         private readonly EventLoopScheduler _overlayRefreshScheduler;
 
         private IDisposable _disposableCaptureTimer;
@@ -93,7 +94,8 @@ namespace CapFrameX.Overlay
             IRTSSService rTSSService,
             IOverlayEntryCore overlayEntryCore,
             ILogEntryManager logEntryManager,
-            IRemoteOverlayDemand remoteOverlayDemand)
+            IRemoteOverlayDemand remoteOverlayDemand,
+            IOverlayFrameMetrics frameMetrics)
         {
             _statisticProvider = statisticProvider;
             _overlayEntryProvider = overlayEntryProvider;
@@ -103,6 +105,7 @@ namespace CapFrameX.Overlay
             _sensorService = sensorService;
             _logEntryManager = logEntryManager;
             _remoteOverlayDemand = remoteOverlayDemand;
+            _frameMetrics = frameMetrics;
             _rTSSService = rTSSService;
             _overlayEntryCore = overlayEntryCore;
             _overlayRefreshScheduler = new EventLoopScheduler(start =>
@@ -121,34 +124,34 @@ namespace CapFrameX.Overlay
             ThirdMetric = _appConfiguration.RunHistoryThirdMetric;
 
             bool isRTSSInstalled = _rTSSService.IsRTSSInstalled();
-            if (ShouldDefaultToHookFreeOverlay(isRTSSInstalled,
-                _appConfiguration.EnableHookFreeOverlay,
-                _appConfiguration.EnableHookOverlay))
+            if (ShouldReplaceUnavailableRtss(isRTSSInstalled, _appConfiguration.OverlayRenderer))
             {
-                // With neither CapFrameX renderer selected, the two false flags mean "RTSS".
-                // Do not leave a fresh or migrated configuration on a renderer that cannot exist:
-                // persist hook-free as the selected mode so the UI and every downstream consumer
-                // observe the same usable default. Explicit in-game/hook-free choices are preserved.
-                _appConfiguration.EnableHookFreeOverlay = true;
+                // Do not leave a configuration on a renderer that cannot exist: persist the default
+                // in-game renderer so the UI and every downstream consumer observe the same usable
+                // mode. Explicit in-game, hook-free and Off choices are preserved.
+                _appConfiguration.OverlayRenderer = EOverlayRenderer.InGame;
                 _logger.LogInformation(
-                    "RTSS is not installed. Selecting the CapFrameX hook-free overlay as the default renderer.");
+                    "RTSS is not installed. Selecting the CapFrameX in-game overlay as the default renderer.");
             }
+
+            _logger.LogInformation("Overlay renderer: {renderer}", _appConfiguration.OverlayRenderer);
 
             bool configuredOverlayActive = _appConfiguration.IsOverlayActive;
             bool initialOverlayActive = GetInitialOverlayActiveState(
                 configuredOverlayActive,
                 isRTSSInstalled,
-                _appConfiguration.EnableHookFreeOverlay,
-                _appConfiguration.EnableHookOverlay);
+                _appConfiguration.OverlayRenderer);
 
             if (configuredOverlayActive && !initialOverlayActive)
             {
-                // A saved configuration can still select RTSS. Do not retain an impossible
-                // active state when RTSS is absent: all consumers of the
-                // BehaviorSubject (including StateViewModel) must observe the same persisted state.
+                // Do not retain an active state that no renderer can show — a saved configuration
+                // can still select RTSS where it is absent, or the renderers are switched off:
+                // all consumers of the BehaviorSubject (including StateViewModel) must observe
+                // the same persisted state.
                 _appConfiguration.IsOverlayActive = false;
                 _logger.LogWarning(
-                    "Overlay was configured active, but the selected RTSS renderer is unavailable. Disabling the overlay.");
+                    "Overlay was configured active, but the selected renderer ({renderer}) cannot show it. Disabling the overlay.",
+                    _appConfiguration.OverlayRenderer);
             }
 
             IsOverlayActiveStream = new BehaviorSubject<bool>(initialOverlayActive);
@@ -167,25 +170,41 @@ namespace CapFrameX.Overlay
                         _rTSSService.ReleaseOSD();
                 });
 
-            // Overlay-renderer switch (RTSS / hook-free / in-game hook). React to BOTH flags and
-            // re-evaluate the COMBINED state — using the single changed value was wrong (turning one
-            // off while the other was on, or switching back to RTSS, was mishandled).
+            // Overlay-renderer switch (RTSS / in-game hook / hook-free / off). The configuration
+            // raises the renderer key first and each changed flag after it, all once the new
+            // selection is in place; DistinctUntilChanged turns that into one reaction per switch.
+            EOverlayRenderer previousRenderer = _appConfiguration.OverlayRenderer;
             _appConfiguration.OnValueChanged
-                .Where(x => x.key == nameof(IAppConfiguration.EnableHookFreeOverlay)
+                .Where(x => x.key == nameof(IAppConfiguration.OverlayRenderer)
+                         || x.key == nameof(IAppConfiguration.EnableHookFreeOverlay)
                          || x.key == nameof(IAppConfiguration.EnableHookOverlay))
-                .Select(_ => _appConfiguration.EnableHookFreeOverlay || _appConfiguration.EnableHookOverlay)
+                .Select(_ => _appConfiguration.OverlayRenderer)
                 .DistinctUntilChanged()
-                .Subscribe(useHook =>
+                .Subscribe(renderer =>
                 {
-                    _logger.LogInformation("Overlay renderer switch: hookFree={hf}, hook={h}, overlayActive={a} -> {mode}",
-                        _appConfiguration.EnableHookFreeOverlay, _appConfiguration.EnableHookOverlay,
-                        _appConfiguration.IsOverlayActive, useHook ? "hook (clear RTSS)" : "RTSS");
-                    if (useHook)
+                    bool wasRtss = previousRenderer == EOverlayRenderer.Rtss;
+                    previousRenderer = renderer;
+                    UpdateFrameMetricsDemand();
+                    RequestRefresh();
+                    _logger.LogInformation("Overlay renderer switch: {renderer}, overlayActive={a}",
+                        renderer, _appConfiguration.IsOverlayActive);
+                    if (renderer == EOverlayRenderer.Off)
+                    {
+                        // Nothing may render any more. Switching the overlay off releases RTSS
+                        // through the feed below, and every toggle follows the stream.
+                        if (_appConfiguration.IsOverlayActive && _isServiceAlive)
+                        {
+                            _appConfiguration.IsOverlayActive = false;
+                            IsOverlayActiveStream.OnNext(false);
+                        }
+                    }
+                    else if (renderer != EOverlayRenderer.Rtss)
                     {
                         // Keep the RTSS slot owned while its renderer may still be reading it. Clearing
                         // uses RTSS' dwBusy synchronization; ReleaseOSD zeroes the whole shared-memory
                         // entry and is reserved for a real overlay shutdown.
-                        _rTSSService.ClearOSD();
+                        if (wasRtss)
+                            _rTSSService.ClearOSD();
                     }
                     else if (_appConfiguration.IsOverlayActive && _isServiceAlive)
                     {
@@ -207,6 +226,8 @@ namespace CapFrameX.Overlay
                        .Where(_ => _isServiceAlive)
                        .Select(mode =>
                        {
+                           _frameMetrics?.SetEnabled(mode != EntryFeedMode.Off &&
+                               _appConfiguration.OverlayRenderer != EOverlayRenderer.Rtss);
                            if (mode != loggedFeedMode)
                            {
                                loggedFeedMode = mode;
@@ -245,7 +266,7 @@ namespace CapFrameX.Overlay
 
                            var overlayUpdates = entryUpdates.Select(entries => (Entries: entries, MayFeedRtss: true));
 
-                           if (!_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay)
+                           if (_appConfiguration.OverlayRenderer == EOverlayRenderer.Rtss)
                            {
                                // Deferred instead of awaited inline: this selector runs on the
                                // thread that pushed the value — the WPF dispatcher for the
@@ -263,7 +284,9 @@ namespace CapFrameX.Overlay
                        .Switch()
                        .Subscribe(async update =>
                        {
-                           var entries = update.Entries;
+                           // Publish one completed scalar snapshot to HTTP, WebSocket and both
+                           // renderers. Profile entries remain editable and keep their RTSS macros.
+                           var entries = _frameMetrics?.ApplySnapshot(update.Entries) ?? update.Entries;
                            CurrentOverlayEntries = entries;
                            OSDUpdateNotifier(entries);
                            // Both CapFrameX renderers read CurrentOverlayEntries from this event.
@@ -272,19 +295,18 @@ namespace CapFrameX.Overlay
 
                            // IsOverlayActive is checked as well: an update already in flight when
                            // the overlay is switched off must not refill the released RTSS slot.
-                           bool feedRtss = update.MayFeedRtss && IsOverlayActive && !overlayOnAPIOnly
-                               && !_appConfiguration.EnableHookFreeOverlay && !_appConfiguration.EnableHookOverlay;
+                           bool feedRtss = update.MayFeedRtss && _appConfiguration.FeedsRtss();
                            int feedState = feedRtss ? 1 : 0;
                            if (feedState != rtssFeedLogState)
                            {
                                rtssFeedLogState = feedState;
-                               _logger.LogInformation("RTSS feed {state} (overlay={active}, apiOnly={api}, hookFree={hf}, hook={h})",
+                               _logger.LogInformation("RTSS feed {state} (overlay={active}, apiOnly={api}, renderer={renderer})",
                                    feedRtss ? "ON" : "OFF", IsOverlayActive, overlayOnAPIOnly,
-                                   _appConfiguration.EnableHookFreeOverlay, _appConfiguration.EnableHookOverlay);
+                                   _appConfiguration.OverlayRenderer);
                            }
                            if (feedRtss)
                            {
-                               _rTSSService.SetOverlayEntries(entries.Where(entry => entry.IsEntryEnabled).ToArray());
+                               _rTSSService.SetOverlayEntries(SelectRtssEntries(entries));
                                await _rTSSService.CheckRTSSRunningAndRefresh();
                            }
                        });
@@ -375,7 +397,7 @@ namespace CapFrameX.Overlay
             {
                 SetCaptureTimerValue((int)t);
 
-                if (IsOverlayActive)
+                if (_appConfiguration.FeedsRtss())
                     _rTSSService.Refresh();
 
                 if (t == 0)
@@ -385,10 +407,10 @@ namespace CapFrameX.Overlay
         }
 
         internal static bool GetInitialOverlayActiveState(bool configuredOverlayActive,
-            bool isRTSSInstalled, bool enableHookFreeOverlay, bool enableHookOverlay)
+            bool isRTSSInstalled, EOverlayRenderer renderer)
         {
             return configuredOverlayActive &&
-                (isRTSSInstalled || enableHookFreeOverlay || enableHookOverlay);
+                OverlayRendererSelection.CanShowOverlay(renderer, isRTSSInstalled);
         }
 
         internal enum EntryFeedMode
@@ -441,10 +463,21 @@ namespace CapFrameX.Overlay
             });
         }
 
-        internal static bool ShouldDefaultToHookFreeOverlay(bool isRTSSInstalled,
-            bool enableHookFreeOverlay, bool enableHookOverlay)
+        internal static bool ShouldReplaceUnavailableRtss(bool isRTSSInstalled, EOverlayRenderer renderer)
         {
-            return !isRTSSInstalled && !enableHookFreeOverlay && !enableHookOverlay;
+            return !isRTSSInstalled && renderer == EOverlayRenderer.Rtss;
+        }
+
+        /// <summary>
+        /// The entries RTSS can draw: a row needs ShowOnOverlay, a graph only ShowGraph. Sensor
+        /// entries are enabled by default, so sending every enabled entry marshalled and
+        /// formatted hundreds of hidden ones on each refresh.
+        /// </summary>
+        internal static IOverlayEntry[] SelectRtssEntries(IEnumerable<IOverlayEntry> entries)
+        {
+            return entries
+                .Where(entry => entry.IsEntryEnabled && (entry.ShowOnOverlay || entry.ShowGraph))
+                .ToArray();
         }
 
         /// <summary>
@@ -480,7 +513,7 @@ namespace CapFrameX.Overlay
                 {
                     SetCaptureTimerValue((int)-t);
 
-                    if (IsOverlayActive)
+                    if (_appConfiguration.FeedsRtss())
                         _rTSSService.Refresh();
                 }
             });
@@ -491,7 +524,7 @@ namespace CapFrameX.Overlay
             _disposableDelayCountdown?.Dispose();
             _rTSSService.SetIsCaptureTimerActive(false);
 
-            if (IsOverlayActive)
+            if (_appConfiguration.FeedsRtss())
                 _rTSSService.Refresh();
         }
 
@@ -701,6 +734,15 @@ namespace CapFrameX.Overlay
             _sensorRefreshDisposable?.Dispose();
             _overlayActiveStreamDisposable?.Dispose();
             _overlayRefreshScheduler?.Dispose();
+            _frameMetrics?.Dispose();
+        }
+
+        private void UpdateFrameMetricsDemand()
+        {
+            // CapFrameX computes the frame scalars itself for every renderer but RTSS, which
+            // measures them on its own. With the renderers off, the remote API still needs them.
+            _frameMetrics?.SetEnabled(_isServiceAlive && (IsOverlayActive || _remoteOverlayDemand.IsActive) &&
+                _appConfiguration.OverlayRenderer != EOverlayRenderer.Rtss);
         }
 
         public void RequestRefresh()
@@ -748,7 +790,7 @@ namespace CapFrameX.Overlay
                 {
                     SetCaptureTimerValue((int)t);
 
-                    if (IsOverlayActive)
+                    if (_appConfiguration.FeedsRtss())
                         _rTSSService.Refresh();
                 });
         }

@@ -9,8 +9,10 @@ using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics.NetStandard.Contracts;
+using CapFrameX.Test.Localization;
 using CapFrameX.ViewModel;
 using GongSolutions.Wpf.DragDrop;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Prism.Events;
@@ -28,6 +30,7 @@ namespace CapFrameX.Test.ViewModel
         public void ResolveRecords_DefaultDragHandlerPayload_PreservesAllSelectedRecords(
             Type viewModelType, int recordCount)
         {
+            using var subscriptions = new CxLangSubscriptions();
             var records = CreateRecords(recordCount);
             object payload = CreateDragPayload(records);
             var configuration = CreateConfiguration();
@@ -52,10 +55,9 @@ namespace CapFrameX.Test.ViewModel
             string targetName, int recordCount)
         {
             var records = CreateRecords(recordCount);
-            var session = new Mock<ISession>();
-            session.SetupGet(value => value.Runs).Returns(new List<ISessionRun>());
             var recordManager = new Mock<IRecordManager>();
-            recordManager.Setup(value => value.LoadData(It.IsAny<string>())).Returns(session.Object);
+            recordManager.Setup(value => value.LoadData(It.IsAny<string>()))
+                .Returns(() => RecordFiles.SessionWith("game", RecordFiles.Run()));
             var statistics = new Mock<IStatisticProvider>();
             statistics.Setup(value => value.GetMetricAnalysis(
                 It.IsAny<IList<double>>(), It.IsAny<IList<double>>(), It.IsAny<bool>(),
@@ -65,14 +67,18 @@ namespace CapFrameX.Test.ViewModel
                 .Returns((IList<IMetricAnalysis> analyses, string relatedMetric, int percentage)
                     => new bool[analyses.Count]);
             var viewModel = new AggregationViewModel(statistics.Object, new EventAggregator(),
-                CreateConfiguration(), recordManager.Object);
+                CreateConfiguration(), recordManager.Object, NullLogger<AggregationViewModel>.Instance);
             var dropInfo = new Mock<IDropInfo>();
             dropInfo.SetupGet(value => value.Data).Returns(CreateDragPayload(records));
             dropInfo.SetupGet(value => value.VisualTarget).Returns(targetName == "AggregationItemDataGrid"
                 ? (System.Windows.UIElement)new DataGrid { Name = targetName }
                 : new TextBlock { Name = targetName });
 
-            ((IDropTarget)viewModel).Drop(dropInfo.Object);
+            RecordFiles.RunOnDispatcher(() =>
+            {
+                ((IDropTarget)viewModel).Drop(dropInfo.Object);
+                return viewModel.PendingDrop;
+            });
 
             CollectionAssert.AreEqual(records,
                 viewModel.AggregationEntries.Select(entry => entry.FileRecordInfo).ToArray());

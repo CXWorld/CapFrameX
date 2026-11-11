@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
@@ -309,7 +310,7 @@ namespace CapFrameX.Test.Integration
             HookOverlayStatus status = HookOverlayStatusEvaluator.EvaluateVulkan(
                 42, "Vulkan", native, Now, overlayVisible: true);
 
-            Assert.AreEqual(EHookOverlayStatus.Fallback, status.State);
+            Assert.AreEqual(EHookOverlayStatus.Unavailable, status.State);
             StringAssert.Contains(status.Detail, "queue family");
         }
 
@@ -503,11 +504,8 @@ namespace CapFrameX.Test.Integration
         {
             ulong since = 1000;
 
-            Assert.AreEqual(15000UL, HookOverlayManager.HookFirstPresentTimeoutMs);
-            Assert.IsFalse(HookOverlayManager.HasFirstPresentTimedOut(
-                since, since + HookOverlayManager.HookFirstPresentTimeoutMs - 1));
-            Assert.IsTrue(HookOverlayManager.HasFirstPresentTimedOut(
-                since, since + HookOverlayManager.HookFirstPresentTimeoutMs));
+            Assert.IsFalse(HookOverlayManager.HasFirstPresentTimedOut(since, since + 14999));
+            Assert.IsTrue(HookOverlayManager.HasFirstPresentTimedOut(since, since + 15000));
         }
 
         [TestMethod]
@@ -573,104 +571,245 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
-        public void ShouldUseHookFreeFallback_UsesFallbackForD3D9()
+        public void HasRecentTargetFrames_FollowsThePresentMonRowsOfTheSelectedPid()
         {
-            bool useFallback = HookOverlayManager.ShouldUseHookFreeFallback(
-                hookEnabled: true, processId: 42, runtime: "D3D9");
+            int pid = Process.GetCurrentProcess().Id;
+            using var changes = new Subject<(string key, object value)>();
+            using var pids = new BehaviorSubject<int>(0);
+            using var rows = new Subject<string[]>();
+            var configuration = new Mock<IAppConfiguration>();
+            configuration.SetupGet(x => x.OnValueChanged).Returns(changes);
+            // Not selected: rows are tracked for the probe but nothing is injected.
+            configuration.SetupGet(x => x.EnableHookOverlay).Returns(false);
+            configuration.SetupGet(x => x.IsOverlayActive).Returns(true);
+            using var manager = new HookOverlayManager(configuration.Object, pids, rows,
+                processIdColumnIndex: 0, runtimeColumnIndex: 1,
+                dllPathOverride: @"C:\missing\cfx_osd_hook.dll");
+            ulong now() => HookStatusProbe.CurrentTickCount;
 
-            Assert.IsTrue(useFallback);
+            pids.OnNext(pid);
+            Assert.IsFalse(manager.HasRecentTargetFrames(now()), "no row delivered yet");
+
+            rows.OnNext(new[] { (pid + 1).ToString(), "DXGI" });
+            Assert.IsFalse(manager.HasRecentTargetFrames(now()), "a row of another process does not count");
+
+            rows.OnNext(new[] { pid.ToString(), "DXGI" });
+            Assert.IsTrue(manager.HasRecentTargetFrames(now()));
+            Assert.IsFalse(manager.HasRecentTargetFrames(
+                now() + HookCompatibilityVerdictClassifier.ProbeTargetPresentRecentMs + 1000),
+                "PresentMon went quiet");
+
+            rows.OnNext(new[] { pid.ToString(), "DXGI" });
+            pids.OnNext(0);
+            pids.OnNext(pid);
+            Assert.IsFalse(manager.HasRecentTargetFrames(now()),
+                "a newly selected process does not inherit the rows of the previous selection");
         }
 
         [TestMethod]
-        public void ShouldUseHookFreeFallback_DoesNotReplaceNativeRenderers()
+        public void IsInGameUnavailable_ForD3D9()
         {
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            bool unavailable = HookOverlayManager.IsInGameUnavailable(
+                hookEnabled: true, processId: 42, runtime: "D3D9");
+
+            Assert.IsTrue(unavailable);
+        }
+
+        [TestMethod]
+        public void HookFreeFallback_StandsInForD3D9ButNotOther()
+        {
+            // Resident Evil 6 (BH6.exe) on 2026-10-28: the in-game overlay was unavailable for
+            // D3D9 and nothing drew.
+            string d3d9 = HookOverlayManager.GetInGameUnavailableReason(true, 3288, "D3D9");
+            Assert.IsTrue(HookOverlayManager.IsHookFreeFallback(d3d9, null, "D3D9"));
+
+            // A block changes the reason, not that the in-game renderer cannot draw on D3D9.
+            const string antiCheat = "anti-cheat module 'EasyAntiCheat.dll' matched 'easyanticheat'";
+            Assert.IsTrue(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
+                .GetInGameUnavailableReason(true, 3288, "D3D9", antiCheat), antiCheat, "D3D9"));
+
+            // Another renderer selected or the game gone.
+            Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
+                .GetInGameUnavailableReason(false, 3288, "D3D9"), null, "D3D9"));
+            Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
+                .GetInGameUnavailableReason(true, 3288, "D3D9", targetProcessAlive: false),
+                null, "D3D9"));
+
+            // "Other" stays unavailable without a stand-in: Vulkan titles outside DXGI report it
+            // too, and the Vulkan layer may draw there.
+            string other = HookOverlayManager.GetInGameUnavailableReason(true, 42, "Other");
+            Assert.IsNotNull(other);
+            Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(other, null, "Other"));
+
+            // A hook that failed on a DXGI game leaves it without an overlay.
+            string failed = HookOverlayManager.GetInGameUnavailableReason(true, 42, "DXGI",
+                nativeFallbackReason: "in-game hook injection failed (5)");
+            Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(failed, null, "DXGI"));
+        }
+
+        [TestMethod]
+        public void HookFreeFallback_StandsInForFinalPolicyDenials()
+        {
+            Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted("cs2", out string blacklisted));
+            Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted("VALORANT-Win64-Shipping.exe",
+                out string vanguard));
+            foreach (string final in new[]
+            {
+                HookTargetPolicy.GetAntiCheatReason("EasyAntiCheat_EOS.dll", "easyanticheat"),
+                HookTargetPolicy.GetAntiCheatReason("BEClient_x64.dll", "beclient"),
+                blacklisted,
+                vanguard
+            })
+            {
+                Assert.IsTrue(HookTargetPolicy.RequestsHookFreeFallback(final), final);
+                Assert.IsFalse(HookTargetPolicy.IsTransientStartupFailure(final), final);
+                Assert.IsTrue(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
+                    .GetInGameUnavailableReason(true, 42, "DXGI", final), final, "DXGI"), final);
+                // Another renderer selected or the game gone.
+                Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
+                    .GetInGameUnavailableReason(false, 42, "DXGI", final), final, "DXGI"), final);
+                Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
+                    .GetInGameUnavailableReason(true, 42, "DXGI", final, targetProcessAlive: false),
+                    final, "DXGI"), final);
+            }
+
+            // Startup failures often pass within seconds; switching the window each time would
+            // create and remove it.
+            foreach (string transient in new[]
+            {
+                "process identity check failed (Process with an Id of 42 is not running.)",
+                "module scan failed (5)",
+                "module scan returned no modules (299)",
+                "module enumeration failed (299)"
+            })
+            {
+                Assert.IsTrue(HookTargetPolicy.IsTransientStartupFailure(transient), transient);
+                Assert.IsFalse(HookTargetPolicy.RequestsHookFreeFallback(transient), transient);
+                Assert.IsFalse(HookOverlayManager.IsHookFreeFallback(HookOverlayManager
+                    .GetInGameUnavailableReason(true, 42, "DXGI", transient), transient, "DXGI"),
+                    transient);
+            }
+        }
+
+        [TestMethod]
+        public void HookFreeFallbackStream_FollowsTheRuntimeOfTheSelectedPid()
+        {
+            int pid = Process.GetCurrentProcess().Id;
+            using var changes = new Subject<(string key, object value)>();
+            using var pids = new BehaviorSubject<int>(0);
+            using var rows = new Subject<string[]>();
+            var configuration = new Mock<IAppConfiguration>();
+            configuration.SetupGet(x => x.OnValueChanged).Returns(changes);
+            configuration.SetupGet(x => x.EnableHookOverlay).Returns(true);
+            configuration.SetupGet(x => x.IsOverlayActive).Returns(true);
+            using var manager = new HookOverlayManager(configuration.Object, pids, rows,
+                processIdColumnIndex: 0, runtimeColumnIndex: 1,
+                dllPathOverride: @"C:\missing\cfx_osd_hook.dll");
+            bool standsIn() => manager.HookFreeFallbackStream.FirstAsync().Wait();
+
+            Assert.IsFalse(standsIn(), "no target yet");
+            pids.OnNext(pid);
+            rows.OnNext(new[] { pid.ToString(), "D3D9" });
+            Assert.IsTrue(standsIn(), "a D3D9 game gets the hook-free overlay");
+
+            pids.OnNext(0);
+            Assert.IsFalse(standsIn(), "nothing stands in without a target");
+
+            pids.OnNext(pid);
+            rows.OnNext(new[] { pid.ToString(), "Other" });
+            Assert.IsFalse(standsIn(), "Other may be a Vulkan title the layer draws in");
+        }
+
+        [TestMethod]
+        public void IsInGameUnavailable_NotForNativeRenderers()
+        {
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "DXGI"));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "D3D11"));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "D3D12"));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "Vulkan"));
         }
 
         [TestMethod]
-        public void ShouldUseHookFreeFallback_UsesFallbackForBlockedTarget()
+        public void IsInGameUnavailable_ForBlockedTarget()
         {
-            bool useFallback = HookOverlayManager.ShouldUseHookFreeFallback(
+            bool unavailable = HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "DXGI",
                 targetBlockReason: "process 'cs2' is on the in-game injection blacklist");
 
-            Assert.IsTrue(useFallback);
+            Assert.IsTrue(unavailable);
         }
 
         [TestMethod]
-        public void ShouldUseHookFreeFallback_UsesFallbackForNativeHookFailure()
+        public void IsInGameUnavailable_ForNativeHookFailure()
         {
-            bool useFallback = HookOverlayManager.ShouldUseHookFreeFallback(
+            bool unavailable = HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "D3D11",
                 nativeFallbackReason: "in-game hook injection failed");
 
-            Assert.IsTrue(useFallback);
+            Assert.IsTrue(unavailable);
         }
 
         [TestMethod]
-        public void ShouldUseHookFreeFallback_WaitsForEnabledHookAndValidTarget()
+        public void IsInGameUnavailable_WaitsForEnabledHookAndValidTarget()
         {
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: false, processId: 42, runtime: "D3D9"));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 0, runtime: "D3D9"));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: null));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "<error>"));
         }
 
         [TestMethod]
-        public void ShouldUseHookFreeFallback_DoesNotOutliveTargetProcess()
+        public void IsInGameUnavailable_DoesNotOutliveTargetProcess()
         {
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "DXGI",
                 targetBlockReason: "process identity check failed",
                 targetProcessAlive: false));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "D3D11",
                 nativeFallbackReason: "native hook status was unavailable",
                 targetProcessAlive: false));
-            Assert.IsFalse(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 42, runtime: "D3D9",
                 targetProcessAlive: false));
         }
 
         [TestMethod]
-        public void CreateHookFreeFallbackStatus_ReportsFallbackWhileVisible()
+        public void CreateInGameUnavailableStatus_ReportsUnavailableWhileVisible()
         {
-            HookOverlayStatus status = HookOverlayManager.CreateHookFreeFallbackStatus(
+            HookOverlayStatus status = HookOverlayManager.CreateInGameUnavailableStatus(
                 processId: 42, runtime: "D3D9", visible: true);
 
-            Assert.AreEqual(EHookOverlayStatus.Fallback, status.State);
-            StringAssert.Contains(status.Detail, "hook-free fallback is active");
+            Assert.AreEqual(EHookOverlayStatus.Unavailable, status.State);
+            StringAssert.Contains(status.Detail, "the in-game overlay is unavailable");
         }
 
         [TestMethod]
-        public void CreateHookFreeFallbackStatus_ReportsHiddenWhenOverlayIsOff()
+        public void CreateInGameUnavailableStatus_ReportsHiddenWhenOverlayIsOff()
         {
-            HookOverlayStatus status = HookOverlayManager.CreateHookFreeFallbackStatus(
+            HookOverlayStatus status = HookOverlayManager.CreateInGameUnavailableStatus(
                 processId: 42, runtime: "D3D9", visible: false);
 
             Assert.AreEqual(EHookOverlayStatus.Hidden, status.State);
-            StringAssert.Contains(status.Detail, "hook-free fallback is hidden");
+            StringAssert.Contains(status.Detail, "the in-game overlay is unavailable");
         }
 
         [TestMethod]
-        public void CreateHookFreeFallbackStatus_ReportsNativeFailureReason()
+        public void CreateInGameUnavailableStatus_ReportsNativeFailureReason()
         {
-            HookOverlayStatus status = HookOverlayManager.CreateHookFreeFallbackStatus(
+            HookOverlayStatus status = HookOverlayManager.CreateInGameUnavailableStatus(
                 processId: 42, runtime: "DXGI", visible: true,
-                fallbackReason: "native hook did not publish status within 3 seconds after injection");
+                unavailableReason: "native hook did not publish status within 3 seconds after injection");
 
-            Assert.AreEqual(EHookOverlayStatus.Fallback, status.State);
+            Assert.AreEqual(EHookOverlayStatus.Unavailable, status.State);
             StringAssert.Contains(status.Detail, "did not publish status within 3 seconds");
         }
 
@@ -702,12 +841,12 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted(
                 "AoE2DE_s.exe", out string aoeReason));
             StringAssert.Contains(aoeReason, "in-game injection blacklist");
-            Assert.IsTrue(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsTrue(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 4711, runtime: "DXGI",
                 targetBlockReason: aoeReason));
             Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted(
                 "AoMRT_s.exe", out string aomReason));
-            Assert.IsTrue(HookOverlayManager.ShouldUseHookFreeFallback(
+            Assert.IsTrue(HookOverlayManager.IsInGameUnavailable(
                 hookEnabled: true, processId: 4712, runtime: "DXGI",
                 targetBlockReason: aomReason));
             Assert.IsTrue(HookTargetPolicy.IsInjectionBlacklisted("CS2.exe", out string reason));
@@ -774,9 +913,9 @@ namespace CapFrameX.Test.Integration
             d3d12.Api = NativeHookApi.D3D12;
 
             // Spelled the way RTSS spells it, so both sources produce comparable records.
-            Assert.AreEqual("DX11",
+            Assert.AreEqual("D3D11",
                 HookOverlayStatusEvaluator.EvaluateNative(1, "DXGI", d3d11, Now).RenderApi);
-            Assert.AreEqual("DX12",
+            Assert.AreEqual("D3D12",
                 HookOverlayStatusEvaluator.EvaluateNative(1, "DXGI", d3d12, Now).RenderApi);
         }
 

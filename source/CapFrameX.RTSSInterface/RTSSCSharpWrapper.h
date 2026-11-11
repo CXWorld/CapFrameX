@@ -65,6 +65,13 @@ public:
 		{
 			{
 				msclr::lock l(m_lock);
+				_coreControl->RunHistoryLabels.clear();
+				for (size_t i = 0; i < _coreControl->RunHistory.size(); i++)
+				{
+					String^ label = String::Format("Run {0}:", static_cast<int>(i + 1));
+					_coreControl->RunHistoryLabels.push_back(RtssTextFormatter::Translate(label, GetACP()));
+				}
+				_coreControl->RunHistoryResultLabel = RtssTextFormatter::Translate("Result:", GetACP());
 				_coreControl->Refresh();
 			}
 		}
@@ -196,9 +203,21 @@ public:
 		}
 	}
 
+	// The entries Refresh renders. Read by tests; RTSS itself is never asked.
+	property int OverlayEntryCount
+	{
+		int get()
+		{
+			msclr::lock l(m_lock);
+			return static_cast<int>(_coreControl->OverlayEntries.size());
+		}
+	}
+
 	void SetOverlayEntries(array<IOverlayEntry^>^ overlayEntries)
 	{
-		if (overlayEntries == nullptr || overlayEntries->Length == 0)
+		// An empty list is a real state (every entry switched off) and must clear the rows;
+		// returning early left the last ones on screen.
+		if (overlayEntries == nullptr)
 			return;
 
 		try
@@ -216,9 +235,10 @@ public:
 					entry.Identifier = managedEntry->Identifier;
 					entry.Description = managedEntry->Description;
 					entry.ShowOnOverlay = managedEntry->ShowOnOverlay;
-					entry.GroupName = managedEntry->FormattedGroupName;
-					entry.Value = managedEntry->FormattedValue;
+					entry.GroupName = RtssTextFormatter::FormatGroupName(managedEntry, GetACP());
+					entry.Value = RtssTextFormatter::FormatValue(managedEntry, GetACP());
 					entry.ShowGraph = managedEntry->ShowGraph;
+					SetPercentageBarProperties(managedEntry, entry);
 
 					_coreControl->OverlayEntries.push_back(entry);
 				}
@@ -246,10 +266,11 @@ public:
 						// mapping member
 						_coreControl->OverlayEntries[i].Description = managedEntry->Description;
 						_coreControl->OverlayEntries[i].ShowOnOverlay = managedEntry->ShowOnOverlay;
-						_coreControl->OverlayEntries[i].GroupName = managedEntry->FormattedGroupName;
-						_coreControl->OverlayEntries[i].Value = managedEntry->FormattedValue;
+						_coreControl->OverlayEntries[i].GroupName = RtssTextFormatter::FormatGroupName(managedEntry, GetACP());
+						_coreControl->OverlayEntries[i].Value = RtssTextFormatter::FormatValue(managedEntry, GetACP());
 						_coreControl->OverlayEntries[i].ShowGraph = managedEntry->ShowGraph;
 						_coreControl->OverlayEntries[i].Color = managedEntry->Color;
+						SetPercentageBarProperties(managedEntry, _coreControl->OverlayEntries[i]);
 						break;
 					}
 				}
@@ -271,6 +292,21 @@ public:
 		return gcnew String(_coreControl->GetResolution((UINT)processId));
 	}
 
+	// Whether RTSS' shared memory carries a valid header, which RTSS writes when it starts and
+	// invalidates when it exits. Read-only, so it takes no lock.
+	bool IsSharedMemoryAvailable()
+	{
+		try
+		{
+			return _coreControl->IsSharedMemoryAvailable() != FALSE;
+		}
+		catch (SEHException^)
+		{
+			_exceptionAction->Invoke(gcnew Exception("Unmanaged Exception. Error while probing the RTSS shared memory."));
+			return false;
+		}
+	}
+
 	Tuple<double, double>^ GetCurrentFramerate(INT processId)
 	{
 		std::vector<float> result = _coreControl->GetCurrentFramerate((UINT)processId);
@@ -280,7 +316,7 @@ public:
 	array<float>^ GetFrameTimesInterval(INT processId, INT milliseconds)
 	{
 		std::vector<float> frameTimes = _coreControl->GetFrameTimesInterval((UINT)processId, (UINT)milliseconds);
-		array<float>^ frameTimesArray = gcnew array<float>(frameTimes.size());
+		array<float>^ frameTimesArray = gcnew array<float>(static_cast<int>(frameTimes.size()));
 
 		pin_ptr<float> dest = &frameTimesArray[0];
 		std::memcpy(dest, &frameTimes[0], frameTimes.size() * sizeof(float));
@@ -313,6 +349,16 @@ public:
 	}
 
 private:
+	static void SetPercentageBarProperties(IOverlayEntry^ managedEntry, OverlayEntry& entry)
+	{
+		entry.ValueDisplayMode = static_cast<OverlayValueDisplayMode>(
+			static_cast<int>(OverlayPercentageBar::GetDisplayMode(managedEntry)));
+		double value = 0.0;
+		entry.HasPercentageValue = OverlayPercentageBar::TryGetValue(managedEntry, value);
+		entry.PercentageValue = value;
+		entry.PercentageBarColor = OverlayPercentageBar::GetColor(managedEntry);
+	}
+
 	RTSSCoreControl* _coreControl;
 	Action<Exception^>^ _exceptionAction;
 	Object^ m_lock = gcnew Object();

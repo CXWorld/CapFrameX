@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- One build per bitness, -p:Platform=x86 or -p:Platform=x64 (the default). Each carries the
+       PresentMon 1.10.0 executable of its bitness; build.ps1 builds and zips both. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <LangVersion>latest</LangVersion>
+    <Platforms>x64;x86</Platforms>
+    <AssemblyName>CapFrameX.CaptureHelper</AssemblyName>
+    <RootNamespace>CapFrameX.CaptureHelper</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>..\..\source\CapFrameX\Icons\cx_icon_BUC.ico</ApplicationIcon>
+    <Product>CapFrameX Capture Helper</Product>
+    <Version>1.0.0</Version>
+    <!-- build.ps1 writes the packages there. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);publish\**</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Platform)' == '' or '$(Platform)' == 'AnyCPU'">
+    <Platform>x64</Platform>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PlatformTarget>$(Platform)</PlatformTarget>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <None Update="PresentMon\PresentMon-1.10.0-$(Platform).exe" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="PresentMon\license.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

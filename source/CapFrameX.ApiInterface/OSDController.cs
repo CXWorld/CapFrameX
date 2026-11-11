@@ -1,4 +1,4 @@
-﻿using CapFrameX.Contracts.Overlay;
+using CapFrameX.Contracts.Overlay;
 using EmbedIO;
 using EmbedIO.Routing;
 using EmbedIO.WebApi;

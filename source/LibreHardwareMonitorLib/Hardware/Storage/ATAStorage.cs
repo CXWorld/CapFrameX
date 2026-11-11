@@ -25,8 +25,10 @@ public abstract class AtaStorage : AbstractStorage
 
     private IDictionary<SmartAttribute, Sensor> _sensors;
 
-    private static TimeSpan _throttleInterval = TimeSpan.Zero;
-    private DateTime _lastUpdate = DateTime.MinValue;
+    // SMART attributes change slowly, and every read is an ATA command that took 1 to 5 ms on the
+    // SATA SSDs measured; sensor polls run up to four times per second.
+    private static TimeSpan _throttleInterval = TimeSpan.FromSeconds(10);
+    private readonly RefreshThrottle _smartThrottle = new(_throttleInterval);
 
     /// <summary>
     /// Gets the SMART data.
@@ -204,6 +206,7 @@ public abstract class AtaStorage : AbstractStorage
 
     /// <summary>
     /// Gets or sets the minimum interval between two SMART reads. Reads that arrive earlier are skipped.
+    /// Defaults to 10 seconds.
     /// </summary>
     public static TimeSpan ThrottleInterval
     {
@@ -226,11 +229,9 @@ public abstract class AtaStorage : AbstractStorage
     /// <inheritdoc />
     protected override void UpdateSensors()
     {
-        if (DateTime.UtcNow - _lastUpdate < ThrottleInterval)
-        {
+        _smartThrottle.Interval = ThrottleInterval;
+        if (!_smartThrottle.TryBegin())
             return;
-        }
-        _lastUpdate = DateTime.UtcNow;
 
         if (Smart.IsValid)
         {

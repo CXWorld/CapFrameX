@@ -1,7 +1,7 @@
-﻿using AutoMapper;
-using CapFrameX.Data.Session.Classes;
+﻿using CapFrameX.Data.Session.Classes;
 using CapFrameX.Webservice.Data;
 using CapFrameX.Webservice.Data.DTO;
+using CapFrameX.Webservice.Data.Mappings;
 using CapFrameX.Webservice.Data.Exceptions;
 using CapFrameX.Webservice.Data.Interfaces;
 using CapFrameX.Webservice.Data.Queries;
@@ -23,13 +23,11 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 	{
 		private readonly IValidator<GetSessionCollectionByIdQuery> _validator;
 		private readonly ISessionService _capturesService;
-		private readonly IMapper _mapper;
 
-		public GetSessionCollectionByIdHandler(IValidator<GetSessionCollectionByIdQuery> validator, ISessionService capturesService, IMapper mapper)
+		public GetSessionCollectionByIdHandler(IValidator<GetSessionCollectionByIdQuery> validator, ISessionService capturesService)
 		{
 			_validator = validator;
 			_capturesService = capturesService;
-			_mapper = mapper;
 		}
 		public async Task<SessionCollectionDTO> Handle(GetSessionCollectionByIdQuery request, CancellationToken cancellationToken)
 		{
@@ -51,7 +49,7 @@ namespace CapFrameX.Webservice.Implementation.Handlers
 				}
 				sessions.Add(JsonConvert.DeserializeObject<Session>(Encoding.UTF8.GetString(fileBytes)));
 			}
-			var sessionCollectionDTO = _mapper.Map<SessionCollectionDTO>(collection);
+			var sessionCollectionDTO = collection.ToSessionCollectionDto();
 			sessionCollectionDTO.Sessions = sessions;
 			return sessionCollectionDTO;
 		}

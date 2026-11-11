@@ -87,10 +87,10 @@ namespace CapFrameX.Test.PMD
                 ""sensors"": []
             }";
 
-            Assert.ThrowsException<InvalidDataException>(() => BenchlabProtocol.DeserializeSensors(json));
+            Assert.ThrowsExactly<InvalidDataException>(() => BenchlabProtocol.DeserializeSensors(json));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("null", false)]
         [DataRow("null", true)]
         [DataRow(null, true)]
@@ -123,7 +123,7 @@ namespace CapFrameX.Test.PMD
             Assert.AreEqual(500.0, sensors[system].Value);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("CPU_P", "null", true)]
         [DataRow("GPU_P", "null", true)]
         [DataRow("MB_P", "null", true)]
@@ -173,7 +173,7 @@ namespace CapFrameX.Test.PMD
             Assert.IsFalse(foundPowerSensors);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("\"C:\\Services\\Benchlab_Service\\PMD_Service.exe\"")]
         [DataRow("C:\\Services\\PMD_Service.exe --service")]
         [DataRow("C:\\Services\\pmd_service.EXE")]
@@ -182,7 +182,7 @@ namespace CapFrameX.Test.PMD
             Assert.IsTrue(BenchlabService.IsLegacyServiceImagePath(imagePath));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(null)]
         [DataRow("")]
         [DataRow("\"C:\\Services\\Benchlab_Service\\BL_Service.exe\"")]
@@ -192,7 +192,7 @@ namespace CapFrameX.Test.PMD
             Assert.IsFalse(BenchlabService.IsLegacyServiceImagePath(imagePath));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(2, true)]
         [DataRow(3, false)]
         [DataRow(4, false)]

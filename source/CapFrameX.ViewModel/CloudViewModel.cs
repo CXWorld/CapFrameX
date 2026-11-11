@@ -1,10 +1,12 @@
 ﻿using CapFrameX.Contracts.Cloud;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
+using CapFrameX.PresentMonInterface;
 using CapFrameX.Webservice.Data.DTO;
 using GongSolutions.Wpf.DragDrop;
 using Microsoft.Extensions.Logging;
@@ -396,6 +398,11 @@ namespace CapFrameX.ViewModel
 			}
 		}
 
+		// The description is user text in a query string: unescaped, "&" or "#" cut it off and "+"
+		// arrived as a space.
+		internal static string GetUploadRequestUri(string description)
+			=> $"SessionCollections?description={Uri.EscapeDataString(description ?? string.Empty)}";
+
 		private async Task UploadRecords()
 		{
 			ShowUploadDescriptionTextBox = false;
@@ -408,7 +415,7 @@ namespace CapFrameX.ViewModel
 			var contentAsJson = JsonConvert.SerializeObject(sessions);
 			if(System.Text.Encoding.UTF8.GetByteCount(contentAsJson) > CLOUDUPLOAD_MAX_LENGTH)
             {
-				MessageBox.Show($"Size of selected sessions exceed limit of {CLOUDUPLOAD_MAX_LENGTH} bytes per upload");
+				MessageBox.Show(CxLang.Format("CloudViewModel_UploadSizeLimitExceeded0", CLOUDUPLOAD_MAX_LENGTH));
 				return;
             }
 			using (var client = new HttpClient() {
@@ -432,7 +439,7 @@ namespace CapFrameX.ViewModel
 				}
 				var content = new StringContent(contentAsJson);
 				content.Headers.ContentType.MediaType = "application/json";
-				var response = await client.PostAsync($@"SessionCollections?description={UploadDescription}", content);
+				var response = await client.PostAsync(GetUploadRequestUri(UploadDescription), content);
 
 				if (response.IsSuccessStatusCode)
 				{
@@ -481,12 +488,7 @@ namespace CapFrameX.ViewModel
 
 					foreach (var session in content.Sessions)
 					{
-						string dateTimeFormat = 
-						$"{session.Info.CreationDate.Year}-" +
-						$"{session.Info.CreationDate.Month.ToString("d2")}-" +
-						$"{session.Info.CreationDate.Day.ToString("d2")}" +
-						$"T{session.Info.CreationDate.Hour}" +
-						$"{session.Info.CreationDate.Minute}{session.Info.CreationDate.Second}";
+						string dateTimeFormat = CaptureServiceConfiguration.FormatFileTimestamp(session.Info.CreationDate);
 
 						var fileInfo = new FileInfo(Path.Combine(downloadDirectory, $"CapFrameX-{session.Info.ProcessName}-{dateTimeFormat}.json"));
 						File.WriteAllText(fileInfo.FullName, JsonConvert.SerializeObject(session));

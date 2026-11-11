@@ -301,7 +301,9 @@ public class IntelOobmsm
         => TryFindExtCap(capId, vsecId: null, out entry);
 
     /// <inheritdoc cref="TryFindExtCap(ushort, out ExtCapEntry)"/>
+    /// <param name="capId">The extended capability ID to look for.</param>
     /// <param name="vsecId">Optional VSEC ID filter (low 16 bits of the dword at <c>ConfigOffset + 4</c>).</param>
+    /// <param name="entry">The first matching entry, or the default when nothing matches.</param>
     public bool TryFindExtCap(ushort capId, ushort? vsecId, out ExtCapEntry entry)
     {
         entry = default;

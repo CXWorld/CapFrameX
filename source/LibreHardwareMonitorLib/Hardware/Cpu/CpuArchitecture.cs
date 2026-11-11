@@ -72,8 +72,9 @@
                             uint coreType = (ebx >> 28) & 0xF;
                             switch (coreType)
                             {
-                                // Dense cores (D-cores)
-                                case 1: isHybrid = true; break;
+                                // Dense and low-power cores (D/LP) on heterogeneous AMD CPUs.
+                                case 1:
+                                case 2: isHybrid = true; break;
                                 default: break;
                             }
                         }

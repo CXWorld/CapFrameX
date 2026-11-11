@@ -16,11 +16,13 @@ namespace CapFrameX.Mcp.Tools
     {
         private readonly IAppConfiguration _config;
         private readonly IRecordManager _records;
+        private readonly IPathService _pathService;
 
-        public RecordTools(IAppConfiguration config, IRecordManager records)
+        public RecordTools(IAppConfiguration config, IRecordManager records, IPathService pathService)
         {
             _config = config;
             _records = records;
+            _pathService = pathService;
         }
 
         [McpServerTool(Name = "cfx_list_records",
@@ -140,7 +142,9 @@ namespace CapFrameX.Mcp.Tools
 
         internal DirectoryInfo ResolveRecordsDirectory()
         {
-            var path = _config.ObservedDirectory;
+            // Resolved like RecordDirectoryObserver does for the record list. In portable mode the
+            // default "MyDocuments\CapFrameX\Captures" is the portable captures folder, not Documents.
+            var path = _pathService.ResolveDocumentsPlaceholder(_config.ObservedDirectory);
             if (string.IsNullOrWhiteSpace(path)) return null;
 
             if (path.StartsWith("MyDocuments\\", StringComparison.OrdinalIgnoreCase) ||

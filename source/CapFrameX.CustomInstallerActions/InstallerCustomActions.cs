@@ -197,6 +197,57 @@ namespace CapFrameX.CustomInstallerActions
             return ActionResult.Success;
         }
 
+        /// <summary>
+        /// Points an existing autostart task at the new install folder. An upgrade can move the
+        /// application (for example from "Program Files (x86)" to "Program Files"), and the task
+        /// would keep launching the removed executable until the app re-registers it on its next
+        /// start. A manual upgrade does not start the app (LAUNCHAPP defaults to 0), so the
+        /// installer has to repair the task itself. If the task does not exist, autostart was
+        /// never enabled and there is nothing to do.
+        /// </summary>
+        [CustomAction]
+        public static ActionResult UpdateAutoStartTaskPath(Session session)
+        {
+            session.Log("Begin UpdateAutoStartTaskPath");
+
+            try
+            {
+                // Deferred actions cannot read installer properties directly, only CustomActionData.
+                var installFolder = session.CustomActionData["INSTALLFOLDER"];
+                var appPath = Path.Combine(installFolder, APPNAME + ".exe");
+
+                using (var ts = new TaskService())
+                using (var task = ts.GetTask(APPNAME))
+                {
+                    if (task == null)
+                    {
+                        session.Log("No autostart task found, nothing to update.");
+                        return ActionResult.Success;
+                    }
+
+                    var definition = task.Definition;
+                    foreach (var action in definition.Actions.OfType<ExecAction>())
+                    {
+                        action.Path = appPath;
+                        action.WorkingDirectory = installFolder;
+                    }
+
+                    // Keep the task's user, logon type and run level as the app registered them.
+                    ts.RootFolder.RegisterTaskDefinition(APPNAME, definition, TaskCreation.Update,
+                        definition.Principal.UserId, null, definition.Principal.LogonType);
+
+                    session.Log("Autostart task now points to {0}", appPath);
+                }
+            }
+            catch (Exception ex)
+            {
+                // A stale autostart path is not worth failing an upgrade over.
+                session.Log("Could not update the autostart task: {0}", ex.Message);
+            }
+
+            return ActionResult.Success;
+        }
+
         [CustomAction]
         public static ActionResult CopyConfigResources(Session session)
         {

@@ -32,6 +32,7 @@ internal class StorageGroup : IGroup
     /// Adds the hardware.
     /// </summary>
     /// <param name="settings">The settings.</param>
+    /// <param name="sensorConfig">The sensor configuration that decides which sensors are evaluated.</param>
     /// <param name="storageSpaceDiskToPhysicalDiskMap">The storage space disk to physical disk map.</param>
     private void AddHardware(ISettings settings, ISensorConfig sensorConfig, Dictionary<uint, List<(uint, ulong)>> storageSpaceDiskToPhysicalDiskMap)
     {

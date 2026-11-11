@@ -1,35 +1,55 @@
 using System;
+using System.ComponentModel;
 
 namespace CapFrameX.Contracts.Overlay
 {
     public enum EHookOverlayStatus
     {
+        [Description("Off")]
         Disabled,
+        [Description("Waiting")]
         Waiting,
+        [Description("Injecting")]
         Injecting,
+        [Description("Injected")]
         Injected,
+        [Description("Initializing")]
         Initializing,
+        [Description("Active")]
         Active,
+        [Description("Hidden")]
         Hidden,
+        [Description("Idle")]
         Idle,
+        [Description("Error")]
         Error,
-        Fallback,
+        /// <summary>
+        /// The in-game overlay is selected but cannot draw in this process (injection blocked or
+        /// failed, unsupported runtime, every compatibility stage failed). No other renderer
+        /// takes over. Detail carries the reason.
+        /// </summary>
+        [Description("Unavailable")]
+        Unavailable,
         /// <summary>
         /// Injection was deliberately not attempted and will not be retried for this process.
         /// Unlike <see cref="Waiting"/> this never resolves on its own — the game has to be
-        /// restarted. Detail carries the reason.
+        /// restarted. Detail carries the reason. Where the in-game renderer can never draw (an
+        /// anti-cheat or blacklisted title, a Direct3D 9 game), the hook-free overlay stands in for it.
         /// </summary>
+        [Description("Blocked")]
         Blocked,
         /// <summary>
         /// The hook is injected and CapFrameX is judging the current compatibility stage against
-        /// its time budget. Resolves into <see cref="Active"/>, <see cref="Fallback"/> or
+        /// its time budget. Resolves into <see cref="Active"/>, <see cref="Unavailable"/> or
         /// <see cref="RestartPending"/> within seconds.
         /// </summary>
+        [Description("Probing")]
         Probing,
         /// <summary>
-        /// The current stage failed and the next one needs a fresh process. The hook-free
-        /// fallback serves this session; the next launch of the title starts on the next stage.
+        /// The current stage failed and the next one needs a fresh process. The in-game overlay
+        /// stays off for this session; the next launch of the title starts on the next stage.
         /// </summary>
+        [Description("Restart game")]
         RestartPending
     }
 
@@ -74,7 +94,7 @@ namespace CapFrameX.Contracts.Overlay
         public string RenderResolution { get; }
 
         /// <summary>
-        /// Graphics API the game presents with — "DX11", "DX12" or "Vulkan", matching the
+        /// Graphics API the game presents with — "D3D11", "D3D12" or "Vulkan", matching the
         /// spelling RTSS uses so both can feed the capture file's ApiInfo. Null while unknown.
         /// </summary>
         public string RenderApi { get; }
@@ -97,7 +117,7 @@ namespace CapFrameX.Contracts.Overlay
                 case EHookOverlayStatus.Injected: return "Injected";
                 case EHookOverlayStatus.Initializing: return "Initializing";
                 case EHookOverlayStatus.Active: return "Active";
-                case EHookOverlayStatus.Fallback: return "Fallback";
+                case EHookOverlayStatus.Unavailable: return "Unavailable";
                 case EHookOverlayStatus.Hidden: return "Hidden";
                 case EHookOverlayStatus.Idle: return "Idle";
                 case EHookOverlayStatus.Error: return "Error";

@@ -13,12 +13,12 @@ namespace CapFrameX.ViewModel
 		/// <summary>
 		/// Missing renderer dependencies may prevent activation, but they must never trap a stale
 		/// active state. In particular, a portable configuration can still contain
-		/// IsOverlayActive=true after being moved to a machine without RTSS.
+		/// IsOverlayActive=true after being moved to a machine without RTSS. With the renderer
+		/// set to Off there is nothing to activate.
 		/// </summary>
-		internal static bool CanSet(bool requestedActive, bool isRTSSInstalled,
-			bool enableHookFreeOverlay, bool enableHookOverlay)
+		internal static bool CanSet(bool requestedActive, bool canShowOverlay)
 		{
-			return !requestedActive || isRTSSInstalled || enableHookFreeOverlay || enableHookOverlay;
+			return !requestedActive || canShowOverlay;
 		}
 
 		/// <summary>
@@ -27,8 +27,7 @@ namespace CapFrameX.ViewModel
 		internal static bool TrySet(IAppConfiguration appConfiguration, IOverlayService overlayService,
 			bool isRTSSInstalled, bool active)
 		{
-			if (!CanSet(active, isRTSSInstalled, appConfiguration.EnableHookFreeOverlay,
-				appConfiguration.EnableHookOverlay))
+			if (!CanSet(active, appConfiguration.CanShowOverlay(isRTSSInstalled)))
 				return false;
 
 			appConfiguration.IsOverlayActive = active;

@@ -1,4 +1,3 @@
-#if CFX_INGAME_OVERLAY
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -694,4 +693,3 @@ namespace CapFrameX.Test.Integration
         }
     }
 }
-#endif

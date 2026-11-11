@@ -1,0 +1,326 @@
+{
+  "version": 1,
+  "name": "Vertical Clock Deck",
+  "anchor": "top_left",
+  "marginX": 24,
+  "marginY": 24,
+  "editor": {
+    "format": "cfx-grid",
+    "version": 1,
+    "scale": 1,
+    "width": 640,
+    "gap": 2,
+    "padding": 6,
+    "radius": 0,
+    "canvas": true,
+    "canvasHeight": 320,
+    "gridSize": 8,
+    "showGrid": true,
+    "snapToGrid": true
+  },
+  "theme": {
+    "panel": "#070B12ED",
+    "accent": "#FFD060FF",
+    "text": "#F2F4F8FF",
+    "subtext": "#F2F4F8FF",
+    "fontFamily": "Segoe UI",
+    "fontSize": 14,
+    "titleSize": 12,
+    "pad": 6,
+    "gap": 2,
+    "radius": 0
+  },
+  "root": {
+    "type": "panel",
+    "layout": "canvas",
+    "background": false,
+    "padding": 0,
+    "columns": 2,
+    "width": 640,
+    "gap": 2,
+    "children": [
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 2,
+        "padding": 6,
+        "radius": 0,
+        "color": "#070B12ED",
+        "children": [
+          {
+            "type": "text",
+            "text": "CPU / CLOCK DECK",
+            "size": 14,
+            "weight": "semibold",
+            "color": "#F3F6FAFF",
+            "editor": {
+              "x": 0,
+              "y": 0,
+              "frameWidth": 640,
+              "frameHeight": 30.621,
+              "kind": "text",
+              "label": "Heading",
+              "key": "fps",
+              "unit": "",
+              "text": "CPU / CLOCK DECK",
+              "labelPosition": "top",
+              "color": "#F3F6FAFF",
+              "columnSpan": 2,
+              "digits": 0,
+              "valueSize": 14,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 0,
+        "frameWidth": 640,
+        "frameHeight": 30.621,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 6,
+        "radius": 0,
+        "color": "#070B12ED",
+        "children": [
+          {
+            "type": "metric",
+            "key": "cpuClock",
+            "label": "CPU CLOCK",
+            "unit": "MHz",
+            "format": "%.0f",
+            "valueSize": 28,
+            "size": 13,
+            "unitSize": 13,
+            "labelPosition": "top",
+            "width": 307,
+            "editor": {
+              "x": 0,
+              "y": 32.621,
+              "frameWidth": 319,
+              "frameHeight": 69.533,
+              "kind": "metric",
+              "label": "CPU CLOCK",
+              "key": "cpuClock",
+              "unit": "MHz",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 28,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 32.621,
+        "frameWidth": 319,
+        "frameHeight": 69.533,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 6,
+        "radius": 0,
+        "color": "#070B12ED",
+        "children": [
+          {
+            "type": "metric",
+            "key": "cpuPower",
+            "label": "CPU POWER",
+            "unit": "W",
+            "format": "%.0f",
+            "valueSize": 28,
+            "size": 13,
+            "unitSize": 13,
+            "labelPosition": "top",
+            "width": 307,
+            "editor": {
+              "x": 321,
+              "y": 32.621,
+              "frameWidth": 319,
+              "frameHeight": 69.533,
+              "kind": "metric",
+              "label": "CPU POWER",
+              "key": "cpuPower",
+              "unit": "W",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 28,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 321,
+        "y": 32.621,
+        "frameWidth": 319,
+        "frameHeight": 69.533,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 2,
+        "padding": 6,
+        "radius": 0,
+        "color": "#1C0D1BED",
+        "children": [
+          {
+            "type": "panel",
+            "background": false,
+            "padding": 0,
+            "gap": 4,
+            "children": [
+              {
+                "type": "text",
+                "text": "CORE CLOCKS / 0\u20136000 MHz",
+                "size": 13,
+                "weight": "semibold",
+                "color": "#FFD060FF"
+              },
+              {
+                "type": "panel",
+                "layout": "grid",
+                "columns": 2,
+                "background": false,
+                "padding": 0,
+                "width": 628,
+                "gap": 4,
+                "children": [
+                  {
+                    "type": "bar",
+                    "key": "role:cpu-clocks/1",
+                    "label": "C1",
+                    "unit": "MHz",
+                    "width": 312,
+                    "min": 0,
+                    "max": 6000,
+                    "height": 40,
+                    "digits": 0,
+                    "showValue": false,
+                    "orientation": "vertical",
+                    "color": "#FFD060FF"
+                  },
+                  {
+                    "type": "bar",
+                    "key": "role:cpu-clocks/2",
+                    "label": "C2",
+                    "unit": "MHz",
+                    "width": 312,
+                    "min": 0,
+                    "max": 6000,
+                    "height": 40,
+                    "digits": 0,
+                    "showValue": false,
+                    "orientation": "vertical",
+                    "color": "#FFD060FF"
+                  }
+                ]
+              }
+            ],
+            "color": "#FFD060FF",
+            "editor": {
+              "x": 0,
+              "y": 104.154,
+              "frameWidth": 640,
+              "frameHeight": 92.891,
+              "groupKey": "role:cpu-clocks",
+              "groupDisplay": "bar",
+              "groupColumns": 32,
+              "groupBarOrientation": "vertical",
+              "groupShowValues": false,
+              "groupMembers": [
+                {
+                  "key": "role:cpu-clocks/1",
+                  "label": "C1",
+                  "sourceName": "CPU core 1 \u00B7 waiting for an unambiguous hardware group",
+                  "isEnabled": true
+                },
+                {
+                  "key": "role:cpu-clocks/2",
+                  "label": "C2",
+                  "sourceName": "CPU core 2 \u00B7 waiting for an unambiguous hardware group",
+                  "isEnabled": true
+                }
+              ],
+              "kind": "group",
+              "label": "CORE CLOCKS / 0\u20136000 MHz",
+              "key": "role:cpu-clocks",
+              "unit": "MHz",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "color": "#FFD060FF",
+              "backgroundColor": "#1C0D1BED",
+              "columnSpan": 2,
+              "digits": 0,
+              "valueSize": 14,
+              "height": 40,
+              "minimum": 0,
+              "maximum": 6000
+            }
+          }
+        ],
+        "x": 0,
+        "y": 104.154,
+        "frameWidth": 640,
+        "frameHeight": 92.891,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 2,
+        "padding": 6,
+        "radius": 0,
+        "color": "#070B12ED",
+        "children": [
+          {
+            "type": "chart",
+            "title": "FRAME TIME",
+            "series": "frametimes",
+            "width": 628,
+            "height": 52,
+            "unit": "ms",
+            "editor": {
+              "x": 0,
+              "y": 199.045,
+              "frameWidth": 640,
+              "frameHeight": 64,
+              "kind": "chart",
+              "label": "FRAME TIME",
+              "key": "frametimes",
+              "unit": "ms",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 2,
+              "digits": 0,
+              "valueSize": 28,
+              "height": 52,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 199.045,
+        "frameWidth": 640,
+        "frameHeight": 64,
+        "clip": true
+      }
+    ],
+    "height": 320
+  }
+}

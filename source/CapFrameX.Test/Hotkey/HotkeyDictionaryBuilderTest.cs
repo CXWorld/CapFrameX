@@ -42,7 +42,7 @@ namespace CapFrameX.Test.Hotkey
             SnapshotField.SetValue(null, _originalSnapshot);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(nameof(IAppConfiguration.CaptureHotKey), HotkeyAction.Capture, "F11")]
         [DataRow(nameof(IAppConfiguration.OverlayHotKey), HotkeyAction.Overlay, "Alt+O")]
         [DataRow(nameof(IAppConfiguration.OverlayConfigHotKey), HotkeyAction.OverlayConfig, "Alt+C")]

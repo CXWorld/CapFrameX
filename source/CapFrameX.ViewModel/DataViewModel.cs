@@ -1,9 +1,11 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
+using CapFrameX.Extensions.NetStandard;
 using CapFrameX.MVVM.Dialogs;
 using CapFrameX.Sensor.Reporting;
 using CapFrameX.Sensor.Reporting.Contracts;
@@ -43,11 +45,13 @@ namespace CapFrameX.ViewModel
         private readonly IEventAggregator _eventAggregator;
         private readonly IAppConfiguration _appConfiguration;
         private readonly RecordManager _recordManager;
+        private readonly RecordWriteQueue _recordWriteQueue;
         private readonly IRecordDataServer _localRecordDataServer;
         private static ILogger<DataViewModel> _logger;
 
         private bool _useUpdateSession;
         private ISession _session;
+        private bool _isCuttingRecord;
         private ISession _previousSession;
         private SeriesCollection _statisticCollection;
         private SeriesCollection _lShapeCollection;
@@ -68,7 +72,7 @@ namespace CapFrameX.ViewModel
         private double _firstSeconds;
         private double _lastSeconds;
         private EChartYAxisSetting _selecetedChartYAxisSetting = EChartYAxisSetting.FullFit;
-        private ConditionalMessageDialog _messageDialogContent;
+        private UserControl _messageDialogContent;
         private bool _messageDialogContentIsOpen;
         private string _messageText;
         private int _barMaxValue = 100;
@@ -86,7 +90,7 @@ namespace CapFrameX.ViewModel
         private bool _useFrametimeStatisticParameters;
         private EFilterMode _selectedFilterMode = EFilterMode.None;
         private ELShapeMetrics _lShapeMetric = ELShapeMetrics.Frametimes;
-        private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
+        private string _lShapeYaxisLabel = CxLang.T("DataViewModel_FrametimesMs") + Environment.NewLine + " ";
         private bool _isDistributionChartDirty = true;
         private bool _isFpsChartDirty = true;
         private bool _isFrametimeChartDirty = true;
@@ -225,24 +229,11 @@ namespace CapFrameX.ViewModel
             {
                 _selectedChartItem = value;
                 RaisePropertyChanged();
-                RaisePropertyChanged(nameof(SelectedChartHeader));
+                RaisePropertyChanged(nameof(SelectedChart));
                 OnChartItemChanged();
             }
         }
-        public string SelectedChartHeader
-        {
-            get
-            {
-                if (_selectedChartItem is TabItem tab)
-                {
-                    if (tab.Header is Label label)
-                        return label.Content?.ToString();
-                    return tab.Header?.ToString();
-                }
-
-                return string.Empty;
-            }
-        }
+        public EChartTab SelectedChart => SelectedChartItem?.Tag is EChartTab chart ? chart : EChartTab.None;
 
         public List<ISystemInfoEntry> SystemInfos
         {
@@ -359,7 +350,7 @@ namespace CapFrameX.ViewModel
             set
             {
                 _lShapeMetric = value;
-                LShapeYaxisLabel = value == ELShapeMetrics.Frametimes ? "Frametimes (ms)" + Environment.NewLine + " " : "FPS" + Environment.NewLine + " ";
+                LShapeYaxisLabel = value == ELShapeMetrics.Frametimes ? CxLang.T("DataViewModel_FrametimesMs") + Environment.NewLine + " " : "FPS" + Environment.NewLine + " ";
                 RaisePropertyChanged();
                 UpdateSecondaryCharts();
             }
@@ -385,7 +376,7 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public ConditionalMessageDialog MessageDialogContent
+        public UserControl MessageDialogContent
         {
             get { return _messageDialogContent; }
             set
@@ -587,9 +578,9 @@ namespace CapFrameX.ViewModel
 
         public ICommand CopyRawSensorInfoCommand { get; }
 
-        public ICommand CutRecordCommand { get; }
+        public DelegateCommand CutRecordCommand { get; }
 
-        public ICommand CutRecordInverseCommand { get; }
+        public DelegateCommand CutRecordInverseCommand { get; }
 
         // Keep the saved selection independent of the current record's metrics.
         // Availability only controls whether the selected graph can be shown.
@@ -757,6 +748,7 @@ namespace CapFrameX.ViewModel
             IEventAggregator eventAggregator,
             IAppConfiguration appConfiguration,
             RecordManager recordManager,
+            RecordWriteQueue recordWriteQueue,
             ILogger<DataViewModel> logger)
         {
             _frametimeStatisticProvider = frametimeStatisticProvider;
@@ -764,6 +756,7 @@ namespace CapFrameX.ViewModel
             _eventAggregator = eventAggregator;
             _appConfiguration = appConfiguration;
             _recordManager = recordManager;
+            _recordWriteQueue = recordWriteQueue;
             _logger = logger;
 
             CopyStatisticalParameterCommand = new DelegateCommand(OnCopyStatisticalParameter);
@@ -771,8 +764,8 @@ namespace CapFrameX.ViewModel
             CopySystemInfoCommand = new DelegateCommand(OnCopySystemInfoCommand);
             CopySensorInfoCommand = new DelegateCommand(OnCopySensorInfo);
             CopyRawSensorInfoCommand = new DelegateCommand(OnCopyRawSensorInfo);
-            CutRecordCommand = new DelegateCommand(() => OnCutRecord(false));
-            CutRecordInverseCommand = new DelegateCommand(() => OnCutRecord(true));
+            CutRecordCommand = new DelegateCommand(() => OnCutRecord(false), () => !_isCuttingRecord);
+            CutRecordInverseCommand = new DelegateCommand(() => OnCutRecord(true), () => !_isCuttingRecord);
             CopyFPSThresholdDataCommand = new DelegateCommand(OnCopyFPSThresholdData);
             ThresholdCountsCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = false);
             ThresholdTimesCommand = new DelegateCommand(() => _appConfiguration.ShowThresholdTimes = true);
@@ -792,6 +785,12 @@ namespace CapFrameX.ViewModel
             InitializeStatisticParameter();
             SetThresholdLabels();
             Setup();
+
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage) && _session != null)
+                    UpdateSensorSessionReport();
+            };
         }
 
         private bool GetIsPowerLimitAvailable()
@@ -875,21 +874,21 @@ namespace CapFrameX.ViewModel
             _onUpdateChart.Subscribe(_ =>
             {
                 
-                if (SelectedChartHeader.Contains("Distribution") && _isDistributionChartDirty)
+                if (SelectedChart == EChartTab.Distribution && _isDistributionChartDirty)
                 {
                     FrametimeDistributionGraphDataContext.BuildPlotmodel(GetVisibleGraphs());
                     _isDistributionChartDirty = false;
                 }
                     
 
-                if (SelectedChartHeader.Contains("FPS") && _isFpsChartDirty)
+                if (SelectedChart == EChartTab.Fps && _isFpsChartDirty)
                 {
                     FpsGraphDataContext.BuildPlotmodel(GetVisibleGraphs());
                     _isFpsChartDirty = false;
                 }
                    
 
-                if (SelectedChartHeader.Contains("Times") && _isFrametimeChartDirty)
+                if (SelectedChart == EChartTab.Frametimes && _isFrametimeChartDirty)
                 {
                     FrametimeGraphDataContext.BuildPlotmodel(GetVisibleGraphs(), plotModel =>
                     {
@@ -1199,43 +1198,18 @@ namespace CapFrameX.ViewModel
             if (RecordInfo == null)
                 return;
 
-
-            var rawSensorInfos = _session.Runs.Select(run => run.SensorData2);
-
-            var propertyInfos = typeof(ISessionSensorData).GetProperties()
-                .Where(pi => pi.GetCustomAttributes(false).OfType<SensorDataExportAttribute>().Any())
-                .Where(pi => rawSensorInfos.All(rsi =>
-                {
-                    var values = pi.GetValue(rsi) as Array;
-                    return values.Length > 0;
-                }));
-
-            StringBuilder builder = new StringBuilder();
-
-            // Header
-            builder.AppendLine(string.Join("\t", propertyInfos.Select(pi =>
+            var text = RawSensorInfoExport.BuildText(_session.Runs.Select(run => run.SensorData2));
+            if (text.Length == 0)
             {
-                var attribute = pi.GetCustomAttributes(false).OfType<SensorDataExportAttribute>().FirstOrDefault();
-                return attribute.Description;
-            })) + "\t" + "Time in GPU limit(%)");
-
-            //Content
-            foreach (var run in rawSensorInfos)
-            {
-                for (int i = 0; i < run.MeasureTime.Values.Count; i++)
-                {
-                    var gpuLoadLimit = SensorReport.GetPercentageInGpuLoadLimit(run.GpuUsage.ToList());
-
-                    var lineValues = propertyInfos.Select(pi =>
-                    {
-                        var array = pi.GetValue(run) as Array;
-                        return array.Length >= run.MeasureTime.Values.Count ? string.Format("{0:0.##}", array.GetValue(i)) : string.Empty;
-                    });
-                    builder.AppendLine(string.Join("\t", lineValues) + "\t" + gpuLoadLimit);
-                }
+                // Nothing to copy: say so instead of leaving the clipboard as it was without a word. The
+                // plain dialog, since "never show again" of the conditional one hides the outlier warning.
+                MessageDialogContent = new MessageDialog();
+                MessageText = CxLang.T("DataViewModel_NoSensorDataToCopy");
+                MessageDialogContentIsOpen = true;
+                return;
             }
 
-            Clipboard.SetDataObject(builder.ToString(), false);
+            Clipboard.SetDataObject(text, false);
         }
 
         private void OnChartItemChanged()
@@ -1252,7 +1226,7 @@ namespace CapFrameX.ViewModel
             _localRecordDataServer.RemoveOutlierMethod = RemoveOutliers ?
                 ERemoveOutlierMethod.DeciPercentile : ERemoveOutlierMethod.None;
 
-            CurrentGameName = RemoveOutliers ? $"{RecordInfo.GameName} (outlier-cleaned)"
+            CurrentGameName = RemoveOutliers ? CxLang.Format("DataViewModel_OutlierCleaned0", RecordInfo.GameName)
                 : RecordInfo.GameName;
 
             SetChartUpdateFlags();
@@ -1263,9 +1237,8 @@ namespace CapFrameX.ViewModel
 
             if (!NeverShowDialog && RemoveOutliers)
             {
-                MessageText = $"Remove outliers is only a function to simulate how the parameters would be like if there were no outliers. " +
-                    Environment.NewLine +
-                    $"This doesn't qualify as a conclusive evaluation of the benchmark run.";
+                MessageDialogContent = new ConditionalMessageDialog();
+                MessageText = CxLang.T("DataViewModel_RemoveOutliersIsOnlyASimulation");
                 MessageDialogContentIsOpen = true;
             }
         }
@@ -1278,7 +1251,37 @@ namespace CapFrameX.ViewModel
 
         private async void OnCutRecord(bool inverse)
         {
-            await _recordManager.DuplicateSession(_localRecordDataServer.CurrentSession, inverse, FirstSeconds, LastSeconds);
+            // The cut clones, filters and writes the whole record, which froze the window while it ran
+            // on the UI thread. It runs on the record write queue now: the exit waits for the queue, up
+            // to 10 s as for metadata edits, so closing the app no longer drops a cut that is still being
+            // written, and the cut runs after the metadata edits saved before the click and before those
+            // saved after it. The cut buttons are disabled until it is written.
+            if (_isCuttingRecord)
+                return;
+
+            var session = _localRecordDataServer.CurrentSession;
+            double firstSeconds = FirstSeconds;
+            double lastSeconds = LastSeconds;
+            SetCuttingRecord(true);
+            try
+            {
+                // Taken at the click: the record folder can be switched while the cut waits or runs.
+                string recordDirectory = await _recordManager.GetRecordDirectory();
+                await _recordWriteQueue.Enqueue(() => _recordManager
+                    .DuplicateSession(session, inverse, firstSeconds, lastSeconds, recordDirectory)
+                    .GetAwaiter().GetResult());
+            }
+            finally
+            {
+                SetCuttingRecord(false);
+            }
+        }
+
+        private void SetCuttingRecord(bool isCutting)
+        {
+            _isCuttingRecord = isCutting;
+            CutRecordCommand.RaiseCanExecuteChanged();
+            CutRecordInverseCommand.RaiseCanExecuteChanged();
         }
 
         private void UpdateRangeSliderParameter()
@@ -1311,6 +1314,20 @@ namespace CapFrameX.ViewModel
                     }
                 });
 
+            // A metadata edit of the record on display changes what shows the metadata, not the
+            // analysis: the session is not loaded again for it.
+            _eventAggregator.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>()
+                .Subscribe(msg =>
+                {
+                    if (RecordInfo == null || msg?.RecordInfo == null || msg.RecordInfo.Id != RecordInfo.Id)
+                        return;
+
+                    RecordInfo = msg.RecordInfo;
+                    CurrentGameName = RemoveOutliers ? CxLang.Format("DataViewModel_OutlierCleaned0", RecordInfo.GameName)
+                        : RecordInfo.GameName;
+                    SystemInfos = _recordManager.GetSystemInfos(RecordInfo);
+                });
+
             _eventAggregator.GetEvent<PubSubEvent<ViewMessages.ThemeChanged>>()
                 .Subscribe(msg =>
                 {
@@ -1328,7 +1345,7 @@ namespace CapFrameX.ViewModel
 
                 SetChartUpdateFlags();
 
-                CurrentGameName = RemoveOutliers ? $"{RecordInfo.GameName} (outlier-cleaned)"
+                CurrentGameName = RemoveOutliers ? CxLang.Format("DataViewModel_OutlierCleaned0", RecordInfo.GameName)
                     : RecordInfo.GameName;
                 SystemInfos = _recordManager.GetSystemInfos(RecordInfo);
 
@@ -1405,8 +1422,18 @@ namespace CapFrameX.ViewModel
             SensorReportItems.Clear();
             SensorReport.GetReportFromSessionSensorData(_session.Runs.Select(run => run.SensorData2).Cast<ISessionSensorData>(),
                _localRecordDataServer.CurrentTime, _localRecordDataServer.CurrentTime + _localRecordDataServer.WindowLength)
-               .ForEach(SensorReportItems.Add);
+               .ForEach(item =>
+               {
+                   // The report names are the English descriptions; the table shows them in the UI language.
+                   if (item.Name != null && ReportSensorNames.TryGetValue(item.Name, out var sensorName))
+                       item.Name = CxLang.TranslateEnum(sensorName);
+                   SensorReportItems.Add(item);
+               });
         }
+
+        private static readonly Dictionary<string, EReportSensorName> ReportSensorNames =
+            Enum.GetValues(typeof(EReportSensorName)).Cast<EReportSensorName>()
+                .ToDictionary(name => name.GetDescription(), name => name);
 
         private void UpdateMainCharts()
         {
@@ -1460,7 +1487,6 @@ namespace CapFrameX.ViewModel
             if (SelectedChartItem == null)
                 return;
 
-            var headerName = SelectedChartItem.Header.ToString();
             var frametimeSubset = GetFrametimesSubset();
             var sampleSubset = _appConfiguration.UseDisplayChangeMetrics
                ? GetDisplayChangeTimesSubset() : frametimeSubset;
@@ -1469,7 +1495,7 @@ namespace CapFrameX.ViewModel
             if (sampleSubset == null || fpsSubset == null)
                 return;
 
-            if (headerName.Contains("L-shape"))
+            if (SelectedChart == EChartTab.LShape)
             {
                 Task.Factory.StartNew(() => SetLShapeChart(sampleSubset, fpsSubset));
             }
@@ -1489,9 +1515,6 @@ namespace CapFrameX.ViewModel
 
         private IList<double> GetAnimationErrorsSubset()
             => _localRecordDataServer?.GetAnimationErrorTimeWindow();
-
-        private IList<double> GetGpuActiveFPSSubset()
-            => _localRecordDataServer?.GetGpuActiveFpsTimeWindow();
 
         private void SetStaticChart(IList<double> frametimes, IList<double> displayChangeTimes, IList<double> gpuActiveTimes)
         {
@@ -1711,92 +1734,92 @@ namespace CapFrameX.ViewModel
                 if (UseFrametimeStatisticParameters)
                 {
                     if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter && !double.IsNaN(gpuFpsPerWatt))
-                        parameterLabelList.Add("GPU FPS/10W");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarGpuFpsPer10W"));
                     if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter && !double.IsNaN(cpuFpsPerWatt))
-                        parameterLabelList.Add("CPU FPS/10W");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarCpuFpsPer10W"));
                     if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
-                        parameterLabelList.Add("Adaptive STDEV");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarAdaptiveSTDEV"));
                     if (_appConfiguration.UseSingleRecordAnimationErrorP99StatisticParameter && !double.IsNaN(animationErrorP99))
-                        parameterLabelList.Add("P99 |Animation Error|");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarP99AnimationError"));
                     if (_appConfiguration.UseSingleRecordAnimationErrorAverageStatisticParameter && !double.IsNaN(animationErrorAverage))
-                        parameterLabelList.Add("Average |Animation Error|");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarAverageAnimationError"));
                     if (_appConfiguration.UseSingleRecordMinStatisticParameter && !double.IsNaN(max))
-                        parameterLabelList.Add("Max");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarMax"));
                     if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
-                        parameterLabelList.Add("0.1% High Integral");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarPointOnePercentHighIntegral"));
                     if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
-                        parameterLabelList.Add("0.1% High Average");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarPointOnePercentHighAverage"));
                     if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter && !double.IsNaN(p0dot1_quantile))
                         parameterLabelList.Add("P99.9");
                     if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter && !double.IsNaN(p0dot2_quantile))
                         parameterLabelList.Add("P99.8");
                     if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
-                        parameterLabelList.Add("1% High Integral");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarOnePercentHighIntegral"));
                     if (_appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter && !double.IsNaN(gpuActiveP1_LowAverage))
-                        parameterLabelList.Add("Gpu-Busy 1% High Avg.");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarGpuBusyOnePercentHighAverage"));
                     if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
-                        parameterLabelList.Add("1% High Average");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarOnePercentHighAverage"));
                     if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter && !double.IsNaN(gpuActiveP1_quantile))
-                        parameterLabelList.Add("GPU-Busy P99");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarGpuBusyP99"));
                     if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter && !double.IsNaN(p1_quantile))
                         parameterLabelList.Add("P99");
                     if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter && !double.IsNaN(p5_quantile))
                         parameterLabelList.Add("P95");
                     if (_appConfiguration.UseSingleRecordMedianStatisticParameter && !double.IsNaN(median))
-                        parameterLabelList.Add("Median");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarMedian"));
                     if (_appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter && !double.IsNaN(gpuActiveAverage))
-                        parameterLabelList.Add("GPU-Busy Average");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarGpuBusyAverage"));
                     if (_appConfiguration.UseSingleRecordAverageStatisticParameter && !double.IsNaN(average))
-                        parameterLabelList.Add("Average");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarAverage"));
                     if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter && !double.IsNaN(p95_quantile))
                         parameterLabelList.Add("P5");
                     if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter && !double.IsNaN(p99_quantile))
                         parameterLabelList.Add("P1");
                     if (_appConfiguration.UseSingleRecordMaxStatisticParameter && !double.IsNaN(min))
-                        parameterLabelList.Add("Min");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarMin"));
                 }
                 else
                 {
                     if (_appConfiguration.UseSingleRecordGpuFpsPerWattParameter && !double.IsNaN(gpuFpsPerWatt))
-                        parameterLabelList.Add("GPU FPS/10W");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarGpuFpsPer10W"));
                     if (_appConfiguration.UseSingleRecordCpuFpsPerWattParameter && !double.IsNaN(cpuFpsPerWatt))
-                        parameterLabelList.Add("CPU FPS/10W");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarCpuFpsPer10W"));
                     if (_appConfiguration.UseSingleRecordAdaptiveSTDStatisticParameter && !double.IsNaN(adaptiveStandardDeviation))
-                        parameterLabelList.Add("Adaptive STDEV");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarAdaptiveSTDEV"));
                     if (_appConfiguration.UseSingleRecordMinStatisticParameter && !double.IsNaN(min))
-                        parameterLabelList.Add("Min");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarMin"));
                     if (_appConfiguration.UseSingleRecordP0Dot1LowIntegralStatisticParameter && !double.IsNaN(p0dot1_LowIntegral))
-                        parameterLabelList.Add("0.1% Low Integral");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarPointOnePercentLowIntegral"));
                     if (_appConfiguration.UseSingleRecordP0Dot1LowAverageStatisticParameter && !double.IsNaN(p0dot1_LowAverage))
-                        parameterLabelList.Add("0.1% Low Average");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarPointOnePercentLowAverage"));
                     if (_appConfiguration.UseSingleRecordP0Dot1QuantileStatisticParameter && !double.IsNaN(p0dot1_quantile))
                         parameterLabelList.Add("P0.1");
                     if (_appConfiguration.UseSingleRecordP0Dot2QuantileStatisticParameter && !double.IsNaN(p0dot2_quantile))
                         parameterLabelList.Add("P0.2");
                     if (_appConfiguration.UseSingleRecordP1LowIntegralStatisticParameter && !double.IsNaN(p1_LowIntegral))
-                        parameterLabelList.Add("1% Low Integral");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarOnePercentLowIntegral"));
                     if (_appConfiguration.UseSingleRecordGpuActiveP1LowAverageStatisticParameter && !double.IsNaN(gpuActiveP1_LowAverage))
-                        parameterLabelList.Add("Gpu-Busy 1% Low Avg.");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarGpuBusyOnePercentLowAverage"));
                     if (_appConfiguration.UseSingleRecordP1LowAverageStatisticParameter && !double.IsNaN(p1_LowAverage))
-                        parameterLabelList.Add("1% Low Average");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarOnePercentLowAverage"));
                     if (_appConfiguration.UseSingleRecordGpuActiveP1QuantileStatisticParameter && !double.IsNaN(gpuActiveP1_quantile))
-                        parameterLabelList.Add("GPU-Busy P1");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarGpuBusyP1"));
                     if (_appConfiguration.UseSingleRecordP1QuantileStatisticParameter && !double.IsNaN(p1_quantile))
                         parameterLabelList.Add("P1");
                     if (_appConfiguration.UseSingleRecordP5QuantileStatisticParameter && !double.IsNaN(p5_quantile))
                         parameterLabelList.Add("P5");
                     if (_appConfiguration.UseSingleRecordGpuActiveAverageStatisticParameter && !double.IsNaN(gpuActiveAverage))
-                        parameterLabelList.Add("GPU-Busy Average");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarGpuBusyAverage"));
                     if (_appConfiguration.UseSingleRecordAverageStatisticParameter && !double.IsNaN(average))
-                        parameterLabelList.Add("Average");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarAverage"));
                     if (_appConfiguration.UseSingleRecordMedianStatisticParameter && !double.IsNaN(median))
-                        parameterLabelList.Add("Median");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarMedian"));
                     if (_appConfiguration.UseSingleRecordP95QuantileStatisticParameter && !double.IsNaN(p95_quantile))
                         parameterLabelList.Add("P95");
                     if (_appConfiguration.UseSingleRecord99QuantileStatisticParameter && !double.IsNaN(p99_quantile))
                         parameterLabelList.Add("P99");
                     if (_appConfiguration.UseSingleRecordMaxStatisticParameter && !double.IsNaN(max))
-                        parameterLabelList.Add("Max");
+                        parameterLabelList.Add(CxLang.T("DataViewModel_BarMax"));
                 }
 
                 ParameterLabels = parameterLabelList.ToArray();
@@ -1822,7 +1845,7 @@ namespace CapFrameX.ViewModel
                 {
                     new PieSeries
                     {
-                        Title = $"Smooth:  { smoothTotalTime.ToString(CultureInfo.InvariantCulture) }s ({ Math.Round(100 - (stutteringTimePercentage + lowFPSTimePercentage), 1, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture) }%)",
+                        Title = CxLang.Format("DataViewModel_Smooth01", smoothTotalTime.ToString(CultureInfo.InvariantCulture), Math.Round(100 - (stutteringTimePercentage + lowFPSTimePercentage), 1, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)),
                         Values = new ChartValues<double>(){ smoothTotalTime },
                         DataLabels = false,
                         Fill = ColorRessource.PieChartSmoothFill,
@@ -1831,7 +1854,7 @@ namespace CapFrameX.ViewModel
 
                     new PieSeries
                     {
-                        Title = $"Low FPS:  { lowFPSTotalTime.ToString(CultureInfo.InvariantCulture) }s ({ Math.Round(lowFPSTimePercentage, 1, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture) }%)",
+                        Title = CxLang.Format("DataViewModel_LowFPS01", lowFPSTotalTime.ToString(CultureInfo.InvariantCulture), Math.Round(lowFPSTimePercentage, 1, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)),
                         Values = new ChartValues<double>(){ lowFPSTotalTime },
                         DataLabels = false,
                         Fill = ColorRessource.PieChartLowFPSFill,
@@ -1840,7 +1863,7 @@ namespace CapFrameX.ViewModel
 
                     new PieSeries
                     {
-                        Title = $"Stuttering:  { stutteringTotalTime.ToString(CultureInfo.InvariantCulture) }s ({ Math.Round(stutteringTimePercentage, 1, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture) }%)",
+                        Title = CxLang.Format("DataViewModel_Stuttering01", stutteringTotalTime.ToString(CultureInfo.InvariantCulture), Math.Round(stutteringTimePercentage, 1, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)),
                         Values = new ChartValues<double>(){ stutteringTotalTime },
                         DataLabels = false,
                         Fill = ColorRessource.PieChartStutterFill,
@@ -1871,7 +1894,7 @@ namespace CapFrameX.ViewModel
                 {
                     new PieSeries
                     {
-                        Title = $"< 2ms ({Math.Round(variances[0] *100 , 2).ToString(CultureInfo.InvariantCulture) }%)",
+                        Title = CxLang.Format("DataViewModel_VarianceBelow01", 2, Math.Round(variances[0] * 100, 2).ToString(CultureInfo.InvariantCulture)),
                         Values = new ChartValues<double>() { variances[0] },
                         DataLabels = false,
                         Fill = new SolidColorBrush(Color.FromRgb(34, 151, 243)), // blue
@@ -1880,7 +1903,7 @@ namespace CapFrameX.ViewModel
 
                     new PieSeries
                     {
-                        Title = $"< 4ms ({ Math.Round(variances[1] *100, 2).ToString(CultureInfo.InvariantCulture) }%)",
+                        Title = CxLang.Format("DataViewModel_VarianceBelow01", 4, Math.Round(variances[1] * 100, 2).ToString(CultureInfo.InvariantCulture)),
                         Values = new ChartValues<double>() { variances[1] },
                         DataLabels = false,
                         Fill = new SolidColorBrush(Color.FromRgb(15, 120, 180)), // dark blue
@@ -1889,7 +1912,7 @@ namespace CapFrameX.ViewModel
 
                     new PieSeries
                     {
-                        Title = $"< 8ms ({ Math.Round(variances[2] *100, 2).ToString(CultureInfo.InvariantCulture) }%)",
+                        Title = CxLang.Format("DataViewModel_VarianceBelow01", 8, Math.Round(variances[2] * 100, 2).ToString(CultureInfo.InvariantCulture)),
                         Values = new ChartValues<double>() { variances[2] },
                         DataLabels = false,
                         Fill = new SolidColorBrush(Color.FromRgb(255, 180, 0)), // yellow
@@ -1898,7 +1921,7 @@ namespace CapFrameX.ViewModel
 
                     new PieSeries
                     {
-                        Title = $"< 12ms ({ Math.Round(variances[3] *100, 2).ToString(CultureInfo.InvariantCulture) }%)",
+                        Title = CxLang.Format("DataViewModel_VarianceBelow01", 12, Math.Round(variances[3] * 100, 2).ToString(CultureInfo.InvariantCulture)),
                         Values = new ChartValues<double>() { variances[3] },
                         DataLabels = false,
                         Fill = new SolidColorBrush(Color.FromRgb(241, 125, 32)), // orange
@@ -1907,7 +1930,7 @@ namespace CapFrameX.ViewModel
 
                     new PieSeries
                     {
-                        Title = $"> 12ms ({ Math.Round(variances[4] *100, 2).ToString(CultureInfo.InvariantCulture) }%)",
+                        Title = CxLang.Format("DataViewModel_VarianceAbove01", 12, Math.Round(variances[4] * 100, 2).ToString(CultureInfo.InvariantCulture)),
                         Values = new ChartValues<double>() { variances[4] },
                         DataLabels = false,
                         Fill = new SolidColorBrush(Color.FromRgb(200, 0, 0)), // red
@@ -2045,12 +2068,11 @@ namespace CapFrameX.ViewModel
                     break;
                 case EChartYAxisSetting.IQR:
                     {
-                        double iqr = MathNet.Numerics.Statistics.Statistics
-                            .InterquartileRange(_localRecordDataServer?
-                            .GetFrametimePointTimeWindow().Select(pnt => pnt.Y));
-                        double median = MathNet.Numerics.Statistics.Statistics
-                            .Median(_localRecordDataServer?
-                            .GetFrametimePointTimeWindow().Select(pnt => pnt.Y));
+                        // One window per series serves both statistics.
+                        var frametimes = _localRecordDataServer
+                            .GetFrametimePointTimeWindow().Select(pnt => pnt.Y).ToArray();
+                        double iqr = MathNet.Numerics.Statistics.Statistics.InterquartileRange(frametimes);
+                        double median = MathNet.Numerics.Statistics.Statistics.Median(frametimes);
 
                         double gpuActiveIqr = double.MinValue;
                         double gpuActiveMedian = double.MinValue;
@@ -2059,22 +2081,18 @@ namespace CapFrameX.ViewModel
 
                         if (GetIsGpuActiveChartAvailable() && ShowGpuActiveChart)
                         {
-                            gpuActiveIqr = MathNet.Numerics.Statistics.Statistics
-                                .InterquartileRange(_localRecordDataServer?
-                                .GetGpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
-                            gpuActiveMedian = MathNet.Numerics.Statistics.Statistics
-                                .Median(_localRecordDataServer?
-                                .GetGpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
+                            var gpuActiveTimes = _localRecordDataServer
+                                .GetGpuActiveTimePointTimeWindow().Select(pnt => pnt.Y).ToArray();
+                            gpuActiveIqr = MathNet.Numerics.Statistics.Statistics.InterquartileRange(gpuActiveTimes);
+                            gpuActiveMedian = MathNet.Numerics.Statistics.Statistics.Median(gpuActiveTimes);
                         }
 
                         if (GetIsCpuActiveChartAvailable() && ShowCpuActiveChart)
                         {
-                            cpuActiveIqr = MathNet.Numerics.Statistics.Statistics
-                                .InterquartileRange(_localRecordDataServer?
-                                .GetCpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
-                            cpuActiveMedian = MathNet.Numerics.Statistics.Statistics
-                                .Median(_localRecordDataServer?
-                                .GetCpuActiveTimePointTimeWindow().Select(pnt => pnt.Y));
+                            var cpuActiveTimes = _localRecordDataServer
+                                .GetCpuActiveTimePointTimeWindow().Select(pnt => pnt.Y).ToArray();
+                            cpuActiveIqr = MathNet.Numerics.Statistics.Statistics.InterquartileRange(cpuActiveTimes);
+                            cpuActiveMedian = MathNet.Numerics.Statistics.Statistics.Median(cpuActiveTimes);
                         }
 
                         double maxMedian = Math.Max(Math.Max(median, gpuActiveMedian), cpuActiveMedian);

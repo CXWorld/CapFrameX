@@ -1,6 +1,8 @@
 ﻿using CapFrameX.Capture.Contracts;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -112,6 +114,13 @@ namespace CapFrameX.Test.Mocks
         public int EmissionIntervalMs { get; set; } = 16;
 
         /// <summary>
+        /// Stamp frames with the current QPC time instead of a timeline starting at 0. CaptureManager
+        /// compares frame times with the QPC time of the capture start, so tests of the capture
+        /// window need frames on that clock.
+        /// </summary>
+        public bool UseRealQpcTime { get; set; }
+
+        /// <summary>
         /// Creates a new MockCaptureService with a specific random seed for reproducible tests.
         /// </summary>
         public MockCaptureService(int? seed = null)
@@ -214,6 +223,26 @@ namespace CapFrameX.Test.Mocks
         }
 
         /// <summary>
+        /// Present statistics returned by <see cref="GetProcessActivity"/>; empty unless a test
+        /// sets them, like a capture service that measures nothing.
+        /// </summary>
+        public List<CaptureProcessActivity> ProcessActivity { get; } = new List<CaptureProcessActivity>();
+
+        /// <summary>
+        /// Calls of <see cref="GetProcessActivity"/>, i.e. runs of the automatic target selection.
+        /// </summary>
+        public int ProcessActivityRequests { get; private set; }
+
+        public IReadOnlyList<CaptureProcessActivity> GetProcessActivity()
+        {
+            lock (_lock)
+            {
+                ProcessActivityRequests++;
+                return ProcessActivity.ToArray();
+            }
+        }
+
+        /// <summary>
         /// Manually emit a single frame of data for synchronous testing.
         /// </summary>
         public void EmitSingleFrame()
@@ -246,11 +275,18 @@ namespace CapFrameX.Test.Mocks
         {
             double displayChange = msBetweenDisplayChange ?? (msBetweenPresents + _random.NextDouble() * 1.0);
             _currentTimeInSeconds += msBetweenPresents / 1000.0;
-            _currentQpcTimeMs += msBetweenPresents;
+            AdvanceQpcTime(msBetweenPresents);
 
             var frameData = CreateFrameData(applicationName, processId, "0x00000001",
                 msBetweenPresents, displayChange, cpuBusy, gpuBusy);
             _frameDataSubject.OnNext(frameData);
+        }
+
+        private void AdvanceQpcTime(double frameTime)
+        {
+            _currentQpcTimeMs = UseRealQpcTime
+                ? Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency * 1000.0
+                : _currentQpcTimeMs + frameTime;
         }
 
         private void EmitHeader()
@@ -276,7 +312,7 @@ namespace CapFrameX.Test.Mocks
                 var (frameTime, displayChange, cpuBusy, gpuBusy) = GenerateRealisticMetrics();
 
                 _currentTimeInSeconds += frameTime / 1000.0;
-                _currentQpcTimeMs += frameTime;
+                AdvanceQpcTime(frameTime);
 
                 var frameData = CreateFrameData(
                     process.Name,
@@ -524,7 +560,7 @@ namespace CapFrameX.Test.Mocks
 
             // Fill all fields with realistic values
             data[ApplicationName_INDEX] = appName;
-            data[ProcessID_INDEX] = processId.ToString();
+            data[ProcessID_INDEX] = processId.ToString(CultureInfo.InvariantCulture);
             data[SwapChainAddress_INDEX] = swapChain;
             data[PresentRuntime_INDEX] = "DXGI";
             data[SyncInterval_INDEX] = "1";
@@ -532,29 +568,29 @@ namespace CapFrameX.Test.Mocks
             data[AllowsTearing_INDEX] = "1";
             data[PresentMode_INDEX] = "Hardware: Independent Flip";
             data[FrameType_INDEX] = "Application";
-            data[TimeInSeconds_INDEX] = _currentTimeInSeconds.ToString("F6");
-            data[MsBetweenSimulationStart_INDEX] = msBetweenPresents.ToString("F4");
-            data[MsBetweenPresents_INDEX] = msBetweenPresents.ToString("F4");
-            data[MsBetweenDisplayChange_INDEX] = msBetweenDisplayChange.ToString("F4");
-            data[MsInPresentAPI_INDEX] = (0.1 + _random.NextDouble() * 0.3).ToString("F4");
-            data[MsRenderPresentLatency_INDEX] = (msBetweenPresents * 0.8).ToString("F4");
-            data[MsUntilDisplayed_INDEX] = (msBetweenPresents * 1.2).ToString("F4");
-            data[MsPCLatency_INDEX] = (msBetweenPresents * 2.5 + _random.NextDouble() * 5).ToString("F4");
-            data[StartTimeInMs_INDEX] = _currentQpcTimeMs.ToString("F4");
-            data[MsBetweenAppStart_INDEX] = msBetweenPresents.ToString("F4");
-            data[CpuBusy_INDEX] = cpuBusy.ToString("F4");
-            data[MsCpuWait_INDEX] = Math.Max(0, msBetweenPresents - cpuBusy).ToString("F4");
-            data[MsGpuLatency_INDEX] = (gpuBusy * 0.3).ToString("F4");
-            data[MsGpuTime_INDEX] = gpuBusy.ToString("F4");
-            data[GpuBusy_INDEX] = gpuBusy.ToString("F4");
-            data[MsGpuWait_INDEX] = Math.Max(0, msBetweenPresents - gpuBusy).ToString("F4");
+            data[TimeInSeconds_INDEX] = _currentTimeInSeconds.ToString("F6", CultureInfo.InvariantCulture);
+            data[MsBetweenSimulationStart_INDEX] = msBetweenPresents.ToString("F4", CultureInfo.InvariantCulture);
+            data[MsBetweenPresents_INDEX] = msBetweenPresents.ToString("F4", CultureInfo.InvariantCulture);
+            data[MsBetweenDisplayChange_INDEX] = msBetweenDisplayChange.ToString("F4", CultureInfo.InvariantCulture);
+            data[MsInPresentAPI_INDEX] = (0.1 + _random.NextDouble() * 0.3).ToString("F4", CultureInfo.InvariantCulture);
+            data[MsRenderPresentLatency_INDEX] = (msBetweenPresents * 0.8).ToString("F4", CultureInfo.InvariantCulture);
+            data[MsUntilDisplayed_INDEX] = (msBetweenPresents * 1.2).ToString("F4", CultureInfo.InvariantCulture);
+            data[MsPCLatency_INDEX] = (msBetweenPresents * 2.5 + _random.NextDouble() * 5).ToString("F4", CultureInfo.InvariantCulture);
+            data[StartTimeInMs_INDEX] = _currentQpcTimeMs.ToString("F4", CultureInfo.InvariantCulture);
+            data[MsBetweenAppStart_INDEX] = msBetweenPresents.ToString("F4", CultureInfo.InvariantCulture);
+            data[CpuBusy_INDEX] = cpuBusy.ToString("F4", CultureInfo.InvariantCulture);
+            data[MsCpuWait_INDEX] = Math.Max(0, msBetweenPresents - cpuBusy).ToString("F4", CultureInfo.InvariantCulture);
+            data[MsGpuLatency_INDEX] = (gpuBusy * 0.3).ToString("F4", CultureInfo.InvariantCulture);
+            data[MsGpuTime_INDEX] = gpuBusy.ToString("F4", CultureInfo.InvariantCulture);
+            data[GpuBusy_INDEX] = gpuBusy.ToString("F4", CultureInfo.InvariantCulture);
+            data[MsGpuWait_INDEX] = Math.Max(0, msBetweenPresents - gpuBusy).ToString("F4", CultureInfo.InvariantCulture);
             data[MsAnimationError_INDEX] = "0.0000";
             data[AnimationTime_INDEX] = "0";
-            data[MsFlipDelay_INDEX] = (0.1 + _random.NextDouble() * 0.2).ToString("F4");
+            data[MsFlipDelay_INDEX] = (0.1 + _random.NextDouble() * 0.2).ToString("F4", CultureInfo.InvariantCulture);
             data[MsInstrumentedLatency_INDEX] = "0.0000";
 
             // ETW tracking fields
-            data[EtwBufferFillPct_INDEX] = (_random.NextDouble() * 10).ToString("F2");
+            data[EtwBufferFillPct_INDEX] = (_random.NextDouble() * 10).ToString("F2", CultureInfo.InvariantCulture);
             data[EtwBuffersInUse_INDEX] = "2";
             data[EtwTotalBuffers_INDEX] = "64";
             data[EtwEventsLost_INDEX] = "0";

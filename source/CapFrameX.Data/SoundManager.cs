@@ -17,7 +17,7 @@ namespace CapFrameX.Data
         private readonly ILogger<SoundManager> _logger;
 
         /// <summary>Guarded by <see cref="_playbackLock"/>.</summary>
-        private WaveOutEvent _activeDevice;
+        private WaveOut _activeDevice;
 
         public SoundMode SoundMode
         {
@@ -121,9 +121,10 @@ namespace CapFrameX.Data
                 return;
             }
 
-            // WaveOutEvent signals playback through its own thread and needs no message pump, so
-            // this no longer runs through the dispatcher: playing a sound is not the UI thread's
-            // business, and it used to block whoever asked for it — including the hotkey path.
+            // WaveOut (WaveOutEvent before NAudio 3) signals playback through its own thread and
+            // needs no message pump, so this no longer runs through the dispatcher: playing a sound
+            // is not the UI thread's business, and it used to block whoever asked for it —
+            // including the hotkey path.
             try
             {
                 lock (_playbackLock)
@@ -134,7 +135,7 @@ namespace CapFrameX.Data
                     // WaveOut handle plus its playback thread.
                     DisposeActiveDevice();
 
-                    var outputDevice = new WaveOutEvent();
+                    var outputDevice = new WaveOut();
                     try
                     {
                         outputDevice.PlaybackStopped += (_, __) => OnPlaybackStopped(outputDevice);
@@ -160,7 +161,7 @@ namespace CapFrameX.Data
             }
         }
 
-        private void OnPlaybackStopped(WaveOutEvent device)
+        private void OnPlaybackStopped(WaveOut device)
         {
             lock (_playbackLock)
             {
@@ -184,7 +185,7 @@ namespace CapFrameX.Data
                 DisposeDevice(device);
         }
 
-        private void DisposeDevice(WaveOutEvent device)
+        private void DisposeDevice(WaveOut device)
         {
             try
             {

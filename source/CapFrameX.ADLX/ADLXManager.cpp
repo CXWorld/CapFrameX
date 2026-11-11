@@ -819,6 +819,11 @@ static bool GetAdlxDeviceInfoImpl(const adlx_uint index, AdlxDeviceInfo* adlxDev
 			if (ADLX_SUCCEEDED(ret))
 				adlxDeviceInfo->Id = id;
 
+			adlx_uint totalVramMB = 0;
+			ret = gpu->TotalVRAM(&totalVramMB);
+			if (ADLX_SUCCEEDED(ret))
+				adlxDeviceInfo->TotalVramMB = totalVramMB;
+
 			IADLXGPU2Ptr gpu2;
 			if (gpu->QueryInterface(IADLXGPU2::IID(), reinterpret_cast<void**>(&gpu2)) == ADLX_OK && gpu2 != nullptr)
 			{

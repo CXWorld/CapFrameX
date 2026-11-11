@@ -1,7 +1,7 @@
+using System;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.Sensor;
 using LibreHardwareMonitor.Hardware;
-using System;
 
 namespace CapFrameX.Overlay
 {
@@ -46,7 +46,7 @@ namespace CapFrameX.Overlay
                     formatString = "{0,5:F1}";
                     break;
                 case SensorType.Voltage:
-                    formatString = "{0,5:F2}";
+                    formatString = "{0,5:F3}";
                     break;
                 case SensorType.Clock:
                     formatString = "{0,5:F0}";
@@ -314,6 +314,15 @@ namespace CapFrameX.Overlay
                 case SensorType.Latency:
                     description = $"{sensor.Name} (ms)";
                     break;
+            }
+
+            if (sensor.HardwareType == nameof(HardwareType.Storage)
+                && !string.IsNullOrWhiteSpace(sensor.HardwareName))
+            {
+                var hardwareName = sensor.HardwareName.Trim();
+                description = description.StartsWith("Drive ", StringComparison.Ordinal)
+                    ? hardwareName + description.Substring("Drive".Length)
+                    : hardwareName + " " + description;
             }
 
             return description;

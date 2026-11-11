@@ -267,6 +267,8 @@ namespace CapFrameX.Mcp.Tools
         [JsonProperty("showOnOverlayIsEnabled")] public bool ShowOnOverlayIsEnabled { get; set; }
         [JsonProperty("showGraph")] public bool ShowGraph { get; set; }
         [JsonProperty("showGraphIsEnabled")] public bool ShowGraphIsEnabled { get; set; }
+        [JsonProperty("valueDisplayMode")] public string ValueDisplayMode { get; set; }
+        [JsonProperty("supportsPercentageBar")] public bool SupportsPercentageBar { get; set; }
         [JsonProperty("value", NullValueHandling = NullValueHandling.Ignore)] public string Value { get; set; }
         [JsonProperty("formattedValue", NullValueHandling = NullValueHandling.Ignore)] public string FormattedValue { get; set; }
         [JsonProperty("valueFormat", NullValueHandling = NullValueHandling.Ignore)] public string ValueFormat { get; set; }
@@ -303,7 +305,8 @@ namespace CapFrameX.Mcp.Tools
     {
         Rtss,
         InGame,
-        HookFree
+        HookFree,
+        Off
     }
 
     public enum OsdAnchorPosition
@@ -338,6 +341,11 @@ namespace CapFrameX.Mcp.Tools
         [JsonProperty("marginX")] public int MarginX { get; set; }
         [JsonProperty("marginY")] public int MarginY { get; set; }
         [JsonProperty("zoom")] public int Zoom { get; set; }
+        [JsonProperty("scaleWithResolution")] public bool ScaleWithResolution { get; set; }
+        [JsonProperty("fontFamily")] public string FontFamily { get; set; }
+        [JsonProperty("pixelOrbitEnabled")] public bool PixelOrbitEnabled { get; set; }
+        [JsonProperty("pixelOrbitIntervalSeconds")] public int PixelOrbitIntervalSeconds { get; set; }
+        [JsonProperty("pixelOrbitRadius")] public int PixelOrbitRadius { get; set; }
         [JsonProperty("useValueSmoothing")] public bool UseValueSmoothing { get; set; }
         [JsonProperty("overlayHotkey")] public string OverlayHotkey { get; set; }
         [JsonProperty("overlayConfigHotkey")] public string OverlayConfigHotkey { get; set; }

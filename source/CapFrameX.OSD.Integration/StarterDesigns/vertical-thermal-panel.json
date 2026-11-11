@@ -1,0 +1,394 @@
+{
+  "version": 1,
+  "name": "Vertical Thermal Panel",
+  "anchor": "top_left",
+  "marginX": 24,
+  "marginY": 24,
+  "editor": {
+    "format": "cfx-grid",
+    "version": 1,
+    "scale": 1,
+    "width": 640,
+    "gap": 2,
+    "padding": 6,
+    "radius": 0,
+    "canvas": true,
+    "canvasHeight": 328,
+    "gridSize": 8,
+    "showGrid": true,
+    "snapToGrid": true
+  },
+  "theme": {
+    "panel": "#070B12ED",
+    "accent": "#B6F52AFF",
+    "text": "#F2F4F8FF",
+    "subtext": "#F2F4F8FF",
+    "fontFamily": "Segoe UI",
+    "fontSize": 14,
+    "titleSize": 12,
+    "pad": 6,
+    "gap": 2,
+    "radius": 0
+  },
+  "root": {
+    "type": "panel",
+    "layout": "canvas",
+    "background": false,
+    "padding": 0,
+    "columns": 2,
+    "width": 640,
+    "gap": 2,
+    "children": [
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 2,
+        "padding": 6,
+        "radius": 0,
+        "color": "#070B12ED",
+        "children": [
+          {
+            "type": "text",
+            "text": "CPU / THERMAL COLUMNS",
+            "size": 14,
+            "weight": "semibold",
+            "color": "#F3F6FAFF",
+            "editor": {
+              "x": 0,
+              "y": 0,
+              "frameWidth": 640,
+              "frameHeight": 30.621,
+              "kind": "text",
+              "label": "Heading",
+              "key": "fps",
+              "unit": "",
+              "text": "CPU / THERMAL COLUMNS",
+              "labelPosition": "top",
+              "color": "#F3F6FAFF",
+              "columnSpan": 2,
+              "digits": 0,
+              "valueSize": 14,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 0,
+        "frameWidth": 640,
+        "frameHeight": 30.621,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 6,
+        "radius": 0,
+        "color": "#070B12ED",
+        "children": [
+          {
+            "type": "metric",
+            "key": "cpuTemp",
+            "label": "CPU PACKAGE",
+            "unit": "\u00B0C",
+            "format": "%.0f",
+            "valueSize": 30,
+            "size": 13,
+            "unitSize": 13,
+            "labelPosition": "top",
+            "width": 307,
+            "editor": {
+              "x": 0,
+              "y": 32.621,
+              "frameWidth": 319,
+              "frameHeight": 72.193,
+              "kind": "metric",
+              "label": "CPU PACKAGE",
+              "key": "cpuTemp",
+              "unit": "\u00B0C",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 30,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 32.621,
+        "frameWidth": 319,
+        "frameHeight": 72.193,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 6,
+        "radius": 0,
+        "color": "#070B12ED",
+        "children": [
+          {
+            "type": "metric",
+            "key": "cpuPower",
+            "label": "CPU POWER",
+            "unit": "W",
+            "format": "%.0f",
+            "valueSize": 30,
+            "size": 13,
+            "unitSize": 13,
+            "labelPosition": "top",
+            "width": 307,
+            "editor": {
+              "x": 321,
+              "y": 32.621,
+              "frameWidth": 319,
+              "frameHeight": 72.193,
+              "kind": "metric",
+              "label": "CPU POWER",
+              "key": "cpuPower",
+              "unit": "W",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 30,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 321,
+        "y": 32.621,
+        "frameWidth": 319,
+        "frameHeight": 72.193,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 2,
+        "padding": 6,
+        "radius": 0,
+        "color": "#1C0D1BED",
+        "children": [
+          {
+            "type": "panel",
+            "background": false,
+            "padding": 0,
+            "gap": 4,
+            "children": [
+              {
+                "type": "text",
+                "text": "CORE TEMPERATURES / 0\u2013100 \u00B0C",
+                "size": 13,
+                "weight": "semibold",
+                "color": "#B6F52AFF"
+              },
+              {
+                "type": "panel",
+                "layout": "grid",
+                "columns": 2,
+                "background": false,
+                "padding": 0,
+                "width": 628,
+                "gap": 4,
+                "children": [
+                  {
+                    "type": "bar",
+                    "key": "role:cpu-temperatures/1",
+                    "label": "C1",
+                    "unit": "\u00B0C",
+                    "width": 312,
+                    "min": 0,
+                    "max": 100,
+                    "height": 40,
+                    "digits": 0,
+                    "showValue": false,
+                    "orientation": "vertical",
+                    "color": "#B6F52AFF"
+                  },
+                  {
+                    "type": "bar",
+                    "key": "role:cpu-temperatures/2",
+                    "label": "C2",
+                    "unit": "\u00B0C",
+                    "width": 312,
+                    "min": 0,
+                    "max": 100,
+                    "height": 40,
+                    "digits": 0,
+                    "showValue": false,
+                    "orientation": "vertical",
+                    "color": "#B6F52AFF"
+                  }
+                ]
+              }
+            ],
+            "color": "#B6F52AFF",
+            "editor": {
+              "x": 0,
+              "y": 106.814,
+              "frameWidth": 640,
+              "frameHeight": 92.891,
+              "groupKey": "role:cpu-temperatures",
+              "groupDisplay": "bar",
+              "groupColumns": 32,
+              "groupBarOrientation": "vertical",
+              "groupShowValues": false,
+              "groupMembers": [
+                {
+                  "key": "role:cpu-temperatures/1",
+                  "label": "C1",
+                  "sourceName": "CPU core 1 \u00B7 waiting for an unambiguous hardware group",
+                  "isEnabled": true
+                },
+                {
+                  "key": "role:cpu-temperatures/2",
+                  "label": "C2",
+                  "sourceName": "CPU core 2 \u00B7 waiting for an unambiguous hardware group",
+                  "isEnabled": true
+                }
+              ],
+              "kind": "group",
+              "label": "CORE TEMPERATURES / 0\u2013100 \u00B0C",
+              "key": "role:cpu-temperatures",
+              "unit": "\u00B0C",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "color": "#B6F52AFF",
+              "backgroundColor": "#1C0D1BED",
+              "columnSpan": 2,
+              "digits": 0,
+              "valueSize": 14,
+              "height": 40,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 106.814,
+        "frameWidth": 640,
+        "frameHeight": 92.891,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 2,
+        "padding": 6,
+        "radius": 0,
+        "color": "#1C0D1BED",
+        "children": [
+          {
+            "type": "panel",
+            "background": false,
+            "padding": 0,
+            "gap": 4,
+            "children": [
+              {
+                "type": "text",
+                "text": "EFFECTIVE CLOCKS / 0\u20136000 MHz",
+                "size": 13,
+                "weight": "semibold",
+                "color": "#27DDEAFF"
+              },
+              {
+                "type": "panel",
+                "layout": "grid",
+                "columns": 2,
+                "background": false,
+                "padding": 0,
+                "width": 628,
+                "gap": 4,
+                "children": [
+                  {
+                    "type": "bar",
+                    "key": "role:cpu-effective-clocks/1",
+                    "label": "C1",
+                    "unit": "MHz",
+                    "width": 312,
+                    "min": 0,
+                    "max": 6000,
+                    "height": 40,
+                    "digits": 0,
+                    "showValue": false,
+                    "orientation": "vertical",
+                    "color": "#27DDEAFF"
+                  },
+                  {
+                    "type": "bar",
+                    "key": "role:cpu-effective-clocks/2",
+                    "label": "C2",
+                    "unit": "MHz",
+                    "width": 312,
+                    "min": 0,
+                    "max": 6000,
+                    "height": 40,
+                    "digits": 0,
+                    "showValue": false,
+                    "orientation": "vertical",
+                    "color": "#27DDEAFF"
+                  }
+                ]
+              }
+            ],
+            "color": "#27DDEAFF",
+            "editor": {
+              "x": 0,
+              "y": 201.705,
+              "frameWidth": 640,
+              "frameHeight": 92.891,
+              "groupKey": "role:cpu-effective-clocks",
+              "groupDisplay": "bar",
+              "groupColumns": 32,
+              "groupBarOrientation": "vertical",
+              "groupShowValues": false,
+              "groupMembers": [
+                {
+                  "key": "role:cpu-effective-clocks/1",
+                  "label": "C1",
+                  "sourceName": "CPU core 1 \u00B7 waiting for an unambiguous hardware group",
+                  "isEnabled": true
+                },
+                {
+                  "key": "role:cpu-effective-clocks/2",
+                  "label": "C2",
+                  "sourceName": "CPU core 2 \u00B7 waiting for an unambiguous hardware group",
+                  "isEnabled": true
+                }
+              ],
+              "kind": "group",
+              "label": "EFFECTIVE CLOCKS / 0\u20136000 MHz",
+              "key": "role:cpu-effective-clocks",
+              "unit": "MHz",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "color": "#27DDEAFF",
+              "backgroundColor": "#1C0D1BED",
+              "columnSpan": 2,
+              "digits": 0,
+              "valueSize": 14,
+              "height": 40,
+              "minimum": 0,
+              "maximum": 6000
+            }
+          }
+        ],
+        "x": 0,
+        "y": 201.705,
+        "frameWidth": 640,
+        "frameHeight": 92.891,
+        "clip": true
+      }
+    ],
+    "height": 328
+  }
+}

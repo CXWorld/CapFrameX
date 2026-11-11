@@ -108,7 +108,7 @@ namespace CapFrameX.Test.Overlay
             Assert.IsTrue(result.Value<bool>("presentStats"));
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("CFX_HOOK_LOG", false)]
         [DataRow("CFX_VKLAYER_LOG", false)]
         [DataRow("CFX_OSD_PRESENT_STATS", false)]
@@ -129,7 +129,7 @@ namespace CapFrameX.Test.Overlay
             Assert.AreEqual(1, _environmentNotifications);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow("presentStats")]
         [DataRow("verboseLog")]
         public void IsEnabled_DetectsEachJsonSwitch(string property)
@@ -151,7 +151,7 @@ namespace CapFrameX.Test.Overlay
             Assert.AreEqual(0, _environmentNotifications);
         }
 
-        [DataTestMethod]
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public void ApplyProcessSettings_RestartUsesSavedSelectionDespiteStaleLauncherEnvironment(bool enabled)
@@ -197,7 +197,7 @@ namespace CapFrameX.Test.Overlay
             _processEnvironment[ExtendedOsdLoggingController.HookLogEnvironmentVariable] = "1";
             File.WriteAllText(_debugConfigurationPath, "{ not valid json");
 
-            Assert.ThrowsException<JsonReaderException>(() => CreateController().ApplyProcessSettings());
+            Assert.ThrowsExactly<JsonReaderException>(() => CreateController().ApplyProcessSettings());
 
             Assert.AreEqual(4, _processEnvironment.Count);
             foreach (var pair in _processEnvironment)
@@ -217,7 +217,7 @@ namespace CapFrameX.Test.Overlay
                 _processEnvironment[name] = "1";
             }
 
-            Assert.ThrowsException<UnauthorizedAccessException>(() => CreateController().SetEnabled(false));
+            Assert.ThrowsExactly<UnauthorizedAccessException>(() => CreateController().SetEnabled(false));
 
             foreach (string name in names)
             {
@@ -232,7 +232,7 @@ namespace CapFrameX.Test.Overlay
         {
             Directory.CreateDirectory(_debugConfigurationPath);
 
-            Assert.ThrowsException<UnauthorizedAccessException>(() => CreateController().SetEnabled(true));
+            Assert.ThrowsExactly<UnauthorizedAccessException>(() => CreateController().SetEnabled(true));
 
             Assert.AreEqual(0, _environment.Count,
                 "Rollback must restore missing variables without leaving new diagnostic settings behind.");
@@ -247,7 +247,7 @@ namespace CapFrameX.Test.Overlay
             File.WriteAllText(_debugConfigurationPath, malformedJson);
             ExtendedOsdLoggingController controller = CreateController();
 
-            Assert.ThrowsException<JsonReaderException>(() => controller.SetEnabled(true));
+            Assert.ThrowsExactly<JsonReaderException>(() => controller.SetEnabled(true));
 
             Assert.AreEqual(0, _setCalls.Count);
             Assert.AreEqual(malformedJson, File.ReadAllText(_debugConfigurationPath));

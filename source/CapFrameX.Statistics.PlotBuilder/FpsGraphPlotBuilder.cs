@@ -52,7 +52,9 @@ namespace CapFrameX.Statistics.PlotBuilder
             }
             else
             {
-                var fpsPoints = session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
+                // Without a filter these are the raw points built above.
+                var fpsPoints = filterMode == EFilterMode.None ? rawFpsPoints
+                    : session.GetFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);
 
                 //if (plotSettings.ShowGpuActiveCharts)
                 //    gpuActiveFpsPoints = session.GetGpuActiveFpsPointsTimeWindow(startTime, endTime, _frametimeStatisticProviderOptions, eRemoveOutlinerMethod, filterMode);

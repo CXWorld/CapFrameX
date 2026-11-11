@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
@@ -70,7 +71,7 @@ namespace CapFrameX.ViewModel
         private Func<double, string> _percentageFormatter;
         private SeriesCollection _comparisonLShapeCollection;
         private string _comparisonItemControlHeight = "300";
-        private string _columnChartYAxisTitle = "FPS";
+        private string _columnChartYAxisTitle = CxLang.T("ComparisonViewModel_FPS");
         private ComparisonColorManager _comparisonColorManager = new ComparisonColorManager();
         private bool _useEventMessages;
         private string _remainingRecordingTime;
@@ -108,7 +109,7 @@ namespace CapFrameX.ViewModel
         private bool _showCustomTitle;
         private string _selectedChartView = "Frametimes";
         private EFilterMode _selectedFilterMode;
-        private string _lShapeYaxisLabel = "Frametimes (ms)" + Environment.NewLine + " ";
+        private string _lShapeYaxisLabel = CxLang.T("DataViewModel_FrametimesMs") + Environment.NewLine + " ";
         private bool _showGpuActiveLineCharts;
         private bool _isDistributionChartDirty = true;
         private bool _isFpsChartDirty = true;
@@ -116,7 +117,7 @@ namespace CapFrameX.ViewModel
         private bool _useDisplayChangeSamplesForComparison;
         private string _comparisonMetricSourceDescription = "Source: Presents";
         private bool _isComparisonMetricSourceFallback;
-        private readonly ISubject<Unit> _rangeSliderUpdate = new Subject<Unit>();
+        private readonly CoalescedUpdate _rangeSliderUpdate;
 
         public Array FirstMetricItems => Enum.GetValues(typeof(EMetric))
             .Cast<EMetric>().Where(metric => metric != EMetric.None && metric != EMetric.GpuActiveAverage && metric != EMetric.GpuActiveOnePercentLowAverage && metric != EMetric.GpuActiveP1)
@@ -446,7 +447,7 @@ namespace CapFrameX.ViewModel
                 SetChartUpdateFlags();
 
                 if (ComparisonRangeSliderRealTime)
-                    _rangeSliderUpdate.OnNext(default);
+                    _rangeSliderUpdate?.Request();
             }
         }
 
@@ -463,7 +464,7 @@ namespace CapFrameX.ViewModel
                 SetChartUpdateFlags();
 
                 if (ComparisonRangeSliderRealTime)
-                    _rangeSliderUpdate.OnNext(default);
+                    _rangeSliderUpdate?.Request();
             }
         }
 
@@ -660,7 +661,7 @@ namespace CapFrameX.ViewModel
             {
                 _selectedChartView = value;
                 if (value == "Frametimes" || value == "GPU Frametimes")
-                    ComparisonLShapeYAxisLabel = "Frametimes" + Environment.NewLine + " ";
+                    ComparisonLShapeYAxisLabel = CxLang.T("ComparisonViewModel_Frametimes") + Environment.NewLine + " ";
                 else
                     ComparisonLShapeYAxisLabel = "FPS" + Environment.NewLine + " ";
                 RaisePropertyChanged();
@@ -804,22 +805,22 @@ namespace CapFrameX.ViewModel
 
         public bool IsBarChartTabActive
         {
-            get { return SelectedChartItem?.Header.ToString().Contains("Bar charts") ?? false; }
+            get { return SelectedChartItem?.Tag is EChartTab chart && chart == EChartTab.BarCharts; }
         }
 
         public bool IsLineChartTabActive
         {
-            get { return SelectedChartItem?.Header.ToString().Contains("Line") ?? false; }
+            get { return SelectedChartItem?.Tag is EChartTab chart && chart == EChartTab.LineCharts; }
         }
 
         public bool IsVarianceChartTabActive
         {
-            get { return SelectedChartItem?.Header.ToString().Contains("Variances") ?? false; }
+            get { return SelectedChartItem?.Tag is EChartTab chart && chart == EChartTab.Variances; }
         }
 
         public bool IsDistributionTabActive
         {
-            get { return SelectedChartItem?.Header.ToString().Contains("Distribution") ?? false; }
+            get { return SelectedChartItem?.Tag is EChartTab chart && chart == EChartTab.Distribution; }
         }
 
         public bool IsDistributionChartDirty
@@ -871,8 +872,25 @@ namespace CapFrameX.ViewModel
 
         public double BarChartMaxRowHeight { get; private set; } = 25;
 
-        public Array SortMetricItemsSource
-            => new[] { "First Metric", "Second Metric", "Third Metric", "Comment Label", "CPU Label", "GPU Label" };
+        public SortMetricOption[] SortMetricItemsSource { get; } =
+        {
+            new SortMetricOption("First Metric", CxLang.T("ComparisonViewModel_SortFirstMetric")),
+            new SortMetricOption("Second Metric", CxLang.T("ComparisonViewModel_SortSecondMetric")),
+            new SortMetricOption("Third Metric", CxLang.T("ComparisonViewModel_SortThirdMetric")),
+            new SortMetricOption("Comment Label", CxLang.T("ComparisonViewModel_SortCommentLabel")),
+            new SortMetricOption("CPU Label", CxLang.T("ComparisonViewModel_SortCPULabel")),
+            new SortMetricOption("GPU Label", CxLang.T("ComparisonViewModel_SortGPULabel"))
+        };
+
+        private void RefreshSortMetricNames()
+        {
+            SortMetricItemsSource[0].DisplayName = CxLang.T("ComparisonViewModel_SortFirstMetric");
+            SortMetricItemsSource[1].DisplayName = CxLang.T("ComparisonViewModel_SortSecondMetric");
+            SortMetricItemsSource[2].DisplayName = CxLang.T("ComparisonViewModel_SortThirdMetric");
+            SortMetricItemsSource[3].DisplayName = CxLang.T("ComparisonViewModel_SortCommentLabel");
+            SortMetricItemsSource[4].DisplayName = CxLang.T("ComparisonViewModel_SortCPULabel");
+            SortMetricItemsSource[5].DisplayName = CxLang.T("ComparisonViewModel_SortGPULabel");
+        }
 
         public Array LegendFontSizeItemsSource => new[] { 1, 1.5, 2 };
 
@@ -906,17 +924,30 @@ namespace CapFrameX.ViewModel
             SelectedComparisonContext = _appConfiguration.ComparisonContext.ConvertToEnum<EComparisonContext>();
             SelectedSecondComparisonContext = _appConfiguration.SecondComparisonContext.ConvertToEnum<EComparisonContext>();
 
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage))
+                {
+                    RefreshSortMetricNames();
+                    UpdateComparisonMetricSourceLabels();
+                    ComparisonFrametimesModel?.InvalidatePlot(false);
+                    ComparisonFpsModel?.InvalidatePlot(false);
+                    ComparisonDistributionModel?.InvalidatePlot(false);
+                }
+            };
+
             InitializeMetricsFromConfig();
             SetRowSeries();
             SetVarianceSeries();
             SubscribeToSelectRecord();
             SubscribeToUpdateRecordInfos();
             SubscribeToThemeChanged();
-            _rangeSliderUpdate
-                .Throttle(TimeSpan.FromMilliseconds(75))
-                .ObserveOnDispatcher()
-                .Subscribe(_ => UpdateChartsSafely(), error =>
-                    _logger?.LogError(error, "The comparison chart update pipeline stopped unexpectedly."));
+            // Real time range updates redraw at most every 75 ms while the slider is dragged. Throttle
+            // only redrew after 75 ms without a change, so a drag drew nothing until it stopped.
+            _rangeSliderUpdate = new CoalescedUpdate(TimeSpan.FromMilliseconds(75),
+                new System.Reactive.Concurrency.SynchronizationContextScheduler(
+                    new System.Windows.Threading.DispatcherSynchronizationContext(System.Windows.Threading.Dispatcher.CurrentDispatcher)),
+                UpdateChartsSafely);
 
             var configurationChanges = _appConfiguration.OnValueChanged;
             if (configurationChanges != null)
@@ -948,7 +979,8 @@ namespace CapFrameX.ViewModel
             // Frametimes
             ComparisonFrametimesModel = new PlotModel
             {
-                PlotMargins = new OxyThickness(40, 10, 10, 70),
+                // Automatic left margin, so long tick labels never push the axis title out.
+                PlotMargins = new OxyThickness(double.NaN, 10, 10, 70),
                 PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(100, 204, 204, 204) : OxyColor.FromArgb(50, 30, 30, 30),
                 TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black,
                 DefaultFontSize = 13 * _legendFontSizeFactor
@@ -967,7 +999,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "xAxis",
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
-                Title = "Recording time [s]",
+                Title = CxLang.T("ComparisonViewModel_RecordingTimeS"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -983,7 +1015,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "yAxis",
                 Position = OxyPlot.Axes.AxisPosition.Left,
-                Title = "Frametime [ms]",
+                Title = CxLang.T("ComparisonViewModel_FrametimeMs"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -997,7 +1029,7 @@ namespace CapFrameX.ViewModel
             // FPS
             ComparisonFpsModel = new PlotModel
             {
-                PlotMargins = new OxyThickness(40, 10, 10, 70),
+                PlotMargins = new OxyThickness(double.NaN, 10, 10, 70),
                 PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                 TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black,
                 DefaultFontSize = 13 * _legendFontSizeFactor
@@ -1016,7 +1048,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "xAxis",
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
-                Title = "Recording time [s]",
+                Title = CxLang.T("ComparisonViewModel_RecordingTimeS2"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -1031,7 +1063,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "yAxis",
                 Position = OxyPlot.Axes.AxisPosition.Left,
-                Title = "FPS [1/s]",
+                Title = CxLang.T("ComparisonViewModel_FPS1S"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -1046,7 +1078,7 @@ namespace CapFrameX.ViewModel
             // Distribution
             ComparisonDistributionModel = new PlotModel
             {
-                PlotMargins = new OxyThickness(40, 10, 10, 70),
+                PlotMargins = new OxyThickness(double.NaN, 10, 10, 70),
                 PlotAreaBorderColor = _appConfiguration.UseDarkMode ? OxyColor.FromArgb(40, 204, 204, 204) : OxyColor.FromArgb(20, 30, 30, 30),
                 TextColor = _appConfiguration.UseDarkMode ? OxyColors.White : OxyColors.Black,
                 DefaultFontSize = 13 * _legendFontSizeFactor
@@ -1065,7 +1097,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "xAxis",
                 Position = OxyPlot.Axes.AxisPosition.Bottom,
-                Title = "Frame time [ms]",
+                Title = CxLang.T("ComparisonViewModel_FrameTimeMs2"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -1082,7 +1114,7 @@ namespace CapFrameX.ViewModel
             {
                 Key = "yAxis",
                 Position = OxyPlot.Axes.AxisPosition.Left,
-                Title = "Frame Time Distribution [%]",
+                Title = CxLang.T("ComparisonViewModel_FrameTimeDistribution"),
                 AxisTitleDistance = 10,
                 FontSize = 13,
                 MajorGridlineStyle = LineStyle.Solid,
@@ -1361,13 +1393,11 @@ namespace CapFrameX.ViewModel
             ComparisonLShapeCollection.Clear();
             ResetLShapeChart.OnNext(default);
 
-            var header = SelectedChartItem?.Header?.ToString();
-
-            if (header?.Contains("Bar charts") ?? false)
+            if (IsBarChartTabActive)
                 SetColumnChart();
-            else if (header?.Contains("Variances") ?? false)
+            else if (IsVarianceChartTabActive)
                 SetVarianceChart();
-            else if (header?.Contains("Line") ?? false)
+            else if (IsLineChartTabActive)
             {
                 if (_isFrametimeChartDirty)
                 {
@@ -1381,7 +1411,7 @@ namespace CapFrameX.ViewModel
                 }
                 SetLShapeChart();
             }
-            else if (_isDistributionChartDirty)
+            else if (IsDistributionTabActive && _isDistributionChartDirty)
             {
                 SetDistributionChart();
                 _isDistributionChartDirty = false;
@@ -1407,17 +1437,17 @@ namespace CapFrameX.ViewModel
             bool hasRecords = ComparisonRecords.Any() || additionalRecord != null;
             if (useDisplayTimes)
             {
-                ComparisonMetricSourceDescription = "Source: Display changes (Average FPS: Presents)";
+                ComparisonMetricSourceDescription = CxLang.T("ComparisonViewModel_SourceDisplayChangesAverageFPS");
                 IsComparisonMetricSourceFallback = false;
             }
             else if (_appConfiguration.UseDisplayChangeMetrics && hasRecords)
             {
-                ComparisonMetricSourceDescription = "Source: Presents (display data unavailable)";
+                ComparisonMetricSourceDescription = CxLang.T("ComparisonViewModel_SourcePresentsDisplayDataUnavailable");
                 IsComparisonMetricSourceFallback = true;
             }
             else
             {
-                ComparisonMetricSourceDescription = "Source: Presents";
+                ComparisonMetricSourceDescription = CxLang.T("ComparisonViewModel_SourcePresents");
                 IsComparisonMetricSourceFallback = false;
             }
 
@@ -1429,32 +1459,45 @@ namespace CapFrameX.ViewModel
         {
             UpdateRowSeriesTitles();
 
-            string timingSource = _useDisplayChangeSamplesForComparison
-                ? "Display time" : "Present frametime";
-            string fpsSource = _useDisplayChangeSamplesForComparison
-                ? "Display FPS" : "Present FPS";
+            // Whole titles per source rather than a source name plus unit or suffix: translations
+            // need their own unit spelling and word order (a distribution "of" the time).
+            bool display = _useDisplayChangeSamplesForComparison;
+            string timingTitle = CxLang.T(display
+                ? "ComparisonViewModel_DisplayTimeMs" : "ComparisonViewModel_PresentFrametimeMs");
+            string fpsTitle = CxLang.T(display
+                ? "ComparisonViewModel_DisplayFPSPerSecond" : "ComparisonViewModel_PresentFPSPerSecond");
+
+            var frametimeXAxis = ComparisonFrametimesModel?.Axes.FirstOrDefault(axis => axis.Key == "xAxis");
+            if (frametimeXAxis != null)
+                frametimeXAxis.Title = CxLang.T("ComparisonViewModel_RecordingTimeS");
+
+            var fpsXAxis = ComparisonFpsModel?.Axes.FirstOrDefault(axis => axis.Key == "xAxis");
+            if (fpsXAxis != null)
+                fpsXAxis.Title = CxLang.T("ComparisonViewModel_RecordingTimeS2");
 
             var frametimeAxis = ComparisonFrametimesModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (frametimeAxis != null)
-                frametimeAxis.Title = ShowGpuActiveLineCharts ? "GPU active time [ms]" : timingSource + " [ms]";
+                frametimeAxis.Title = ShowGpuActiveLineCharts ? CxLang.T("ComparisonViewModel_GPUActiveTimeMs") : timingTitle;
 
             var fpsAxis = ComparisonFpsModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (fpsAxis != null)
-                fpsAxis.Title = fpsSource + " [1/s]";
+                fpsAxis.Title = fpsTitle;
 
             var distributionXAxis = ComparisonDistributionModel?.Axes.FirstOrDefault(axis => axis.Key == "xAxis");
             if (distributionXAxis != null)
-                distributionXAxis.Title = timingSource + " [ms]";
+                distributionXAxis.Title = timingTitle;
 
             var distributionYAxis = ComparisonDistributionModel?.Axes.FirstOrDefault(axis => axis.Key == "yAxis");
             if (distributionYAxis != null)
-                distributionYAxis.Title = timingSource + " Distribution [%]";
+                distributionYAxis.Title = CxLang.T(display
+                    ? "ComparisonViewModel_DisplayTimeDistribution" : "ComparisonViewModel_PresentFrametimeDistribution");
 
             if (!ShowGpuActiveLineCharts)
             {
-                ComparisonLShapeYAxisLabel = SelectedChartView == "FPS"
-                    ? fpsSource + Environment.NewLine + " "
-                    : timingSource + " (ms)" + Environment.NewLine + " ";
+                ComparisonLShapeYAxisLabel = (SelectedChartView == "FPS"
+                    ? CxLang.T(display ? "ComparisonViewModel_DisplayFPS" : "ComparisonViewModel_PresentFPS")
+                    : CxLang.T(display ? "ComparisonViewModel_DisplayTimeMsLShape" : "ComparisonViewModel_PresentFrametimeMsLShape"))
+                    + Environment.NewLine + " ";
             }
         }
 
@@ -1510,12 +1553,7 @@ namespace CapFrameX.ViewModel
 
         private void OnChartItemChanged()
         {
-            if (SelectedChartItem?.Header.ToString().Contains("Line") ?? false)
-                ColorPickerVisibility = true;
-            else if (SelectedChartItem?.Header.ToString().Contains("Distribution") ?? false)
-                ColorPickerVisibility = true;
-            else
-                ColorPickerVisibility = false;
+            ColorPickerVisibility = IsLineChartTabActive || IsDistributionTabActive;
         }
 
         private void OnSortModeChanged()
@@ -1833,7 +1871,8 @@ namespace CapFrameX.ViewModel
 
             double xMin, xMax, yMin, yMax;
             if (xAxis == null || yAxis == null
-                || !TryGetSeriesBounds(ComparisonDistributionModel, out xMin, out xMax, out yMin, out yMax))
+                || !TryGetSeriesBounds(ComparisonDistributionModel, out xMin, out xMax, out yMin, out yMax,
+                    GetReadableDistributionMaximum(ComparisonDistributionModel)))
                 return;
 
             xAxis.Reset();
@@ -1862,8 +1901,23 @@ namespace CapFrameX.ViewModel
             ComparisonDistributionModel.InvalidatePlot(true);
         }
 
+        /// <summary>
+        /// Largest x value the distribution chart shows by default. Each record keeps its extreme
+        /// frames, such as long stalls, outside the default range (see
+        /// <see cref="FrametimeDistributionRange"/>); they stay in the series, so zooming out
+        /// still shows them.
+        /// </summary>
+        private static double GetReadableDistributionMaximum(PlotModel plotModel)
+            => plotModel.Series
+                .OfType<OxyPlot.Series.LineSeries>()
+                .Where(series => series.Points.Count > 0)
+                .Select(series => FrametimeDistributionRange.GetReadableMaximum(
+                    series.Points.Select(point => new Point(point.X, point.Y)).ToList()))
+                .DefaultIfEmpty(double.PositiveInfinity)
+                .Max();
+
         private static bool TryGetSeriesBounds(PlotModel plotModel, out double xMin, out double xMax,
-            out double yMin, out double yMax)
+            out double yMin, out double yMax, double xLimit = double.PositiveInfinity)
         {
             xMin = double.MaxValue;
             xMax = double.MinValue;
@@ -1876,7 +1930,8 @@ namespace CapFrameX.ViewModel
                 foreach (var point in series.Points)
                 {
                     if (double.IsNaN(point.X) || double.IsInfinity(point.X)
-                        || double.IsNaN(point.Y) || double.IsInfinity(point.Y))
+                        || double.IsNaN(point.Y) || double.IsInfinity(point.Y)
+                        || point.X > xLimit)
                     {
                         continue;
                     }
@@ -2297,25 +2352,21 @@ namespace CapFrameX.ViewModel
 
         private string GetDescriptionAndFpsUnit(EMetric metric)
         {
-            string description;
-            if (metric == EMetric.CpuFpsPerWatt || metric == EMetric.GpuFpsPerWatt)
-            {
-                description = metric.GetDescription();
-            }
-            else
-                description = $"{metric.GetDescription()} FPS";
-
             string source;
             if (metric == EMetric.GpuActiveAverage || metric == EMetric.GpuActiveP1
                 || metric == EMetric.GpuActiveOnePercentLowAverage)
-                source = "GPU active";
+                source = CxLang.T("ComparisonViewModel_LegendGPUActive");
             else if (metric == EMetric.Average || metric == EMetric.CpuFpsPerWatt
                 || metric == EMetric.GpuFpsPerWatt)
-                source = "Present";
+                source = CxLang.T("ComparisonViewModel_LegendPresent");
             else
-                source = _useDisplayChangeSamplesForComparison ? "Display" : "Present";
+                source = CxLang.T(_useDisplayChangeSamplesForComparison
+                    ? "ComparisonViewModel_LegendDisplay" : "ComparisonViewModel_LegendPresent");
 
-            return description + " (" + source + ")";
+            if (metric == EMetric.CpuFpsPerWatt || metric == EMetric.GpuFpsPerWatt)
+                return CxLang.TranslateEnum(metric) + " (" + source + ")";
+
+            return CxLang.Format("ComparisonViewModel_MetricFps01", CxLang.TranslateEnum(metric), source);
         }
 
         private EMetric GetMetricByIndex(int index)
@@ -2332,18 +2383,24 @@ namespace CapFrameX.ViewModel
                 return 0;
         }
 
+        /// <returns>Null for a record that could not be loaded or has no frames.</returns>
         private ComparisonRecordInfo GetComparisonRecordInfoFromFileRecordInfo(IFileRecordInfo fileRecordInfo)
         {
-            string infoText = string.Empty;
             var session = _recordManager.LoadData(fileRecordInfo.FullPath);
+            // The session was used before this check, so one unreadable record ended a whole
+            // drop with a NullReferenceException.
+            if (!HasFrames(session))
+            {
+                _logger?.LogWarning("Comparison: {path} could not be loaded and was not added.", fileRecordInfo.FullPath);
+                return null;
+            }
+
             var frameTimes = session.Runs.SelectMany(r => r.CaptureData.MsBetweenPresents).ToList();
             var recordTime = session.Runs.SelectMany(r => r.CaptureData.TimeInSeconds).Last();
-            if (session != null)
-            {
-                var newLine = Environment.NewLine;
-                infoText += $"{fileRecordInfo.CreationDate} {fileRecordInfo.CreationTime}" + newLine +
-                    $"{frameTimes.Count()} frames in {Math.Round(recordTime, 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}s";
-            }
+            var newLine = Environment.NewLine;
+            string infoText = $"{fileRecordInfo.CreationDate} {fileRecordInfo.CreationTime}" + newLine +
+                CxLang.Format("ComparisonViewModel_FramesIn01", frameTimes.Count(),
+                    Math.Round(recordTime, 2, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture));
 
             return new ComparisonRecordInfo
             {
@@ -2354,6 +2411,10 @@ namespace CapFrameX.ViewModel
                 FileRecordInfo = fileRecordInfo
             };
         }
+
+        internal static bool HasFrames(Data.Session.Contracts.ISession session)
+            => session?.Runs != null
+                && session.Runs.Any(run => run?.CaptureData?.TimeInSeconds?.Length > 0);
 
         private ComparisonRecordInfoWrapper GetWrappedRecordInfo(ComparisonRecordInfo comparisonRecordInfo)
         {
@@ -2412,6 +2473,10 @@ namespace CapFrameX.ViewModel
                 .Subscribe(msg =>
                 {
                     InitializePlotModels();
+                    // The new models are empty, and UpdateCharts only fills a dirty one. Without the
+                    // flags a chart that was already drawn stays empty until something unrelated
+                    // marks it dirty; the inactive tabs keep the flags until they are shown.
+                    SetChartUpdateFlags();
                     UpdateChartsSafely();
                 });
         }
@@ -2477,10 +2542,7 @@ namespace CapFrameX.ViewModel
                             return;
                         }
 
-                        foreach (IFileRecordInfo recordInfo in await GetDroppedRecordInfosAsync(dropInfo.Data))
-                        {
-                            AddComparisonItem(recordInfo);
-                        }
+                        await AddComparisonItemsAsync(await GetDroppedRecordInfosAsync(dropInfo.Data));
                     }
                 }
             }

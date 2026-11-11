@@ -1,0 +1,261 @@
+{
+  "version": 1,
+  "name": "Frame Pacing",
+  "anchor": "top_left",
+  "marginX": 24,
+  "marginY": 24,
+  "editor": {
+    "format": "cfx-grid",
+    "version": 1,
+    "scale": 1,
+    "width": 664,
+    "gap": 6,
+    "padding": 12,
+    "radius": 6,
+    "canvas": true,
+    "canvasHeight": 376,
+    "gridSize": 8,
+    "showGrid": true,
+    "snapToGrid": true
+  },
+  "theme": {
+    "panel": "#12242CEB",
+    "accent": "#44DBE8FF",
+    "text": "#F2F4F8FF",
+    "subtext": "#F2F4F8FF",
+    "fontFamily": "Segoe UI",
+    "fontSize": 14,
+    "titleSize": 12,
+    "pad": 12,
+    "gap": 6,
+    "radius": 6
+  },
+  "root": {
+    "type": "panel",
+    "layout": "canvas",
+    "background": false,
+    "padding": 0,
+    "columns": 3,
+    "width": 664,
+    "gap": 6,
+    "children": [
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 3,
+        "padding": 12,
+        "radius": 6,
+        "color": "#12242CEB",
+        "children": [
+          {
+            "type": "text",
+            "text": "FRAME PACING",
+            "size": 16,
+            "weight": "semibold",
+            "color": "#44DBE8FF",
+            "editor": {
+              "x": 0,
+              "y": 0,
+              "frameWidth": 660,
+              "frameHeight": 45.281,
+              "kind": "text",
+              "label": "Heading",
+              "key": "fps",
+              "unit": "",
+              "text": "FRAME PACING",
+              "labelPosition": "top",
+              "columnSpan": 3,
+              "digits": 0,
+              "valueSize": 16,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 0,
+        "frameWidth": 660,
+        "frameHeight": 45.281,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 3,
+        "padding": 12,
+        "radius": 6,
+        "color": "#12242CEB",
+        "children": [
+          {
+            "type": "chart",
+            "title": "Frametime history",
+            "series": "frametimes",
+            "width": 636,
+            "height": 180,
+            "unit": "ms",
+            "editor": {
+              "x": 0,
+              "y": 51.281,
+              "frameWidth": 660,
+              "frameHeight": 204,
+              "kind": "chart",
+              "label": "Frametime history",
+              "key": "frametimes",
+              "unit": "ms",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 3,
+              "digits": 0,
+              "valueSize": 28,
+              "height": 180,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 51.281,
+        "frameWidth": 660,
+        "frameHeight": 204,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 12,
+        "radius": 6,
+        "color": "#12242CEB",
+        "children": [
+          {
+            "type": "metric",
+            "key": "frametime",
+            "label": "Frame time",
+            "unit": "ms",
+            "format": "%.2f",
+            "valueSize": 28,
+            "size": 13,
+            "unitSize": 13,
+            "labelPosition": "top",
+            "width": 192,
+            "editor": {
+              "x": 0,
+              "y": 261.281,
+              "frameWidth": 216,
+              "frameHeight": 81.533,
+              "kind": "metric",
+              "label": "Frame time",
+              "key": "frametime",
+              "unit": "ms",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 2,
+              "valueSize": 28,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 0,
+        "y": 261.281,
+        "frameWidth": 216,
+        "frameHeight": 81.533,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 12,
+        "radius": 6,
+        "color": "#12242CEB",
+        "children": [
+          {
+            "type": "metric",
+            "key": "fps1pctLow",
+            "label": "1% low",
+            "unit": "FPS",
+            "format": "%.0f",
+            "valueSize": 28,
+            "size": 13,
+            "unitSize": 13,
+            "labelPosition": "top",
+            "width": 192,
+            "editor": {
+              "x": 222,
+              "y": 261.281,
+              "frameWidth": 216,
+              "frameHeight": 81.533,
+              "kind": "metric",
+              "label": "1% low",
+              "key": "fps1pctLow",
+              "unit": "FPS",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 0,
+              "valueSize": 28,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        ],
+        "x": 222,
+        "y": 261.281,
+        "frameWidth": 216,
+        "frameHeight": 81.533,
+        "clip": true
+      },
+      {
+        "type": "panel",
+        "background": true,
+        "colSpan": 1,
+        "padding": 12,
+        "radius": 6,
+        "color": "#12242CEB",
+        "children": [
+          {
+            "type": "bar",
+            "key": "stuttering",
+            "label": "Stuttering",
+            "unit": "%",
+            "min": 0,
+            "max": 10,
+            "width": 192,
+            "height": 8,
+            "digits": 2,
+            "showValue": true,
+            "editor": {
+              "x": 444,
+              "y": 261.281,
+              "frameWidth": 216,
+              "frameHeight": 81.533,
+              "kind": "bar",
+              "label": "Stuttering",
+              "key": "stuttering",
+              "unit": "%",
+              "text": "CapFrameX",
+              "labelPosition": "top",
+              "columnSpan": 1,
+              "digits": 2,
+              "valueSize": 28,
+              "height": 80,
+              "minimum": 0,
+              "maximum": 10
+            }
+          }
+        ],
+        "x": 444,
+        "y": 261.281,
+        "frameWidth": 216,
+        "frameHeight": 81.533,
+        "clip": true
+      }
+    ],
+    "height": 376
+  }
+}

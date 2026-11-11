@@ -87,6 +87,10 @@ namespace CapFrameX.Contracts.Configuration
 
 		string HotkeySoundMode { get; set; }
 
+		string UiLanguage { get; set; }
+
+		string OverlayLanguage { get; set; }
+
 		double CaptureTime { get; set; }
 
 		bool UseGlobalCaptureTime { get; set; }
@@ -161,7 +165,18 @@ namespace CapFrameX.Contracts.Configuration
 		bool HideOverlay { get; set; }
 
 		/// <summary>
-		/// Use the hook-free DWM/DirectComposition overlay (CapFrameX.OSD), the default renderer.
+		/// The selected overlay renderer. <see cref="EnableHookOverlay"/> and
+		/// <see cref="EnableHookFreeOverlay"/> follow it and are stored as its mirror for builds
+		/// that only know the flags; see <see cref="OverlayRendererSelection"/>. A change raises
+		/// <see cref="OnValueChanged"/> for this key first and then for each flag that changed,
+		/// all after the new selection is in place.
+		/// </summary>
+		EOverlayRenderer OverlayRenderer { get; set; }
+
+		/// <summary>
+		/// Use the hook-free DWM/DirectComposition overlay (CapFrameX.OSD). True exactly while
+		/// <see cref="OverlayRenderer"/> is <see cref="EOverlayRenderer.HookFree"/>; writing it
+		/// selects a renderer through <see cref="OverlayRendererSelection.WithHookFreeOverlay"/>.
 		/// </summary>
 		bool EnableHookFreeOverlay { get; set; }
 
@@ -178,9 +193,11 @@ namespace CapFrameX.Contracts.Configuration
 		int HookFreeRefreshRate { get; set; }
 
 		/// <summary>
-		/// Inject the experimental in-game hook overlay (cfx_osd_hook.dll) into the detected game process
-		/// for smooth in-swapchain graphs. Opt-in, per detected process; injection targets the
-		/// PID CapFrameX already detected via <see cref="CapFrameX.Monitoring.Contracts.IProcessService.ProcessIdStream"/>.
+		/// Inject the in-game hook overlay (cfx_osd_hook.dll) into the detected game process for smooth
+		/// in-swapchain graphs. The default renderer; injection targets the PID CapFrameX already
+		/// detected via <see cref="CapFrameX.Monitoring.Contracts.IProcessService.ProcessIdStream"/>.
+		/// True exactly while <see cref="OverlayRenderer"/> is <see cref="EOverlayRenderer.InGame"/>;
+		/// writing it selects a renderer through <see cref="OverlayRendererSelection.WithHookOverlay"/>.
 		/// </summary>
 		bool EnableHookOverlay { get; set; }
 
@@ -225,6 +242,27 @@ namespace CapFrameX.Contracts.Configuration
 		int OsdZoom { get; set; }
 
 		/// <summary>
+		/// Scales the CapFrameX overlay with the target's height relative to 1080 pixels, on top of
+		/// <see cref="OsdZoom"/>, and the anchor margins with it (default off: fixed pixel sizes).
+		/// The target is the game's back buffer for the in-game hook and the Vulkan layer, and the
+		/// monitor for the hook-free overlay. Does not affect RTSS.
+		/// </summary>
+		bool OsdScaleWithResolution { get; set; }
+
+		/// <summary>
+		/// Font family of the classic layout in the CapFrameX renderers (hook-free, in-game hook,
+		/// Vulkan layer): its rows and graphs. Default "Segoe UI"; an empty value restores it. A
+		/// design keeps the fonts set in the overlay editor. Does not affect RTSS.
+		/// </summary>
+		string OsdFontFamily { get; set; }
+
+		/// <summary>Saved designer profile used by the CapFrameX renderers; empty retains the classic overlay.</summary>
+		string ActiveOverlayDesignProfileId { get; set; }
+
+        /// <summary>Last successfully selected tile profile, retained while Row overlay or RTSS is active.</summary>
+        string LastOverlayDesignProfileId { get; set; }
+
+		/// <summary>
 		/// Corner the CapFrameX overlay is anchored to, as <c>cfx_osd_anchor</c>:
 		/// 0 = top left, 1 = top right, 2 = bottom left, 3 = bottom right, 4 = top center.
 		/// Applies to all three CapFrameX renderers (hook-free, in-game hook, Vulkan layer);
@@ -237,6 +275,19 @@ namespace CapFrameX.Contracts.Configuration
 
 		/// <summary>Vertical distance from the anchored corner in px (0..2000).</summary>
 		int OsdMarginY { get; set; }
+
+		/// <summary>
+		/// OLED pixel orbit for every overlay design and the classic rows: the CapFrameX
+		/// renderers move by one pixel per interval within the radius (see <see cref="OsdPixelOrbit"/>).
+		/// A design that requests its own orbit applies it even while this is off.
+		/// </summary>
+		bool OsdPixelOrbitEnabled { get; set; }
+
+		/// <summary>Seconds between two pixel orbit steps (10..3600).</summary>
+		int OsdPixelOrbitInterval { get; set; }
+
+		/// <summary>Largest pixel orbit offset from the configured margins in px (1..32).</summary>
+		int OsdPixelOrbitRadius { get; set; }
 
 		/// <summary>
 		/// Smooth numeric values between OSD data updates. When disabled, the CapFrameX
@@ -394,6 +445,8 @@ namespace CapFrameX.Contracts.Configuration
         string PingURL { get; set; }
 
         bool SuppressFrameViewServiceWarning { get; set; }
+
+        string DeclinedPortableVulkanLayerSignature { get; set; }
 
         bool McpEnabled { get; set; }
     }

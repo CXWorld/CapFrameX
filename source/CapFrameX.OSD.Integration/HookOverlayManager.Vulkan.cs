@@ -112,7 +112,7 @@ namespace CapFrameX.OSD.Integration
                     return new HookOverlayStatus(EHookOverlayStatus.Idle, pid, "Vulkan",
                         $"PID {pid}, Vulkan: waiting for fresh presents; no failure learned.");
                 return new HookOverlayStatus(session.Exhausted || session.AcknowledgementFailed
-                    ? EHookOverlayStatus.Fallback : session.Learned ? EHookOverlayStatus.Active : EHookOverlayStatus.Probing,
+                    ? EHookOverlayStatus.Unavailable : session.Learned ? EHookOverlayStatus.Active : EHookOverlayStatus.Probing,
                     pid, "Vulkan", $"PID {pid}, Vulkan: {session.Stage.DisplayName}; " +
                     $"stage {session.StageNumber}/{session.StageCount}, " +
                     $"{(session.Learned ? "verified" : "verifying fresh composited presents")}.",

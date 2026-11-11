@@ -1,6 +1,7 @@
-﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Capture.Contracts;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Data;
 using CapFrameX.Data.Session.Contracts;
 using CapFrameX.EventAggregation.Messages;
@@ -20,6 +21,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reactive;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
@@ -39,6 +41,7 @@ namespace CapFrameX.ViewModel
         private readonly ProcessList _processList;
         private readonly ILogger<ControlViewModel> _logger;
         private readonly ApplicationState _applicationState;
+        private readonly RecordWriteQueue _recordWriteQueue;
         private PubSubEvent<ViewMessages.UpdateSession> _updateSessionEvent;
         private PubSubEvent<ViewMessages.SelectSession> _selectSessionEvent;
         private PubSubEvent<ViewMessages.UpdateRecordInfos> _updateRecordInfosEvent;
@@ -248,8 +251,12 @@ namespace CapFrameX.ViewModel
                 _directoryLoading = value;
                 RaisePropertyChanged();
                 RaisePropertyChanged(nameof(DirectoryIsEmpty));
+                RaisePropertyChanged(nameof(ShowLoadingHint));
             }
         }
+
+        // The hint covers the list, so it only shows until the first records are in.
+        public bool ShowLoadingHint => DirectoryLoading && !RecordInfoList.Any();
 
         public bool FixedExpanderPosition
         {
@@ -301,7 +308,17 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        public string SearchBarText => $" Search in \"{new DirectoryInfo(_appConfiguration.ObservedDirectory).Name}\" ({RecordInfoList.Count} items)";
+        public string SearchBarText
+        {
+            get
+            {
+                // Same rule as PathLeafConverter: the default "Captures" folder is shown translated.
+                var folder = new DirectoryInfo(_appConfiguration.ObservedDirectory).Name;
+                if (string.Equals(folder, "Captures", StringComparison.OrdinalIgnoreCase))
+                    folder = CxLang.T("ControlView_Captures");
+                return string.Format(CxLang.T("ControlViewModel_SearchIn01Items"), folder, RecordInfoList.Count);
+            }
+        }
 
         public string ObservedDirectory { get; private set; }
 
@@ -348,12 +365,27 @@ namespace CapFrameX.ViewModel
 
         public ISubject<bool> CreateFolderdialogIsOpenStream = new BehaviorSubject<bool>(false);
 
+        // A rewrite raises several Changed events; a record is read again once its file has been
+        // quiet for this long.
+        internal static readonly TimeSpan FileChangeQuietTime = TimeSpan.FromMilliseconds(500);
+
+        internal IScheduler FileChangeScheduler { get; set; } = DefaultScheduler.Instance;
+
+        // The list fills in batches while a folder is read, instead of all at once at the end.
+        internal static readonly TimeSpan RecordListBatchTime = TimeSpan.FromMilliseconds(250);
+        internal const int RecordListBatchSize = 200;
+
+        internal IScheduler RecordListScheduler { get; set; } = DefaultScheduler.Instance;
+
+        private int _recordListVersion;
+
         public string ResolveDocumentsPath(string path) => _pathService.ResolveDocumentsPlaceholder(path);
 
         public string DefaultCapturesPath => _pathService.CapturesFolder;
 
         public ControlViewModel(IRecordDirectoryObserver recordObserver, IEventAggregator eventAggregator, IAppConfiguration appConfiguration,
-            IPathService pathService, RecordManager recordManager, ISystemInfo systemInfo, ProcessList processList, ILogger<ControlViewModel> logger, ApplicationState applicationState)
+            IPathService pathService, RecordManager recordManager, ISystemInfo systemInfo, ProcessList processList, ILogger<ControlViewModel> logger, ApplicationState applicationState,
+            RecordWriteQueue recordWriteQueue)
         {
             _recordObserver = recordObserver;
             _eventAggregator = eventAggregator;
@@ -364,6 +396,7 @@ namespace CapFrameX.ViewModel
             _processList = processList;
             _logger = logger;
             _applicationState = applicationState;
+            _recordWriteQueue = recordWriteQueue;
 
             //Commands
             DeleteRecordFileCommand = new DelegateCommand(OnDeleteRecordFile);
@@ -404,6 +437,16 @@ namespace CapFrameX.ViewModel
             {
                 RaisePropertyChanged(nameof(DirectoryIsEmpty));
                 RaisePropertyChanged(nameof(SearchBarText));
+                RaisePropertyChanged(nameof(ShowLoadingHint));
+            };
+
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage))
+                {
+                    RaisePropertyChanged(nameof(SearchBarText));
+                    RaisePropertyChanged(nameof(RootDirectory));
+                }
             };
 
             SetupObservers(SynchronizationContext.Current);
@@ -471,8 +514,8 @@ namespace CapFrameX.ViewModel
 
         private void SetupObservers(SynchronizationContext context)
         {
-            IObservable<IFileRecordInfo> GetFileRecordInfo(FileInfo fi) =>
-                Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi))
+            IObservable<IFileRecordInfo> GetFileRecordInfo(FileInfo fi, bool fileMayStillBeWritten) =>
+                Observable.FromAsync(() => _recordManager.GetFileRecordInfo(fi, fileMayStillBeWritten))
                     .Catch<IFileRecordInfo, Exception>(e => Observable.Return<IFileRecordInfo>(null));
 
             _recordObserver.ObservingDirectoryStream
@@ -485,37 +528,39 @@ namespace CapFrameX.ViewModel
 
             _recordObserver.DirectoryFilesStream
                 .ObserveOn(context)
-                .Do(_ =>
-                {
-                    RecordInfoList.Clear();
-                    DirectoryLoading = true;
-                    RaisePropertyChanged(nameof(DirectoryLoading));
-                })
                 .Select(fileInfos =>
                 {
-                    return Observable.Merge(fileInfos.Select(GetFileRecordInfo), 30)
+                    // A new listing replaces the list. Batches of the listing it replaces may
+                    // already be on their way to the UI thread; the version tells them apart.
+                    int version = ++_recordListVersion;
+                    RecordInfoList.Clear();
+                    DirectoryLoading = true;
+
+                    return Observable.Merge(fileInfos.Select(fi => GetFileRecordInfo(fi, fileMayStillBeWritten: false)), 30)
                         .Where(recordFileInfo => recordFileInfo is IFileRecordInfo)
                         .Distinct(recordFileInfo => recordFileInfo.Hash)
-                        .ToArray();
-                }
-                ).Switch()
+                        .Buffer(RecordListBatchTime, RecordListBatchSize, RecordListScheduler)
+                        .Where(batch => batch.Count > 0)
+                        .Select(batch => (Version: version, Batch: batch, Complete: false))
+                        .Concat(Observable.Return((Version: version, Batch: (IList<IFileRecordInfo>)Array.Empty<IFileRecordInfo>(), Complete: true)));
+                })
+                .Switch()
                 .ObserveOn(context)
-                .Subscribe(recordFileInfos =>
+                .Subscribe(update =>
                 {
-                    RecordInfoList.Clear();
-                    DirectoryLoading = false;
-                    RaisePropertyChanged(nameof(DirectoryLoading));
-                    RecordInfoList.AddRange(recordFileInfos);
+                    if (update.Version != _recordListVersion)
+                        return;
+
+                    AddRecordInfos(update.Batch);
+                    if (update.Complete)
+                        DirectoryLoading = false;
                 });
 
             _recordObserver.FileCreatedStream
-                .SelectMany(GetFileRecordInfo)
+                .SelectMany(fi => GetFileRecordInfo(fi, fileMayStillBeWritten: true))
                 .Where(recordInfo => recordInfo is IFileRecordInfo)
                 .ObserveOn(context)
-                .Subscribe(recordInfo =>
-                {
-                    RecordInfoList.Add(recordInfo);
-                });
+                .Subscribe(recordInfo => AddRecordInfos(new[] { recordInfo }));
 
             _recordObserver.FileDeletedStream
                 .ObserveOn(context)
@@ -529,24 +574,76 @@ namespace CapFrameX.ViewModel
                 });
 
             _recordObserver.FileChangedStream
-                .SelectMany(GetFileRecordInfo)
+                .GroupByUntil(fi => fi.FullName,
+                    changes => changes.Throttle(FileChangeQuietTime, FileChangeScheduler),
+                    StringComparer.OrdinalIgnoreCase)
+                .SelectMany(changes => changes.LastAsync())
+                .SelectMany(fi => GetFileRecordInfo(fi, fileMayStillBeWritten: true))
                 .Where(recordInfo => recordInfo is IFileRecordInfo)
                 .ObserveOn(context)
-                .Subscribe(recordInfo =>
+                .Subscribe(OnRecordFileChanged);
+        }
+
+        // A record created while its folder is read comes from the listing and from its Created
+        // event; it is listed once.
+        private void AddRecordInfos(IEnumerable<IFileRecordInfo> recordInfos)
+        {
+            var listed = new HashSet<string>(RecordInfoList.Select(recordInfo => recordInfo.FullPath),
+                StringComparer.OrdinalIgnoreCase);
+            foreach (var recordInfo in recordInfos)
+            {
+                if (listed.Add(recordInfo.FullPath))
+                    RecordInfoList.Add(recordInfo);
+            }
+        }
+
+        private void OnRecordFileChanged(IFileRecordInfo recordInfo)
+        {
+            var itemToRemove = RecordInfoList.FirstOrDefault(ri => ri.FullPath.Equals(recordInfo.FullPath));
+            if (!(itemToRemove is IFileRecordInfo))
+                return;
+
+            // A metadata edit leaves the hash alone. The entry takes the new metadata in place, so
+            // the selection and the loaded session stay instead of being parsed and analysed again.
+            if (itemToRemove is FileRecordInfo entry && recordInfo is FileRecordInfo update
+                && entry.Hash != null && entry.Hash == update.Hash)
+            {
+                entry.UpdateFrom(update);
+                if (ReferenceEquals(_selectedRecordInfo, entry))
                 {
-                    var itemToRemove = RecordInfoList.FirstOrDefault(ri => ri.FullPath.Equals(recordInfo.FullPath));
-                    if (itemToRemove is IFileRecordInfo)
-                    {
-                        var selectedRecordId = _selectedRecordInfo?.Id;
-                        var itemIndex = RecordInfoList.IndexOf(itemToRemove);
-                        RecordInfoList[itemIndex] = recordInfo;
-                        if (selectedRecordId?.Equals(itemToRemove.Id) ?? false)
-                        {
-                            SelectedRecordInfo = recordInfo;
-                            _updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(itemToRemove));
-                        }
-                    }
-                });
+                    // An edit made here has updated the loaded session; another writer's has not.
+                    if (!LoadedSessionShows(entry))
+                        OnSelectedRecordInfoChanged();
+                    _updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(entry));
+                }
+                return;
+            }
+
+            var selectedRecordId = _selectedRecordInfo?.Id;
+            var itemIndex = RecordInfoList.IndexOf(itemToRemove);
+            RecordInfoList[itemIndex] = recordInfo;
+            if (selectedRecordId?.Equals(itemToRemove.Id) ?? false)
+            {
+                SelectedRecordInfo = recordInfo;
+                _updateRecordInfosEvent.Publish(new ViewMessages.UpdateRecordInfos(itemToRemove));
+            }
+        }
+
+        private bool LoadedSessionShows(IFileRecordInfo recordInfo)
+        {
+            var sessionTask = _selectedSessionTask;
+            if (sessionTask == null || !sessionTask.IsCompletedSuccessfully
+                || !(sessionTask.Result?.Info is ISessionInfo info))
+                return false;
+
+            bool Same(string sessionValue, string recordValue)
+                => (sessionValue ?? string.Empty) == (recordValue ?? string.Empty);
+
+            return Same(info.Processor, recordInfo.ProcessorName)
+                && Same(info.GPU, recordInfo.GraphicCardName)
+                && Same(info.SystemRam, recordInfo.SystemRamInfo)
+                && Same(info.Motherboard, recordInfo.MotherboardName)
+                && Same(info.Comment, recordInfo.Comment);
         }
 
         private void OnDeleteRecordFile()
@@ -723,27 +820,55 @@ namespace CapFrameX.ViewModel
                 CustomGameName, CustomComment, _selectedRecordInfo, _applicationState.SelectedRecords))
                 return;
 
+            // The values are taken now; the files are rewritten off the UI thread, since each
+            // rewrite parses and serializes the whole record.
+            string cpu = CustomCpuDescription, gpu = CustomGpuDescription, ram = CustomRamDescription,
+                mainboard = CustomMainboardDescription, gameName = CustomGameName, comment = CustomComment,
+                resolution = CustomResolution;
+
             if (_applicationState.SelectedRecords.Count == 1)
             {
-                _recordManager.UpdateCustomData(_selectedRecordInfo, CustomCpuDescription,
-                    CustomGpuDescription, CustomRamDescription, CustomMainboardDescription,
-                    CustomGameName, CustomComment, CustomResolution);
+                var recordInfo = _selectedRecordInfo;
+                bool gameNameChanged = _customGameNameChanged;
+                _recordWriteQueue.Enqueue(() =>
+                {
+                    // For a record without a game name of its own the box shows the process list's
+                    // name; it is only written when it was edited.
+                    string storedGameName = gameNameChanged
+                        ? gameName
+                        : _recordManager.LoadData(recordInfo.FullPath)?.Info?.GameName ?? gameName;
+                    _recordManager.UpdateCustomData(recordInfo,
+                        cpu, gpu, ram, mainboard, storedGameName, comment, resolution);
+                });
             }
             else if (_applicationState.SelectedRecords.Count > 1)
             {
-                foreach (var recordInfoObject in _applicationState.SelectedRecords)
-                {
-                    var recordInfo = recordInfoObject as IFileRecordInfo;
-                    var session = _recordManager.LoadData(recordInfo.FullPath);
+                bool cpuChanged = _customCpuDescriptionChanged, gpuChanged = _customGpuDescriptionChanged,
+                    ramChanged = _customRamDescriptionChanged, mainboardChanged = _customMainboardDescriptionChanged,
+                    gameNameChanged = _customGameNameChanged, commentChanged = _customCommentChanged,
+                    resolutionChanged = _customResolutionChanged;
 
-                    _recordManager.UpdateCustomData(recordInfo,
-                        _customCpuDescriptionChanged ? CustomCpuDescription : session.Info.Processor,
-                        _customGpuDescriptionChanged ? CustomGpuDescription : session.Info.GPU,
-                        _customRamDescriptionChanged ? CustomRamDescription : session.Info.SystemRam,
-                        _customMainboardDescriptionChanged ? CustomMainboardDescription : session.Info.Motherboard,
-                        _customGameNameChanged ? CustomGameName : session.Info.GameName,
-                        _customCommentChanged ? CustomComment : session.Info.Comment,
-                        _customResolutionChanged ? CustomResolution : session.Info.ResolutionInfo);
+                foreach (var recordInfo in _applicationState.SelectedRecords.OfType<IFileRecordInfo>().ToList())
+                {
+                    // Each record keeps its own values for the fields that were not edited.
+                    _recordWriteQueue.Enqueue(() =>
+                    {
+                        var session = _recordManager.LoadData(recordInfo.FullPath);
+                        if (session?.Info == null)
+                        {
+                            _logger.LogWarning("Metadata of {path} not saved: the record cannot be read", recordInfo.FullPath);
+                            return;
+                        }
+
+                        _recordManager.UpdateCustomData(recordInfo,
+                            cpuChanged ? cpu : session.Info.Processor,
+                            gpuChanged ? gpu : session.Info.GPU,
+                            ramChanged ? ram : session.Info.SystemRam,
+                            mainboardChanged ? mainboard : session.Info.Motherboard,
+                            gameNameChanged ? gameName : session.Info.GameName,
+                            commentChanged ? comment : session.Info.Comment,
+                            resolutionChanged ? resolution : session.Info.ResolutionInfo);
+                    });
                 }
             }
 

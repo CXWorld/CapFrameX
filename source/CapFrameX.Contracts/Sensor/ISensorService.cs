@@ -22,6 +22,8 @@ namespace CapFrameX.Contracts.Sensor
         string GetGpuDriverVersion();
         string GetCpuName();
         string GetGpuName();
+        /// <summary>Cached SPD module manufacturers, retaining one entry per identified DIMM.</summary>
+        IReadOnlyList<string> GetMemoryManufacturers();
         ECpuVendor GetCpuVendor();
         EGpuVendor GetGpuVendor();
         string GetSensorTypeString(EOverlayEntryType entryType, string stableIdentifier);

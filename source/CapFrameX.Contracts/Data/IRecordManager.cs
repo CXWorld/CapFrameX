@@ -7,7 +7,10 @@ namespace CapFrameX.Contracts.Data
 {
 	public interface IRecordManager
 	{
-		Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo);
+		/// <param name="fileMayStillBeWritten">True for a file reported by a Created or Changed
+		/// event, whose writer may not be done yet: its first read waits a moment. Files from a
+		/// directory scan or a drop are read right away.</param>
+		Task<IFileRecordInfo> GetFileRecordInfo(FileInfo fileInfo, bool fileMayStillBeWritten = false);
 
 		Task<bool> SaveSessionRunsToFile(IEnumerable<ISessionRun> runs, string processName, string comment, string recordDirectory, List<ISessionInfo> HWInfo);
 

@@ -121,9 +121,11 @@ struct AdlxDeviceInfo
 	uint32_t LuidLowPart;
 	int32_t LuidHighPart;
 	uint32_t LuidValid;
+	// Total VRAM in MB; zero when unavailable.
+	uint32_t TotalVramMB;
 };
 
-static_assert(sizeof(AdlxDeviceInfo) == 596, "AdlxDeviceInfo ABI layout changed");
+static_assert(sizeof(AdlxDeviceInfo) == 600, "AdlxDeviceInfo ABI layout changed");
 
 #ifdef CAPFRAMEXADLX_EXPORTS
 #define ADLX_API __declspec(dllexport)

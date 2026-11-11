@@ -54,6 +54,12 @@ namespace CapFrameX.Hotkey
         }
 
         /// <summary>
+        /// Logs what the hotkey witness counted during the session: hotkey presses, how many the
+        /// global hook dispatched or missed, and the stalls of its thread. Called once at exit.
+        /// </summary>
+        public static void LogSessionSummary() => HotkeyWitness.LogSessionSummary();
+
+        /// <summary>
         /// Rebuilds the registered hotkey snapshot after configuration was changed outside a
         /// view model, for example through MCP. Existing actions and their synchronization
         /// contexts are retained.

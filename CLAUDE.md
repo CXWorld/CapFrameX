@@ -10,7 +10,7 @@ CapFrameX is a Windows desktop application for frametime capture and analysis, b
 
 ### Prerequisites
 - Visual Studio 2026 (toolset v145; the native projects pin it)
-- WiX Toolset v3.14.1 ([wix314.exe](https://github.com/wixtoolset/wix3/releases/tag/wix3141rtm)) — **v3 only**, v4+ uses an incompatible SDK-style project format. It sets the `WIX` environment variable that the installer's `heat.exe` pre-build step needs, and installs the targets under `Program Files (x86)\MSBuild\Microsoft\WiX\v3.x\`. The separate Visual Studio extension only adds IDE integration and is not required for the msbuild command line.
+- WiX Toolset v6.0.2 — nothing to install. `CapFrameXInstaller` and `CapFrameXBootstrapper` are SDK-style projects (`<Project Sdk="WixToolset.Sdk/6.0.2">`); MSBuild restores the SDK and the `WixToolset.*.wixext` extensions from NuGet, so build them with `/restore`. The extension versions live in `source/Directory.Packages.props` and must match the SDK version. Stay on v6: WiX v7 requires accepting the Open Source Maintenance Fee EULA before it builds, which is the owner's decision. The HeatWave Visual Studio extension only adds IDE integration.
 - C++ MFC build tools
 
 ### Build the Main Application
@@ -21,24 +21,47 @@ msbuild source\CapFrameX\CapFrameX.csproj /p:Configuration=Release /p:Platform=x
 
 ### Build Native C++ Components (required for full functionality)
 ```bash
-msbuild source\CapFrameX.Hwinfo\CapFrameX.Hwinfo.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
-msbuild source\CapFrameX.IGCL\CapFrameX.IGCL.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
-msbuild source\CapFrameX.ADLX\CapFrameX.ADLX.vcxproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
+msbuild source\CapFrameX.Hwinfo\CapFrameX.Hwinfo.vcxproj /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
+msbuild source\CapFrameX.IGCL\CapFrameX.IGCL.vcxproj /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
+msbuild source\CapFrameX.ADLX\CapFrameX.ADLX.vcxproj /p:Configuration=Release /p:Platform=x64 /p:VisualStudioVersion=18.0
 ```
+Build them before the application. They are reached through P/Invoke only, so they are solution
+build dependencies, not project references, and they build into their own
+`source\<project>\x64\<Configuration>\`. The `StageCapFrameXNativeRuntime` target in
+`CapFrameX.csproj` copies the three DLLs from there next to `CapFrameX.exe` and logs every DLL it
+cannot find; a missing one does not fail the build, the sensor groups just fall back silently.
+`CapFrameX.RTSSInterface` (C++/CLI) is an ordinary project reference and needs no staging.
+
+### Output layout
+Every project builds into its own `bin\x64\<Configuration>\<tfm>\` (`obj\` beside it); the native
+projects into `x64\<Configuration>\`. There is no shared output folder: `source\bin` and the flat
+`source\CapFrameX\bin\x64\<Configuration>\` were the former LibreHardwareMonitorLib and .NET
+Framework layouts. Folders for other target frameworks (`net9.0`, `netstandard2.0`, `net472`, ...)
+are leftovers of earlier builds and can be deleted.
 
 ### Build Installer
 ```bash
-msbuild source\CapFrameXInstaller\CapFrameXInstaller.wixproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64
-msbuild source\CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64
+msbuild source\CapFrameXInstaller\CapFrameXInstaller.wixproj /restore /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64
+msbuild source\CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj /restore /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64
 ```
+Build the application (and the native DLLs) first: the MSI's file list is harvested at build time
+from `source\CapFrameX\bin\x64\<Configuration>\net10.0-windows` by the `<Files>` element in
+`Product.wxs`, whose `<Exclude>` entries replace the former `heat.exe` step and `filter.xslt`.
+The bundle stays a 32-bit Burn bundle (`InstallerPlatform=x86`), as WiX v3 bundles were; the chained
+MSI is x64. Its VC++ redistributables are remote payloads verified by their Authenticode signer.
+The bundle also builds `CapFrameXBootstrapper.BAFunctions` (native, always Win32, packages restored by
+`/restore` or `nuget restore`): a BAFunctions DLL for WixStdBA that plans a newer installed CapFrameX
+bundle as an upgrade instead of a downgrade. Without it Burn refuses to run an older setup
+(`0x80070666`) although the MSI allows downgrades, which also blocks the in-app rollback. Only setups
+that contain the DLL can downgrade; releases built before it still refuse.
 
 ### Run Tests
 Tests use MSTest framework:
 ```bash
-vstest.console source\CapFrameX.Test\bin\x64\Release\net10.0-windows\CapFrameX.Test.dll /Platform:x64
+vstest.console source\CapFrameX.Test\bin\x64\Release\net10.0-windows\CapFrameX.Test.dll /Platform:x64 /TestCaseFilter:TestCategory!=Integration
 ```
 
-This skips the `Integration` category, which drives the **real** PresentMon capture service and
+The filter skips the `Integration` category (nothing else excludes it), which drives the **real** PresentMon capture service and
 `CaptureManager` against `vkcube.exe` (staged from `source\CapFrameX.Overlay\3d-test-app\` into the
 app output). Those tests report themselves as *skipped* — not failed — whenever their prerequisites
 are missing, so a green run is no evidence that they executed. Run them explicitly, **from an
@@ -55,11 +78,74 @@ The run takes about a minute, opens vkcube windows and starts PresentMon. Frame-
 tolerate occasional stalls: vkcube shares the desktop, and a window losing the foreground or being
 occluded stalls its presents.
 
+The category also holds `HotkeyWitnessIntegrationTest`, which drives the real global hotkey hook and
+the hotkey witness with F24 presses injected through `SendInput` (see "Global hotkeys and the hotkey
+witness"). It needs no administrator rights but an unlocked interactive desktop whose foreground
+window is not elevated above the test process; otherwise it reports itself inconclusive. The presses
+go to the foreground window, so do not type meanwhile.
+
+### Measure CPU load
+`scripts\Measure-CpuLoad.ps1` (elevated, no CapFrameX running) measures the CPU time and cycles of
+CapFrameX.exe and its PresentMon process without capturing: `Idle`, `PresentMon` (game running,
+renderer `Off`), and per renderer `-Hidden`, `-NoSensors`, `-Sensors` (optionally `-Design`). It runs
+the app output in a portable sandbox under `temp\cpu-load`, one fresh start per scenario with vkcube
+as target, primes the configuration once (the `NoSensors` overlay profile is saved by the app through
+MCP), breaks CapFrameX's CPU down by thread name and compares with `-BaselineReport`. Keep it in step
+with the settings it writes (`OverlayRenderer` and its mirror flags, `IsOverlayActive`,
+`ActiveOverlayDesignProfileId`) and the endpoints it reads (`/api/version`, `/api/processes`,
+`/api/metrics`, MCP `cfx_get_overlay_entries`/`cfx_set_overlay_entry`). Details: `scripts\CPU_LOAD_TEST.md`.
+
+### MPO check for users
+`scripts\MpoCheck\` (`Run-MpoCheck.cmd` → `MpoCheck.ps1`, README for users) needs no build: it reads the
+D3DKMT plane caps of every display and records a fullscreen D3D11 test scene with PresentMon, alone
+and with an overlay window at 10 and 60 Hz, then zips a report onto the desktop. PresentMon comes
+from the CapFrameX installation; the script elevates unless the user is in Performance Log Users.
+The overlay window mirrors the hook-free one (`OverlayWindow.cpp`/`GraphicsDevice.cpp` in the OSD
+repo: the same extended styles, a BGRA8 flip-discard composition swapchain with premultiplied
+alpha); keep it in step when those change. It presents from the script's process, so PresentMon
+records its frames too: the analysis keeps the test scene's swapchain (`SwapChainAddress`) and
+takes frame gaps from present time + `MsUntilDisplayed`, because a late-written composed row
+carries deltas to an older frame. The scene renders at half the refresh rate so `MsUntilDisplayed`
+measures the display path, not a full present queue. After the overlay appears (its swapchain's
+first present), DWM may compose the game for a while before it returns it to its plane: on an
+RX 9070 XT between none and about 8 s, varying from run to run. So each overlay stays visible for
+at least 15 s, and the verdict tells "keeps its plane", "composed for N s, then back" and "still
+composed at the end" apart. A GDI window over the game behaves differently: on the same PC it was
+composed throughout.
+
+### Frame generation trace for vendors
+`scripts\FrameGenTrace\` (`Run-FrameGenTrace.cmd` → `FrameGenTrace.ps1`, README for users) records a
+WPR trace of a running game for GPU vendors and the PresentMon team, written for AMD's FSR Frame
+Generation with Driver-Assisted Frame Pacing (Adrenalin 26.10.1+), where PresentMon sees each frame
+pair reach the screen at almost the same time while a camera shows even pacing. The profile it writes
+(`FrameGenTrace.wprp`) enables every provider PresentMon reads, with the keywords of
+`EnableProvidersListing` in `PresentMonTraceSession.cpp`, so the trace replays with `--etl_file`;
+keep it in step when PresentMon adds providers. It also records DxgKrnl GPU scheduling, the HAGS log and
+kernel thread scheduling, replays the trace with the installed CX-PresentMon (CapFrameX's arguments)
+and summarizes the busiest swapchain, including the share of displayed frames within 1 ms of the
+previous one. `-ExtraProviders` adds providers a vendor asks for, `-EtlFile` re-analyzes a trace.
+
+### Capture helper for Windows 7
+`tools\CapFrameX.CaptureHelper\` (README there) is a separate WPF app on .NET Framework 4.8, outside
+`CapFrameX.sln`, for Windows 7, where neither CapFrameX (.NET 10) nor any PresentMon from 2.0.0 on
+starts. It bundles PresentMon 1.10.0, one build per bitness (`-p:Platform=x86|x64`; `build.ps1` builds
+and zips both), and runs it with `-output_stdout -qpc_time -no_track_display`. Captures are buffered as
+in `CaptureManager` (an archive of the last 500 rows, every row of the target from the start request on,
+cut 2.5 s after the end) and cut by `QPCTime` in `CaptureWindow`, which follows
+`GetAdjustedCaptureData` and `DropFramesOfFirstStartTime`. `-no_track_display` is required, since with
+display tracking 1.10.0 completes hardly any present on current Windows 11 builds. The target (the
+selection in the process list) is filtered by the app, not by PresentMon: `-process_id` needs a restart
+per target, after which rows arrived only 1 to 4 s later, and empties the list of other processes.
+Before it starts PresentMon, the app ends the session of one a crashed helper left behind and waits for
+it: with `-stop_existing_session` alone, the old instance's shutdown also ended the new session. Its
+window rules and its Average, P1 and P0.2 (`FrametimeStatisticProvider`, MathNet's R-8 quantile over
+1000 / frame time) follow the main app; keep them in step when `CaptureManager` or the metrics change.
+
 ## Architecture
 
 ### Solution Structure
-The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET 10, .NET Standard 2.0,
-.NET Core 3.1, and one .NET Framework 4.7.2 installer-action project) and C++ native code.
+The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (`net10.0` / `net10.0-windows`,
+plus one .NET Framework 4.7.2 installer-action project) and C++ native code.
 
 ### Layer Organization
 
@@ -89,15 +175,14 @@ The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (.NET 10, .NET St
 - `CapFrameX.IGCL` - Intel Graphics Control Library
 - `CapFrameX.ADLX` - AMD Display Library
 
-**Webservice (ASP.NET Core 3.1)**
+**Webservice (ASP.NET Core, `net10.0`)**
 - `CapFrameX.Webservice.Host` - API host
 - `CapFrameX.Webservice.Implementation` - Business logic
-- `CapFrameX.Webservice.Data` - DTOs, commands and queries; `netstandard2.0`, and the only
+- `CapFrameX.Webservice.Data` - DTOs, commands and queries; `net10.0`, and the only
   webservice project the desktop app references (through `CapFrameX.ViewModel`)
 
 Data is served from Squidex (`SquidexService`), not from a database — the Entity Framework
-persistence layer was dropped. netcoreapp3.1 is out of support; the packages warn about it, which
-`SuppressTfmSupportBuildWarnings` silences in Host and Implementation.
+persistence layer was dropped.
 
 **Charting**
 - `CapFrameX.Charts/Core40` - Vendored LiveCharts core
@@ -109,7 +194,7 @@ persistence layer was dropped. netcoreapp3.1 is out of support; the packages war
 - DryIoc (IoC container)
 - MahApps.Metro + MaterialDesign (UI styling)
 - System.Reactive (Rx)
-- OxyPlot 2.1 NuGet packages (charting)
+- OxyPlot 2.2 NuGet packages (charting)
 - Serilog (logging)
 
 ### Build Output
@@ -120,12 +205,12 @@ persistence layer was dropped. netcoreapp3.1 is out of support; the packages war
 
 ## Hook-free OSD (external source)
 
-The hook-free OSD lives in the **private** repo [CXWorld/CapFrameX.OSD](https://github.com/CXWorld/CapFrameX.OSD) (local checkout: `..\CapFrameX.OSD`, a sibling of this repository), consumed as an *optional* git submodule at `external/CapFrameX.OSD` with prebuilt-binary fallback in `external/CapFrameX.OSD-prebuilt/` — the public repo builds either way:
+The hook-free OSD lives in the **private** repo [CXWorld/CapFrameX.OSD](https://github.com/CXWorld/CapFrameX.OSD), checked out separately at `..\CapFrameX.OSD`, a sibling of this repository. Prebuilt binaries in `external/CapFrameX.OSD-prebuilt/` let the public repo build without private sources:
 
-- With the submodule checked out, `CapFrameX.csproj` and `CapFrameX.OSD.Integration.csproj` set `CfxOsdFromSource=true` and build `CapFrameX.OSD.Interop` from source; without it they reference the prebuilt DLLs. Force the fallback with `/p:CfxOsdFromSource=false`.
-- The native renderer `cfx_osd_core.dll` is staged from the submodule's CMake output if built (`external/CapFrameX.OSD/CapFrameX.OSD/build/bin/RelWithDebInfo`), else from the prebuilt folder.
+- `source/Directory.Build.props` detects the sibling checkout and selects source builds for Interop and Controls. Override its location with `CfxOsdSourceDir`; the legacy `CfxOsdSubmoduleDir` override remains supported. Without source, builds reference the prebuilt DLLs. Force the fallback with `/p:CfxOsdFromSource=false`.
+- The native renderer `cfx_osd_core.dll` is staged from the selected checkout's CMake output if built (`../CapFrameX.OSD/CapFrameX.OSD/build/bin/RelWithDebInfo`), else from the prebuilt folder. Explicit prebuilt mode also applies to hooks and Vulkan payloads.
 - `source/CapFrameX.OSD.Integration` (adapter mapping `IOverlayEntry` onto the OSD, references `CapFrameX.Contracts`) intentionally stays in this repo; everything CapFrameX-independent (native core, Interop, WPF editor controls) lives in the OSD repo.
-- After OSD changes: update the DLLs in `external/CapFrameX.OSD-prebuilt/` (see its README) and bump the submodule commit.
+- After OSD changes: update the DLLs in `external/CapFrameX.OSD-prebuilt/` (see its README) and record their source revision and hashes there. When the Vulkan layer code changed, also replace the installed layers (`C:\Program Files\CapFrameX\vulkan` and `vulkan\x86`): games load the registered copies, not the build output (the README's "Updating" section says which sources count).
 
 ### Hook-free visibility
 
@@ -138,6 +223,106 @@ toggles `IsOverlayActive`, which hides a visible overlay at any time but cannot 
 gate; the toggled state takes effect once a process is detected. RTSS and the in-game hook are not
 affected.
 
+### Hook-free tile values and root repaints
+
+Every present of the hook-free window costs the game frame in flight GPU time (Doom: The Dark Ages,
+RTX 5090, FSR FG, 2026-11-09: about 1.9 ms for a repaint of the root surface, 0.5 ms for a chart
+tick). A tile design made the window repaint its root 33 to 59 times in 10 s instead of 10: the
+design publisher delivers a snapshot with every sensor poll (`SensorLoggingRefreshPeriod` while a
+capture logs sensors) and with its 500 ms heartbeat, and each one reached the renderer.
+
+- **One update per OSD refresh.** `HookFreeDesignFeed.Decide` (pure) says what `OsdOverlayBridge`
+  takes over from a snapshot: a design that is new, changed or removed is applied at once (the
+  snapshot subscription), values alone wait for `OnEntries` (once per `OSDRefreshPeriod`) or a show.
+  So tile values in the hook-free window change as often as the classic rows always did. The
+  publisher keeps its cadence: it also feeds the in-game renderers and the heatmap averages.
+- **Only what changed.** The native core keeps what its root surface drew and repaints and
+  presents only the tiles that would draw something else, as rectangles (OSD repo CLAUDE.md,
+  "Hook-free root: retained surface, partial repaint"). A snapshot whose values format to the same
+  texts repaints nothing.
+- **A/B.** `OsdDebug.json` `"hookFreeRepaint"` (`"legacy"`, `"skip"`, `"partialPresent"`, default
+  `"partial"`) selects the native repaint mode; `"legacy"` also restores the former feed cadence
+  (`HookFreeDesignFeed.AppliesEverySnapshot`). Both sides read it when the renderer starts and at
+  every show, so toggling the overlay switches the mode. `"hookFreeWarp"` (device, at creation
+  only) draws on the CPU.
+- **Logs** (Extended OSD logging): the core's `tick 10s` line splits the content marks by feed and
+  the root repaints by reason, kind and cost; the `HookFree feed: 10s` summary ends with
+  `design=[templates:… metrics:… on refreshes, … on snapshots; … snapshots waited for a refresh]`.
+
+Measurements, the probe of DXGI's partial presents and the open device question:
+`dev-plans/HookFree_Partial_Repaint_DevPlan.md`. Tests: `HookFreeDesignFeedTest`; native:
+`design` (`partial_repaint.h`), `diagnostics`, `hook_free_pacing`.
+
+### MPO warning
+
+The hook-free window is a topmost window, so a game below it keeps independent flip only on an MPO
+plane of its own. `MpoSupportProbe` (`CapFrameX.Overlay/MpoSupport.cs`) asks the display driver for
+the planes of the hook-free display (`D3DKMTGetMultiPlaneOverlayCaps`, as `scripts\MpoCheck` does;
+the counts include the base plane, so a game needs `min(MaxPlanes, MaxRGBPlanes)` ≥ 2) and reads
+`OverlayTestMode` under `HKLM\SOFTWARE\Microsoft\Windows\Dwm` (5 switches MPO off). Without a plane,
+or with MPO switched off, the Overlay tab shows a red warning under both hook-free choices (OSD
+options and the Designs tab's output) whether or not hook-free is selected, and `CapFrameX.log`
+records `MPO check for the hook-free display …` whenever the result changes. Caps the driver does not
+report (remote session, basic display driver) do not warn. The caps can only rule MPO out: with
+planes reported, DWM may still compose for a while (see "MPO check for users"), which the Present
+Mode entry shows in the game. Tests: `MpoSupportTest`.
+
+### Capture process list
+
+`PresentMonProcessList` lists the processes PresentMon reports presents for: a data row lists its
+process only while `ProcessHelper.IsProcessAlive` says it is alive, and a pass once per second drops
+the exited ones. PresentMon can deliver rows after their process exited (on 2026-10-25 one nine
+seconds after a test app closed, under the name `<unknown>`). Listed again, such a process stood
+beside the game until the next pass, and with two entries the target selection of that time picked
+none, so the in-game overlay hid. Only a new entry is checked, an exited one at most once per pass.
+`IsProcessAlive` counts only a conclusive answer as exited (a PID Windows no longer knows, an exit
+code); a process that denies the query is alive, so a protected process no longer drops out on every
+pass. Tests: `PresentMonProcessListTest`, `ProcessHelperTest`.
+
+Every entry also counts its presents, `MsGPUBusy` time, latest `PresentMode` and generated frames
+(`FrameType`) in one bucket per pass; the columns are found by name in the header row, which is read
+on the producer thread. `ICaptureService.GetProcessActivity` returns them over the last 3 completed
+passes (`ActivityWindowSeconds`): presents/s, GPU busy share (capped at 1, null before the first
+complete pass and without the column), idle seconds since the last present. `DominantPresentMode` is
+the mode of most presents in the current and the previous pass (rows arrive in waves), a tie going to
+the latest present, null without presents in them: one differing present does not decide it.
+
+### Automatic capture target
+
+While the user selected no process, the capture and every overlay renderer follow the process
+`CaptureTargetResolver` (`CapFrameX.Data/CaptureTarget`, pure) picks; the selection always wins and
+the automatic target never touches the ignore list (which is uploaded and needs a PresentMon restart).
+`CaptureViewModel.UpdateAutoTarget` updates it with every list update: a single process is the target
+without any rule (and stays it when a second one appears), the rules only run while at least two
+processes are listed and the user selected none. A selection suspends them; clearing it resolves at
+once. Rules in order, the first that names exactly one process decides:
+
+1. a capture request (hotkey) takes the listed process in the foreground, unless it is idle (the
+   tracker already knows it, nothing is queried at the request);
+2. GPU dominance: at least 10 % busy and 3× every other candidate, all of them measured (an
+   unmeasured process may be the game that just started);
+3. the previous target (`_lastPublishedProcessId`), so a paused or minimized game keeps it;
+4. the candidate that owned the foreground window last, unless idle (`ForegroundProcessTracker`: a
+   `SetWinEventHook(EVENT_SYSTEM_FOREGROUND)` hook on the UI thread, installed only while the list has
+   entries, which reads the foreground once at installation and polls nothing; only a frame window of
+   class `ApplicationFrameWindow` has its child windows searched, for the UWP app drawing inside it);
+5. the only process that presented within 2 s, when every candidate has statistics;
+6. the only known game: a process list entry with a game name that is not ignored, or an executable in
+   a game library folder (`IsGameLibraryPath`: Steam, Epic without its launcher, GOG, Xbox, Ubisoft,
+   EA, Amazon; not WindowsApps);
+7. the only process that presents like a game: `Hardware: …` present modes or generated frames;
+8. processes of one executable: the first, as before.
+
+Otherwise nothing decides (two games at once) and the user selects, as before. The thresholds are
+preliminary: every change of the target or of the candidates while several are listed logs
+`Capture target: … - <reason>: <detail>. Candidates: …` with each candidate's statistics, the material
+to calibrate them; a capture request that changes the target logs `Capture request: …`. The status
+reads "… auto-selected from N processes". The once-per-second list update rebuilds the ignore filter
+and the known-game lookups only after `ProcessList.ProcessesUpdate` reported a change
+(`RefreshProcessListCaches`, a generation counter bumped on the thread of the change); the
+executable paths are read once per process. Tests: `CaptureTargetResolverTest`,
+`ForegroundProcessTrackerTest`, `PresentMonProcessListTest` (`Activity_*`), `CaptureViewModelTest`.
+
 ### Remote API and the overlay hotkey
 
 `/api/osd` and `/ws/osd` serve `IOverlayService.CurrentOverlayEntries`, and they keep working with
@@ -148,6 +333,458 @@ and never fed, and the hook-free bridge and the hook metrics publisher ignore th
 sensor poller treats it like an active overlay, so the hardware values in the API stay current.
 The renderers follow `IsOverlayActive` alone. "Hide OSD on RTSS" (`HideOverlay`) is unrelated:
 it keeps the overlay *on* and only suppresses the RTSS output.
+
+### Overlay renderer selection
+
+`IAppConfiguration.OverlayRenderer` (`EOverlayRenderer`: `Rtss`, `InGame`, `HookFree`, `Off`) is the
+stored selection. `EnableHookOverlay` and `EnableHookFreeOverlay` are derived from it and stored as its
+mirror, so builds that only know the flags still read a usable choice; `Off` mirrors to the flags of
+RTSS. Writing a flag selects a renderer (`OverlayRendererSelection.WithHookOverlay` / `WithHookFreeOverlay`).
+A switch raises `OverlayRenderer` first and then each changed flag, all after the new selection is
+stored. At load, a stored renderer is kept unless a stored flag contradicts it: then an older build
+changed the selection (after a rollback), and the flags win.
+
+`Off` clears both flags, so `HookOverlayManager` (no process-start watcher, no early-injection probe,
+no injection), the metrics and design publishers (no shared memory, so the Vulkan layer stays passive)
+and `OsdOverlayBridge` stay idle. `OverlayService` neither initializes nor feeds RTSS, switches the
+overlay off on the switch to `Off`, and keeps `PresentMonOverlayMetrics` running for the remote API, as
+for the CapFrameX renderers. `OverlayActivation` refuses every activation and the toggles are disabled.
+Ask `UsesRtss()` whether RTSS renders, never "both flags false". Tests that mock `IAppConfiguration`
+and switch renderers call `WireOverlayRenderer` (`CapFrameX.Test/Mocks`) after `SetupAllProperties`.
+
+RTSS keeps the rows it was fed last, also after a switch to another renderer, and shows them again on
+any `Refresh()`. So every RTSS write passes `FeedsRtss()` (overlay on, RTSS renders, "Hide OSD on
+RTSS" off): the entry feed, the capture timer, the countdowns and the capture stop. The capture
+auto-hide ("Auto hide while capture", `AutoDisableOverlay`) hides every renderer through
+`IsOverlayActive`; RTSS' global OSD switch (`OnOSDOff`/`OnOSDOn`, which also hides other RTSS
+clients) is only toggled when RTSS renders at the start, and given back at the stop even after a
+renderer switch. Tests: `CaptureManagerTest` (`AutoDisableOverlay_*`), `OverlayProfileRefreshTest`.
+
+A hide costs the game nothing in any CapFrameX renderer. The in-game hook and the Vulkan layer keep
+their OSD instance and GPU resources through it and only stop drawing (OSD repo CLAUDE.md, "Hide and
+show keep the renderer"). Until 2026-10-31 the hook and the layer released everything on the hide,
+inside the game's Present, and rebuilt it on the show: every auto-hidden capture began with the frame
+in flight at the start ~5 ms late (Mafia: The Old Country, RX 9070 XT) and the overlay came back
+with a ~45 ms rebuild. Measured by CapFrameX.Test's `verify-osd-hide-cost.ps1`.
+
+The hook-free window keeps everything too, but a window that leaves the composition makes DWM
+reassign its planes: in the same game (VRR, FSR FG) the cloak and `ShowWindow(SW_HIDE)` alike cost
+1-2 s of lost displays at every capture start while the game stayed on its plane. So
+`OsdOverlayBridge` chooses the method right before each hide (`HookFreeHideMethods.Choose`, applied
+through the core's `cfx_osd_set_hide_mode`): a target whose `DominantPresentMode` in the process
+list (`GetProcessActivity`) is `Hardware…` is on a plane of its own and is hidden by one empty frame,
+the window staying composed (three captures began clean); a composed or unknown target is cloaked,
+because a window that stayed would keep it composed for the whole capture. Until 2026-11-01 the
+latest present decided: in Doom: The Dark Ages one composed present chose the cloak, although the
+capture ran on its plane from the first frame. The log reads `HookFree
+OSD: hides by <method>; pid … presents …`. A core without the export keeps cloaking. OsdDebug.json
+`"hideMode"` forces one method for A/B runs; `verify-osd-hookfree-hide.ps1` measures a method over a
+fullscreen app with PresentMon. Tests: `HookFreeHideMethodTest`.
+
+After a show the charts continue on the current window in every CapFrameX renderer. The hook-free
+bridge keeps its frame subscription while hidden (`UpdateFrameSubscription`), and the hook and the
+Vulkan layer drain what the PresentMon ring (`HookFrametimePublisher`, written regardless of the
+hide) kept of the hidden time. The core then re-anchors its replay on the newest sample
+(`cfx_osd_resume_charts`; OSD repo CLAUDE.md, "Charts after a show"). Before, a shown chart played
+the samples from before the hide and then jumped over the gap: the hook-free one because its feed
+followed the visibility, the in-game ones once they kept their instance through the hide.
+
+### Hook-free stand-in: Direct3D 9, anti-cheat and blacklist
+
+Only the selected renderer draws: an in-game overlay that cannot run leaves the game without an
+overlay (`Unavailable`). The exceptions are the processes the in-game renderer can never draw in
+(`HookOverlayManager.IsHookFreeFallback`): Direct3D 9 games and the games the target policy refuses
+for good (`HookTargetPolicy.RequestsHookFreeFallback`): an anti-cheat module (`AntiCheatMarkers`:
+EasyAntiCheat, BattlEye, VAC), Ricochet, and the injection blacklist (CS2 Trusted Mode, VALORANT's
+Vanguard, AoE II DE and AoM Retold, which crash). The hook-free window injects nothing, and the policy
+always left it available. The transient startup failures (`IsTransientStartupFailure`: `process
+identity check failed`, `module scan failed`, `module scan returned no modules`, `module enumeration
+failed`) do not qualify: they often pass within seconds of a start, and every switch would create or
+remove the hook-free window. So a kernel anti-cheat other than Ricochet that keeps denying the scan
+(`module scan failed (5)`) leaves the game without an overlay. The reasons are matched by
+`AntiCheatReasonPrefix`, `RicochetReasonPrefix` and `BlacklistReasonSuffix`; keep the texts built from
+them.
+
+PresentMon reports `D3D9` for a Direct3D 9 game (Resident Evil 6 on 2026-10-28), and neither the
+hook nor the Vulkan layer draws on it (`RuntimeRequestsHookFreeFallback`). PresentMon's `Other` does
+not qualify: Vulkan titles that present outside DXGI report it too, and the layer draws for the
+target PID whatever PresentMon reports, so an OpenGL game stays `Unavailable`.
+
+Ricochet is Call of Duty's kernel anti-cheat. It denies
+the module scan even to an elevated CapFrameX (`module scan failed (5)`), so `HookTargetPolicy`
+recognizes it from outside: `Randgrid.sys` in the executable's folder or up to two folders above
+(`FindRicochetDriver`; COD HQ from the Xbox app keeps it in `Content\`, beside `cod.exe` and above
+`sp26\sp26-cod.exe`), or a denied scan while a kernel driver service `atvi-randgrid*` runs
+(`atvi-randgrid_msstore` for the Store build, read without administrator rights). The path comes
+from `QueryFullProcessImageName` with `PROCESS_QUERY_LIMITED_INFORMATION`, which Ricochet grants;
+`MainModule` needs the module access it denies. The block reason starts with `Ricochet anti-cheat`.
+
+In every case the in-game renderer stays selected: `HookOverlayManager.HookFreeFallbackStream`
+(transient, the stored selection stays `InGame`, log `HookOverlay: the hook-free overlay stands in
+for pid …`) feeds `OsdOverlayBridge` (`Exists`/`IsShown`, the usual soft-hides apply), and the status
+reads `Blocked` with "…; the hook-free overlay is shown instead." The design publisher keeps its
+telemetry for the in-game mode anyway, so the stand-in draws the active design. RTSS stays off.
+Tests: `HookOverlayStatusEvaluatorTest` (`HookFreeFallback_*`), `RicochetDetectionTest`.
+
+### Graphics API label (`<APP>`)
+
+RTSS resolves its `<APP>` macro itself. For the CapFrameX renderers and the remote API,
+`PresentMonOverlayMetrics.ApplySnapshot` replaces it in copies of the entries, in this order: the
+API the in-game renderer proved for the target (`HookOverlayStatus.RenderApi`: `D3D11`/`D3D12` from
+the hook's device type, `Vulkan` from the loaded layer), the PresentMon `PresentRuntime` (`DXGI`,
+`D3D9`, `Other`), then "Performance". The hook-free renderer only has PresentMon. The proven API is
+bound to the target PID and kept through statuses without one (hidden, idle, transitional): every
+label change renames the group and makes the renderer rebuild its scene. A `Disabled` status (another
+renderer selected) and a PID change drop it. The PresentMon runtime survives a hide too (the entry feed
+switching off), so the first refresh after a show does not read "Performance"; a PID change and a
+PresentMon stop drop it. API names follow RTSS's spelling (`D3D11`, `D3D12`,
+`Vulkan`, `OpenGL`, ...), also in `RTSSCoreControl.cpp` (`IRTSSService.GetApiInfo`): both sources feed a
+capture's `ApiInfo` and the `GraphicsAPI` overlay entry, so they must spell alike. Tests:
+`PresentMonOverlayMetricsTest`.
+
+### Frame generation in the frametime graphs
+
+PresentMon reports a frame-generation pair with one CPU start time (`CPUStartQPCTimeInMs`): the
+generated frame ~10 ms after the previous pair, the real frame ~0.1 ms after it. Captures spread
+equal start times by 0.1 ms (`CaptureManager.NormalizeTimes`); the live feeds pass them unchanged.
+Every graph sample of a pair counts: the native core keeps both extremes of a pixel column that share a
+timestamp (OSD `AppendColumnExtremes`), and the designer's live feed (`OverlayPreviewFrameFeed`) drops
+only rows older than the previous one. Before 2026-10-31 the core drew only the 0.1 ms line with a
+regular row of false ~10 ms spikes (every renderer and design, the rows' graphs included), and the
+designer dropped every real frame. A FG stream's frametime graph is a band between both intervals.
+Tests: `OverlayPreviewFrameFeedTest`, OSD `chart_geometry_test`.
+
+A capture file starts after the frames of the interval's first start time
+(`CaptureManager.DropFramesOfFirstStartTime`): the interval begins with the frame before the
+capture start, and under frame generation that is a pair. Dropping one row left the pair's real
+frame, from before the start, as the first frame of every FG capture. The defined capture time
+counts from the first frame after that start time. Tests: `CaptureManagerTest`
+(`DropFramesOfFirstStartTime_*`).
+
+### Present mode entry
+
+`OnlinePresentMode` ("Present Mode", an `OnlineMetric` text entry) shows PresentMon's `PresentMode` of
+the target in every renderer, the remote API and tile designs (text source `metric/OnlinePresentMode`,
+semantic key `presentMode`), shortened by `PresentModeLabel` (`HW: Legacy Copy`, `MPO: Independent
+Flip`, `Composed: GPU Copy`, ...; unknown names pass through). Capture files and logs keep PresentMon's
+names. No hook can provide it: DWM decides it after the present. `OnlineMetricService.GetOnlinePresentMode`
+returns the mode of most of the target's presents within the last second, so a second swapchain or a
+single composed frame does not make it flicker; a tie goes to the newest present, `Unknown` only shows
+when nothing else was seen, and 2 s after the last present it is null (the entry reads "N/A"). The entry
+is registered in `RealtimeMetricEntryDict`, so showing it makes the service evaluate rows, but it is
+not one of the numeric `ONLINE_METRIC_NAMES`. Tests: `PresentModeEntryTest`, `OnlineMetricTelemetryTest`.
+
+### OLED pixel orbit
+
+`OsdPixelOrbit` (`CapFrameX.Contracts/Configuration`) moves the CapFrameX renderers by one pixel per
+interval along a serpentine walk over a (radius + 1)² square. Offsets are never negative, so the
+configured margins stay the minimum distance to the screen edge. A design requests the orbit with a
+top-level `pixelShift` object (`intervalSeconds` 10..3600, `radius` 1..32). The OSD editor
+round-trips and edits it (Layout tab). `OverlayRuntimeDesign` reads it into `PixelShift` and removes
+it from `TemplateJson`, so the renderers never see it. The global `OsdPixelOrbit*` options cover every
+other design and the classic rows. The active design's request wins (`OverlayPixelOrbitResolver`).
+
+Both placement paths add the offset on every OSD tick: `HookMetricsPublisher` for the hook and Vulkan
+layer placement channel, `OsdOverlayBridge` for the hook-free window. Both publish only on change, so
+a step is one move per interval, never an animation. Both read `Environment.TickCount64`, so they always
+agree on the position. RTSS is not affected. The editor's import is a strict round trip: a Controls
+build without this change rejects any design that contains `pixelShift`, so the prebuilt Controls DLL
+must include it. Example design: `overlay-templates/OLED-Minimal.json`.
+
+### Resolution-relative sizing
+
+`IAppConfiguration.OsdScaleWithResolution` ("Scale with resolution", Overlay tab, default off) makes
+the CapFrameX renderers keep a design's share of the screen: the native core builds the scene with
+`OsdZoom` × target height / 1080 and scales the anchor margins by the same factor (whole percent,
+0.5..3.0). Only the height counts; a wider aspect ratio just adds room beside the anchored panel. The
+target is the game's back buffer for the in-game hook and the Vulkan layer, and the monitor for the
+hook-free window. The hook and the layer receive the switch as metrics header bit5
+(`HookMetricsChannel.FlagResolutionScale`, composed in `HookMetricsPublisher.BuildHeaderFlags`) and
+measure the height themselves; `OsdOverlayBridge` passes `OsdHost.DesignReferenceHeight` through
+`OsdHost.SetReferenceHeight`, which survives a renderer restart. The pixel orbit offset is part of
+the margins, so its steps scale too. RTSS is not affected. Details: the OSD repo's CLAUDE.md.
+
+### Full-width designs
+
+A design with the top-level `"fullWidth": true` (`OsdDesignDocument.FullWidth`, the editor's Layout tab
+"Span the full screen width", the MCP tile document's `fullWidth`) spans the target between the left
+and right margin in every CapFrameX renderer: the native core arranges the scene at target width − 2 ×
+margin and its canvases scale the x and the width of every tile by that over the design width, heights
+and everything inside a tile keep their size (a chart gets longer, a right-aligned value moves with its
+tile edge, a grid spreads its columns). Full width only stretches: a target narrower than the design at
+the current zoom builds the whole design smaller, in whole percent, until it fits (at least 0.25 of its
+own size), and stretches it by the rest. Until 2026-11-04 the tiles narrowed instead and cut off the
+values that filled them: the Performance Strip at zoom 1.5 in a 1968 px wide window showed its current
+frame rate without the first digit. Every anchor then places the panel at the left margin, so the
+anchor only chooses the top or the bottom edge, unless the design names its own: `"edge": "top"` or
+`"bottom"` (`OsdDesignDocument.Edge`, "Edge" below the full-width switch, MCP `edge`; "anchor", the
+default, is not exported) wins over the anchored corner in every placement path (`Scene::placementAnchor`).
+The orbit offsets stay distances from the edge the panel sits at. The target is the same as for
+resolution-relative sizing, which still sets the zoom first; a new target width or margin (also a pixel
+orbit step) rebuilds the scene. The renderers read both fields themselves, so CapFrameX passes them
+through `TemplateJson` and needs no channel. The editor, its preview and the MCP render show the design
+at its own width. RTSS is not affected. The prebuilt core, hooks, Vulkan layers and Controls must
+contain this change: a Controls build without it rejects such designs, older renderers draw them at
+their own width and the anchored corner. Example: the "Performance Strip" starter
+(`overlay-templates/Performance-Strip.json`, catalog version 30, edge bottom), a frame time chart at the
+left, average, 1% low and current FPS at the right and, across the whole width below them, the counted
+frame rate (`framespersecond`), both charts with grid lines; authored at 1280 × scale 1.5 = 1920 px.
+Its values carry the unit the binder adds ("FPS"), and a menu shows four-digit frame rates: more than
+a tile may hold. Since 2026-11-06 a value wider than its tile shrinks with its unit until it fits, in
+every design and every CapFrameX renderer, instead of being clipped (OSD repo CLAUDE.md, "Values wider
+than their tile"); before, the strip read "|49.2 FPS" in Crysis Remastered.
+Tests: OSD `design_test` (`fullWidthTests`, `countedFramerateTests`, `metricFitTests`), `PerformanceStripSpansTheScreenWidth`,
+`FullWidthIsADocumentFieldTheRendererReads`.
+
+### Counted frame rates and grid lines
+
+A chart's series `framespersecond` ("Frames per second (counted)") draws the frames presented in the
+second before every instant, as a frame counter counts them, instead of 1000 / frame time of each frame
+(`framerates`). The native core (`CountedFramerate.h`) runs a frame counter linearly between frame
+timestamps, so a steady stream reads its exact rate and a frame-generation pair counts as two frames;
+it samples the count every 50 ms of stream time (aligned, so the shape does not change while it
+scrolls) and draws Steffen's monotone cubic through the samples, one point per pixel column: smooth,
+without peaks or dips the counts do not have. A 1920 px strip costs about 70 µs per rebuild including
+the coverage raster, whatever the frame rate (per-frame rates: 80 to 290 µs at 60 to 500 FPS;
+`chart_perf_bench`). The scale is the frame rate scale with the median at 70 % (60 FPS on 0..100), and
+the scene keeps one more second of history (`kCountedFramerateLookbackMs`). It is FPS like
+`framerates`: both may share a chart, a stutter threshold may not use it. `OverlayRuntimeDesign` feeds
+it frames (`NeedsFrametimes`). A chart's `gridLines` (`OsdDesignTile.ShowGridLines`, "Grid lines")
+draws horizontal lines at round values (`ChartGridStep`: 1, 2, 2.5 or 5 × 10ⁿ, as many as their labels
+have room for) in the outline color, labelled in a column right of the plot instead of the min/max
+corner labels. The bitmap preview builds its lines before it draws the panel, so a single render shows
+the scale it draws. The prebuilt core, hooks, layers and Controls must contain this change. Tests: OSD
+`design_test` (`countedFramerateTests`), `ACountedFramerateChartIsFedFramesAndDrawsGridLines`.
+
+### Overlay fonts
+
+Two sources, RTSS untouched. A tile design carries one font: the design font
+(`OsdDesignDocument.FontFamily`, the editor's Style tab, `fontFamily` in the MCP tile document).
+Text tiles have no font of their own; `Validate` rejects a `family` on them (`Editor_TileFontRemoved`),
+only an icon names its glyph font. `FromJson` reads designs whose tiles drew fonts of their own as
+saved and then gives the design the font most text tiles drew (a tie keeps the design font,
+`UnifyTileFonts`); the GREENLINE, ICELINE and Turquoise Reference starters were regenerated so
+(catalog version 22).
+The classic layout takes `IAppConfiguration.OsdFontFamily` ("Overlay font", Overlay tab, default
+Segoe UI, MCP `fontFamily` option); it never overrides a design. `OsdOverlayBridge` forwards it
+through `OsdHost.SetFontFamily` (retained across renderer restarts); `HookMetricsPublisher` hands it
+to `HookMetricsChannel.Publish`, which sets header bit6 (`FlagFontFamily`) and writes the name as
+UTF-8 into the 128-byte field at `OffFontFamily` (0x18000), behind the records, so the version stays
+5 and older hooks ignore it. `TruncateUtf8` keeps the name on a character boundary. The prebuilt
+Controls must contain this change: a Controls build without it rejects designs whose theme font is
+not Segoe UI. Details: the OSD repo's CLAUDE.md.
+
+### Tile styles
+
+Every tile owns its colors; the design shares only `TileOpacity` and the font (the editor's Style
+tab). `OsdTileStyle` (OSD Controls) is the one catalog: `PartsOf(tile)` lists the colors a tile
+draws as it is set up (a bar: fill, label, value, track; a chart without its badge: line, captions,
+area, outline; ...), `Resolve` the color the renderer draws for an unset one (the document's
+`Accent`/`TileColor`/`TextColor` are only these defaults and no longer editable), `Set` changes one
+color (a group's title keeps its color when the bars change), `CopyToSameKind` and `Reset` back
+the Tile style buttons. The inspector's rows (`OsdTileStyleRow`, `TileStyle[field]`) are fixed XAML
+rows bound to the catalog, so `DesignTextBindings` sees their text boxes.
+
+Unset colors stay off the scene, so every saved design exports byte for byte as before; the native
+widgets gained the keys they need (bar/gauge `labelColor`, `valueColor`, gauge `trackColor`, chart
+`labelColor`, `valueColor`, `backgroundColor`, `borderColor`, heatmap `labelColor`), which older
+hooks ignore. Designs saved before tile styles may hold label, value and unit colors on kinds that
+never drew them (the hardware templates carry them on charts and groups): `MarkUndrawnColors`
+reads per tile from the saved scene which colors were drawn, the others stay in the metadata and
+off the scene until set (`OsdTileStyle.DrawnColor`), and the MCP tile document leaves them out.
+`TileOpacity` (0..1, `editor.tileOpacity`, omitted at 1) scales the alpha of every tile background
+at export (`DrawnBackground`); transparent tiles stay transparent. Tests: `OverlayTileStyleTest`.
+
+### Heatmap tiles
+
+A group tile with `GroupDisplay = "heatmap"` exports the native `heatmap` widget, one cell per
+member, and keys every cell `avg:{seconds}:{source}` (`GroupWindowSeconds`, 1..600, default 10).
+The native widget only draws. The averages come from CapFrameX: `OverlayMovingAverages`
+(`CapFrameX.OSD.Integration`) keeps one `SlidingWindowAverage` (`CapFrameX.Statistics.NetStandard`,
+a running sum, O(1) amortized per sample) per tracked key; the newest reading stays current for twice
+the gap between the last two readings, so a window shorter than the overlay refresh (1 s at the default
+`OSDRefreshPeriod`) never falls empty between readings. `OverlayDesignRuntimePublisher` feeds it
+from every telemetry snapshot and asks the binder for the plain sources behind the averaged keys
+(`GetRequiredSourceIds`). The designer's live preview keeps its own instance. The MCP render has no
+history and shows current readings. `OverlayRuntimeSourceBinder.ExpandHeatmap` expands a
+`role:cpu-loads` heatmap like the editor: ordered by core type, core and thread, with `types` so
+that every core type forms a labelled block of its own (`HeatmapRows` and the label row repeat the
+renderer's layout for the flow height). A group without an explicit window takes it from its saved
+cell keys (`SavedHeatmapWindow`), so designs saved while the default was 60 s keep it, as the editor's
+`FromJson` does.
+`OverlayRuntimeSourceBinderTest` checks parity for hybrid CPUs with HT P-cores. The prebuilt
+Controls must contain the heatmap: a Controls build without it rejects FUSION. Block and row rules:
+the OSD repo's CLAUDE.md.
+
+### Multi-line charts and stutter thresholds
+
+A chart tile may carry `chartLines` (`OsdChartLine`, 1..4), the renderer's `lines`, drawn in order on
+one Y axis. `kind` `value` draws a frame series, `stutter` its adaptive stutter threshold: `factor`
+(1..10, default 2.5, per line) x the moving average of the analysis chart
+(`FrametimeStatisticProvider.GetMovingAverage`); the live chart takes N from the mean of its visible
+window instead of the capture. Lines are all in ms or all in FPS, a threshold needs frametimes or
+display times, and the tile's `key` is the series of its first value line (unit, value badge and feed
+follow it). The editor (`OsdDesignDocument.ValidateChartLines`) and the native parser apply the same
+rules; `OverlayRuntimeDesign.Parse` requests the feed of every line's series, and `OverlayTileDocument`
+checks the fields of each line. The editor keeps each line's `label` (the legend) on its localized
+default unless it was set elsewhere. The palette's "Stutter charts" (`OsdChartPresets`) adds frametimes
+and display times with their thresholds: a container on a canvas, two tiles in a grid. The FRAME
+PACING chart of the three FUSION starters draws the frametimes in the design's color and their
+threshold (x2.5, legend "Stutter Threshold"; catalog version 23).
+`OverlayChartLinesTest` covers export, round trips, validation and the feeds. The prebuilt Controls
+must contain this change: a Controls build without it rejects designs with `chartLines`. Native
+details: the OSD repo's CLAUDE.md.
+
+### Generic hardware starters
+
+APEX 3D, REDLINE and the FUSION starters (ARL, RPL, Ryzen) fit a CPU and GPU family, not one model:
+they name the installed hardware with `gpuNameShort`/`cpuNameShort`, show no model-specific graphics
+(`Resources/OverlayGraphics/SOURCES.md`) and bind every sensor portably. FUSION's P-CORES and E-CORES
+tiles are roles of one core type, `role:cpu-loads|P` and `|E`. The runtime binder
+(`OverlayRuntimeSourceBinder`) and the editor (`OsdDesignDocument.BindPresetSources`, which binds an
+unmodified starter when the designer opens it) filter the family alike; keep them in sync, the parity
+tests compare both. The editor keeps the type in the bound key (`device|family|unit|P`), so refreshing
+the members adds that type only. The FUSION bar tiles fix the bar height but not the width (32 columns),
+so their bars spread over the whole tile whatever the core count. Max clocks per core type come from `cpuPCoreClock`/`cpuECoreClock`
+(sensors `CPU P Max`/`CPU E Max`). The former model-specific presets were renamed but keep their
+profile IDs (`idPresetId`); `PreviousNames` lets an upgrade replace an unmodified copy under its old
+name, unless another profile already has the new one. The prebuilt Controls must contain the
+core-type roles: without them the designer leaves FUSION's P/E tiles unbound (the overlay binds them).
+
+### Anime starters
+
+CHERRY BLOSSOM, NEON NIGHT and LUNAR (`overlay-templates/Anime-*.json`, catalog version 24) embed
+original artwork from `scripts/New-AnimeOverlayArt.py`: a banner and a character image whose head rises
+above it (provenance: `Resources/OverlayGraphics/SOURCES.md`). The channel name is a text tile with the
+placeholder `@channel_name`. Labels use CxLang's source spelling (`Framerate`, `1% Low`, `Frametime`,
+`GPU Load`, ...), never hand-written translations; tile labels keep their text and do not follow the
+overlay language. A design saved through the editor or MCP is bound to the PC (`sensor:`/`metric/`
+keys): map them back to semantic keys before shipping it as a starter.
+
+### DUOLINE starters
+
+Five starters (`overlay-templates/DUOLINE-*.json`, catalog version 25) share one vertical layout in the
+colors of a GPU and CPU vendor: Radeon + Ryzen, GeForce RTX + Ryzen, Radeon + Intel Core, GeForce RTX +
+Intel Core, Arc + Intel Core. Each device has a block under a header bar in its vendor's color that names
+the installed model (`gpuNameShort`/`cpuNameShort`), the GPU above the CPU, with usage, temperature,
+clock, power and VRAM/RAM (label left, value right). Below them sit the frame time graph, the current
+FPS and the frame time. The native metric draws device names in the theme text color, so the dark text
+color is also the color of both header names. The files are stored as the editor saves them;
+`DuolineStarterShowsTheGpuAboveTheCpuInTheColorsOfTheirVendors` checks layout and colors.
+
+### BLACKWELL THERMALS starters
+
+Four starters show the temperatures of an RTX 50 card on a drawing of its board: one reading on each
+GDDR7 module, hot spot and core temperature on the die, then the hottest module (`vramTemp`), the
+hottest minus the coolest (`vramTempSpread`), board power and fan. Each fits one board layout:
+
+- `Blackwell-Thermals-RTX-5090.json` (catalog version 27): the RTX 5090 Founders Edition (GB202,
+  16 modules: four above the package, five on each side, two below; from a labelled photo of the
+  board). Pin 1 at the top left, partitions A to H counter-clockwise from the bottom right.
+- `Blackwell-Thermals-RTX-5080.json`, "RTX 5080 & 5070 Ti" (catalog version 28): an MSI Gaming Trio
+  board (GB203, 8 modules: two above, four on the right, two below, the power stages on the left).
+- `Blackwell-Thermals-RTX-5070.json` (catalog version 28): an ASUS TUF board (GB205, 6 modules) with
+  the same layout; the two places above the package stay empty.
+- `Blackwell-Thermals-RTX-5060.json`, "RTX 5060 & 5060 Ti 8 GB" (catalog version 28): an ASUS PRIME
+  board (GB206, 4 modules: two above, two on the right, the power stages on the left).
+
+Every module carries NVIDIA's name: its memory partition, counter-clockwise from the corner opposite the
+gold pin-1 mark of the package, and module 0 or 1 (on the 5090, module 1 of each partition comes first
+counter-clockwise; the other boards follow the same rule). The GB203 and GB205 boards turn the package
+by 90 degrees to the right (the die marking runs top to bottom), so pin 1 sits at the top right and
+partition A at the bottom left. The GB205's six modules then leave partition D empty, the places above
+the package, which the ASUS board leaves unpopulated; with the package unturned the empty places would be
+below it. The GB206 board keeps the package upright like the 5090: A on the right, B above. Only the
+5090's letters come from a labelled photo; the others are derived this way. The PawnIO module
+(`ioctl_read_memory_temperatures` in `Nvidia.p`) reports register group p, module m as `GPU Memory
+Temperature #(2p + m + 1)`, so `vramChipTemp1` is A0, `vramChipTemp2` A1, and so on (an RTX 5070 reported
+#1 to #6). That group p is partition p follows NVIDIA's numbering and was not verified on a board. With
+topology bit `0x00400000` (clear on the RTX 5090) the module reads two values per module place, as
+`#(4p + 2m + s + 1)`; presumably a clamshell card such as the 16 GB RTX 5060 Ti (four more modules on
+the back), which no log has shown yet, so it has no starter and the 8 GB one would misplace its values.
+A starter on another card leaves the places it does not have empty and shows its readings at the places
+of its own board. The boards are rendered by `scripts/New-BlackwellBoardArt.py` (`gb202`, `gb203`,
+`gb205`, `gb206`), whose chip and die geometry the tiles repeat; it uses flat fills only, because Edge
+dithers gradients and the noise tripled the PNG. LHM scans the per-module readings (`NvidiaThermal`, up
+to 48) only while one of them or the spread is in use. `GPU Memory Temperature Spread` (LHM, NVIDIA
+only, `NvidiaThermal.GetMemoryTemperatureSpread`) comes from the same read, is null below two modules
+and moves in 2 K steps like the modules: a module with poor thermal pad contact stays above the others
+whatever the load. `OverlaySemanticKeys` maps `gpuHotSpot`, `vramTemp` (NVIDIA "GPU Memory Junction",
+AMD and Intel "GPU Memory"), `vramTempSpread` and `vramChipTemp1`..`48`. Tests:
+`BlackwellThermalsShowsEveryMemoryModuleAroundTheGpuOnItsBoard`,
+`GpuThermalsHaveRolesOfTheirOwnUpToEveryMemoryModule`, `NvidiaThermalTest`.
+
+### BLUELINE starter
+
+"BLUELINE - Nova Lake" (`overlay-templates/BLUELINE-Nova-Lake.json`, catalog version 29) was made for
+the Core Ultra Series 4 desktop CPUs before their launch, from the leaked configurations: up to 8 P-
+(Coyote Cove), 16 E- (Arctic Wolf) and 4 LP-E cores on one compute tile (6+12+4 and 4+8+4 below it),
+16+32+4 on the dual compute tile flagship, no Hyper-Threading. It binds semantic keys and roles only and
+names the installed CPU and GPU (`cpuNameShort`, `gpuNameShort`). A vivid blue header and GPU bar frame
+navy tiles. Each core type has a load card of its own (`role:cpu-loads|P`, `|E`, `|LPE`; azure, cyan, ice
+blue), as wide as the single-tile flagship's cores need; `GroupColumns` 8, 16 and 4 wrap a dual-tile CPU
+into two even rows. Below them a table shows every core's clock as a number (`role:cpu-clocks|…`): a row
+per core type, eight cells of a fixed width (`GroupBarWidth` 54) over a flat line. Binding gives a group
+its source's unit, so a cell reads "5650 MHz", which no narrower cell or card column holds; a vertical bar
+that flat shows no level, so the line is one color. Loads and clocks each sit in a full-width container
+because a growing tile moves only the tiles below it that it overlaps: a container moves every tile below
+alike. The header's rails stand above the cards, in lighter shades that show on the blue. On a CPU without
+LP-E cores the LP-E card and clock row stay empty. Tests: `BluelineStarterShowsTheLoadAndClockOfEveryCore`,
+`BluelineStarterShowsEveryCoreOfAnyNovaLakeCpu`.
+
+### Hybrid starters
+
+Hybrid Benchmark, Hybrid Compact and Hybrid Thread Deck (`StarterDesigns/hybrid-*.json`) embed the
+linked row profile, whose length only the user knows. Their row block follows its rows
+(`classicRowsAutoHeight`, the editor's "Height follows the rows"): widget height 0 and no panel
+`frameHeight`, so the renderer measures every row and graph and nothing is clipped. It grows
+downward, so it is the last tile, below the headlines, the frametime strip or the thread loads; the
+editor rejects a tile below it and such a block inside a container. Its editor frame height only
+reserves room, and `OverlayRuntimeSourceBinder.GrowFrame` takes that reservation from the editor
+metadata when a group above it grows (16 threads already grow Hybrid Thread Deck's loads), as the
+editor does. Hybrid Thread Deck draws its thread loads in its cyan accent on the neutral panel
+(catalog version 26, which replaces unmodified version-1 copies). The files are the gallery presets
+applied as the editor applies them (native measured canvas conversion, no host sources). Tests:
+`OverlayHybridStarterTest`.
+
+### CapFrameX logo tiles
+
+The palette's "CapFrameX banner" and "CapFrameX logo" (`OsdLogoPresets`, OSD Controls) are image tiles
+in the brand blue `#0271F9` that draw the white and lime mark with fit `contain` and no padding. The
+banner spans the whole overlay at its ratio of 5:1 (`BannerAspectRatio`): every column of a grid with
+`Height` = width / 5, the full width of a canvas. The logo is a square: one grid column, or 96 x 96. In a
+container both shrink to its height. A frame of another ratio (the overlay widened later, a resized
+tile) shows more blue beside the logo instead of distorting it; the tile color stays editable, so the
+logo also sits on a dark tile. The transparent PNGs (1280 x 256, 512 x 512) are rendered from the masters
+in `Icons/CX_Concepts/Production` by `source/CapFrameX/Icons/New-OverlayLogoTiles.ps1` into the OSD
+Controls' `Resources/Logos`, so the prebuilt Controls must contain them. Tests: `OverlayLogoTileTest`.
+
+### Sharing tile designs (import mapping)
+
+`OverlayDesignProfileTransfer` (`CapFrameX.View/OverlayDesignAuthoring`) exports a design as saved
+(validated, UTF-8 without BOM, through a temporary file) and imports at most
+`OsdDesignDocument.MaximumJsonLength`; `OverlayDesignImportMapper` adapts the import to this PC and the
+designer shows what changed before it asks for the name. A design without `sensor:`/`sensor-id:` keys is
+**generic**: its semantic keys and roles bind through `BindPresetSources` as a starter's do, without
+restrictions. A design with hardware keys maps every device its sensor IDs name
+(`OverlaySensorSources.TryParseSensorId`): onto the same model if this PC has it (the card the design
+already reads, also beside an identical twin), else a GPU onto a GPU and a CPU onto a CPU **of the same
+vendor**. Of several candidates the one reporting most of the design's readings of that device wins; a
+tie is `AmbiguousDevice` and never guessed. Memory, drives and other devices only map onto the same
+model. A reading maps onto the sensor of the same type and name, else onto the first sensor of its
+semantic rule (`OverlaySemanticKeys`: "GPU TBP" or "GPU Power"). CPU core readings and core groups map
+onto **the same core types only**, per family as `OverlaySensorSources.TryGetCoreReading` reads the LHM
+names: a group rebinds to this CPU's members of the core types it showed (enabled members), so its size
+follows the CPU; labels and hidden members carry over by sensor name, and a single type stays in the key
+(`|P`). Unmatched keys keep their value, so the design works again on its own hardware, and are listed
+in `OverlayDesignImportResult.Unresolved` with the reason. Semantic keys and roles inside a hardware
+design bind as in a generic one. A foreign device's kind and vendor come from a group's device key, else
+from its sensor names and device name (`InferDeviceKind` checks CPU names first: APUs name their
+Radeon). No GPU semantic key is assigned while two GPUs report the reading (iGPU beside a card), so
+generic GPU tiles stay empty there and the import reports them. `CapFrameX.Test/Integration/OverlayDesignTransferTest`
+exports and imports between 13 simulated PCs (`OverlayDesignTransferHardware`, catalogs built by the real
+`OverlayTelemetryService`): all pairs against an independent oracle of these rules, every starter bound
+on every PC, round trips and focused cases.
 
 ### Hook-free stall diagnostics
 
@@ -164,7 +801,10 @@ Only the in-game hook and the Vulkan layer still read it at load:
 - `%TEMP%\cfx-osd-logs\cfx_osd.log` — the native core's `[diag]` lines (timestamped): host tick gaps, slow
   ticks with a phase breakdown, replay holds/snaps, feed arrival vs. source gaps, scene rebuilds
   with the entries that changed, window placement, topmost fights, scale changes, Present
-  HRESULT changes. Documented in the OSD repo's CLAUDE.md.
+  HRESULT changes. Documented in the OSD repo's CLAUDE.md. The first process that loads the core
+  keeps this file for its lifetime; a game's hook or Vulkan layer beside the hook-free window (or
+  the window beside one, after a renderer switch) writes `cfx_osd_<pid>.log` instead. The header
+  names the process and PID: check it before reading a log as the hook-free one.
 - `CapFrameX.log` — `HookFree OSD: render loop stall/slow step/10s` (the managed render loop:
   iteration gaps, wake latency, pump/drain/tick durations, GC collection and pause deltas — the
   one thing native code cannot see) and `HookFree feed: ...` from
@@ -172,44 +812,136 @@ Only the in-game hook and the Vulkan layer still read it at load:
   rejected for a foreign PID while the target is silent, additional swapchains inside the
   target process (the hook-free feed does not filter by swapchain, unlike captures), runtime
   label flips (they rename the `<APP>` group and rebuild the scene), frametime outliers, source
-  and arrival gaps, backdated rows; one summary per 10 s. `Overlay target process: ... PID a -> b`
-  (`CaptureViewModel`) and `Process list: removed ...` (`PresentMonCaptureService`) show why a
-  PID changed. Repeating lines are rate-limited; summaries come once per 10 s.
+  and arrival gaps, backdated rows; one summary per 10 s, which also counts the target's frame
+  types, `presentModes` and `allowsTearing`. Without an MPO plane (`[mpo]` header of
+  `cfx_osd.log`) DWM composes the visible window into the picture: a game that turns from
+  `Hardware: Independent Flip` to `Composed: Flip` while the overlay is on shows it there. `Overlay target process: ... PID a -> b`
+  (`CaptureViewModel`), `Process list: removed ...` and `Process list: ignored a row of ...`
+  (`PresentMonProcessList`) show why a PID changed. Repeating lines are rate-limited; summaries
+  come once per 10 s.
 
 ### Vulkan titles: implicit layer instead of injection
 
 Vulkan games present through the driver's ICD, so the DXGI Present hook never fires. They are served by an implicit loader layer (`VK_LAYER_CAPFRAMEX_overlay`) staged one folder per bitness — `vulkan\cfx_osd_vklayer.dll` and `vulkan\x86\cfx_osd_vklayer.dll`, mirroring the hook's `hook\` / `hook\x86\` split. Both manifests are byte-identical; `library_path` inside them is relative, so only the folder decides which DLL the loader picks up. The x86 layer comes from its own CMake tree in the OSD repo (`vk_layer`, `cmake -B build-x86 -A Win32`).
 
-Registration is bitness-scoped and this is load-bearing: the loader identifies a layer by the NAME in its manifest, so a manifest reachable by processes that cannot load its DLL **shadows** the correct registration and disables the layer for that bitness. `CapFrameXInstaller` therefore ships one component per bitness — `Win64="yes"` for the 64-bit view, `Win64="no"` for `WOW6432Node`. The 32-bit one is anchored to `TARGETDIR`, not `INSTALLFOLDER`, because ICE80 rejects a 32-bit component in a directory below `ProgramFiles64Folder`.
+The current installer defaults to `C:\Program Files\CapFrameX`: the x64 layer and its `cfx_osd_vklayer_v1.json` manifest go in `C:\Program Files\CapFrameX\vulkan`, and the x86 pair goes in `C:\Program Files\CapFrameX\vulkan\x86`. `Program Files (x86)\CapFrameX` is the legacy install location. Before updating a runtime layer, inspect the manifest paths in both HKLM registry views; development registrations may point at build outputs, and updating those outputs does not update the installed DLLs.
 
-**Never register the layer in HKCU** (the OSD repo's `register_layer.cmd` uses HKLM only and purges HKCU leftovers). HKCU is user-controlled, so the loader ignores it for targets started elevated — e.g. a game launched from a Visual Studio that debugs the admin-only `CapFrameX.exe` — and it is not split by bitness, so it also triggers the shadowing above. Both failure modes are silent and look exactly like "this game has no Vulkan": `VulkanActivityProbe` finds no renderer-state mapping, `VulkanLayerModuleProbe` finds no layer module, and `HookOverlayManager` correctly concludes DXGI and injects the hook into a Vulkan title — where the in-game arbiter denies its renderer lease and the status parks on `Initializing` until the hook-free fallback takes over.
+Registration is bitness-scoped and this is load-bearing: the loader identifies a layer by the NAME in its manifest, so a manifest reachable by processes that cannot load its DLL **shadows** the correct registration and disables the layer for that bitness. `CapFrameXInstaller` therefore ships one component per bitness — `Bitness="always64"` for the 64-bit view, `Bitness="always32"` for `WOW6432Node`. The 32-bit one is anchored to `TARGETDIR`, not `INSTALLFOLDER`, because ICE80 rejects a 32-bit component in a directory below `ProgramFiles64Folder`.
+
+**Never register the layer in HKCU** (the OSD repo's `register_layer.cmd` uses HKLM only and purges HKCU leftovers). HKCU is user-controlled, so the loader ignores it for targets started elevated — e.g. a game launched from a Visual Studio that debugs the admin-only `CapFrameX.exe` — and it is not split by bitness, so it also triggers the shadowing above. Both failure modes are silent and look exactly like "this game has no Vulkan": `VulkanActivityProbe` finds no renderer-state mapping, `VulkanLayerModuleProbe` finds no layer module, and `HookOverlayManager` correctly concludes DXGI and injects the hook into a Vulkan title — where the in-game arbiter denies its renderer lease and the status parks on `Initializing` until it turns `Unavailable`.
+
+### Portable version: layer registration at startup
+
+Portable extraction writes no registry values. In portable mode `App` schedules
+`PortableVulkanLayerPrompt` at `ApplicationIdle`; it asks `PortableVulkanLayerCheck` (CapFrameX.Overlay)
+whether games of both bitnesses load the layers of the app's own `vulkan` folder: every registration
+the loader of that bitness reads (`VulkanLayerRegistrationProbe.VisibleTo`) must be in its HKLM view
+and name the own manifest or a DLL with the same SHA-256, so an installed CapFrameX of the same build
+needs nothing. Otherwise it offers `Install` (nothing registered) or `Update` and, on Yes, runs
+`vulkan\Register-CapFrameXVulkanLayer.ps1` (source in `CapFrameX.OSD.Integration`, Windows PowerShell
+5.1, started by `VulkanLayerRegistrationScript` without UAC since CapFrameX is elevated): it enables the
+own manifests per view, disables every other enabled CapFrameX registration (DWORD 1, so an installer
+repair restores it) and removes HKCU entries, then CapFrameX checks again and publishes
+`AppMessages.VulkanLayerRegistrationChanged`, which makes the Info tab read the layer status again:
+it is the startup page, so no navigation refreshes it while the prompt runs. A No stores
+`DeclinedPortableVulkanLayerSignature`, a hash over the own layers and the visible registrations, so the
+prompt returns only once one of them changes. The MSI excludes the script; CI requires it in the app
+output; release signing signs it like every `.ps1`. Keep its registration rules in step with the
+probe and the installer's purge. Tests: `PortableVulkanLayerCheckTest` (runs the script with
+`-ValidateOnly`).
 
 ## In-game hook compatibility probing
 
-`HookCompatibilityProfiles.xml` (curated, embedded) is only a starting point. For every injection
-`HookOverlayManager` plans a **stage ladder** (`HookCompatibilityStagePlanner`), judges the injected
-hook's status against per-stage time budgets (`HookCompatibilityProbeSession` +
-`HookCompatibilityVerdictClassifier`) and persists the outcome in
+The profile catalog (`HookCompatibilityProfileCatalog.LoadProfiles`, read once at startup) merges the
+embedded `HookCompatibilityProfiles.xml`, the editable copy next to the executable and the user file
+`HookCompatibilityProfiles.xml` in the configuration folder (created empty if missing). A later source
+replaces the whole profile per executable name; an invalid or unreadable file is logged and ignored as a
+whole. User-facing documentation: README "Custom in-game compatibility profiles" and "Learned compatibility
+profiles". The catalog is only a starting point. For every injection `HookOverlayManager` plans a
+**stage ladder** (`HookCompatibilityStagePlanner`), judges the injected hook's status against per-stage time
+budgets (`HookCompatibilityProbeSession` + `HookCompatibilityVerdictClassifier`) and persists the outcome in
 `%appdata%\CapFrameX\Configuration\HookCompatibilityProfiles.learned.json` (`HookLearnedProfileStore`;
 keyed by executable name + evidence signature, bound to the hook build hash so a hook update re-verifies).
 Learning is mandatory: `_autoCompatibility` is a constant `true`, legacy `HookOverlayAutoCompatibility=false`
-settings are ignored (user docs: README "Learned compatibility profiles"). All of it is pure and unit-tested;
-the manager only executes the session's actions.
+settings are ignored. All of it is pure and unit-tested; the manager only executes the session's actions.
 
 - **Stages**: vendor-aware (flags None) → vendor-aware + XeSS-FG native queue → generic D3D12 (RTSS model)
   → generic without FidelityFX lifecycle hooks, each optionally with early injection (gate `d3d12.dll`, or
-  `sl.interposer.dll` for Streamline-only evidence). Generic stages exist only when `d3d12.dll` is loaded:
-  under the generic route the hook never draws on a D3D11 swapchain (`overlay.cpp`, `knownD3D12Route`).
+  `sl.interposer.dll` for Streamline-only evidence). Generic stages exist only when `d3d12.dll` is loaded.
+  The module is only a hint: a D3D11 title may load it for other work, so the generic route also draws
+  D3D11 swapchains with the D3D11 renderer, as RTSS does (see "Generic route on a D3D11 title" below).
+  A stage with early injection on a launch the hook joins late runs its routing without it
+  (`HookCompatibilityStagePlanner.Plan`, the reason ends "...without early injection"): that verdict
+  neither verifies nor exhausts the early stage, which NoQueue, NoPresent and EarlyInjectionRequired
+  still reach. Early-injection targets come from `LearnedStartStage`, the stage Plan starts an entry
+  with, so an entry of an older hook build keeps its target after a hook update. Targets are per
+  executable, entries per signature: an early attach whose thin signature matches neither an entry
+  nor an early signature plans from the entry that registered the target
+  (`SelectEarlyInjectionEntry`). Which runtimes are resident when the gate module maps varies
+  (Metro 2033 Redux: DLSS-G or not); planned from scratch, the session described no early injection
+  and its verified outcome erased the entry's `earlyInjectionModule` (2026-10-25). The early path's
+  probe also finds targets that were running before CapFrameX watched for them (CapFrameX started
+  next to the game, or the renderer was switched on): `ResolveEarlyPathAttachMode` makes those a late
+  attach, from the process start time against the target's `WatchedSinceUtc` and
+  `_hookEnabledAtUtc` (an unreadable start time counts as late). The log then reads "injected …
+  into the already running pid … through the early path" instead of "EARLY injected".
+- **Sessions survive a target switch**: the manager observes only the selected PID, and a resident
+  hook gets no second plan. `HookProbeSessionShelf` parks the session of a process that stops being
+  the target with its re-plan count, and every session planned for a process that is not selected
+  (`WaitsForSelection`): an early injection while another process or none is selected. A game
+  running before CapFrameX started is often minimized by the start and presents again minutes
+  later; observed from the injection, that wait failed its stage at the first sample (Metro on
+  2026-10-25: `RendererStalled` 0.13 s after the selection). `OnProcessId` takes a session back
+  when its process is selected; exited
+  processes and failed injections drop theirs. `HookCompatibilityProbeSession.ResumeAfterParking`
+  counts the unobserved interval as a pause (phase clocks restart, the first-Present wait keeps
+  its count, fresh status handshake and live-apply grace), and the fallback reason comes back
+  with the session. Log: `resumed the compatibility probe of pid … after another process was the
+  overlay target`, or `… starts now that the process is the overlay target; it was injected
+  before` for a session that was never observed. Before, a second candidate (on 2026-10-25 the
+  test suite's testhost) cost the verdict, the learning and the live escalation for the rest of
+  the game's process life.
 - **Evidence** (`HookTargetEvidenceProbe`, ToolHelp scan *with paths*): Streamline / DLSS-G / XeSS-FG /
   FSR-FG modules, a `dxgi.dll` outside System32/SysWOW64 (OptiScaler), duplicate FidelityFX loader copies.
   Late attach with FG evidence starts on generic; loader duplicates or a dxgi proxy start on generic-without-FFX;
-  a catalog entry is always stage 1 and the ladder continues after it. A verified learned entry is the start
-  stage; the rest of the ladder stays. Exhaustion belongs to the observed run: the hook-free fallback serves
-  it and the entry is marked exhausted, but the next launch probes again. There is no reset in the UI:
-  delete `HookCompatibilityProfiles.learned.json` while CapFrameX is closed (the store loads once and rewrites it).
+  a catalog entry is always stage 1 and the ladder continues after it. A learned stage (pending, verified,
+  or from an older hook build) only starts at a route that ladder still contains (`CanReuseLearnedStage`),
+  never before a catalog/user profile. A verified entry is the start stage; the rest of the ladder stays.
+  Exhaustion belongs to the observed run: it runs without an overlay and the entry is marked
+  exhausted, but the next launch probes again. There is no reset in the UI: delete
+  `HookCompatibilityProfiles.learned.json` while CapFrameX is closed (the store loads once and rewrites it).
 - **Verdicts** read status block V2 (`HookStatusProbe`: install phase + FidelityFX module/export detail,
   present coverage, queue state, decline reason, FG telemetry): success confirmed after 2 s, install hung
   after 6 s, no queue after 5 s, stage budget 20 s; idle/dormant samples pause the clocks.
+  A hook that is armed but has seen no Present is only judged while PresentMon still delivers frame
+  rows of the target (within 3 s, `HookCompatibilityVerdictClassifier.IsTargetPresenting`, fed by
+  `HookOverlayManager.OnFrameRow`): a title that is still loading (Metro 2033 Redux presents its
+  first frame 42 s after the hook is armed) gives the hook nothing to see, so the verdict is
+  `Inconclusive` and both the 15 s first-Present wait and the stage budget stand still. The wait
+  keeps what it already counted (`HookCompatibilityProbeSession.UpdateClocks` moves its start
+  along), so NoPresent still precedes the budget when the title presents and the hook sees nothing.
+  A verified route that pauses, hides or loses its draw progress (a resize, a swapchain replacement)
+  leaves `Learned` and is confirmed again within the session (`Reconfirmation` actions). The stored entry
+  keeps `verified` until a real failure revokes it, because an unverified entry is not reused on the next
+  launch and quitting a game passes through exactly such a moment. A reconfirmation that changes nothing
+  is not written (`HookLearnedProfileEntry.RecordsVerifiedOutcome`) and logs its verdict at Debug.
+- **Generic route on a D3D11 title**: Metro 2033 Redux imports `amd_fidelityfx_dx12.dll` (evidence
+  `FSR-FG`) and presents D3D11. On a Radeon with FSR selected it also had `d3d12.dll` loaded, so a
+  late attach starts on the generic route. The hook picks the renderer per swapchain like RTSS: under
+  the generic route a native swapchain that exposes an `ID3D11Device` keeps the D3D11 renderer (OSD
+  `PresentTakesD3D12OnlyRoute`, log `generic D3D11 profile Present draw #1 submitted`), so the stage
+  succeeds in the running game. Both renderers record the device in the status block's `Api` before
+  anything can fail (`OverlayD3D11OnPresent`, and `OverlayD3D12OnPresent` before its queue lookup).
+  The queue rules are D3D12's: with `Api = D3D11` neither the NoQueue window runs nor the queue verdicts
+  apply, and `HookCompatibilityProbeSession.HasRenderedD3D12` (the QueueRecovery rule's "has
+  rendered") counts D3D12 draws only, so a
+  D3D11 splash in a D3D12 title neither uses up the game swapchain's queue window nor turns its NoQueue
+  into a rebinding. 5 s of Presents without a queue then split by `Api`: `D3D12` is `NoQueue` (a D3D12
+  swapchain whose queue the hook missed, the case early injection exists for); no device at all is
+  `NoD3D12Swapchain`, which only a hook from before 2026-10-25 produces (it skipped D3D11 under the
+  route). That verdict moves to the first untried stage without the generic route, in ladder order
+  (vendor-aware, then vendor-aware + early injection), and takes a restart. Tests: CapFrameX.Test's
+  `verify-osd-generic-d3d11.ps1` (hook, x64/x86) and `verify-osd-generic-d3d11-learning.ps1` (real app).
 - **Escalation** runs **live** for every bit the hook advertises in `liveReloadCapabilities` (`0xE`: the
   XeSS-FG queue bit, the generic route, the FidelityFX lifecycle switch). `HookCompatibilityChannel` always
   creates the 64-byte V2 mapping (`Local\CfxOsdHookCompatibilityV2_{pid}`, plus the 16-byte V1 one for older
@@ -217,7 +949,7 @@ the manager only executes the session's actions.
   present, releases its renderer and rebuilds on the new route. The two routing bits only ever turn *on* —
   they neutralize hooks that are already installed, which cannot be undone — so dropping one, early injection
   and the injection delay still need a fresh process: `ScheduleRestart` sets status `RestartPending`, the
-  hook-free fallback serves the session, the next stage is persisted as pending and applied on the next
+  session runs without an overlay, the next stage is persisted as pending and applied on the next
   launch. The session waits up to 3 s for the hook to echo the flags in `AppliedFlags` before it judges the
   new stage; no echo → restart.
 - **A frame-generation switch inside the running game** is the case the ladder alone cannot see: the probe
@@ -230,23 +962,115 @@ the manager only executes the session's actions.
 - **Log lines**: `HookOverlay: compatibility plan for pid …` (evidence, signature, start stage, reason),
   `… compatibility stage k/n (…) … ended with <verdict>: …`, `… learned profile for '<exe>' (…) is now …`.
 
+## Tile profile authoring over MCP
+
+`TileProfileTools` (`CapFrameX.Mcp`, the `cfx_*_tile_*` tools) lets MCP clients create, edit, render
+and activate tile overlay profiles. The tools only shape arguments and results; the work happens in
+`IOverlayDesignAuthoringService` (`CapFrameX.Contracts/Overlay`), implemented by
+`OverlayDesignAuthoringService` in `CapFrameX.View/OverlayDesignAuthoring` because it needs the OSD
+Controls assembly. Clients exchange the **tile document** of `OverlayTileDocument`: the editor's
+document settings plus its tile model exactly as `OsdDesignDocument` stores it in each widget's
+`editor` metadata. Building one runs `OsdDesignDocument.Validate`, and the store canonicalizes with
+`OsdDesignDocument.FromJson(json).ToJson()` like the editor, so every profile written over MCP opens in
+the editor unchanged. `OverlayTileDocumentTest` round-trips every starter profile and gallery template
+through the tile document; keep it passing. Defaults for omitted fields may only touch fields the
+editor always serializes; defaulting an optional (`WhenWritingNull`) field would change designs on
+unrelated edits.
+
+- **UI thread**: every operation runs on the app dispatcher, which owns the designer window and the
+  native bitmap preview (`OverlayDesignPreviewRenderer`, the editor's renderer).
+- **Editor guard**: unsaved changes or a pending prompt in the open designer refuse every library
+  write (the store's stale-writer check would otherwise fail the user's next save). After a write the
+  designer reloads on the changed profile (`OverlayDesignerControl.ReloadLibraryAsync`, a no-op while
+  it has edits), and `IOverlayDesignService.RefreshProfiles` lets an active design update on screen.
+- **Binding**: semantic keys and template roles bind to this machine's sources through
+  `BindPresetSources`, as when the editor applies a template; `groupKey` set to an
+  `OsdSourceGroup` key fills a group's members. Omitted canvas frames are laid out by column.
+- **Guide**: `cfx_get_tile_design_guide` returns `OverlayTileDesignGuide`. Update it when the
+  Controls assembly adds widget kinds, fields or ranges; the field list at its end is generated.
+- **MCP infrastructure**: a tool may return `McpToolResult` for several content blocks (the render
+  tool sends an image plus text); `McpParameterSchemaAttribute` replaces a parameter's generated
+  schema; `JObject`/`JArray` parameters also accept their JSON as a string.
+
+## Global hotkeys and the hotkey witness
+
+All hotkeys go through one `WH_KEYBOARD_LL` hook on the thread "CX Global Hotkey Hook"
+(`GlobalHotkeyHook`, `CapFrameX.Hotkey`), which posts the actions to the registering dispatcher. A
+50 ms heartbeat installs a new hook after a stall (`HookThreadStallDetector`, at most once per 2 s),
+a timer every 60 s. A keystroke the hook never receives leaves no log line, so `HotkeyWitness` also
+watches the keyboard through raw input: thread "CX Hotkey Witness", a message-only window,
+`RIDEV_INPUTSINK`. The hook reports every key-down of a trigger key with its outcome (dispatched,
+discarded by the repeat filter, modifiers that form no hotkey), its heartbeats, stalls and
+installations. `HotkeyWitnessLedger` pairs the reports with the raw keystrokes by virtual key and
+input time stamp (`KBDLLHOOKSTRUCT.time` and the WM_INPUT message time are the same value) and
+gives every hotkey press a verdict. A press without a report becomes `NotReceived` only after a hook
+heartbeat that started after the witness saw the press (the hook thread handles all pending hook
+calls before a timer message), or after 30 s without one. The witness tracks the modifiers from the
+raw keystrokes in order, since a late hook call reads the modifiers of its own moment, and checks
+them against `GetAsyncKeyState` only for events it processed within 50 ms, because a key-up on the
+secure desktop (Ctrl+Alt+Del) never reaches it.
+
+Every press the hook did not dispatch is a warning (`Hotkey witness: Alt+O (Overlay) was pressed,
+but ...`) with the heartbeat age at the press, the longest hook-thread stall around it and whether
+it re-armed, the last hook installation and its reason, the foreground process and whether the
+input was injected. The same applies to an auto-repeat the hook dispatched as a press. A summary
+follows every 10 minutes with activity and at exit (`HotkeyDictionaryBuilder.LogSessionSummary` in
+`App.ApplicationExit`); it also counts hook dispatches raw input never showed (the witness was
+blind). Limits: a keystroke another program's hook swallows reaches neither side, and a process can
+register one raw input window per device type, so nothing else in CapFrameX may register the
+keyboard (the summary timer logs a takeover). No timer runs while no verdict is outstanding.
+
+Measured on Windows 11 build 26300 (2026-10-25): contrary to the documentation, a timed-out hook was
+not removed. Keystrokes made during a hook-thread stall past the timeout (about 250–300 ms) were
+lost or reached the hook late, the hook kept working, and raw input saw every one. While the hook
+thread stalls, Windows holds back all keyboard input for up to the timeout per keystroke. Tests:
+`HotkeyWitnessLedgerTest`, and `HotkeyWitnessIntegrationTest` (category `Integration`, see "Run
+Tests"), which writes its verdicts per press to the test output.
+
 ## Update service
 
 `IUpdateService` (`CapFrameX.Updater/UpdateService.cs`) fetches a JSON manifest from the CapFrameX
 update server, compares it against the running assembly version and, once the user confirms,
-downloads the installer package into the updates folder. The manifest URI comes from the
-`UpdateManifestUri` key in `App.config`; **while it is empty the whole feature stays inert** and no
+downloads the installer package into the updates folder. The catalog URI comes from the
+`UpdateCatalogUri` key in `App.config`; **while it is empty the whole feature stays inert** and no
 update UI appears. The wire format is documented by `CapFrameX.Updater/update-manifest.sample.json`.
 
-Installing happens on the *next* app start, not at download time, because the installer replaces the
-files of the running app. `UpdateInstaller.TryStartPendingUpdate` therefore runs in `App.OnStartup`
+The installer replaces the files of the running app, so the instance that downloaded the package
+never starts it. `UpdateInstaller.TryStartPendingUpdate` runs in `App.OnStartup`
 **before the bootstrapper builds the container** — it reads the `pending-update.json` marker,
 re-verifies the package against its SHA-256, starts it and returns true, at which point `App` sets
 `_skipShutdownSequence` (nothing has been started yet, so the shutdown sequence in `ApplicationExit`
 would only throw) and exits. The marker is deleted *before* the installer is launched so a failing
 or cancelled install cannot loop forever; with no marker present, leftover packages are deleted.
+
+That start happens right after the download: a finished download, which the user always asked for,
+makes `UpdateViewModel` call `IUpdateService.StartInstallAfterExit` and shut the app down. It starts
+a new instance with `--install-update-after <pid>` (`UpdateRestart`), which waits for the old
+process at the very top of `OnStartup` — before the single-instance mutex, which `ApplicationExit`
+disposes first — ends it after 30 s because the ADLX teardown can deadlock, and then takes the path
+above. Only a process running the same executable is awaited or ended. A capture that is running or
+still being written (`CaptureManager.IsCapturing`, `LockCaptureService`, `DelayCountdownRunning`)
+defers the restart; if the new instance cannot be started, the package stays staged for the next start.
 A package is only ever executed when it is an `.exe`/`.msi` and its name resolves inside the updates
 folder — the manifest is remote input.
+
+The catalog's SHA-256 comes from the same server as the package, so it cannot tell a genuine release
+from one a compromised server announces. `PackageSignature` (Authenticode via `WinVerifyTrust`, no
+revocation check) closes that gap twice: on the `.part` download before it is staged, and again in
+`TryStartPendingUpdate`, where checksum, signature and `Process.Start` share one read handle that
+denies writers — the updates folder is user-writable while the installer runs elevated. Accepted are
+the maintainer's Certum code signing certificate through a trusted chain, pinned by subject CN and
+the Certum issuer organization rather than by thumbprint so a renewal keeps working, and the pinned
+self-signed release certificate (`DAA75711…`, the 1.9.1.0 beta). **A signing certificate with a
+different subject name must first be added to `PackageSignature.PublisherNames` in a release signed
+with the old certificate**; otherwise installed clients reject every later update.
+
+The signature covers the package, not the command line it is started with. Installer arguments come
+from the catalog and wait in the user-writable marker, so the catalog parser and
+`TryStartPendingUpdate` both accept only `PackageIntegrity.AllowedInstallerArguments` (`/passive`,
+`/quiet`, `/qn`, `/qb`, `/norestart`, `LAUNCHAPP=0|1`); with `TRANSFORMS=` or `/l*v` a signed MSI
+would still run foreign code or write files elevated. One package outside the list rejects the whole
+catalog, so **a new argument has to ship in the allowlist before any release uses it**.
 
 Version comparison is normalized to `Major.Minor.Build`: assembly versions carry a fourth component
 that manifests do not, and `Version` sorts an unset component below zero, so `1.9.1` would otherwise
@@ -256,6 +1080,29 @@ One shared `UpdateViewModel` singleton backs all three surfaces: the indicator o
 status bar (`StateView`), the UPDATE tab in the options popup (`ColorbarView`), and the embedded
 dialog. The dialog's `DialogHost` sits in `Shell.xaml`, not in the options popup — a `DialogHost`
 nested inside a WPF `Popup` does not reliably render its overlay (same caveat as `ControlView.xaml`).
+
+## PMD time axis
+
+A capture file stores PMD power without times: value i belongs to i × `SampleTime` after the first
+frame. No PMD device delivers exactly one sample per `SampleTime`: a measured Powenetics unit sends
+979 instead of 1000 packets/s (no losses, the device is simply slower), and BENCHLAB pipe requests
+take longer than `MonitoringInterval`. Storing samples as they came compressed a 600 s capture by
+12 s. So every PMD sample carries its time in ms on the QPC clock — the clock of `CPUStartQPCTime`
+— in `PoweneticsChannel.TimeStamp` / `SensorSample.TimeStamp`, and `CaptureManager.AddPmdData` puts
+the samples onto the file's grid with `PmdTimeSeriesResampler` (time-weighted, keeps the average).
+`CaptureManager` subscribes before it takes the capture start time and cuts the window by time, so
+PMD data covers the first frame and the 2.5 s after the stop are dropped.
+
+Powenetics packets have a 16-bit packet number but no time, and `SerialPortStream` hands the data
+over only about every 106 ms (about 104 packets per read, also with blocking reads). Arrival times are
+therefore upper bounds. `PoweneticsPacketClock` takes the rate from a least-squares fit of packet
+index against arrival time and the offset from the lower envelope of the arrivals (the last packet of
+a read arrives right after it was sent); it counts lost packets across the 16-bit wrap and restarts
+on implausible jumps. The first ~6 s after connecting use plain arrival times while the rate is
+learned. `PoweneticsService` bins by time (`DownSamplingSize` is a length in ms, bins aligned to
+multiples of it) instead of by packet count; a bin's `TimeStamp` is its start. `PmdThroughput` and
+the "Sample Rate" display show the raw device packet rate. Unit tests: `CapFrameX.Test/PMD/PmdTimingTest`
+simulates the measured device including the batched delivery.
 
 ## Text field styles
 
@@ -268,9 +1115,54 @@ ComboBox by different amounts. **Use the `Cx*` keys, not the `MaterialDesign*` o
 view sets a text field style explicitly or bases a local style on one; anything that just relies on
 the implicit style is already covered.
 
+## Tab headers
+
+Every view with tabs (Analysis, Comparison, Capture, Overlay, PMD, Synchronization) merges
+`CapFrameX.View/Styles/CxTabHeaders.xaml` and sets two implicit styles from it: `CxTabControl` for
+the `TabControl` and `CxTabHeaderItem` for its `TabItem`s. `CxTabControl` only switches MDIX's
+`HorizontalContentAlignment` from `Stretch` to `Left`. With `Stretch`, MDIX hosts the headers in a
+uniform grid that spreads them over the whole control, which turned every header into a wide bar
+once the localization removed the fixed `TabItem` widths. A header is as wide as its text, has no
+`MinWidth` and stops at `MaxWidth` 200: a longer translation ends in an ellipsis, and
+`TrimmedTextToolTip` (`CapFrameX.View/Controls`) shows the full text as the tool tip, but only while
+it is cut off. **Do not give a `TabItem` a `Width` or `MinWidth` to make a translation fit.** Tab
+content starts at the left edge of the headers.
+
+## Overlay editor section headers
+
+MDIX indents every expander header by 24 px (`ExpanderAssist.HorizontalHeaderPadding`, default
+`24,12,24,12`). The property is inherited, so `OverlayDesignerControl.xaml` sets `0,12,0,12` once
+on the `OsdEditorControl`: every section header of the editor starts where its fields start and
+keeps its chevron at the right edge, like the combo boxes. The OSD Controls stay free of MDIX; do
+not align these headers with margins. Test: `InspectorSectionHeadersStartWhereTheFieldsStart`.
+
+## Settings that cannot be saved, starts from a temporary folder
+
+A failed write of `AppSettings.json` does not end the app. `JsonSettingsStorage` tries a save four
+times; after the last attempt `.Catch` ends that save with `false`, so `WaitForPendingSaveAsync`
+(awaited by the window close) completes, and publishes the error on `SaveFailures`, which replays
+the latest one to a late subscriber. Before 2026-11-10 the error reached a `Subscribe()` without an
+error handler, and Rx threw it on the thread pool: crash reports of the portable version in
+`OneDrive\Documents`, where Controlled folder access denied every write (creating a file failed as
+"Could not find file"), and in a deleted WinRAR folder. `App` shows the first failure of a session
+(`Appxaml_SettingsNotSaved*`, one text for the portable and one for the installed version); the
+settings stay in memory and the next change tries again.
+
+An archive program that runs `CapFrameX.exe` from an archive extracts the archive to a temporary
+folder and deletes it once it considers the program finished. WinRAR (`%TEMP%\Rar$EXa…`) did so 3 s
+after the start while CapFrameX was running: the configuration and captures folders went with it,
+and every DLL not loaded yet (`System.Management`, `RAMSPDToolkit-NDD`). `TemporaryFolderStart`
+(`CapFrameX.Configuration`) recognizes a folder below `Path.GetTempPath()` (unless TEMP names a
+drive root) or below any `\AppData\Local\Temp\`. `App.OnStartup` then explains it
+(`Appxaml_TemporaryFolder*`, in the configured language, else in the one of Windows) and exits before
+anything is written. Tests: `JsonSettingsStorageSaveFailureTest`, `TemporaryFolderStartTest`.
+
 ## Configuration Files
 - User settings: `%appdata%/CapFrameX/Configuration/AppSettings.json`
 - Overlay config: `%appdata%/CapFrameX/Configuration/OverlayEntryConfiguration_(0/1/2).json`
+- Record index: `%appdata%/CapFrameX/Configuration/RecordInfoIndex.json` — the metadata of the
+  record files read so far, keyed by path, size and write time (`RecordInfoIndex`), so a record
+  folder is listed without reading its files again. Deleting it costs one full read of the folder.
 - Staged update packages: `%appdata%/CapFrameX/Updates` (portable mode: `<appdir>/Updates`)
 - Build version: `version/Version.txt`
 - Release channel (`release` or `beta`): `version/Channel.txt`
@@ -285,6 +1177,11 @@ comparison, rollback and display. The MSI project maps patch/build monotonically
 three-component ProductVersion while the app and bootstrapper retain the full version.
 
 ## NuGet Package Issues
+Pinned versions in `source/Directory.Packages.props`; leave them out of package updates:
+- WiX `6.0.2` (see "Prerequisites").
+- MaterialDesignThemes and MaterialDesignColors `5.2.1`: 5.4.0 caused rendering errors in the UI
+  and was rolled back on 2026-11-03. Keep both packages on the same version.
+
 If package conflicts occur, run in Package Manager Console:
 ```
 Update-Package -reinstall

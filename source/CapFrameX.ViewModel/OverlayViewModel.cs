@@ -1,4 +1,5 @@
-﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
@@ -12,6 +13,7 @@ using CapFrameX.PresentMonInterface;
 using CapFrameX.Statistics.NetStandard.Contracts;
 using CapFrameX.ViewModel.SubModels;
 using GongSolutions.Wpf.DragDrop;
+using Microsoft.Extensions.Logging;
 using Prism.Commands;
 using Prism.Mvvm;
 using Prism.Navigation.Regions;
@@ -32,7 +34,7 @@ using System.Windows.Input;
 
 namespace CapFrameX.ViewModel
 {
-    public class OverlayViewModel : BindableBase, INavigationAware, IDropTarget
+    public partial class OverlayViewModel : BindableBase, INavigationAware, IDropTarget
     {
         private readonly IOverlayService _overlayService;
         private readonly IOverlayEntryProvider _overlayEntryProvider;
@@ -55,7 +57,7 @@ namespace CapFrameX.ViewModel
         private Subject<object> _configSubject = new Subject<object>();
         private ResetOverlayConfigDialog _resetOverlayConfigContent;
         private bool _resetOverlayConfigContentIsOpen;
-        private string _hookLearnedProfileText = "No learned compatibility profiles yet.";
+        private string _hookLearnedProfileText = CxLang.T("OverlayViewModel_NoLearnedCompatibilityProfiles");
         private string _filterText = string.Empty;
         private EOverlayEntryType? _selectedEntryTypeFilter;
         private ICollectionView _overlayEntriesView;
@@ -63,6 +65,10 @@ namespace CapFrameX.ViewModel
         private IReadOnlyList<HookFreeDisplayItem> _hookFreeDisplayItemsSource =
             Array.Empty<HookFreeDisplayItem>();
         private bool _displaySettingsChangedSubscribed;
+        private IReadOnlyList<string> _osdFontFamilies;
+        private readonly ILogger<OverlayViewModel> _logger;
+        private MpoSupportInfo _hookFreeMpo;
+        private string _loggedHookFreeMpo;
 
         public bool OverlayItemsOptionsEnabled
         {
@@ -106,8 +112,17 @@ namespace CapFrameX.ViewModel
         }
 
         internal static bool CanSetOverlayActive(bool requestedActive, bool isRTSSInstalled,
-            bool enableHookFreeOverlay, bool enableHookOverlay)
-            => OverlayActivation.CanSet(requestedActive, isRTSSInstalled, enableHookFreeOverlay, enableHookOverlay);
+            EOverlayRenderer renderer)
+            => OverlayActivation.CanSet(requestedActive,
+                OverlayRendererSelection.CanShowOverlay(renderer, isRTSSInstalled));
+
+        // False while the renderer is set to Off: the overlay toggles are disabled then, and
+        // their tool tip says why.
+        public bool CanSwitchOverlay => !OverlayModeOff;
+
+        public string OverlayToggleToolTip => OverlayModeOff
+            ? CxLang.T("OverlayView_OverlayRendererIsOff")
+            : CxLang.T("OverlayView_ShowOrHideTheOverlay");
 
         //public bool ToggleGlobalRTSSOSD
         //{
@@ -442,7 +457,43 @@ namespace CapFrameX.ViewModel
 
                 _appConfiguration.HookFreeDisplayDeviceName = value;
                 RaisePropertyChanged();
+                UpdateHookFreeMpo(value);
             }
+        }
+
+        // Shown under both hook-free choices whether or not it is selected, so it warns before the
+        // switch: without an MPO plane on its display, the visible window makes DWM compose the game.
+        public string HookFreeMpoWarning => GetHookFreeMpoWarning(_hookFreeMpo);
+
+        public bool ShowHookFreeMpoWarning => _hookFreeMpo?.WarnsHookFree == true;
+
+        public static string GetHookFreeMpoWarning(MpoSupportInfo mpo)
+        {
+            switch (mpo?.Status)
+            {
+                case MpoSupportStatus.NoOverlayPlane:
+                    return CxLang.T("OverlayView_HookFreeMpoMissing") + " " +
+                        CxLang.T("OverlayView_HookFreeMpoConsequence");
+                case MpoSupportStatus.SwitchedOff:
+                    return CxLang.T("OverlayView_HookFreeMpoSwitchedOff") + " " +
+                        CxLang.T("OverlayView_HookFreeMpoConsequence");
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private void UpdateHookFreeMpo(string deviceName)
+        {
+            _hookFreeMpo = MpoSupportProbe.Query(deviceName);
+            string described = _hookFreeMpo.ToString();
+            if (!string.Equals(described, _loggedHookFreeMpo, StringComparison.Ordinal))
+            {
+                _loggedHookFreeMpo = described;
+                _logger?.LogInformation("MPO check for the hook-free display {Result}", described);
+            }
+
+            RaisePropertyChanged(nameof(HookFreeMpoWarning));
+            RaisePropertyChanged(nameof(ShowHookFreeMpoWarning));
         }
 
         public int HookFreeRefreshRate
@@ -540,6 +591,49 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        // Size and margins of the CapFrameX renderers follow the game's height relative to 1080p,
+        // on top of the zoom above. RTSS is unaffected.
+        public bool OsdScaleWithResolution
+        {
+            get { return _appConfiguration.OsdScaleWithResolution; }
+            set
+            {
+                _appConfiguration.OsdScaleWithResolution = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        // Font of the classic rows and graphs in the CapFrameX renderers. Designs keep the fonts
+        // chosen in the overlay editor; RTSS is unaffected.
+        public string OsdFontFamily
+        {
+            get { return _appConfiguration.OsdFontFamily; }
+            set
+            {
+                if (value == null) return; // the selection is cleared while the list is rebuilt
+                _appConfiguration.OsdFontFamily = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        // The installed fonts, read once. A stored font that is no longer installed stays in the
+        // list so the selection still shows it; the renderers then fall back to a system font.
+        public IReadOnlyList<string> OsdFontFamilies => _osdFontFamilies ??= ListFontFamilies(OsdFontFamily);
+
+        internal static IReadOnlyList<string> ListFontFamilies(string selected)
+        {
+            var families = System.Windows.Media.Fonts.SystemFontFamilies
+                .Select(family => family.Source)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            if (!string.IsNullOrWhiteSpace(selected) &&
+                !families.Contains(selected, StringComparer.OrdinalIgnoreCase))
+                families.Add(selected);
+            families.Sort(StringComparer.CurrentCultureIgnoreCase);
+            return families;
+        }
+
         // Placement of the CapFrameX overlay: anchored corner + distance from it. Reaches all
         // three CapFrameX renderers; RTSS is positioned by its own settings.
         public int OsdAnchor
@@ -572,6 +666,37 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        // OLED pixel orbit for every design; a design can still request its own orbit.
+        public bool OsdPixelOrbitEnabled
+        {
+            get { return _appConfiguration.OsdPixelOrbitEnabled; }
+            set
+            {
+                _appConfiguration.OsdPixelOrbitEnabled = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int OsdPixelOrbitInterval
+        {
+            get { return _appConfiguration.OsdPixelOrbitInterval; }
+            set
+            {
+                _appConfiguration.OsdPixelOrbitInterval = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public int OsdPixelOrbitRadius
+        {
+            get { return _appConfiguration.OsdPixelOrbitRadius; }
+            set
+            {
+                _appConfiguration.OsdPixelOrbitRadius = value;
+                RaisePropertyChanged();
+            }
+        }
+
         // Controls the renderer-side smoothing of numeric values for BOTH CapFrameX renderers.
         // Off displays the latest published value directly; RTSS is unaffected.
         public bool UseOsdValueSmoothing
@@ -584,34 +709,34 @@ namespace CapFrameX.ViewModel
             }
         }
 
-        // Overlay renderer is a single choice of three mutually exclusive modes, surfaced as a
-        // radio group. They map onto the two underlying config flags so the existing gating in
-        // OverlayService / HookOverlayManager / OsdOverlayBridge keeps working unchanged:
-        //   RTSS      -> EnableHookOverlay=false, EnableHookFreeOverlay=false
-        //   In-game   -> EnableHookOverlay=true                                  (in-game hook)
-        //   Hook-free -> EnableHookOverlay=false, EnableHookFreeOverlay=true     (DWM, no injection)
+        // Overlay renderer is a single choice of four mutually exclusive modes, surfaced as a
+        // radio group over IAppConfiguration.OverlayRenderer. The configuration mirrors it onto
+        // the two renderer flags, so the gating in HookOverlayManager / OsdOverlayBridge keeps
+        // working unchanged; Off clears both flags like RTSS and additionally stops the RTSS feed.
         public bool OverlayModeRtss
         {
-            get { return !_appConfiguration.EnableHookOverlay && !_appConfiguration.EnableHookFreeOverlay; }
-            set { if (value) SetOverlayMode(hook: false, hookFree: false); }
+            get { return _appConfiguration.UsesRtss(); }
+            set { if (value) SetOverlayMode(EOverlayRenderer.Rtss); }
         }
 
         public bool OverlayModeHook
         {
             get { return _appConfiguration.EnableHookOverlay; }
-            set { if (value && IsInGameOverlayAvailable) SetOverlayMode(hook: true, hookFree: false); }
+            set { if (value) SetOverlayMode(EOverlayRenderer.InGame); }
         }
 
-        public bool IsInGameOverlayAvailable => OverlayAvailability.IsInGameAvailable;
-
-        public string InGameOverlayDescription => IsInGameOverlayAvailable
-            ? "Injected into the game for in-swapchain graphs."
-            : OverlayAvailability.InGameUnavailableMessage;
+        public string InGameOverlayDescription => CxLang.T("OverlayViewModel_InjectedIntoTheGameFor");
 
         public bool OverlayModeHookFree
         {
             get { return !_appConfiguration.EnableHookOverlay && _appConfiguration.EnableHookFreeOverlay; }
-            set { if (value) SetOverlayMode(hook: false, hookFree: true); }
+            set { if (value) SetOverlayMode(EOverlayRenderer.HookFree); }
+        }
+
+        public bool OverlayModeOff
+        {
+            get { return _appConfiguration.OverlayRenderer == EOverlayRenderer.Off; }
+            set { if (value) SetOverlayMode(EOverlayRenderer.Off); }
         }
 
         public bool CanConfigureHookFreeOptions =>
@@ -621,46 +746,32 @@ namespace CapFrameX.ViewModel
         // output — a contradictory combination worth flagging in the UI next to the renderer choice.
         public bool ShowRtssHiddenHint => OverlayModeRtss && _appConfiguration.HideOverlay;
 
-        private void SetOverlayMode(bool hook, bool hookFree)
+        private void SetOverlayMode(EOverlayRenderer renderer)
         {
-            // Keep at least one hook path selected while moving between the two hook modes. The
-            // configuration raises OnValueChanged even when a value is assigned to itself, so only
-            // write real changes; otherwise one click can release or re-arm RTSS twice.
-            if (hook)
-            {
-                if (!_appConfiguration.EnableHookOverlay)
-                    _appConfiguration.EnableHookOverlay = true;
-                if (_appConfiguration.EnableHookFreeOverlay)
-                    _appConfiguration.EnableHookFreeOverlay = false;
-            }
-            else if (hookFree)
-            {
-                if (!_appConfiguration.EnableHookFreeOverlay)
-                    _appConfiguration.EnableHookFreeOverlay = true;
-                if (_appConfiguration.EnableHookOverlay)
-                    _appConfiguration.EnableHookOverlay = false;
-            }
-            else
-            {
-                if (_appConfiguration.EnableHookOverlay)
-                    _appConfiguration.EnableHookOverlay = false;
-                if (_appConfiguration.EnableHookFreeOverlay)
-                    _appConfiguration.EnableHookFreeOverlay = false;
-            }
+            // The configuration writes the renderer and both flags before it raises any change,
+            // so a switch releases or re-arms RTSS at most once.
+            if (_appConfiguration.OverlayRenderer != renderer)
+                _appConfiguration.OverlayRenderer = renderer;
 
             RaiseOverlayRendererProperties();
         }
 
         private void RaiseOverlayRendererProperties()
         {
+            UpdateTileOverlayAvailability();
             RaisePropertyChanged(nameof(OverlayModeRtss));
             RaisePropertyChanged(nameof(OverlayModeHook));
             RaisePropertyChanged(nameof(OverlayModeHookFree));
+            RaisePropertyChanged(nameof(OverlayModeOff));
+            RaisePropertyChanged(nameof(CanSwitchOverlay));
+            RaisePropertyChanged(nameof(OverlayToggleToolTip));
             RaisePropertyChanged(nameof(CanConfigureHookFreeOptions));
             RaisePropertyChanged(nameof(EnableHookOverlay));
             RaisePropertyChanged(nameof(EnableHookFreeOverlay));
             RaisePropertyChanged(nameof(HookOverlayUsePresentMonFrametimes));
             RaisePropertyChanged(nameof(ShowRtssHiddenHint));
+            RaisePropertyChanged(nameof(CanUseDesign));
+            UseDesignCommand?.RaiseCanExecuteChanged();
         }
 
         public bool UseThreadAffinity
@@ -723,6 +834,8 @@ namespace CapFrameX.ViewModel
         public string SelectedOverlayItemSensorType
           => SelectedOverlayEntry == null ? null
           : _sensorService.GetSensorTypeString(SelectedOverlayEntry.OverlayEntryType, SelectedOverlayEntry.StableIdentifier);
+
+        private bool HasSelectedOverlayEntry() => SelectedOverlayEntry != null;
 
         public ICommand ConfigSwitchCommand { get; }
 
@@ -806,8 +919,11 @@ namespace CapFrameX.ViewModel
         public OverlayViewModel(IOverlayService overlayService, IOverlayEntryProvider overlayEntryProvider, IAppConfiguration appConfiguration,
             IPathService pathService, ISensorService sensorService, IRTSSService rTSSService, IThreadAffinityController threadAffinityController,
             IOnlineMetricService onlineMetricService, IOverlayTemplateService overlayTemplateService,
-            IHookLearnedProfileService hookLearnedProfileService, IHookOverlayStatusService hookOverlayStatusService)
+            IHookLearnedProfileService hookLearnedProfileService, IHookOverlayStatusService hookOverlayStatusService,
+            IOverlayDesignService overlayDesignService = null, Prism.Events.IEventAggregator eventAggregator = null,
+            ILogger<OverlayViewModel> logger = null)
         {
+            _logger = logger;
             _overlayService = overlayService;
             _overlayEntryProvider = overlayEntryProvider;
             _appConfiguration = appConfiguration;
@@ -819,6 +935,7 @@ namespace CapFrameX.ViewModel
             _onlineMetricService = onlineMetricService;
             _hookLearnedProfiles = hookLearnedProfileService ?? NullHookLearnedProfileService.Instance;
             _hookOverlayStatus = hookOverlayStatusService;
+            InitializeDesigns(overlayDesignService, eventAggregator);
             ExtendedOsdLogging = new ExtendedOsdLoggingViewModel(new ExtendedOsdLoggingController());
             RefreshHookFreeDisplayItems();
 
@@ -858,7 +975,8 @@ namespace CapFrameX.ViewModel
             // The provider gates renderer-dependent items in place. A renderer change must not use
             // the profile-switch path: that reloads JSON and discards unsaved item edits.
             _appConfiguration.OnValueChanged
-                .Where(x => x.key == nameof(IAppConfiguration.EnableHookFreeOverlay)
+                .Where(x => x.key == nameof(IAppConfiguration.OverlayRenderer)
+                         || x.key == nameof(IAppConfiguration.EnableHookFreeOverlay)
                          || x.key == nameof(IAppConfiguration.EnableHookOverlay)
                          || x.key == nameof(IAppConfiguration.HookOverlayUsePresentMonFrametimes))
                 .Throttle(TimeSpan.FromMilliseconds(50))
@@ -877,6 +995,12 @@ namespace CapFrameX.ViewModel
                 .Where(x => x.key == nameof(IAppConfiguration.HideOverlay))
                 .ObserveOnDispatcher()
                 .Subscribe(_ => RaisePropertyChanged(nameof(ShowRtssHiddenHint)));
+
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage))
+                    RaisePropertyChanged(nameof(HookFreeMpoWarning));
+            };
 
             SaveConfigCommand = new DelegateCommand<object>(
                async (object targetConfig) =>
@@ -908,21 +1032,44 @@ namespace CapFrameX.ViewModel
                 .ObserveOnDispatcher()
                 .Subscribe(_ => RefreshHookLearnedProfileText());
             RefreshHookLearnedProfileText();
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage))
+                {
+                    RaisePropertyChanged(nameof(InGameOverlayDescription));
+                    RaisePropertyChanged(nameof(DeleteDesignMessage));
+                    RaisePropertyChanged(nameof(DesignStatus));
+                    RefreshHookLearnedProfileText();
+                }
+            };
+            CxLang.Instance.OverlayLanguageChanged += OnOverlayLanguageChanged;
 
+            // Every format command copies from (or resets) the selected entry, and the selection is
+            // empty until the user picks a row and again whenever the entry list is reloaded.
             SetFormatForGroupNameCommand = new DelegateCommand(
-               () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes));
+               () => _overlayEntryProvider.SetFormatForGroupName(SelectedOverlayItemGroupName, SelectedOverlayEntry, Checkboxes),
+               HasSelectedOverlayEntry)
+                .ObservesProperty(() => SelectedOverlayEntry);
 
             SetFormatForSensorTypeCommand = new DelegateCommand(
-               () => _overlayEntryProvider.SetFormatForSensorType(_sensorService.GetSensorTypeString(SelectedOverlayEntry.OverlayEntryType, SelectedOverlayEntry.StableIdentifier), SelectedOverlayEntry, Checkboxes));
+               () => _overlayEntryProvider.SetFormatForSensorType(_sensorService.GetSensorTypeString(SelectedOverlayEntry.OverlayEntryType, SelectedOverlayEntry.StableIdentifier), SelectedOverlayEntry, Checkboxes),
+               HasSelectedOverlayEntry)
+                .ObservesProperty(() => SelectedOverlayEntry);
 
             ResetColorAndLimitDefaultsCommand = new DelegateCommand(
-                () => _overlayEntryProvider.ResetColorAndLimits(SelectedOverlayEntry));
+                () => _overlayEntryProvider.ResetColorAndLimits(SelectedOverlayEntry),
+                HasSelectedOverlayEntry)
+                .ObservesProperty(() => SelectedOverlayEntry);
 
             SetFormatForAllGroupsCommand = new DelegateCommand(
-               () => _overlayEntryProvider.SetFormatForAllGroups(SelectedOverlayEntry, Checkboxes));
+               () => _overlayEntryProvider.SetFormatForAllGroups(SelectedOverlayEntry, Checkboxes),
+               HasSelectedOverlayEntry)
+                .ObservesProperty(() => SelectedOverlayEntry);
 
             SetFormatForAllValuesCommand = new DelegateCommand(
-               () => _overlayEntryProvider.SetFormatForAllValues(SelectedOverlayEntry, Checkboxes));
+               () => _overlayEntryProvider.SetFormatForAllValues(SelectedOverlayEntry, Checkboxes),
+               HasSelectedOverlayEntry)
+                .ObservesProperty(() => SelectedOverlayEntry);
 
             SetToMinOsdCommand = new DelegateCommand(
                 () => OnSetMinOsd());
@@ -944,6 +1091,25 @@ namespace CapFrameX.ViewModel
             SetGlobalHookEventResetMetricsHotkey();
 
             InitializeOSDCustomPosition();
+        }
+
+        private void OnOverlayLanguageChanged()
+        {
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher != null && !dispatcher.CheckAccess())
+            {
+                dispatcher.BeginInvoke(new Action(OnOverlayLanguageChanged));
+                return;
+            }
+
+            if (OverlayEntries != null)
+            {
+                foreach (var entry in OverlayEntries.OfType<OverlayEntryWrapper>())
+                {
+                    entry.RefreshLocalization();
+                }
+            }
+            OverlayEntriesView?.Refresh();
         }
 
         // Shared refresh path after the provider re-read its entry list (profile switch or display
@@ -993,8 +1159,8 @@ namespace CapFrameX.ViewModel
                 if (processName == null)
                 {
                     text = total == 0
-                        ? "No learned compatibility profiles yet."
-                        : $"{total} learned compatibility profile(s); no game selected.";
+                        ? CxLang.T("OverlayViewModel_NoLearnedCompatibilityProfiles")
+                        : string.Format(CxLang.T("OverlayViewModel_LearnedProfilesNoGame"), total);
                 }
                 else
                 {
@@ -1002,25 +1168,25 @@ namespace CapFrameX.ViewModel
                         _hookLearnedProfiles.GetForProcess(processName);
                     if (entries.Count == 0)
                     {
-                        text = $"No learned compatibility profile for {processName} yet ({total} in total).";
+                        text = string.Format(CxLang.T("OverlayViewModel_NoLearnedProfileForProcess"), processName, total);
                     }
                     else
                     {
                         HookLearnedProfileSummary entry = entries[0];
                         if (entry.PendingStageName != null)
-                            text = $"{processName}: the next launch starts on {entry.PendingStageName}.";
+                            text = CxLang.Format("OverlayViewModel_ProfileNextLaunchStage01", processName, entry.PendingStageName);
                         else if (entry.Exhausted)
-                            text = $"{processName}: compatibility could not be established; the next game launch probes again.";
+                            text = CxLang.Format("OverlayViewModel_ProfileExhausted0", processName);
                         else if (entry.Verified)
-                            text = $"{processName}: {entry.StageName} (verified {entry.UpdatedUtc.ToLocalTime():g}).";
+                            text = CxLang.Format("OverlayViewModel_ProfileVerified012", processName, entry.StageName, entry.UpdatedUtc.ToLocalTime().ToString("g"));
                         else
-                            text = $"{processName}: last tried {entry.StageName}, not verified yet.";
+                            text = CxLang.Format("OverlayViewModel_ProfileNotVerified01", processName, entry.StageName);
                     }
                 }
             }
             catch (Exception ex)
             {
-                text = $"Learned compatibility profiles unavailable ({ex.Message}).";
+                text = CxLang.Format("OverlayViewModel_ProfilesUnavailable0", ex.Message);
             }
             HookLearnedProfileText = text;
         }
@@ -1355,8 +1521,10 @@ namespace CapFrameX.ViewModel
             if (!string.IsNullOrWhiteSpace(_filterText))
             {
                 var searchText = _filterText.Trim();
-                bool matchesDescription = entry.Description?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
-                bool matchesGroupName = entry.GroupName?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                bool matchesDescription = entry.Description?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0
+                    || CxLang.Instance.TranslateOverlayDescription(entry)?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
+                bool matchesGroupName = entry.GroupName?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0
+                    || CxLang.Instance.TranslateOverlay(entry.GroupName)?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
                 bool matchesStableId = entry.StableIdentifier?.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) >= 0;
 
                 if (!matchesDescription && !matchesGroupName && !matchesStableId)
@@ -1408,6 +1576,7 @@ namespace CapFrameX.ViewModel
 
         public void OnNavigatedTo(NavigationContext navigationContext)
         {
+            RefreshDesigns();
             RefreshHookFreeDisplayItems();
             if (!_displaySettingsChangedSubscribed)
             {
@@ -1466,6 +1635,8 @@ namespace CapFrameX.ViewModel
             }
 
             RaisePropertyChanged(nameof(HookFreeDisplayDeviceName));
+            // A topology change can move the display to another adapter or mode.
+            UpdateHookFreeMpo(selectedDeviceName);
         }
 
         void IDropTarget.Drop(IDropInfo dropInfo)

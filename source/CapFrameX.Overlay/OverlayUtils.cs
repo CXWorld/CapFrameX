@@ -405,6 +405,24 @@ namespace CapFrameX.Overlay
                         SortKey = "1_1"
                     },
 
+                    // Present mode: PresentMon's PresentMode of the target, e.g. "Composed: Flip".
+                    // Text, so not one of the numeric ONLINE_METRIC_NAMES.
+                    new OverlayEntryWrapper("OnlinePresentMode")
+                    {
+                        OverlayEntryType = EOverlayEntryType.OnlineMetric,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = true,
+                        Description = "Present Mode",
+                        GroupName = "Present Mode",
+                        Value = "N/A",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = true,
+                        SortKey = "1_2"
+                    },
+
                     // Animation Error
                     new OverlayEntryWrapper("OnlineAnimationError")
                     {

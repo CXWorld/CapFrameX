@@ -1,4 +1,5 @@
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 
 namespace CapFrameX.ViewModel.SubModels
 {
@@ -7,6 +8,8 @@ namespace CapFrameX.ViewModel.SubModels
     /// setting is of no concern for measurements and drivers; orange marks a state worth knowing
     /// when runs are compared or a driver does not load. The set of states is finite, so the
     /// factories hand out shared instances and the periodic refresh raises no change notifications.
+    /// State and tooltip are catalog texts resolved on every read, which keeps the shared instances
+    /// valid across language switches.
     /// </summary>
     public class PlatformSecurityStatus
     {
@@ -14,37 +17,41 @@ namespace CapFrameX.ViewModel.SubModels
         private const string StatusOrange = "#FF9800";
         private const string StatusGray = "#757575";
 
-        private static readonly PlatformSecurityStatus SecureBootOn = new PlatformSecurityStatus("On", StatusGreen,
-            "UEFI Secure Boot is on. Some anti-cheat systems require it, and Windows ignores the test signing option while it is on.");
-        private static readonly PlatformSecurityStatus SecureBootOff = new PlatformSecurityStatus("Off", StatusOrange,
-            "UEFI Secure Boot is off. Some anti-cheat systems refuse to run without it.");
-        private static readonly PlatformSecurityStatus TestSigningOn = new PlatformSecurityStatus("On", StatusOrange,
-            "Windows loads test-signed drivers. A driver that only loads this way stops working once Secure Boot is turned on.");
-        private static readonly PlatformSecurityStatus TestSigningOff = new PlatformSecurityStatus("Off", StatusGreen,
-            "Windows only loads drivers with a production signature.");
-        private static readonly PlatformSecurityStatus VbsRunning = new PlatformSecurityStatus("Running", StatusOrange,
-            "Virtualization-based security is running. It costs some performance, so compare runs only with the same setting.");
-        private static readonly PlatformSecurityStatus VbsOff = new PlatformSecurityStatus("Off", StatusGreen,
-            "Virtualization-based security is not running.");
-        private static readonly PlatformSecurityStatus MemoryIntegrityOn = new PlatformSecurityStatus("On", StatusOrange,
-            "Memory integrity (hypervisor-enforced code integrity) is on. It costs some performance and blocks drivers on Microsoft's vulnerable-driver list.");
-        private static readonly PlatformSecurityStatus MemoryIntegrityOff = new PlatformSecurityStatus("Off", StatusGreen,
-            "Memory integrity (hypervisor-enforced code integrity) is off.");
+        private static readonly PlatformSecurityStatus SecureBootOn = new PlatformSecurityStatus(
+            new LocalizedText("PlatformSecurityStatus_On"), StatusGreen, new LocalizedText("PlatformSecurityStatus_SecureBootOnToolTip"));
+        private static readonly PlatformSecurityStatus SecureBootOff = new PlatformSecurityStatus(
+            new LocalizedText("PlatformSecurityStatus_Off"), StatusOrange, new LocalizedText("PlatformSecurityStatus_SecureBootOffToolTip"));
+        private static readonly PlatformSecurityStatus TestSigningOn = new PlatformSecurityStatus(
+            new LocalizedText("PlatformSecurityStatus_On"), StatusOrange, new LocalizedText("PlatformSecurityStatus_TestSigningOnToolTip"));
+        private static readonly PlatformSecurityStatus TestSigningOff = new PlatformSecurityStatus(
+            new LocalizedText("PlatformSecurityStatus_Off"), StatusGreen, new LocalizedText("PlatformSecurityStatus_TestSigningOffToolTip"));
+        private static readonly PlatformSecurityStatus VbsRunning = new PlatformSecurityStatus(
+            new LocalizedText("PlatformSecurityStatus_Running"), StatusOrange, new LocalizedText("PlatformSecurityStatus_VbsRunningToolTip"));
+        private static readonly PlatformSecurityStatus VbsOff = new PlatformSecurityStatus(
+            new LocalizedText("PlatformSecurityStatus_Off"), StatusGreen, new LocalizedText("PlatformSecurityStatus_VbsOffToolTip"));
+        private static readonly PlatformSecurityStatus MemoryIntegrityOn = new PlatformSecurityStatus(
+            new LocalizedText("PlatformSecurityStatus_On"), StatusOrange, new LocalizedText("PlatformSecurityStatus_MemoryIntegrityOnToolTip"));
+        private static readonly PlatformSecurityStatus MemoryIntegrityOff = new PlatformSecurityStatus(
+            new LocalizedText("PlatformSecurityStatus_Off"), StatusGreen, new LocalizedText("PlatformSecurityStatus_MemoryIntegrityOffToolTip"));
 
-        public string State { get; }
+        private readonly LocalizedText _state;
+        private readonly LocalizedText _toolTip;
+
+        public string State => _state.Resolve();
 
         public string StatusColor { get; }
 
-        public string ToolTip { get; }
+        public string ToolTip => _toolTip?.Resolve();
 
-        private PlatformSecurityStatus(string state, string statusColor, string toolTip)
+        private PlatformSecurityStatus(LocalizedText state, string statusColor, LocalizedText toolTip)
         {
-            State = state;
+            _state = state;
             StatusColor = statusColor;
-            ToolTip = toolTip;
+            _toolTip = toolTip;
         }
 
-        public static PlatformSecurityStatus Unknown { get; } = new PlatformSecurityStatus("Unknown", StatusGray, null);
+        public static PlatformSecurityStatus Unknown { get; } =
+            new PlatformSecurityStatus(new LocalizedText("PlatformSecurityStatus_Unknown"), StatusGray, null);
 
         public static PlatformSecurityStatus ForSecureBoot(ESystemInfoTertiaryStatus status)
             => Pick(status, SecureBootOn, SecureBootOff);

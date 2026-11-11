@@ -6,6 +6,7 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX", "source\CapFrameX\CapFrameX.csproj", "{AAA73D26-5CD6-4066-B84C-5BD34057B346}"
 	ProjectSection(ProjectDependencies) = postProject
 		{7158F27F-0F57-4216-A6EA-04FA24EFDDDF} = {7158F27F-0F57-4216-A6EA-04FA24EFDDDF}
+		{9746F818-C1B9-461D-BD07-D20A103DC751} = {9746F818-C1B9-461D-BD07-D20A103DC751}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.View", "source\CapFrameX.View\CapFrameX.View.csproj", "{5CB56A44-8340-48F5-A9EC-DDF9AD3E10F0}"
@@ -27,6 +28,8 @@ EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "CapFrameXInstaller", "source\CapFrameXInstaller\CapFrameXInstaller.wixproj", "{77416B78-A34F-4CFC-9562-A2599D054C8F}"
 EndProject
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "CapFrameXBootstrapper", "source\CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj", "{9E2FAB6F-117C-495A-A47B-52A15B9E9806}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CapFrameXBootstrapper.BAFunctions", "source\CapFrameXBootstrapper.BAFunctions\CapFrameXBootstrapper.BAFunctions.vcxproj", "{6A2CC18F-30D9-4FEB-969B-23E2A8390684}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CapFrameX.PresentMonInterface", "source\CapFrameX.PresentMonInterface\CapFrameX.PresentMonInterface.csproj", "{ADFBAECE-B74F-4A80-87D1-84BC990527B0}"
 EndProject
@@ -227,6 +230,12 @@ Global
 		{9E2FAB6F-117C-495A-A47B-52A15B9E9806}.Release|Any CPU.ActiveCfg = Release|x86
 		{9E2FAB6F-117C-495A-A47B-52A15B9E9806}.Release|x64.ActiveCfg = Release|x86
 		{9E2FAB6F-117C-495A-A47B-52A15B9E9806}.Release|x86.ActiveCfg = Release|x86
+		{6A2CC18F-30D9-4FEB-969B-23E2A8390684}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{6A2CC18F-30D9-4FEB-969B-23E2A8390684}.Debug|x64.ActiveCfg = Debug|Win32
+		{6A2CC18F-30D9-4FEB-969B-23E2A8390684}.Debug|x86.ActiveCfg = Debug|Win32
+		{6A2CC18F-30D9-4FEB-969B-23E2A8390684}.Release|Any CPU.ActiveCfg = Release|Win32
+		{6A2CC18F-30D9-4FEB-969B-23E2A8390684}.Release|x64.ActiveCfg = Release|Win32
+		{6A2CC18F-30D9-4FEB-969B-23E2A8390684}.Release|x86.ActiveCfg = Release|Win32
 		{ADFBAECE-B74F-4A80-87D1-84BC990527B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ADFBAECE-B74F-4A80-87D1-84BC990527B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADFBAECE-B74F-4A80-87D1-84BC990527B0}.Debug|x64.ActiveCfg = Debug|x64

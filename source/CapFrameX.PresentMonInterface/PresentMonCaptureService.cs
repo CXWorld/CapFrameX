@@ -1,17 +1,14 @@
 ﻿using CapFrameX.Capture.Contracts;
 using CapFrameX.Contracts.Configuration;
-using CapFrameX.Extensions;
+using CapFrameX.PMD.Benchlab;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
-using System.Runtime.InteropServices;
 
 namespace CapFrameX.PresentMonInterface
 {
@@ -47,11 +44,15 @@ namespace CapFrameX.PresentMonInterface
         public static readonly int ProcessID_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "ProcessID");
         public static readonly int SwapChainAddress_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "SwapChainAddress");
         // Graphics runtime/API of the presenting app (e.g. "DXGI", "D3D9") — index 3; used to
-        // label the hook-free OSD's <APP> line (RTSS gets this from the 3D API, we get it from PresentMon).
+        // label the <APP> line of the hook-free OSD (RTSS gets this from the 3D API, we get it from
+        // PresentMon). The in-game renderer replaces it with the API it proved (D3D11, D3D12, Vulkan).
         public static readonly int PresentRuntime_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "PresentRuntime");
         // "Application" or a generated-frame source (--track_frame_type); fixed index before the
         // optional PC latency column. Consumed by the hook-free feed diagnostics only.
         public static readonly int FrameType_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "FrameType");
+        // Also fixed and, like FrameType, read by the hook-free feed diagnostics only.
+        public static readonly int AllowsTearing_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "AllowsTearing");
+        public static readonly int PresentMode_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "PresentMode");
         public static readonly int MsBetweenPresents_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenPresents");
         public static readonly int MsBetweenDisplayChange_INDEX = Array.IndexOf(ColumnLayoutWithPcLatency.Columns, "MsBetweenDisplayChange");
 
@@ -90,14 +91,11 @@ namespace CapFrameX.PresentMonInterface
 
         private readonly ISubject<string[]> _outputDataStream;
         private readonly BehaviorSubject<bool> _captureServiceRunning = new BehaviorSubject<bool>(false);
-        private readonly object _listLock = new object();
         private readonly ILogger<PresentMonCaptureService> _logger;
-        private HashSet<(string, int)> _presentMonProcesses;
-        private bool _isUpdating;
-        private IDisposable _hearBeatDisposable;
-        private IDisposable _processNameDisposable;
+        private readonly PresentMonProcessList _processList;
         private IDisposable _settleDisposable;
         private Process _presentMonProcess;
+        private ChildProcessJob _presentMonJob;
 
         public Dictionary<string, int> ParameterNameIndexMapping { get; }
 
@@ -114,8 +112,8 @@ namespace CapFrameX.PresentMonInterface
         {
             _outputDataStream = new Subject<string[]>();
             IsCaptureModeActiveStream = new Subject<bool>();
-            _presentMonProcesses = new HashSet<(string, int)>();
             _logger = logger;
+            _processList = new PresentMonProcessList(logger);
             _appConfiguration = appConfiguration;
         }
 
@@ -130,7 +128,7 @@ namespace CapFrameX.PresentMonInterface
             {
                 SetCaptureServiceRunning(false);
                 TerminateRunningPresentMon();
-                SubscribeToPresentMonCapturedProcesses();
+                _processList.Start(_outputDataStream);
                 var captureColumnLayout = GetColumnLayout(IsPcLatencyTrackingEnabled(startinfo));
                 _activeColumnLayout = captureColumnLayout;
 
@@ -179,6 +177,7 @@ namespace CapFrameX.PresentMonInterface
 
                 _presentMonProcess = process;
                 process.Start();
+                TieToThisProcess(process);
                 process.BeginOutputReadLine();
                 process.BeginErrorReadLine();
 
@@ -202,8 +201,6 @@ namespace CapFrameX.PresentMonInterface
 
         public bool StopCaptureService()
         {
-            _hearBeatDisposable?.Dispose();
-            _processNameDisposable?.Dispose();
             _settleDisposable?.Dispose();
             _settleDisposable = null;
             _presentMonProcess = null;
@@ -212,14 +209,32 @@ namespace CapFrameX.PresentMonInterface
 
             try
             {
-                lock (_listLock)
-                    _presentMonProcesses?.Clear();
+                _processList.Stop();
 
                 TerminateRunningPresentMon();
                 return true;
             }
             catch { return false; }
 
+        }
+
+        // PresentMon runs from the application folder. Without a job it outlives CapFrameX when the
+        // app is killed or crashes, keeps that folder locked and goes on capturing in the background.
+        // The job closes with CapFrameX and ends the instance with it; a regular stop still terminates
+        // it first through --terminate_existing_session.
+        private void TieToThisProcess(Process process)
+        {
+            try
+            {
+                var job = ChildProcessJob.Attach(process);
+                // The previous instance was terminated before this one started.
+                _presentMonJob?.Dispose();
+                _presentMonJob = job;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "PresentMon could not be tied to the CapFrameX process and may outlive it.");
+            }
         }
 
         private void SetCaptureServiceRunning(bool isRunning)
@@ -300,12 +315,10 @@ namespace CapFrameX.PresentMonInterface
         }
 
         public IEnumerable<(string, int)> GetAllFilteredProcesses(HashSet<string> filter)
-        {
-            lock (_listLock)
-            {
-                return _presentMonProcesses?.Where(processInfo => !filter.Contains(processInfo.Item1));
-            }
-        }
+            => _processList.GetAllFilteredProcesses(filter);
+
+        public IReadOnlyList<CaptureProcessActivity> GetProcessActivity()
+            => _processList.GetProcessActivity();
 
         /// <summary>
         /// Asks a running PresentMon instance to stop. Returns the terminating process so callers
@@ -335,94 +348,6 @@ namespace CapFrameX.PresentMonInterface
                 Log.Logger.Error(ex, "Error while killing PresentMon process.");
                 return null;
             }
-        }
-
-        private void SubscribeToPresentMonCapturedProcesses()
-        {
-            try
-            {
-                bool hasInitialData = false;
-                _hearBeatDisposable = Observable.Generate(0, // dummy initialState
-                    x => true, // dummy condition
-                    x => x, // dummy iterate
-                    x => x, // dummy resultSelector
-                    x => TimeSpan.FromSeconds(1))
-                    .Subscribe(x => UpdateProcessToCaptureList());
-
-                _processNameDisposable = _outputDataStream
-                    .Skip(1)
-                    .ObserveOn(new EventLoopScheduler())
-                    .Where(lineSplit => _isUpdating == false)
-                    .Subscribe(lineSplit =>
-                    {
-                        if (!hasInitialData)
-                        {
-                            _logger.LogInformation("Process name stream has initial data.");
-                            hasInitialData = true;
-                        }
-
-                        string processName = lineSplit[ApplicationName_INDEX].Replace(".exe", "");
-
-                        if (!int.TryParse(lineSplit[ProcessID_INDEX], out int processId))
-                        {
-                            _logger.LogError("Failed to parse process ID from line split. {lineSplit}", string.Join(",", lineSplit));
-                            return;
-                        }
-
-                        lock (_listLock)
-                        {
-                            var processInfo = (processName, processId);
-                            if (processName != null && !_presentMonProcesses.Contains(processInfo))
-                            {
-                                _presentMonProcesses.Add(processInfo);
-                            }
-                        }
-                    });
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, $"Failed to get process resources");
-            }
-        }
-
-        private void UpdateProcessToCaptureList()
-        {
-            _isUpdating = true;
-            var updatedList = new List<(string, int)>();
-            // Extended OSD logging (the switch ExtendedOsdLoggingController mirrors into the
-            // process environment); evaluated once per 1 s pass, never per entry.
-            bool logRemovals = Environment.GetEnvironmentVariable("CFX_OSD_VERBOSE_LOG") == "1";
-
-            lock (_listLock)
-            {
-                foreach (var processInfo in _presentMonProcesses)
-                {
-                    try
-                    {
-                        if (ProcessHelper.IsProcessAlive(processInfo.Item2))
-                        {
-                            updatedList.Add(processInfo);
-                        }
-                        else if (logRemovals)
-                        {
-                            // IsProcessAlive also returns false when OpenProcess is denied for a
-                            // live (protected) process; such an entry would be re-added by its next
-                            // row and flicker the detected list, so every removal is worth a line.
-                            _logger.LogInformation(
-                                "Process list: removed '{process}' (PID {pid}) - exited or not queryable (Win32 error {error})",
-                                processInfo.Item1, processInfo.Item2, Marshal.GetLastWin32Error());
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, $"Failed to get process resources from {processInfo.Item1}");
-                    }
-                }
-
-                _presentMonProcesses = new HashSet<(string, int)>(updatedList);
-            }
-
-            _isUpdating = false;
         }
 
         private static PresentMonColumnLayout GetColumnLayout(bool usePcLatency)

@@ -1,0 +1,636 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Reactive.Concurrency;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using System.Reactive.Subjects;
+using System.Threading;
+using System.Threading.Tasks;
+using CapFrameX.Contracts.Sensor;
+using CapFrameX.Contracts.Overlay;
+using CapFrameX.Monitoring.Contracts;
+using CapFrameX.PresentMonInterface;
+using CapFrameX.Statistics.NetStandard.Contracts;
+
+namespace CapFrameX.OSD.Integration
+{
+    /// <summary>
+    /// Discovers every CapFrameX sensor and reads the existing shared telemetry streams.
+    /// The host owns visibility leases; neither discovery nor a subscription changes profiles.
+    /// </summary>
+    public sealed class OverlayTelemetryService : IOverlayTelemetryService
+    {
+        private const string MetricPrefix = "metric/";
+        // Short hardware names, derived from the full ones the classic overlay provides.
+        private const string GpuShortName = "CustomGPUShort", CpuShortName = "CustomCPUShort";
+
+        private readonly ISensorService _sensors;
+        private readonly ISensorConfig _config;
+        private readonly IOnlineMetricService _metrics;
+        private readonly IOverlayEntryProvider _classic;
+        private readonly IOverlayService _overlay;
+        private readonly IHookOverlayStatusService _hookStatus;
+        private readonly SemaphoreSlim _catalogLock = new SemaphoreSlim(1, 1);
+        private readonly object _lifecycleLock = new object();
+        // Each lease with the sources it needs; a null function needs all of them.
+        private readonly Dictionary<IDisposable, Func<IReadOnlyCollection<string>>> _leases =
+            new Dictionary<IDisposable, Func<IReadOnlyCollection<string>>>();
+        private readonly ReplaySubject<bool> _stop = new ReplaySubject<bool>(1);
+        private volatile OverlayTelemetrySource[] _sources = Array.Empty<OverlayTelemetrySource>();
+        private volatile bool _disposed;
+
+        public IObservable<OverlayTelemetrySnapshot> Snapshots { get; }
+
+        public OverlayTelemetryService(ISensorService sensors, ISensorConfig config,
+            IOnlineMetricService metrics = null, IOverlayEntryProvider classic = null,
+            IOverlayService overlay = null, IHookOverlayStatusService hookStatus = null)
+        {
+            _sensors = sensors ?? throw new ArgumentNullException(nameof(sensors));
+            _config = config ?? throw new ArgumentNullException(nameof(config));
+            _metrics = metrics;
+            _classic = classic;
+            _overlay = overlay;
+            _hookStatus = hookStatus;
+            Snapshots = sensors.SensorSnapshotStream
+                // Formatting and statistics must not hold up the single hardware polling worker.
+                .ObserveOn(TaskPoolScheduler.Default)
+                .TakeUntil(_stop)
+                .Select(snapshot => CreateSnapshot(snapshot.Item1, snapshot.Item2))
+                .Publish()
+                .RefCount();
+        }
+
+        public async Task<IReadOnlyList<OverlayTelemetrySource>> GetSourcesAsync()
+        {
+            await _catalogLock.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                ThrowIfDisposed();
+                // Discovery can invoke vendor APIs even when its completion task is already ready.
+                var entries = await Task.Run(async () =>
+                    (await _sensors.GetSensorEntries().ConfigureAwait(false))?.ToArray()
+                    ?? Array.Empty<ISensorEntry>()).ConfigureAwait(false);
+                var sources = BuildHardwareSources(entries).ToList();
+                sources.AddRange(CreateMemoryTotals(sources).ToArray());
+                if (_metrics != null) sources.AddRange(CreateMetricSources());
+                if (_classic != null)
+                {
+                    var classicEntries = await _classic.GetTelemetrySourcesAsync().ConfigureAwait(false)
+                        ?? Array.Empty<IOverlayEntry>();
+                    var known = new HashSet<string>(sources.Select(s => s.Identifier), StringComparer.Ordinal);
+                    sources.AddRange(classicEntries.Where(e => e != null && known.Add(e.Identifier))
+                        .Select(ClassicSource));
+                    // Narrow layouts show the model only, as RTSS's %GPU% and %CPUShort% do. The short
+                    // names follow the full ones, a custom hardware label included.
+                    if (known.Contains("CustomGPU"))
+                        sources.Add(AdditionalSource(GpuShortName, "GPU name (short)", "Graphics", "Information", "", "gpuNameShort", true));
+                    if (known.Contains("CustomCPU"))
+                        sources.Add(AdditionalSource(CpuShortName, "CPU name (short)", "Processor", "Information", "", "cpuNameShort", true));
+                }
+                if (_metrics != null)
+                {
+                    sources.Add(AdditionalSource("ProcessName", "Selected application", "Performance", "Application", "", "processName", true, true));
+                    sources.Add(AdditionalSource("GraphicsAPI", "Graphics API / runtime", "Performance", "Application", "", "graphicsApi", true, true));
+                }
+                if (_overlay != null)
+                {
+                    sources.Add(AdditionalSource("RunHistoryCount", "Completed runs", "Capture", "Results", "", "runCount", false));
+                    sources.Add(AdditionalSource("RunHistoryAggregation", "Aggregated capture result", "Capture", "Results", "", "runAggregation", true));
+                    sources.Add(AdditionalSource("RunHistoryOutlierCount", "Outlier runs", "Capture", "Results", "", "runOutlierCount", false));
+                }
+                OverlaySemanticKeys.Assign(sources);
+                ThrowIfDisposed();
+                _sources = sources.ToArray();
+                return Array.AsReadOnly(_sources);
+            }
+            finally
+            {
+                _catalogLock.Release();
+            }
+        }
+
+        public IDisposable AcquirePreview() => AcquirePreview(null);
+
+        public IDisposable AcquirePreview(Func<IReadOnlyCollection<string>> requiredSourceIds)
+        {
+            lock (_lifecycleLock)
+            {
+                ThrowIfDisposed();
+                // The editors need every sensor; a design only the hardware its sources read.
+                var sensorLease = requiredSourceIds == null
+                    ? _config.AcquireAllSensors()
+                    : _config.AcquireSensors(new LeasedSensorResolver(this, requiredSourceIds).Resolve);
+                IDisposable metricLease;
+                try { metricLease = _metrics?.AcquireTelemetry(); }
+                catch { sensorLease?.Dispose(); throw; }
+                var demand = new CompositeDisposable(sensorLease ?? Disposable.Empty,
+                    metricLease ?? Disposable.Empty);
+                IDisposable lease = null;
+                lease = Disposable.Create(() =>
+                {
+                    lock (_lifecycleLock) _leases.Remove(lease);
+                    demand.Dispose();
+                });
+                _leases.Add(lease, requiredSourceIds);
+                return lease;
+            }
+        }
+
+        private static IEnumerable<OverlayTelemetrySource> BuildHardwareSources(IEnumerable<ISensorEntry> entries)
+        {
+            var uniqueEntries = entries.Where(e => e != null && !string.IsNullOrWhiteSpace(e.Identifier))
+                .GroupBy(e => e.Identifier, StringComparer.Ordinal).Select(group => group.First()).ToArray();
+            var stableCounts = uniqueEntries.Select(SensorIdentifierHelper.BuildStableIdentifier)
+                .Where(id => !string.IsNullOrEmpty(id)).GroupBy(id => id, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.Count(), StringComparer.Ordinal);
+            var deviceCounts = uniqueEntries.GroupBy(DeviceNameKey, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key,
+                    group => group.Select(RuntimeDeviceKey).Distinct(StringComparer.Ordinal).Count(),
+                    StringComparer.Ordinal);
+
+            foreach (var entry in uniqueEntries.OrderBy(e => e.HardwareName, StringComparer.Ordinal)
+                .ThenBy(e => e.SensorType, StringComparer.Ordinal).ThenBy(e => e.Name, StringComparer.Ordinal)
+                .ThenBy(e => e.Identifier, StringComparer.Ordinal))
+            {
+                var stable = SensorIdentifierHelper.BuildStableIdentifier(entry);
+                bool ambiguous = stable != null && stableCounts[stable] > 1;
+                // Qualify *every* duplicate, never publish an alias pointing to an arbitrary device.
+                string id = stable == null ? OverlaySensorSources.UnnamedSensorId(entry.Identifier)
+                    : OverlaySensorSources.SensorId(stable, ambiguous ? entry.Identifier : null);
+                string device = DeviceNameKey(entry);
+                // Hardware names are stable across sensor index changes, but identical devices
+                // must remain separate. Unknown provider identifiers are deliberately isolated.
+                string deviceKey = OverlaySensorSources.DeviceKey(entry.HardwareType, entry.HardwareName,
+                    deviceCounts[device] > 1 || string.IsNullOrWhiteSpace(entry.HardwareName) ? RuntimeDeviceKey(entry) : null);
+                var group = GetRepeatedSensorGroup(entry);
+                yield return new OverlayTelemetrySource
+                {
+                    Id = id,
+                    Identifier = entry.Identifier,
+                    StableIdentifier = stable,
+                    Name = entry.Name ?? entry.Identifier,
+                    HardwareName = entry.HardwareName ?? entry.HardwareType,
+                    HardwareType = entry.HardwareType,
+                    SensorType = entry.SensorType,
+                    Unit = GetUnit(entry),
+                    Category = HardwareCategory(entry.HardwareType),
+                    Subcategory = SensorCategory(entry.SensorType),
+                    DeviceKey = deviceKey,
+                    GroupKey = group.Family == null ? null : deviceKey + "/" + group.Family,
+                    GroupName = group.Name,
+                    GroupOrder = group.Order,
+                    CoreType = group.CoreType,
+                    CoreIndex = group.CoreIndex,
+                    ThreadIndex = group.ThreadIndex,
+                    IsHardwareSensor = true,
+                    IsStableIdentifierAmbiguous = ambiguous
+                };
+            }
+        }
+
+        private static string DeviceNameKey(ISensorEntry entry)
+            => (entry.HardwareType ?? string.Empty) + "/" + (entry.HardwareName ?? string.Empty);
+
+        private static string RuntimeDeviceKey(ISensorEntry entry)
+        {
+            string identifier = entry.Identifier;
+            int indexSeparator = identifier.LastIndexOf('/');
+            int typeSeparator = indexSeparator <= 0 ? -1 : identifier.LastIndexOf('/', indexSeparator - 1);
+            if (typeSeparator > 0 && int.TryParse(identifier.Substring(indexSeparator + 1),
+                    NumberStyles.None, CultureInfo.InvariantCulture, out _)
+                && string.Equals(identifier.Substring(typeSeparator + 1, indexSeparator - typeSeparator - 1),
+                    entry.SensorType, StringComparison.OrdinalIgnoreCase))
+                return identifier.Substring(0, typeSeparator);
+            return identifier;
+        }
+
+        private static (string Family, string Name, int Order, string CoreType, int? CoreIndex, int? ThreadIndex)
+            GetRepeatedSensorGroup(ISensorEntry entry)
+        {
+            if (entry.HardwareType != "Cpu" || !OverlaySensorSources.TryGetCoreReading(entry.SensorType, entry.Name, out var reading))
+                return default;
+            return (reading.Family, reading.GroupName, reading.Order, reading.CoreType, reading.CoreIndex, reading.ThreadIndex);
+        }
+
+        private static string GetUnit(ISensorEntry entry)
+        {
+            switch (entry.SensorType)
+            {
+                case "Voltage": return "V";
+                case "Current": return "A";
+                case "Power": return "W";
+                case "Clock": return "MHz";
+                case "Temperature": return "°C";
+                case "Load": case "Control": case "Level": case "Humidity": return "%";
+                case "Frequency": return "Hz";
+                case "Fan": return "RPM";
+                case "Flow": return "L/h";
+                case "Data": return "GB";
+                case "SmallData": return "MB";
+                // CapFrameX GPU/storage implementations already convert their values to GB/s;
+                // upstream LHM network adapters retain bytes/second.
+                case "Throughput": return entry.HardwareType == "Network" ? "B/s" : "GB/s";
+                case "TimeSpan": return "s";
+                case "Timing": return "ns";
+                case "Energy": return "mWh";
+                case "Noise": return "dBA";
+                case "Conductivity": return "µS/cm";
+                case "Latency": return "ms";
+                case "DataRate": return "MT/s";
+                default: return string.Empty;
+            }
+        }
+
+        private static IEnumerable<OverlayTelemetrySource> CreateMemoryTotals(IReadOnlyList<OverlayTelemetrySource> sources)
+        {
+            foreach (var device in sources.Where(source => source.IsHardwareSensor && source.HardwareType == "Memory"
+                && source.SensorType == "Data").GroupBy(source => source.DeviceKey, StringComparer.Ordinal))
+            {
+                if (device.Any(source => source.Name == "RAM Total" || source.Name == "Memory Total")) continue;
+                var used = device.Where(source => source.Name == "RAM Used" || source.Name == "Memory Used").ToArray();
+                var free = device.Where(source => source.Name == "RAM Available" || source.Name == "Memory Available").ToArray();
+                if (used.Length != 1 || free.Length != 1 || used[0].Unit != free[0].Unit
+                    || used[0].IsStableIdentifierAmbiguous || free[0].IsStableIdentifierAmbiguous) continue;
+                string id = "derived/ram-total/" + used[0].Id;
+                yield return new OverlayTelemetrySource
+                {
+                    Id = id, Identifier = id, StableIdentifier = id, Name = "RAM Total",
+                    HardwareName = used[0].HardwareName, HardwareType = "Memory", SensorType = "Data",
+                    DeviceKey = used[0].DeviceKey, Category = "Memory", Subcategory = "Capacity & usage", Unit = used[0].Unit,
+                    SumSourceIdA = used[0].Id, SumSourceIdB = free[0].Id
+                };
+            }
+        }
+
+        private static IEnumerable<OverlayTelemetrySource> CreateMetricSources()
+        {
+            yield return Metric("Framerate", "Current framerate", "FPS", "fpsCurrent");
+            yield return Metric("Frametime", "Current frame time", "ms", "frametimeCurrent");
+            yield return Metric("DisplayTime", "Display time", "ms", "displayTime");
+            yield return Metric("OnlineAverage", "Average FPS", "FPS", "fps");
+            yield return Metric("OnlineP1", "1% percentile FPS", "FPS", "fpsP1");
+            yield return Metric("OnlineP0dot1", "0.1% percentile FPS", "FPS", "fpsP0dot1");
+            yield return Metric("OnlineP0dot2", "0.2% percentile FPS", "FPS", "fpsP0dot2");
+            yield return Metric("Online1PercentLow", "1% low FPS", "FPS", "fps1pctLow");
+            yield return Metric("Online0dot1PercentLow", "0.1% low FPS", "FPS", "fps0dot1pctLow");
+            yield return Metric("Online0dot2PercentLow", "0.2% low FPS", "FPS", "fps0dot2pctLow");
+            yield return Metric("OnlineFrameTimeAverage", "Average frame time", "ms", "frametime");
+            yield return Metric("OnlineGpuActiveTimeAverage", "Average GPU active time", "ms", "gpuActiveTime");
+            yield return Metric("OnlineCpuActiveTimeAverage", "Average CPU active time", "ms", "cpuActiveTime");
+            yield return Metric("OnlineGpuActiveTimePercentageDeviation", "GPU active time deviation", "%", "gpuActiveDeviation");
+            yield return Metric("OnlineStutteringPercentage", "Stuttering", "%", "stuttering");
+            yield return Metric("OnlinePcLatency", "PC latency", "ms", "pcLatency");
+            yield return Metric("OnlineAnimationError", "Animation error", "ms", "animationError");
+            yield return Metric("PmdGpuPowerCurrent", "PMD GPU power", "W", "pmdGpuPower");
+            yield return Metric("PmdCpuPowerCurrent", "PMD CPU power", "W", "pmdCpuPower");
+            yield return Metric("PmdSystemPowerCurrent", "PMD system power", "W", "pmdSystemPower");
+        }
+
+        private static OverlayTelemetrySource Metric(string identifier, string name, string unit, string semantic = null)
+        {
+            bool isPmd = identifier.StartsWith("Pmd", StringComparison.Ordinal);
+            return new OverlayTelemetrySource
+            {
+                Id = "metric/" + identifier, Identifier = identifier, StableIdentifier = identifier,
+                Name = name, Unit = unit, HardwareName = isPmd ? "PMD" : "PresentMon",
+                HardwareType = isPmd ? "PMD" : "Performance", SensorType = isPmd ? "Power" : "Metric",
+                Category = isPmd ? "Power" : "Performance", Subcategory = MetricCategory(identifier),
+                IsProcessSpecific = !isPmd,
+                SemanticKey = semantic
+            };
+        }
+
+        private static string HardwareCategory(string hardwareType)
+            => hardwareType?.StartsWith("Gpu", StringComparison.Ordinal) == true ? "Graphics"
+                : hardwareType == "Cpu" ? "Processor" : hardwareType == "Memory" ? "Memory"
+                : hardwareType == "Storage" ? "Storage" : hardwareType == "Network" ? "Network"
+                : hardwareType == "Battery" ? "Power" : "System";
+
+        private static string SensorCategory(string sensorType)
+            => sensorType switch
+            {
+                "Clock" or "Frequency" or "DataRate" => "Clocks & speed",
+                "Temperature" => "Temperatures",
+                "Power" or "Energy" or "Voltage" or "Current" => "Power & voltage",
+                "Load" or "Factor" or "Level" => "Utilization",
+                "Data" or "SmallData" => "Capacity & usage",
+                "Fan" or "Control" or "Flow" => "Cooling",
+                "Throughput" => "Throughput",
+                "TimeSpan" or "Timing" or "Latency" => "Timing & latency",
+                _ => "Other sensors"
+            };
+
+        private static string MetricCategory(string id)
+            => id.StartsWith("Pmd", StringComparison.Ordinal) ? "PMD"
+                : id.Contains("PercentLow") ? "Low averages"
+                : id.StartsWith("OnlineP", StringComparison.Ordinal) && id != "OnlinePcLatency" ? "Percentiles"
+                : id.Contains("Latency") || id.Contains("Animation") ? "Latency & pacing"
+                : id.Contains("Stuttering") || id.Contains("Deviation") ? "Stability"
+                : id.Contains("ActiveTime") ? "CPU & GPU timing"
+                : id.StartsWith("Online", StringComparison.Ordinal) ? "Averages" : "Live";
+
+        private static OverlayTelemetrySource ClassicSource(IOverlayEntry entry)
+        {
+            string id = entry.Identifier;
+            var info = id switch
+            {
+                "CaptureServiceStatus" => ("Capture", "Status", "", "captureStatus", true),
+                "CaptureTimer" => ("Capture", "Status", "s", "captureTimer", false),
+                "RunHistory" => ("Capture", "Results", "", "runHistory", true),
+                "HookOverlayStatus" => ("Performance", "Overlay", "", "hookStatus", true),
+                "FrameGenerationTechnology" => ("Performance", "Frame generation", "", "frameGenerationTechnology", true),
+                "FrameGenerationStatus" => ("Performance", "Frame generation", "", "frameGenerationStatus", true),
+                "CxAppCpuUsage" => ("System", "CapFrameX", "%", "appCpuLoad", false),
+                "SystemTime" => ("System", "Clock", "", "systemTime", true),
+                "CustomCPU" => ("Processor", "Information", "", "cpuName", true),
+                "CustomGPU" => ("Graphics", "Information", "", "gpuName", true),
+                "CustomRAM" => ("Memory", "Information", "", "ramDescription", true),
+                "Mainboard" => ("System", "Information", "", "mainboardName", true),
+                "OS" => ("System", "Information", "", "osVersion", true),
+                "GPUDriver" => ("Graphics", "Information", "", "gpuDriver", true),
+                "Resolution" => ("Graphics", "Displays", "", "resolution", true),
+                "OnlinePresentMode" => ("Performance", "Application", "", "presentMode", true),
+                "BatteryLifePercent" => ("Power", "Battery", "%", "batteryLevel", false),
+                "BatteryLifeRemaining" => ("Power", "Battery", "min", "batteryRemaining", false),
+                "Ping" => ("Network", "Connectivity", "ms", "ping", false),
+                _ when id.StartsWith("DisplayResolution:", StringComparison.Ordinal) => ("Graphics", "Displays", "", (string)null, true),
+                _ => ("System", "Other", "", (string)null, !entry.IsNumeric)
+            };
+            return new OverlayTelemetrySource
+            {
+                Id = "metric/" + id, Identifier = id, StableIdentifier = entry.StableIdentifier ?? id,
+                Name = entry.Description ?? id, Unit = info.Item3, Category = info.Item1,
+                Subcategory = info.Item2, IsText = info.Item5, SemanticKey = info.Item4,
+                IsProcessSpecific = id is "Framerate" or "Frametime" or "DisplayTime" or "ProcessName" or "GraphicsAPI" or "Resolution"
+                    or "HookOverlayStatus" or "FrameGenerationTechnology" or "FrameGenerationStatus"
+                    || id.StartsWith("Online", StringComparison.Ordinal),
+                // A renderer toggle controls live availability, never whether a source can be
+                // placed in a design intended for a different renderer or later session.
+                IsAvailable = true, HardwareName = "CapFrameX",
+                HardwareType = info.Item1, SensorType = info.Item5 ? "Text" : "Metric"
+            };
+        }
+
+        private static OverlayTelemetrySource AdditionalSource(string id, string name, string category,
+            string subcategory, string unit, string semantic, bool text, bool processSpecific = false)
+            => new OverlayTelemetrySource
+            {
+                Id = "metric/" + id, Identifier = id, StableIdentifier = id, Name = name,
+                Category = category, Subcategory = subcategory, Unit = unit, SemanticKey = semantic,
+                IsText = text, HardwareName = "CapFrameX", HardwareType = category,
+                IsProcessSpecific = processSpecific,
+                SensorType = text ? "Text" : "Metric"
+            };
+
+        /// <summary>
+        /// The runtime identifiers of the hardware sensors behind the given source ids: a hardware
+        /// source's own identifier, and both identifiers a derived memory total is computed from.
+        /// Other sources (online metrics, CapFrameX values) read no sensor. Unknown ids are ignored.
+        /// </summary>
+        internal static IReadOnlySet<string> ResolveSensorIdentifiers(IReadOnlyCollection<string> sourceIds,
+            IReadOnlyList<OverlayTelemetrySource> sources)
+        {
+            var byId = new Dictionary<string, OverlayTelemetrySource>(StringComparer.Ordinal);
+            foreach (var source in sources)
+                byId.TryAdd(source.Id, source);
+            var identifiers = new HashSet<string>(StringComparer.Ordinal);
+            foreach (string id in sourceIds)
+            {
+                if (!byId.TryGetValue(id, out var source)) continue;
+                if (source.IsHardwareSensor)
+                    identifiers.Add(source.Identifier);
+                else if (source.SumSourceIdA != null)
+                {
+                    if (byId.TryGetValue(source.SumSourceIdA, out var used) && used.IsHardwareSensor)
+                        identifiers.Add(used.Identifier);
+                    if (byId.TryGetValue(source.SumSourceIdB, out var free) && free.IsHardwareSensor)
+                        identifiers.Add(free.Identifier);
+                }
+            }
+            return identifiers;
+        }
+
+        /// <summary>
+        /// Answers the sensor lease of one design: the identifiers behind the sources the design
+        /// needs right now. The sensor update loop asks on every evaluation, so the answer is
+        /// resolved again only when the required ids or the catalog are replaced.
+        /// </summary>
+        private sealed class LeasedSensorResolver
+        {
+            private readonly OverlayTelemetryService _service;
+            private readonly Func<IReadOnlyCollection<string>> _requiredSourceIds;
+            private volatile Resolution _last;
+
+            public LeasedSensorResolver(OverlayTelemetryService service, Func<IReadOnlyCollection<string>> requiredSourceIds)
+            {
+                _service = service;
+                _requiredSourceIds = requiredSourceIds;
+            }
+
+            public IReadOnlySet<string> Resolve()
+            {
+                var required = _requiredSourceIds();
+                // Not bound yet: every sensor, as before the design was known.
+                if (required == null) return null;
+                var sources = _service._sources;
+                var last = _last;
+                if (last != null && ReferenceEquals(last.Required, required) && ReferenceEquals(last.Sources, sources))
+                    return last.Identifiers;
+                var identifiers = ResolveSensorIdentifiers(required, sources);
+                _last = new Resolution(required, sources, identifiers);
+                return identifiers;
+            }
+
+            private sealed class Resolution
+            {
+                public Resolution(IReadOnlyCollection<string> required, OverlayTelemetrySource[] sources, IReadOnlySet<string> identifiers)
+                {
+                    Required = required;
+                    Sources = sources;
+                    Identifiers = identifiers;
+                }
+
+                public IReadOnlyCollection<string> Required { get; }
+                public OverlayTelemetrySource[] Sources { get; }
+                public IReadOnlySet<string> Identifiers { get; }
+            }
+        }
+
+        // The sources the leases need, or null when one of them, or a subscriber without a lease,
+        // needs every source.
+        private HashSet<string> GetRequiredSourceIds()
+        {
+            Func<IReadOnlyCollection<string>>[] demands;
+            lock (_lifecycleLock) demands = _leases.Values.ToArray();
+            if (demands.Length == 0) return null;
+            var required = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var demand in demands)
+            {
+                var ids = demand?.Invoke();
+                if (ids == null) return null;
+                required.UnionWith(ids);
+            }
+            return required;
+        }
+
+        private OverlayTelemetrySnapshot CreateSnapshot(DateTime timestamp, Dictionary<ISensorEntry, float> readings)
+        {
+            var sources = _sources;
+            // Every online metric copies the whole metric window, and the CapFrameX values send a
+            // ping and query RTSS and the displays. Compute only what some lease shows.
+            var required = GetRequiredSourceIds();
+            var values = sources.ToDictionary(source => source.Id, source => (double?)null, StringComparer.Ordinal);
+            var textValues = new Dictionary<string, object>(StringComparer.Ordinal);
+            var runtimeValues = new Dictionary<string, float>(StringComparer.Ordinal);
+            if (readings != null)
+                foreach (var pair in readings)
+                    if (pair.Key?.Identifier != null) runtimeValues[pair.Key.Identifier] = pair.Value;
+
+            foreach (var source in sources)
+                if (source.IsHardwareSensor && runtimeValues.TryGetValue(source.Identifier, out float value))
+                    values[source.Id] = Finite(value);
+
+            foreach (var source in sources.Where(source => source.SumSourceIdA != null))
+                if (values.TryGetValue(source.SumSourceIdA, out double? used) && used >= 0
+                    && values.TryGetValue(source.SumSourceIdB, out double? free) && free >= 0)
+                    values[source.Id] = Finite(used.Value + free.Value);
+
+            if (_metrics != null)
+            {
+                var currentFrame = _metrics.GetFrameTelemetrySnapshot();
+                var currentAge = currentFrame == null ? TimeSpan.MaxValue : DateTime.UtcNow - currentFrame.TimestampUtc;
+                if (currentFrame != null && currentAge >= TimeSpan.Zero && currentAge <= TimeSpan.FromSeconds(2))
+                {
+                    Set("Framerate", currentFrame.Framerate);
+                    Set("Frametime", currentFrame.Frametime);
+                    Set("DisplayTime", currentFrame.DisplayTime);
+                    textValues["metric/ProcessName"] = NormalizeText(currentFrame.ProcessName);
+                    textValues["metric/GraphicsAPI"] = NormalizeText(currentFrame.Runtime);
+                }
+                // Online metrics retain history when a process stops. Do not present that history
+                // as a fresh measurement or substitute a fictitious 0 while a source is absent.
+                var lastFrameTimestamp = _metrics.LastFrameTimestampUtc;
+                var age = DateTime.UtcNow - lastFrameTimestamp;
+                if (age >= TimeSpan.Zero && age <= TimeSpan.FromSeconds(2))
+                {
+                    SetIfRequired("OnlineAverage", () => _metrics.GetOnlineFpsMetricValue(EMetric.Average));
+                    SetIfRequired("OnlineP1", () => _metrics.GetOnlineFpsMetricValue(EMetric.P1));
+                    SetIfRequired("OnlineP0dot1", () => _metrics.GetOnlineFpsMetricValue(EMetric.P0dot1));
+                    SetIfRequired("OnlineP0dot2", () => _metrics.GetOnlineFpsMetricValue(EMetric.P0dot2));
+                    SetIfRequired("Online1PercentLow", () => _metrics.GetOnlineFpsMetricValue(EMetric.OnePercentLowAverage));
+                    SetIfRequired("Online0dot1PercentLow", () => _metrics.GetOnlineFpsMetricValue(EMetric.ZerodotOnePercentLowAverage));
+                    SetIfRequired("Online0dot2PercentLow", () => _metrics.GetOnlineFpsMetricValue(EMetric.ZerodotTwoPercentLowAverage));
+                    SetIfRequired("OnlineFrameTimeAverage", () => _metrics.GetOnlineFrameTimeMetricValue(EMetric.Average));
+                    SetIfRequired("OnlineGpuActiveTimeAverage", () => _metrics.GetOnlineGpuActiveTimeMetricValue(EMetric.GpuActiveAverage));
+                    SetIfRequired("OnlineCpuActiveTimeAverage", () => _metrics.GetOnlineCpuActiveTimeMetricValue(EMetric.CpuActiveAverage));
+                    SetIfRequired("OnlineGpuActiveTimePercentageDeviation", () => _metrics.GetOnlineGpuActiveTimeDeviationMetricValue());
+                    SetIfRequired("OnlineStutteringPercentage", () => _metrics.GetOnlineStutteringPercentageValue());
+                    SetIfRequired("OnlinePcLatency", () => _metrics.GetOnlinePcLatencyAverageValue());
+                    SetIfRequired("OnlineAnimationError", () => _metrics.GetOnlineAnimationErrorValue());
+                }
+                var pmd = _metrics.GetPmdTelemetrySnapshot();
+                var pmdAge = pmd == null ? TimeSpan.MaxValue : DateTime.UtcNow - pmd.TimestampUtc;
+                if (pmd != null && pmdAge >= TimeSpan.Zero && pmdAge <= TimeSpan.FromSeconds(2))
+                {
+                    Set("PmdGpuPowerCurrent", pmd.GpuPowerCurrent);
+                    Set("PmdCpuPowerCurrent", pmd.CpuPowerCurrent);
+                    Set("PmdSystemPowerCurrent", pmd.SystemPowerCurrent);
+                }
+            }
+            if (_classic != null)
+            {
+                var classicValues = required == null
+                    ? _classic.GetTelemetryValues()
+                    : _classic.GetTelemetryValues(required
+                        .Where(id => id.StartsWith(MetricPrefix, StringComparison.Ordinal))
+                        .Select(id => id.Substring(MetricPrefix.Length))
+                        .Select(identifier => identifier == GpuShortName ? "CustomGPU" : identifier == CpuShortName ? "CustomCPU" : identifier)
+                        .ToHashSet(StringComparer.Ordinal));
+                foreach (var source in sources.Where(s => !s.IsHardwareSensor))
+                {
+                    if (classicValues == null || !classicValues.TryGetValue(source.Identifier, out object raw)) continue;
+                    if (source.IsText)
+                    {
+                        var text = NormalizeText(raw);
+                        if (source.Identifier != "GraphicsAPI" || text != null) textValues[source.Id] = text;
+                    }
+                    else if (raw != null && double.TryParse(Convert.ToString(raw, CultureInfo.InvariantCulture),
+                        NumberStyles.Float, CultureInfo.InvariantCulture, out double scalar))
+                        values[source.Id] = Finite(scalar);
+                }
+                SetShortName(GpuShortName, "CustomGPU", HardwareShortNames.Gpu);
+                SetShortName(CpuShortName, "CustomCPU", HardwareShortNames.Cpu);
+            }
+            if (_overlay != null)
+            {
+                var history = _overlay.RunHistory ?? Array.Empty<string>();
+                var outliers = _overlay.RunHistoryOutlierFlags ?? Array.Empty<bool>();
+                var runs = history.Select((r, i) => (r, i))
+                    .Where(item => !string.IsNullOrWhiteSpace(item.r) && item.r != "N/A")
+                    .Select(item => item.r + (item.i < outliers.Count && outliers[item.i] ? " [outlier]" : "")).ToList();
+                Set("RunHistoryCount", _overlay.RunHistoryCount);
+                Set("RunHistoryOutlierCount", outliers.Count(outlier => outlier));
+                textValues["metric/RunHistoryAggregation"] = NormalizeText(_overlay.RunHistoryAggregation);
+                if (!string.IsNullOrWhiteSpace(_overlay.RunHistoryAggregation)) runs.Add(_overlay.RunHistoryAggregation);
+                textValues["metric/RunHistory"] = runs.Count == 0 ? null : string.Join("\n", runs);
+            }
+            var hook = IsRequired(MetricPrefix + "FrameGenerationTechnology")
+                || IsRequired(MetricPrefix + "FrameGenerationStatus") ? _hookStatus?.Current : null;
+            if (hook != null && hook.ProcessId > 0 && hook.State != EHookOverlayStatus.Disabled
+                && HookStatusProbe.TryRead(hook.ProcessId, out var native, out _)
+                && HookStatusProbe.GetHeartbeatAgeMilliseconds(native.LastHeartbeatTickMs, (ulong)Environment.TickCount64)
+                    is >= 0 and <= 3000)
+            {
+                textValues["metric/FrameGenerationTechnology"] = HookOverlayStatusEvaluator.DescribeFrameGenerationTechnology(native.FgTechnology);
+                textValues["metric/FrameGenerationStatus"] = native.FgActivity == 2 ? "On" : native.FgActivity == 1 ? "Off" : null;
+            }
+            return new OverlayTelemetrySnapshot(timestamp, values, textValues);
+
+            void Set(string identifier, double value) => values["metric/" + identifier] = Finite(value);
+
+            void SetIfRequired(string identifier, Func<double> read)
+            {
+                if (IsRequired(MetricPrefix + identifier)) Set(identifier, read());
+            }
+
+            bool IsRequired(string sourceId) => required == null || required.Contains(sourceId);
+
+            void SetShortName(string identifier, string fullIdentifier, Func<string, string> shorten)
+            {
+                if (IsRequired(MetricPrefix + identifier) && sources.Any(source => source.Id == MetricPrefix + identifier)
+                    && textValues.TryGetValue(MetricPrefix + fullIdentifier, out object full))
+                    textValues[MetricPrefix + identifier] = full is string name ? shorten(name) : null;
+            }
+        }
+
+        private static double? Finite(double value) => double.IsFinite(value) ? value : (double?)null;
+
+        private static string NormalizeText(object value)
+        {
+            string text = value?.ToString();
+            return string.IsNullOrWhiteSpace(text) || text == "N/A" || text == "Not available" ? null : text;
+        }
+
+        private void ThrowIfDisposed()
+        {
+            if (_disposed) throw new ObjectDisposedException(nameof(OverlayTelemetryService));
+        }
+
+        public void Dispose()
+        {
+            IDisposable[] leases;
+            lock (_lifecycleLock)
+            {
+                if (_disposed) return;
+                _disposed = true;
+                leases = _leases.Keys.ToArray();
+                _leases.Clear();
+            }
+            foreach (var lease in leases) lease.Dispose();
+            _stop.OnNext(true);
+            _stop.OnCompleted();
+        }
+    }
+}

@@ -1,4 +1,5 @@
-﻿using CapFrameX.Extensions.NetStandard.Attributes;
+﻿using CapFrameX.Contracts.Localization;
+using CapFrameX.Extensions.NetStandard.Attributes;
 using System;
 using System.Globalization;
 using System.Reflection;
@@ -15,8 +16,7 @@ namespace CapFrameX.MVVM.Converter
                 if (!(value is Enum myEnum))
                     return string.Empty;
 
-                string description = GetEnumShortDescription(myEnum);
-                return description;
+                return CxLang.TranslateEnum(myEnum, useShortDescription: true);
             }
             catch { return string.Empty; }
         }
@@ -24,23 +24,6 @@ namespace CapFrameX.MVVM.Converter
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return string.Empty;
-        }
-
-        private string GetEnumShortDescription(Enum enumObj)
-        {
-            FieldInfo fieldInfo = enumObj.GetType().GetField(enumObj.ToString());
-
-            object[] attribArray = fieldInfo.GetCustomAttributes(false);
-
-            if (attribArray.Length == 0)
-            {
-                return enumObj.ToString();
-            }
-            else
-            {
-                var attrib = attribArray[1] as ShortDescriptionAttribute;
-                return attrib.Description;
-            }
         }
     }
 }

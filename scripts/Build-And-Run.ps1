@@ -14,7 +14,6 @@ $vswherePath = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Insta
 $installerPath = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\setup.exe"
 $appProject = Join-Path $repositoryRoot "source\CapFrameX\CapFrameX.csproj"
 $appPath = Join-Path $repositoryRoot "source\CapFrameX\bin\x64\Release\net10.0-windows\CapFrameX.exe"
-$nugetPath = Join-Path $repositoryRoot "source\CapFrameX.Charts\WpfView\nuget.exe"
 
 $stateHashProvider = [Security.Cryptography.SHA256]::Create()
 try
@@ -171,7 +170,7 @@ function Stop-RunningOutputProcesses
                 {
                     $trackedChildProcessIds = @(Get-CimInstance Win32_Process `
                         -Filter "ParentProcessId = $trackedProcessId" -ErrorAction SilentlyContinue |
-                        Where-Object { $_.Name -like "PresentMon*.exe" } |
+                        Where-Object { $_.Name -like "*PresentMon*.exe" } |
                         Select-Object -ExpandProperty ProcessId)
                     $trackedProcessIds = @($trackedProcessId) + $trackedChildProcessIds
                     try
@@ -222,7 +221,7 @@ function Stop-RunningOutputProcesses
         }
     }
 
-    $processes = Get-CimInstance Win32_Process -Filter "Name = 'CapFrameX.exe' OR Name LIKE 'PresentMon%.exe'" -ErrorAction SilentlyContinue
+    $processes = Get-CimInstance Win32_Process -Filter "Name = 'CapFrameX.exe' OR Name LIKE '%PresentMon%.exe'" -ErrorAction SilentlyContinue
     foreach ($process in $processes)
     {
         if (-not $process.ExecutablePath)
@@ -260,21 +259,9 @@ try
         throw "The v145 compiler or C++/CLI support is still unavailable after installation."
     }
 
-    if (-not (Test-Path -LiteralPath $nugetPath))
-    {
-        throw "The repository NuGet executable was not found at '$nugetPath'."
-    }
-
     $null = Stop-RunningOutputProcesses
 
     Write-Host "Using MSVC $($buildInstance.ToolsetVersion) and restoring dependencies..." -ForegroundColor Cyan
-    Invoke-NativeCommand -FilePath $nugetPath -Arguments @(
-        "restore",
-        (Join-Path $repositoryRoot "CapFrameX.sln"),
-        "-NonInteractive",
-        "-Verbosity", "quiet"
-    )
-
     Invoke-NativeCommand -FilePath "dotnet" -Arguments @(
         "restore",
         $appProject,

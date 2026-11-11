@@ -107,6 +107,17 @@ namespace CapFrameX.Test.ViewModel
         }
 
         [TestMethod]
+        public void PercentageDisplayEdit_EnablesSave()
+        {
+            var viewModel = CreateViewModel();
+            var entry = viewModel.OverlayEntries.First(candidate => candidate.SupportsPercentageBar);
+
+            entry.ValueDisplayMode = EOverlayValueDisplayMode.TextAndBar;
+
+            Assert.IsTrue(viewModel.SaveButtonIsEnable);
+        }
+
+        [TestMethod]
         [DataRow("1", DisplayName = "Switch to profile 2")]
         [DataRow("0", DisplayName = "Switch to the active profile")]
         public void EditAfterSwitch_EnablesSave(string profile)

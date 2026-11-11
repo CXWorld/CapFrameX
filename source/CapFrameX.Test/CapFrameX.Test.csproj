@@ -3,15 +3,10 @@
   <PropertyGroup>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
-    <RootNamespace>CapFrameX.Test</RootNamespace>
-    <AssemblyName>CapFrameX.Test</AssemblyName>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <Deterministic>true</Deterministic>
-    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <IsPackable>false</IsPackable>
-
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,17 +21,26 @@
     <PackageReference Include="System.Reactive" />
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- Not part of the build before the SDK-style migration; kept in the tree for reference. -->
-    <Compile Remove="PresentMonInterface\SystemInfoTest.cs" />
+  <PropertyGroup>
+    <ShouldUnsetParentConfigurationAndPlatform Condition="'$(CfxOsdFromSource)' == 'true' And '$(ShouldUnsetParentConfigurationAndPlatform)' == ''">false</ShouldUnsetParentConfigurationAndPlatform>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(CfxOsdFromSource)' == 'true'">
+    <ProjectReference Include="$(_CfxOsdSourceDir)CapFrameX.OSD.Controls\CapFrameX.OSD.Controls.csproj">
+      <SetPlatform>Platform=x64</SetPlatform>
+      <CfxOptionalOsd>true</CfxOptionalOsd>
+      <AdditionalProperties>ShouldUnsetParentConfigurationAndPlatform=false</AdditionalProperties>
+    </ProjectReference>
+    <ProjectReference Include="$(_CfxOsdSourceDir)CapFrameX.OSD.Interop\CapFrameX.OSD.Interop.csproj">
+      <SetPlatform>Platform=x64</SetPlatform>
+      <CfxOptionalOsd>true</CfxOptionalOsd>
+      <AdditionalProperties>ShouldUnsetParentConfigurationAndPlatform=false</AdditionalProperties>
+    </ProjectReference>
   </ItemGroup>
-
-  <ItemGroup Condition="'$(CfxEnableInGameOverlay)' != 'true'">
-    <!-- Tests for the optional implementation are retained for future signed builds. -->
-    <Compile Remove="Integration\ForeignOverlayGateTest.cs;Integration\HookInjectorTest.cs;Integration\HookMetricsChannelTest.cs;Integration\HookOverlayManagerPollingTest.cs;Integration\HookCompatibilityProfileTest.cs;Integration\HookOverlayStatusEvaluatorTest.cs;Integration\HookPlacementChannelTest.cs;Integration\HookStatusProbeTest.cs;Integration\InjectionRetryBackoffTest.cs;Integration\VulkanLayerModuleProbeTest.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
+  <ItemGroup Condition="'$(CfxOsdFromSource)' != 'true'">
+    <Reference Include="CapFrameX.OSD.Controls">
+      <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net10.0-windows\CapFrameX.OSD.Controls.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="CapFrameX.OSD.Interop">
       <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net10.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
       <Private>True</Private>
@@ -78,6 +82,7 @@
     <ProjectReference Include="..\CapFrameX.Statistics.PlotBuilder\CapFrameX.Statistics.PlotBuilder.csproj" />
     <ProjectReference Include="..\CapFrameX.Updater\CapFrameX.Updater.csproj" />
     <ProjectReference Include="..\CapFrameX.ViewModel\CapFrameX.ViewModel.csproj" />
+    <ProjectReference Include="..\CapFrameX.Webservice.Implementation\CapFrameX.Webservice.Implementation.csproj" />
   </ItemGroup>
 
 </Project>

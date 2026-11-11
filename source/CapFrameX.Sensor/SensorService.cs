@@ -889,6 +889,26 @@ namespace CapFrameX.Sensor
             return gpu != null ? gpu.GetDriverVersion() : "Unknown";
         }
 
+        /// <summary>
+        /// Reads cached DIMM identities from the existing SPD discovery, including late retries.
+        /// Enumerating these properties performs no driver or SMBus I/O.
+        /// </summary>
+        public IReadOnlyList<string> GetMemoryManufacturers()
+        {
+            IHardware[] hardware;
+            lock (_lockComputer)
+            {
+                hardware = _computer?.Hardware.ToArray() ?? Array.Empty<IHardware>();
+            }
+
+            return hardware
+                .Where(item => item.HardwareType == HardwareType.Memory)
+                .Select(item => item.Properties.TryGetValue("Manufacturer", out var manufacturer)
+                    ? manufacturer : string.Empty)
+                .Where(manufacturer => !string.IsNullOrWhiteSpace(manufacturer))
+                .ToArray();
+        }
+
         public string GetCpuName()
         {
             bool hasCustomInfo = _appConfiguration.HardwareInfoSource

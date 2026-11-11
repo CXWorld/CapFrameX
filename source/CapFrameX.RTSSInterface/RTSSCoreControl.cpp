@@ -153,13 +153,13 @@ CString RTSSCoreControl::GetApiInfo(DWORD processId)
 					{
 						api = (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_OGL ? "OpenGL"
 							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_DD ? "DirectDraw"
-							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D8 ? "DX8"
-							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9 ? "DX9"
-							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9EX ? "DX9 EX"
-							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D10 ? "DX10"
-							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D11 ? "DX11"
-							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12 ? "DX12"
-							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12AFR ? "DX12 AFR"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D8 ? "D3D8"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9 ? "D3D9"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D9EX ? "D3D9Ex"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D10 ? "D3D10"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D11 ? "D3D11"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12 ? "D3D12"
+							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_D3D12AFR ? "D3D12 AFR"
 							: (pEntry->dwFlags & APPFLAG_API_USAGE_MASK) == APPFLAG_VULKAN ? "Vulkan"
 							: "unknown";
 
@@ -565,6 +565,30 @@ void RTSSCoreControl::ReleaseOSD()
 	}
 }
 
+BOOL RTSSCoreControl::IsSharedMemoryAvailable()
+{
+	// RTSS creates the section and writes the signature when it starts, and marks the section
+	// 0xDEAD when it exits. The section itself outlives RTSS while a process it hooked still
+	// maps it, so only a valid header counts.
+	BOOL bAvailable = FALSE;
+	HANDLE hMapFile = OpenFileMapping(FILE_MAP_READ, FALSE, "RTSSSharedMemoryV2");
+
+	if (hMapFile)
+	{
+		LPVOID pMapAddr = MapViewOfFile(hMapFile, FILE_MAP_READ, 0, 0, 0);
+		LPRTSS_SHARED_MEMORY pMem = (LPRTSS_SHARED_MEMORY)pMapAddr;
+
+		if (pMem)
+		{
+			bAvailable = (pMem->dwSignature == 'RTSS') && (pMem->dwVersion >= 0x00020000);
+			UnmapViewOfFile(pMapAddr);
+		}
+		CloseHandle(hMapFile);
+	}
+
+	return bAvailable;
+}
+
 DWORD RTSSCoreControl::GetClientsNum()
 {
 	DWORD dwClients = 0;
@@ -710,12 +734,14 @@ void RTSSCoreControl::Refresh()
 		nGroupedStringMaxLen = 1;
 
 	CGroupedString groupedString(nGroupedStringMaxLen);
+	// Inline percentage bars and the history graphs below share the same object buffer.
+	DWORD dwObjectOffset = 0;
 
 	if (OverlayEntries.size() > 0)
 	{
 		for (size_t i = 0; i < OverlayEntries.size(); i++)
 		{
-			AddOverlayEntry(&groupedString, &OverlayEntries[i], bFormatTagsSupported);
+			AddOverlayEntry(&groupedString, &OverlayEntries[i], bFormatTagsSupported, bObjTagsSupported, dwObjectOffset);
 		}
 	}
 
@@ -738,7 +764,6 @@ void RTSSCoreControl::Refresh()
 		if (hasAnyGraphToShow)
 			strOSD += "\n\n";
 
-		DWORD dwObjectOffset = 0;
 		DWORD dwObjectSize = 0;
 		DWORD dwFlags = 0;
 		CString strObj;
@@ -852,7 +877,41 @@ void RTSSCoreControl::OnOSDToggle()
 	m_rtssInterface.SetFlags(0xFFFFFFFF, RTSSHOOKSFLAG_OSD_VISIBLE);
 }
 
-void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported)
+CString RTSSCoreControl::GetEntryValue(OverlayEntry* entry, BOOL bObjTagsSupported, DWORD& dwObjectOffset)
+{
+	if (entry->ValueDisplayMode == OverlayValueDisplayMode::Text)
+		return entry->Value;
+
+	CString color = "<C>";
+	if (!entry->PercentageBarColor.IsEmpty())
+		color.Format("<C=%s>", (LPCSTR)entry->PercentageBarColor);
+
+	// An absent sample must not look like a valid zero-percent reading.
+	if (!entry->HasPercentageValue)
+		return bObjTagsSupported && m_bFormatTags ? color + "-<C>  " : CString("-  ");
+
+	// Legacy RTSS versions and a full object buffer retain the numeric value even in Bar mode.
+	if (!bObjTagsSupported || !m_bFormatTags)
+		return entry->Value;
+
+	// Clamp only the fill: the adjacent number still shows the original measurement.
+	FLOAT percentage = static_cast<FLOAT>(entry->PercentageValue < 0.0 ? 0.0
+		: entry->PercentageValue > 100.0 ? 100.0 : entry->PercentageValue);
+	DWORD objectSize = EmbedGraph(dwObjectOffset, &percentage, 0, 1, -10, 6, 1,
+		0.0f, 100.0f, RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_BAR | RTSS_EMBEDDED_OBJECT_GRAPH_FLAG_BGND);
+	if (!objectSize)
+		return entry->Value;
+
+	CString bar;
+	bar.Format("%s<OBJ=%08X><C>  ", (LPCSTR)color, dwObjectOffset);
+	dwObjectOffset += objectSize;
+
+	// The value precedes the bar; trailing space separates adjacent entries in the same group.
+	return entry->ValueDisplayMode == OverlayValueDisplayMode::TextAndBar
+		? entry->Value + " " + bar : bar;
+}
+
+void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported, BOOL bObjTagsSupported, DWORD& dwObjectOffset)
 {
 	// handle special cases first
 	// ToDo: When more special cases, better use switch-case with string/index mapping table
@@ -863,7 +922,10 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 			for (int i = 0; i < RunHistory.size(); i++)
 			{
 				CString strGroup;
-				strGroup.Format("<C200>Run %d: <C>", i + 1);
+				if (i < RunHistoryLabels.size())
+					strGroup = "<C200>" + RunHistoryLabels[i] + " <C>";
+				else
+					strGroup.Format("<C200>Run %d: <C>", i + 1);
 
 				if (RunHistoryOutlierFlags.size() == RunHistory.size())
 				{
@@ -881,7 +943,7 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 			// add aggregation
 			if (RunHistoryAggregation != "")
 			{
-				groupedString->Add("<C250> " + RunHistoryAggregation + "<C>", "<C200>Result: <C>", "\n");
+				groupedString->Add("<C250> " + RunHistoryAggregation + "<C>", "<C200>" + RunHistoryResultLabel + " <C>", "\n");
 			}
 		}
 	}
@@ -954,14 +1016,15 @@ void RTSSCoreControl::AddOverlayEntry(CGroupedString* groupedString, OverlayEntr
 		if (entry->ShowOnOverlay)
 		{
 			CString groupName = entry->GroupName;
+			CString value = GetEntryValue(entry, bObjTagsSupported, dwObjectOffset);
 
 			if (groupName != "")
 			{
-				groupedString->Add(entry->Value, groupName, "\n", " ");
+				groupedString->Add(value, groupName, "\n", " ");
 			}
 			else
 			{
-				groupedString->Add(entry->Value, "", "\n", " ");
+				groupedString->Add(value, "", "\n", " ");
 			}
 		}
 	}

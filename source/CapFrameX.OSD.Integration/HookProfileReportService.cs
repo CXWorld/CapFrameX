@@ -298,12 +298,19 @@ namespace CapFrameX.OSD.Integration
             finally { Volatile.Write(ref _pumpActive, 0); }
         }
 
-        internal async Task FlushAsync(bool upload = true)
+        internal Task FlushAsync(bool upload = true)
         {
             // A one-time purge can still be pending after revocation. Once it is complete,
             // disabled callers do not acquire the I/O gate or touch the report directory.
+            // The check stays outside the async method: unoptimized builds allocate its state
+            // machine on every call, and a disabled flush must cost nothing in any build.
             if ((!Volatile.Read(ref _consented) || Volatile.Read(ref _disposed)) &&
-                !Volatile.Read(ref _purgeRequired)) return;
+                !Volatile.Read(ref _purgeRequired)) return Task.CompletedTask;
+            return FlushCoreAsync(upload);
+        }
+
+        private async Task FlushCoreAsync(bool upload)
+        {
             await _ioGate.WaitAsync().ConfigureAwait(false);
             try
             {

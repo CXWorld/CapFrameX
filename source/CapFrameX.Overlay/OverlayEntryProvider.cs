@@ -24,6 +24,7 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Overlay
@@ -96,6 +97,7 @@ namespace CapFrameX.Overlay
         private const string FRAME_GENERATION_STATUS_IDENTIFIER = "FrameGenerationStatus";
         private const string DISPLAY_TIME_IDENTIFIER = "DisplayTime";
         private const string PRESENT_RESOLUTION_IDENTIFIER = "Resolution";
+        private const string PRESENT_MODE_IDENTIFIER = "OnlinePresentMode";
         private const string DISPLAY_RESOLUTION_IDENTIFIER_PREFIX = "DisplayResolution:";
 
         private readonly ISensorService _sensorService;
@@ -125,6 +127,10 @@ namespace CapFrameX.Overlay
 
         private BlockingCollection<IOverlayEntry> _overlayEntries;
         private double _ping = double.NaN;
+        private int _pingInFlight;
+        private long _lastPingTick;
+        private long _lastCpuUsageTick;
+        private double _cachedCpuUsage = double.NaN;
         private volatile int _currentProcessId;
         // Written by the status stream, read by the overlay refresh: the entry itself must not be
         // touched from the stream, it is replaced whenever a configuration is loaded or switched.
@@ -254,6 +260,69 @@ namespace CapFrameX.Overlay
             return entry;
         }
 
+        public async Task<IOverlayEntry[]> GetTelemetrySourcesAsync()
+        {
+            await _taskCompletionSource.Task.ConfigureAwait(false);
+            // Defaults are the authoritative catalog, including optional and renderer-gated rows.
+            // These detached objects never become the user's editable overlay profile.
+            var entries = OverlayUtils.GetOverlayEntryDefaults(_appConfiguration)
+                .Cast<IOverlayEntry>().ToList();
+            entries.AddRange(GetDetectedDisplays().Select(CreateDisplayResolutionEntry));
+            return entries.ToArray();
+        }
+
+        public IReadOnlyDictionary<string, object> GetTelemetryValues() => GetTelemetryValues(null);
+
+        public IReadOnlyDictionary<string, object> GetTelemetryValues(IReadOnlySet<string> identifiers)
+        {
+            bool Requested(string identifier) => identifiers == null || identifiers.Contains(identifier);
+
+            var values = new Dictionary<string, object>(StringComparer.Ordinal);
+            lock (_overlayEntriesGate)
+            {
+                foreach (string identifier in new[] { "CaptureServiceStatus", "CaptureTimer",
+                    "CustomCPU", "CustomGPU", "Mainboard", "CustomRAM", "OS", "GPUDriver" })
+                    if (Requested(identifier))
+                        values[identifier] = GetOverlayEntry(identifier)?.Value;
+                if (Requested("SystemTime"))
+                    values["SystemTime"] = DateTime.Now.ToString(ShowSystemTimeSeconds ? "HH:mm:ss" : "HH:mm");
+                if (Requested("CxAppCpuUsage"))
+                    values["CxAppCpuUsage"] = GetAppCpuUsage();
+                if (Requested("HookOverlayStatus"))
+                    values["HookOverlayStatus"] = HookOverlayStatusLabel.ForState(_appConfiguration.EnableHookOverlay
+                        ? _hookOverlayStatus?.State ?? EHookOverlayStatus.Waiting : EHookOverlayStatus.Disabled);
+                var targetHook = _currentProcessId > 0 && _hookOverlayStatus?.ProcessId == _currentProcessId
+                    ? _hookOverlayStatus : null;
+                if (Requested("Resolution"))
+                    values["Resolution"] = _appConfiguration.EnableHookOverlay
+                        ? targetHook?.RenderResolution
+                        : _appConfiguration.UsesRtss() && _currentProcessId > 0
+                            ? _rTSSService.GetResolution(_currentProcessId) : null;
+                if (Requested("GraphicsAPI"))
+                    values["GraphicsAPI"] = _appConfiguration.EnableHookOverlay ? targetHook?.RenderApi
+                        : _appConfiguration.UsesRtss() && _currentProcessId > 0
+                            ? _rTSSService.GetApiInfo(_currentProcessId) : null;
+                if (Requested(PRESENT_MODE_IDENTIFIER))
+                    values[PRESENT_MODE_IDENTIFIER] = PresentModeLabel.Shorten(_onlineMetricService?.GetOnlinePresentMode());
+                if (identifiers == null || identifiers.Any(identifier =>
+                        identifier.StartsWith(DISPLAY_RESOLUTION_IDENTIFIER_PREFIX, StringComparison.Ordinal)))
+                    foreach (var display in GetDetectedDisplays())
+                        values[GetDisplayResolutionIdentifier(display.DeviceName)] = FormatDisplayResolution(display);
+                if ((Requested("BatteryLifePercent") || Requested("BatteryLifeRemaining"))
+                    && GetSystemPowerStatus(out var power))
+                {
+                    values["BatteryLifePercent"] = power.BatteryLifePercent == 255 ? null : (object)(double)power.BatteryLifePercent;
+                    values["BatteryLifeRemaining"] = power.BatteryLifeTime < 0 ? null : (object)(power.BatteryLifeTime / 60d);
+                }
+                if (Requested("Ping"))
+                {
+                    values["Ping"] = double.IsNaN(_ping) ? null : (object)_ping;
+                    SetPing();
+                }
+            }
+            return values;
+        }
+
         public void MoveEntry(int sourceIndex, int targetIndex)
         {
             lock (_overlayEntriesGate)
@@ -345,6 +414,7 @@ namespace CapFrameX.Overlay
                 {
                     entry.GroupFontSize = selectedEntry.GroupFontSize;
                     entry.ValueFontSize = selectedEntry.ValueFontSize;
+                    CopyValueDisplayMode(selectedEntry, entry);
                 }
                 entry.FormatChanged = true;
             }
@@ -371,6 +441,7 @@ namespace CapFrameX.Overlay
                 {
                     entry.GroupFontSize = selectedEntry.GroupFontSize;
                     entry.ValueFontSize = selectedEntry.ValueFontSize;
+                    CopyValueDisplayMode(selectedEntry, entry);
                 }
                 entry.FormatChanged = true;
             }
@@ -410,6 +481,7 @@ namespace CapFrameX.Overlay
                 if (checkboxes.Format)
                 {
                     entry.ValueFontSize = selectedEntry.ValueFontSize;
+                    CopyValueDisplayMode(selectedEntry, entry);
                 }
                 entry.FormatChanged = true;
             }
@@ -424,6 +496,12 @@ namespace CapFrameX.Overlay
             selectedEntry.UpperLimitColor = string.Empty;
             selectedEntry.LowerLimitColor = string.Empty;
             selectedEntry.FormatChanged = true;
+        }
+
+        private static void CopyValueDisplayMode(IOverlayEntry source, IOverlayEntry target)
+        {
+            if (source.SupportsPercentageBar && target.SupportsPercentageBar)
+                target.ValueDisplayMode = OverlayPercentageBar.GetDisplayMode(source);
         }
 
         public void SortOverlayEntriesByType()
@@ -490,7 +568,8 @@ namespace CapFrameX.Overlay
                 _sensorConfig.SelectForOverlay(entry.Identifier, entry.ShowOnOverlay);
                 _identifierOverlayEntryDict.TryAdd(entry.Identifier, entry);
 
-                if (ONLINE_METRIC_NAMES.Contains(entry.Identifier) || entry.Identifier == "SystemTime"
+                if (ONLINE_METRIC_NAMES.Contains(entry.Identifier) || entry.Identifier == PRESENT_MODE_IDENTIFIER
+                    || entry.Identifier == "SystemTime"
                     || entry.Identifier == "BatteryLifePercent" || entry.Identifier == "BatteryLifeRemaining"
                     || entry.Identifier == "Ping" || entry.Identifier == "ThreadAffinityState" || entry.Identifier == "PCLatency")
                 {
@@ -865,6 +944,7 @@ namespace CapFrameX.Overlay
         private static void CopyFormatting(IOverlayEntry source, IOverlayEntry target)
         {
             target.ShowGraph = source.ShowGraph;
+            target.ValueDisplayMode = source.ValueDisplayMode;
             target.Color = source.Color;
             target.ValueFontSize = source.ValueFontSize;
             target.UpperLimitValue = source.UpperLimitValue;
@@ -1425,7 +1505,12 @@ namespace CapFrameX.Overlay
             // Take(1) here coupled every overlay refresh to another observable and could leave a
             // refresh pending when no PID value was available. Sensor values are likewise copied
             // from OverlayEntryCore's latest completed snapshot below; no hardware I/O occurs.
-            var currentFramerate = _rTSSService.GetCurrentFramerate(_currentProcessId);
+            // CapFrameX renderers and the remote API receive their PresentMon scalars together
+            // when OverlayService publishes the output snapshot. Only the RTSS renderer reads
+            // its shared memory; an unrelated RTSS instance must not supply CX's values.
+            var currentFramerate = !_appConfiguration.UsesRtss()
+                ? Tuple.Create(0.0, 0.0)
+                : _rTSSService.GetCurrentFramerate(_currentProcessId);
 
             foreach (var entry in _overlayEntries)
             {
@@ -1576,6 +1661,14 @@ namespace CapFrameX.Overlay
                 pcLatency.Value = Math.Round(_onlineMetricService.GetOnlinePcLatencyAverageValue(), 1, MidpointRounding.AwayFromZero);
             }
 
+            // Present mode
+            _identifierOverlayEntryDict.TryGetValue(PRESENT_MODE_IDENTIFIER, out IOverlayEntry presentMode);
+
+            if (presentMode != null && presentMode.ShowOnOverlay)
+            {
+                presentMode.Value = PresentModeLabel.Shorten(_onlineMetricService.GetOnlinePresentMode()) ?? "N/A";
+            }
+
             // Animation Error
             _identifierOverlayEntryDict.TryGetValue("OnlineAnimationError", out IOverlayEntry animationError);
 
@@ -1621,8 +1714,19 @@ namespace CapFrameX.Overlay
 
             if (cxCpuUsage != null)
             {
-                cxCpuUsage.Value = _systemInfo.GetCapFrameXAppCpuUsage();
+                cxCpuUsage.Value = GetAppCpuUsage();
             }
+        }
+
+        private double GetAppCpuUsage()
+        {
+            long now = Environment.TickCount64;
+            if (now - _lastCpuUsageTick >= 200)
+            {
+                _cachedCpuUsage = _systemInfo.GetCapFrameXAppCpuUsage();
+                _lastCpuUsageTick = now;
+            }
+            return _cachedCpuUsage;
         }
 
         private void UpdateResolution()
@@ -1632,8 +1736,9 @@ namespace CapFrameX.Overlay
             if (resolution != null && resolution.IsEntryEnabled && resolution.ShowOnOverlay)
             {
                 // The in-game renderer replaces this placeholder with the hooked swapchain's
-                // backbuffer extent. Querying RTSS here would publish a stale/unrelated value.
-                if (_appConfiguration.EnableHookOverlay)
+                // backbuffer extent. Querying RTSS here would publish a stale/unrelated value,
+                // and so would it with the renderers switched off.
+                if (!_appConfiguration.UsesRtss())
                 {
                     resolution.Value = "N/A";
                     return;
@@ -2194,27 +2299,24 @@ namespace CapFrameX.Overlay
 
         private async void SetPing()
         {
-            Ping pingSender = new Ping();
+            // Classic refresh and the designer share this single bounded request; neither can
+            // start a second ping while one is pending or sample faster than once per second.
+            long now = Environment.TickCount64;
+            if (string.IsNullOrWhiteSpace(_appConfiguration.PingURL)
+                || now - Interlocked.Read(ref _lastPingTick) < 1000
+                || Interlocked.CompareExchange(ref _pingInFlight, 1, 0) != 0) return;
+            Interlocked.Exchange(ref _lastPingTick, now);
+            using Ping pingSender = new Ping();
             try
             {
-                await Task.Run(() =>
-                {
-                    PingReply reply = pingSender.Send(_appConfiguration.PingURL);
-                    if (reply.Status == IPStatus.Success)
-                    {
-                        _ping = Convert.ToDouble(reply.RoundtripTime);
-                    }
-                    else
-                    {
-                        _ping = double.NaN;
-                    }
-                });
+                PingReply reply = await pingSender.SendPingAsync(_appConfiguration.PingURL, 1000).ConfigureAwait(false);
+                _ping = reply.Status == IPStatus.Success ? reply.RoundtripTime : double.NaN;
             }
             catch
             {
                 _ping = double.NaN;
             }
-            ;
+            finally { Interlocked.Exchange(ref _pingInFlight, 0); }
         }
 
         public void UpdateOverlayEntryFormats()

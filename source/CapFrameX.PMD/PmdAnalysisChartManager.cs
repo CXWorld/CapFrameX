@@ -1,4 +1,5 @@
-﻿using CapFrameX.Data.Session.Contracts;
+using CapFrameX.Contracts.Localization;
+using CapFrameX.Data.Session.Contracts;
 using CapFrameX.Statistics.NetStandard;
 using CapFrameX.Statistics.PlotBuilder;
 using OxyPlot;
@@ -22,6 +23,7 @@ namespace CapFrameX.PMD
         private bool _gpuAxisChanging;
         private bool _cpuAxisChanging;
         private bool _frametimeAxisChanging;
+        private bool _showFrametimes = true;
 
         PlotModel _eps12VModel = new PlotModel
         {
@@ -87,9 +89,48 @@ namespace CapFrameX.PMD
             PerformanceModel.Axes.Add(AxisDefinitions["X_Axis_Performance"]);
             PerformanceModel.Axes.Add(AxisDefinitions["Y_Axis_Performance"]);
 
+            // OxyPlot 2.2 marks AxisChanged obsolete (#111) without offering another event that
+            // reports pan, zoom and reset; the three analysis charts follow each other through it.
+#pragma warning disable CS0618
             AxisDefinitions["X_Axis_Time_GPU_Analysis"].AxisChanged += GPU_AxisChanged;
             AxisDefinitions["X_Axis_Time_CPU_Analysis"].AxisChanged += CPU_AxisChanged;
             AxisDefinitions["X_Axis_Performance"].AxisChanged += Performance_AxisChanged;
+#pragma warning restore CS0618
+
+            ApplyAxisTitles();
+            CxLang.Instance.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(CxLang.UiLanguage))
+                    ApplyAxisTitles();
+            };
+        }
+
+        private void ApplyAxisTitles()
+        {
+            void Set(string key, string title)
+            {
+                if (AxisDefinitions.TryGetValue(key, out var axis))
+                    axis.Title = title;
+            }
+
+            Set("Y_Axis_CPU_W", CxLang.T("PmdChart_CpuPowerW"));
+            Set("Y_Axis_GPU_W", CxLang.T("PmdChart_GpuPowerW"));
+            Set("Y_Axis_Analysis_CPU_W", CxLang.T("PmdChart_PowerW"));
+            Set("Y_Axis_Analysis_GPU_W", CxLang.T("PmdChart_PowerW"));
+            Set("Y_Axis_Performance", _showFrametimes ? CxLang.T("PmdChart_FrametimeMs") : "FPS");
+            foreach (var series in PerformanceModel.Series)
+                series.Title = _showFrametimes ? CxLang.T("PmdView_Frametimes") : "FPS";
+            Set("X_Axis_Time_CPU", CxLang.T("PmdChart_TimeS"));
+            Set("X_Axis_Time_GPU", CxLang.T("PmdChart_TimeS"));
+            Set("X_Axis_Time_CPU_Analysis", CxLang.T("PmdChart_TimeS"));
+            Set("X_Axis_Time_GPU_Analysis", CxLang.T("PmdChart_TimeS"));
+            Set("X_Axis_Performance", CxLang.T("PmdChart_TimeS"));
+
+            Eps12VModel?.InvalidatePlot(false);
+            PciExpressModel?.InvalidatePlot(false);
+            CpuAnalysisModel?.InvalidatePlot(false);
+            GpuAnalysisModel?.InvalidatePlot(false);
+            PerformanceModel?.InvalidatePlot(false);
         }
 
 
@@ -184,7 +225,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "Y_Axis_CPU_W",
                         Position = AxisPosition.Left,
-                        Title = "CPU Power [W]",
+                        Title = CxLang.T("PmdAnalysisChartManager_CPUPowerW"),
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -201,7 +242,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "Y_Axis_GPU_W",
                         Position = AxisPosition.Left,
-                        Title = "GPU Power [W]",
+                        Title = CxLang.T("PmdAnalysisChartManager_GPUPowerW"),
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -218,7 +259,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "X_Axis_Time_CPU",
                         Position = AxisPosition.Bottom,
-                        Title = "Time [s]",
+                        Title = CxLang.T("PmdAnalysisChartManager_TimeS"),
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -235,7 +276,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "X_Axis_Time_GPU",
                         Position = AxisPosition.Bottom,
-                        Title = "Time [s]",
+                        Title = CxLang.T("PmdAnalysisChartManager_TimeS2"),
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -270,7 +311,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "X_Axis_Performance",
                         Position = AxisPosition.Bottom,
-                        Title = "Time [s]",
+                        Title = CxLang.T("PmdAnalysisChartManager_TimeS3"),
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -284,7 +325,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "X_Axis_Time_CPU_Analysis",
                         Position = AxisPosition.Bottom,
-                        Title = "Time [s]",
+                        Title = CxLang.T("PmdAnalysisChartManager_TimeS4"),
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -298,7 +339,7 @@ namespace CapFrameX.PMD
                     {
                         Key = "X_Axis_Time_GPU_Analysis",
                         Position = AxisPosition.Bottom,
-                        Title = "Time [s]",
+                        Title = CxLang.T("PmdAnalysisChartManager_TimeS5"),
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
@@ -343,9 +384,13 @@ namespace CapFrameX.PMD
             _ePS12VModelMaxYValueBuffer.Clear();
             _pciExpressModelMaxYValueBuffer.Clear();
 
-            AxisDefinitions["Y_Axis_GPU_W"].Maximum = 300;
+            // The draw methods also cap AbsoluteMaximum at the rolling peak; without lifting it here
+            // the reset Maximum would stay clamped to the previous session's peak.
+            AxisDefinitions["Y_Axis_GPU_W"].Maximum = DefaultGpuPowerAxisMaximum;
+            AxisDefinitions["Y_Axis_GPU_W"].AbsoluteMaximum = double.MaxValue;
 
-            AxisDefinitions["Y_Axis_CPU_W"].Maximum = 150;
+            AxisDefinitions["Y_Axis_CPU_W"].Maximum = DefaultCpuPowerAxisMaximum;
+            AxisDefinitions["Y_Axis_CPU_W"].AbsoluteMaximum = double.MaxValue;
 
             Eps12VModel.Series.Clear();
             Eps12VModel.ResetAllAxes();
@@ -634,7 +679,9 @@ namespace CapFrameX.PMD
         {
             if (session == null) return;
 
+            _showFrametimes = metric == "Frametimes";
             PerformanceModel.Series.Clear();
+            ApplyAxisTitles();
 
             if (DrawPerformanceChart)
             {
@@ -643,7 +690,7 @@ namespace CapFrameX.PMD
                 if (frametimePoints != null && frametimePoints.Any())
                 {
 
-                    var performanceDataPoints = metric == "Frametimes" ? frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)) : frametimePoints.Select(pnt => new DataPoint(pnt.X, 1000 / pnt.Y));
+                    var performanceDataPoints = _showFrametimes ? frametimePoints.Select(pnt => new DataPoint(pnt.X, pnt.Y)) : frametimePoints.Select(pnt => new DataPoint(pnt.X, 1000 / pnt.Y));
                     var xMin = frametimePoints.Min(pnt => pnt.X);
                     var xMax = frametimePoints.Max(pnt => pnt.X);
 
@@ -658,7 +705,7 @@ namespace CapFrameX.PMD
 
                     var performanceSeries = new LineSeries
                     {
-                        Title = metric == "Frametimes" ? "Frametimes" : "FPS",
+                        Title = _showFrametimes ? CxLang.T("PmdView_Frametimes") : "FPS",
                         YAxisKey = "Y_Axis_Performance",
                         StrokeThickness = 2,
                         LegendStrokeThickness = 4,
@@ -668,8 +715,6 @@ namespace CapFrameX.PMD
 
                     var yAxisMin = performanceDataPoints.Min(pnt => pnt.Y);
                     var yAxisMax = performanceDataPoints.Max(pnt => pnt.Y);
-
-                    AxisDefinitions["Y_Axis_Performance"].Title = metric == "Frametimes" ? "Frametimes [ms]" : "FPS";
 
                     AxisDefinitions["Y_Axis_Performance"].Maximum = yAxisMax + (yAxisMax - yAxisMin) / 6;
                     AxisDefinitions["Y_Axis_Performance"].Minimum = yAxisMin - (yAxisMax - yAxisMin) / 6;

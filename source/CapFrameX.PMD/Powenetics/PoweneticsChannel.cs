@@ -9,6 +9,11 @@ namespace CapFrameX.PMD.Powenetics
         public PoweneticsChannelType PmdChannelType;
         public PoweneticsMeasurand Measurand;
         public float Value;
+
+        /// <summary>
+        /// Milliseconds on the QPC clock: the packet time from the driver, the bin start after
+        /// the downsampling of the service.
+        /// </summary>
         public long TimeStamp;
     }
 

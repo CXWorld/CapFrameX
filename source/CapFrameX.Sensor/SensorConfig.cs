@@ -71,21 +71,109 @@ namespace CapFrameX.Sensor
         }
 
         public bool HasSelectedOverlaySensors
-            => Volatile.Read(ref _selectedOverlaySensorCount) > 0;
+            => Volatile.Read(ref _selectedOverlaySensorCount) > 0
+               || HasLease(identifiers => identifiers == null || identifiers.Any(IsHardwareSensorIdentifier));
 
         public bool HasSelectedPmcOverlaySensors
-            => Volatile.Read(ref _selectedPmcOverlaySensorCount) > 0;
+            => Volatile.Read(ref _selectedPmcOverlaySensorCount) > 0
+               || HasLease(identifiers => identifiers == null || identifiers.Any(IsPmcSensorIdentifier));
 
         public bool HasSelectedPmcLoggingSensors
             => Volatile.Read(ref _selectedPmcLoggingSensorCount) > 0;
 
         // Written from the UI thread, read from the sensor update loop.
         private volatile bool _evaluateAllSensors;
+        private int _allSensorsLeaseCount;
+        // The sensor leases, replaced as a whole under _sensorLeaseSync so the sensor update
+        // loop reads them without a lock.
+        private readonly object _sensorLeaseSync = new object();
+        private volatile SensorLease[] _sensorLeases = Array.Empty<SensorLease>();
 
         public bool EvaluateAllSensors
         {
-            get => _evaluateAllSensors;
+            get => _evaluateAllSensors || Volatile.Read(ref _allSensorsLeaseCount) > 0
+                   || HasLease(identifiers => identifiers == null);
             set => _evaluateAllSensors = value;
+        }
+
+        public IDisposable AcquireAllSensors()
+        {
+            Interlocked.Increment(ref _allSensorsLeaseCount);
+            return new AllSensorsLease(this);
+        }
+
+        public IDisposable AcquireSensors(Func<IReadOnlySet<string>> identifiers)
+        {
+            if (identifiers == null)
+                throw new ArgumentNullException(nameof(identifiers));
+
+            var lease = new SensorLease(this, identifiers);
+            lock (_sensorLeaseSync)
+                _sensorLeases = _sensorLeases.Append(lease).ToArray();
+            return lease;
+        }
+
+        private void Release(SensorLease lease)
+        {
+            lock (_sensorLeaseSync)
+                _sensorLeases = _sensorLeases.Where(other => !ReferenceEquals(other, lease)).ToArray();
+        }
+
+        // Called for every sensor on every poll: a loop, not a closure over the identifier.
+        private bool IsLeased(string identifier)
+        {
+            foreach (var lease in _sensorLeases)
+            {
+                var identifiers = lease.Identifiers();
+                if (identifiers == null || identifiers.Contains(identifier))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool HasLease(Func<IReadOnlySet<string>, bool> covers)
+        {
+            foreach (var lease in _sensorLeases)
+            {
+                if (covers(lease.Identifiers()))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private sealed class AllSensorsLease : IDisposable
+        {
+            private SensorConfig _owner;
+
+            public AllSensorsLease(SensorConfig owner) => _owner = owner;
+
+            public void Dispose()
+            {
+                var owner = Interlocked.Exchange(ref _owner, null);
+                if (owner != null)
+                    Interlocked.Decrement(ref owner._allSensorsLeaseCount);
+            }
+        }
+
+        private sealed class SensorLease : IDisposable
+        {
+            private SensorConfig _owner;
+
+            public SensorLease(SensorConfig owner, Func<IReadOnlySet<string>> identifiers)
+            {
+                _owner = owner;
+                Identifiers = identifiers;
+            }
+
+            public Func<IReadOnlySet<string>> Identifiers { get; }
+
+            public void Dispose()
+            {
+                var owner = Interlocked.Exchange(ref _owner, null);
+                owner?.Release(this);
+            }
         }
 
         public int SensorLoggingRefreshPeriod { get; set; }
@@ -192,10 +280,11 @@ namespace CapFrameX.Sensor
             // A saved logging selection describes what a capture should contain; it must not
             // keep vendor APIs, SMU/PMC counters and storage SMART queries active between
             // captures. The active-sensors websocket intentionally uses that same selection.
-            return _evaluateAllSensors
+            return EvaluateAllSensors
                 || _wsSensorsEnabled
                 || ((_isSensorLoggingActive || _wsActiveSensorsEnabled) && IsSelectedForLogging(identifier))
-                || IsSelectedForOverlay(identifier);
+                || IsSelectedForOverlay(identifier)
+                || IsLeased(identifier);
         }
 
         public async Task Save()

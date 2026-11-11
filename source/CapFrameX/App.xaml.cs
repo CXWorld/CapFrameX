@@ -1,10 +1,13 @@
-﻿using CapFrameX.Capture.Contracts;
+using CapFrameX.Capture.Contracts;
 using CapFrameX.Configuration;
 using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Contracts.RTSS;
 using CapFrameX.Contracts.Sensor;
+using CapFrameX.Data;
 using CapFrameX.Extensions;
+using CapFrameX.Hotkey;
 using CapFrameX.PMD.Benchlab;
 using CapFrameX.PMD.Powenetics;
 using CapFrameX.PresentMonInterface;
@@ -15,12 +18,15 @@ using DryIoc;
 using EmbedIO;
 using Newtonsoft.Json;
 using Prism.DryIoc;
+using Prism.Events;
 using Serilog;
 using System;
 using System.Configuration;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Net.Http;
+using System.Reactive.Linq;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,9 +50,6 @@ namespace CapFrameX
         // are skipped.
         private bool _startupAborted;
         private Mutex _mutex;
-#if DEBUG
-        private DebugMonitorWindow _debugMonitorWindow;
-#endif
 
         public App()
         {
@@ -59,6 +62,16 @@ namespace CapFrameX
         protected override void OnStartup(StartupEventArgs e)
         {
             StartupPerformanceLogger.Mark("App.OnStartup entered (application resources loaded)");
+
+            // After downloading an update the previous instance starts this one and exits. Waiting
+            // for it comes before the single-instance mutex, which the previous instance releases
+            // early in its shutdown; the staged package is then installed further down.
+            string previousInstanceResult;
+            using (StartupPerformanceLogger.Measure("Previous instance exit"))
+            {
+                previousInstanceResult = UpdateRestart.WaitForPreviousInstance(e.Args,
+                    Environment.ProcessPath, UpdateRestart.ShutdownGracePeriod);
+            }
 
             const string appName = "CapFrameX";
             bool createdNew;
@@ -145,6 +158,9 @@ namespace CapFrameX
                 }
                 StartupPerformanceLogger.LoggerReady();
 
+                if (previousInstanceResult != null)
+                    Log.Logger.Information(previousInstanceResult);
+
                 // An update staged by a previous session is installed here, before anything else
                 // is built: the installer replaces the files of the running app, so CapFrameX has
                 // to be on its way out by the time it starts.
@@ -165,6 +181,18 @@ namespace CapFrameX
                     if (installerStarted)
                     {
                         // Nothing has been started yet, so there is nothing to shut down either.
+                        _skipShutdownSequence = true;
+                        Current.Shutdown();
+                        return;
+                    }
+                }
+
+                // Before anything is written: an archive program that runs CapFrameX.exe from its
+                // temporary folder deletes that folder while CapFrameX is still running.
+                using (StartupPerformanceLogger.Measure("Temporary folder check"))
+                {
+                    if (WarnAboutTemporaryFolderStart())
+                    {
                         _skipShutdownSequence = true;
                         Current.Shutdown();
                         return;
@@ -220,6 +248,26 @@ namespace CapFrameX
                     RevealMainWindow(showSplash);
                 }
 
+                using (StartupPerformanceLogger.Measure("Settings save failure notice"))
+                {
+                    try
+                    {
+                        if (Container.Resolve<ISettingsStorage>() is JsonSettingsStorage settingsStorage)
+                        {
+                            // Once per session: every later failure is only logged.
+                            settingsStorage.SaveFailures
+                                .Take(1)
+                                .Subscribe(_ => Current.Dispatcher.BeginInvoke(
+                                    new Action(() => ShowSettingsSaveFailure(settingsStorage.FilePath)),
+                                    DispatcherPriority.ApplicationIdle));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Error(ex, "Error subscribing to failed configuration saves");
+                    }
+                }
+
                 // Check for conflicting ETW sessions (FrameViewService)
                 using (StartupPerformanceLogger.Measure("ETW conflict check scheduling"))
                 {
@@ -236,6 +284,26 @@ namespace CapFrameX
                     catch (Exception ex)
                     {
                         Log.Logger.Error(ex, "Error checking for ETW services");
+                    }
+                }
+
+                // The portable version ships the Vulkan layers but registers nothing on extraction.
+                if (PortableModeDetector.IsPortableMode)
+                {
+                    using (StartupPerformanceLogger.Measure("Portable Vulkan layer check scheduling"))
+                    {
+                        try
+                        {
+                            var appConfiguration = Container.Resolve<IAppConfiguration>();
+                            var eventAggregator = Container.Resolve<IEventAggregator>();
+                            _ = Current.Dispatcher.BeginInvoke(
+                                new Action(() => _ = PortableVulkanLayerPrompt.RunAsync(appConfiguration, eventAggregator)),
+                                DispatcherPriority.ApplicationIdle);
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Logger.Error(ex, "Error scheduling the portable Vulkan layer check");
+                        }
                     }
                 }
 
@@ -264,10 +332,10 @@ namespace CapFrameX
                 }
 
 #if DEBUG
-                // Open debug monitor window in Debug mode
+                // Open the debug monitor window in Debug mode (close it again in ApplicationExit):
                 //var captureService = Container.Resolve<ICaptureService>();
-                //_debugMonitorWindow = new DebugMonitorWindow(captureService);
-                //_debugMonitorWindow.Show();
+                //var debugMonitorWindow = new DebugMonitorWindow(captureService);
+                //debugMonitorWindow.Show();
 #endif
 
                 StartupPerformanceLogger.Complete();
@@ -313,8 +381,66 @@ namespace CapFrameX
         /// <summary>
         /// Reads StartMinimized straight from AppSettings.json - at splash time the
         /// container and with it the real configuration service do not exist yet.
+        /// When in doubt, show the splash - it closes on its own.
         /// </summary>
-        private static bool PeekStartMinimized()
+        private static bool PeekStartMinimized() => PeekSetting<bool?>("StartMinimized") ?? false;
+
+        /// <summary>
+        /// Shows why CapFrameX does not run from a temporary folder and how to start it instead.
+        /// True when it did, and the start has to be aborted.
+        /// </summary>
+        private static bool WarnAboutTemporaryFolderStart()
+        {
+            string appDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            try
+            {
+                if (!TemporaryFolderStart.IsTemporaryFolder(appDirectory))
+                    return false;
+
+                Log.Logger.Warning("CapFrameX was started from the temporary folder {Folder}, which archive programs delete while it runs. Asked to extract it first and closing.",
+                    appDirectory);
+
+                // The configured language, or the one of Windows before anything was configured:
+                // a freshly extracted folder holds no settings yet.
+                CxLang.Instance.SetUiLanguage(PeekSetting<string>("UiLanguage") ?? CultureInfo.CurrentUICulture.TwoLetterISOLanguageName);
+                MessageBox.Show(CxLang.Format("Appxaml_TemporaryFolderStart0", appDirectory.TrimEnd(Path.DirectorySeparatorChar)),
+                    CxLang.T("Appxaml_TemporaryFolderTitle"), MessageBoxButton.OK, MessageBoxImage.Warning);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while checking for a start from a temporary folder.");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Explains a configuration folder that cannot be written. In the portable version, the
+        /// folder is part of the extracted one, which may lie where Controlled folder access
+        /// blocks CapFrameX (Documents, Desktop, also in OneDrive).
+        /// </summary>
+        private static void ShowSettingsSaveFailure(string settingsFile)
+        {
+            try
+            {
+                string folder = Path.GetDirectoryName(settingsFile);
+                string text = PortableModeDetector.IsPortableMode
+                    ? CxLang.Format("Appxaml_SettingsNotSavedPortable0", folder)
+                    : CxLang.Format("Appxaml_SettingsNotSavedInstalled0", folder);
+                MessageBox.Show(text, CxLang.T("Appxaml_SettingsNotSavedTitle"), MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while showing the failed configuration save.");
+            }
+        }
+
+        /// <summary>
+        /// Reads one value straight from AppSettings.json, before the container and with it the
+        /// configuration service exist. The default of <typeparamref name="T"/> when the file or
+        /// the value is missing or unreadable.
+        /// </summary>
+        private static T PeekSetting<T>(string key)
         {
             try
             {
@@ -341,15 +467,14 @@ namespace CapFrameX
 
                 var settingsFile = Path.Combine(configFolder, "AppSettings.json");
                 if (!File.Exists(settingsFile))
-                    return false;
+                    return default;
 
                 var settings = Newtonsoft.Json.Linq.JObject.Parse(File.ReadAllText(settingsFile));
-                return settings.Value<bool?>("StartMinimized") ?? false;
+                return settings.Value<T>(key);
             }
             catch
             {
-                // When in doubt, show the splash - it closes on its own.
-                return false;
+                return default;
             }
         }
 
@@ -369,12 +494,13 @@ namespace CapFrameX
                         return;
 
                     var result = MessageBox.Show(
-                        "FrameViewService ETW session detected.\n\n" +
-                        "The NVIDIA FrameView SDK is currently running an ETW trace session that may conflict with PresentMon. " +
-                        "If CapFrameX does not show performance metrics during capture, consider uninstalling the NVIDIA FrameView SDK.\n\n" +
-                        "Click 'Yes' to continue and show this warning again next time.\n" +
-                        "Click 'No' to continue and never show this warning again.",
-                        "ETW Session Conflict Detected",
+                        CxLang.TOrDefault("Appxaml_FrameViewEtwSessionDetected",
+                            "FrameViewService ETW session detected.\n\n" +
+                            "The NVIDIA FrameView SDK is currently running an ETW trace session that may conflict with PresentMon. " +
+                            "If CapFrameX does not show performance metrics during capture, consider uninstalling the NVIDIA FrameView SDK.\n\n" +
+                            "Click 'Yes' to continue and show this warning again next time.\n" +
+                            "Click 'No' to continue and never show this warning again."),
+                        CxLang.TOrDefault("Appxaml_EtwSessionConflictDetected", "ETW Session Conflict Detected"),
                         MessageBoxButton.YesNo,
                         MessageBoxImage.Warning);
 
@@ -435,7 +561,10 @@ namespace CapFrameX
             // The topmost splash must never sit above the crash dialog.
             SplashScreenHost.Close();
 
-            if (MessageBox.Show("An unexpected Error occured. Do you want to upload the CapFrameX Log for further analysis?", "Fatal Error", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            if (MessageBox.Show(
+                CxLang.TOrDefault("Appxaml_AnUnexpectedErrorOccuredDo", "An unexpected Error occured. Do you want to upload the CapFrameX Log for further analysis?"),
+                CxLang.TOrDefault("Appxaml_FatalError", "Fatal Error"),
+                MessageBoxButton.YesNo) == MessageBoxResult.Yes)
             {
                 using (var client = new HttpClient()
                 {
@@ -451,7 +580,8 @@ namespace CapFrameX
                     var reportId = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
                     Log.Logger.Information("Uploading Logs. Report-ID is {reportId}", reportId);
-                    MessageBox.Show($"Your Report-ID is {reportId}.\nPlease include this Id in your support inquiry. Visit https://www.capframex.com/support for further information.");
+                    MessageBox.Show(string.Format(CxLang.TOrDefault("Appxaml_YourReportIdIs0",
+                        "Your Report-ID is {0}.\nPlease include this Id in your support inquiry. Visit https://www.capframex.com/support for further information."), reportId));
                     // UseShellExecute is required to open a URL in the default browser on .NET Core+
                     Process.Start(new ProcessStartInfo(string.Format(ConfigurationManager.AppSettings.Get("ContactFormUriTemplate"),
                         HttpUtility.UrlEncode($"Crashlog-Report: {reportId}"),
@@ -480,17 +610,43 @@ namespace CapFrameX
             if (!_isSingleInstance || _skipShutdownSequence)
                 return;
 
-            // Note: the in-game hook disables itself when it sees CapFrameX exit (it holds a
-            // SYNCHRONIZE handle to this process, polled from its Present hook), so no
-            // explicit shutdown signal is needed here.
+            // The in-game hook disables itself when it sees CapFrameX exit (it holds a SYNCHRONIZE
+            // handle to this process, polled from its Present hook). Until then it draws whatever
+            // the feeds still offer, so withdraw the renderers before anything else: stopping
+            // PresentMon or the sensors can drop the tile design while the row feed stays valid,
+            // and the hook would show the row overlay until the process is gone.
+            ShutdownOverlayRenderers();
 
-#if DEBUG
+            // The witness' count of hotkey presses the hook dispatched or missed this session.
             try
             {
-                _debugMonitorWindow?.Close();
+                HotkeyDictionaryBuilder.LogSessionSummary();
             }
-            catch { }
-#endif
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while logging the hotkey summary.");
+            }
+
+            // A record rewrite truncates the file first; a cut-off one would lose the record.
+            try
+            {
+                if (!Container.Resolve<RecordWriteQueue>().WaitForPendingWrites(TimeSpan.FromSeconds(10)))
+                    Log.Logger.Warning("Record files were still being written at exit.");
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while waiting for record files to be written.");
+            }
+
+            // The record index is written a moment after its last change; write what is pending.
+            try
+            {
+                Container.Resolve<RecordInfoIndex>().Flush();
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Error(ex, "Error while writing the record index.");
+            }
 
             try
             {
@@ -759,6 +915,12 @@ namespace CapFrameX
             {
                 Log.Logger = ApplicationLogging.CreateLogger(logPath);
             }
+
+#if DEBUG
+            // Binding failures, with a snapshot of the data grids for lost ancestors; the
+            // debugger output has the message alone.
+            BindingFailureLog.Attach();
+#endif
         }
 
     }

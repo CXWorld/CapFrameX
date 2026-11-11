@@ -55,7 +55,8 @@ internal class MemoryGroup : IGroup, IHardwareChanged
     }
 
     public event HardwareEventHandler HardwareAdded;
-    public event HardwareEventHandler HardwareRemoved;
+    // DIMMs are only ever added, by the retry task; none is removed while the group lives.
+    public event HardwareEventHandler HardwareRemoved { add { } remove { } }
 
     public IReadOnlyList<IHardware> Hardware => _hardware;
 
@@ -108,9 +109,9 @@ internal class MemoryGroup : IGroup, IHardwareChanged
                     return false;
                 }
 
-                if (DetectThermalSensors(out List<SPDAccessor> accessors))
+                if (DetectThermalSensors(out List<DetectedModule> modules))
                 {
-                    AddDimms(accessors, settings);
+                    AddDimms(modules, settings);
                     return true;
                 }
             }
@@ -144,9 +145,11 @@ internal class MemoryGroup : IGroup, IHardwareChanged
         }, _cancellationTokenSource.Token);
     }
 
-    private static bool DetectThermalSensors(out List<SPDAccessor> accessors)
+    private readonly record struct DetectedModule(SPDAccessor Accessor, SMBusInterface Bus, byte Address);
+
+    private static bool DetectThermalSensors(out List<DetectedModule> modules)
     {
-        accessors = [];
+        modules = [];
 
         bool ramDetected = false;
 
@@ -165,7 +168,7 @@ internal class MemoryGroup : IGroup, IHardwareChanged
                 if (detector.Accessor != null)
                 {
                     //Add all detected modules
-                    accessors.Add(detector.Accessor);
+                    modules.Add(new DetectedModule(detector.Accessor, smbus, i));
 
                     ramDetected = true;
                 }
@@ -175,25 +178,52 @@ internal class MemoryGroup : IGroup, IHardwareChanged
         return ramDetected;
     }
 
-    private void AddDimms(List<SPDAccessor> accessors, ISettings settings)
+    private void AddDimms(List<DetectedModule> modules, ISettings settings)
     {
         List<Hardware> additions = [];
 
-        foreach (SPDAccessor ram in accessors)
+        for (int moduleIndex = 0; moduleIndex < modules.Count; moduleIndex++)
         {
+            SPDAccessor ram = modules[moduleIndex].Accessor;
+
+            // Spread the modules' temperature reads evenly over the refresh interval, so one poll
+            // never waits for more than one module.
+            TimeSpan temperatureRefreshPhase = TimeSpan.FromTicks(DimmMemory.TemperatureRefreshInterval.Ticks * moduleIndex / modules.Count);
+
             //Default value
             string name = $"DIMM #{ram.Index}";
+            string manufacturer = null;
+            string partNumber = null;
 
-            //Check if we can switch to the correct page
-            if (ram.ChangePage(PageData.ModulePartNumber))
-                name = $"{ram.GetModuleManufacturerString()} - {ram.ModulePartNumber()} (#{ram.Index})";
+            try
+            {
+                // Cache identity while the SPD page is already accessed for the display name.
+                if (ram.ChangePage(PageData.ModulePartNumber))
+                {
+                    manufacturer = ram.GetModuleManufacturerString()?.Trim('\0', ' ', '\t', '\r', '\n');
+                    partNumber = ram.ModulePartNumber()?.Trim('\0', ' ', '\t', '\r', '\n');
+                }
 
-            DimmMemory memory = new(ram, name, new Identifier("memory", "dimm", $"{ram.Index}"), settings, _sensorConfig);
+                // Leave page 0 selected, as the toolkit's temperature read did on every poll; the
+                // DDR5 temperature read in DimmMemory no longer touches the page.
+                ram.ChangePage(PageData.ThermalData);
+            }
+            catch (Exception ex)
+            {
+                // A failed identity read must not prevent this or other DIMMs from being added.
+                _lastException = ex;
+            }
+
+            if (!string.IsNullOrWhiteSpace(manufacturer) && !string.IsNullOrWhiteSpace(partNumber))
+                name = $"{manufacturer} - {partNumber} (#{ram.Index})";
+            else if (!string.IsNullOrWhiteSpace(manufacturer) || !string.IsNullOrWhiteSpace(partNumber))
+                name = $"{(!string.IsNullOrWhiteSpace(manufacturer) ? manufacturer : partNumber)} (#{ram.Index})";
+
+            DimmMemory memory = new(ram, modules[moduleIndex].Bus, modules[moduleIndex].Address, temperatureRefreshPhase, name, manufacturer, partNumber, new Identifier("memory", "dimm", $"{ram.Index}"), settings, _sensorConfig);
             additions.Add(memory);
         }
 
         _hardware = [.. _hardware, .. additions];
-        foreach (Hardware hardware in additions)
-            HardwareAdded?.Invoke(hardware);
+        additions.ForEach(hardware => HardwareAdded?.Invoke(hardware));
     }
 }

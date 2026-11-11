@@ -107,6 +107,33 @@ namespace CapFrameX.Test.Updater
 		}
 
 		[TestMethod]
+		public void ToPackageInfos_InstallerArgumentOutsideAllowlist_IsRejected()
+		{
+			// A genuinely signed MSI started with a foreign transform runs that transform's custom
+			// actions elevated, so the signature check alone would not stop a compromised server.
+			var release = Release("1.9.0.1");
+			release.Package.Arguments = @"/passive TRANSFORMS=\\attacker\share\x.mst";
+
+			var packages = _service.ToPackageInfos(Catalog("1.9.0.1", null, release), out var rejectReason);
+
+			Assert.IsNull(packages);
+			StringAssert.Contains(rejectReason, "TRANSFORMS=");
+			StringAssert.Contains(rejectReason, "allowlist");
+		}
+
+		[TestMethod]
+		public void ToPackageInfos_PublishedInstallerArguments_AreKept()
+		{
+			var release = Release("1.9.0.1");
+			release.Package.Arguments = "/passive /norestart LAUNCHAPP=1";
+
+			var packages = _service.ToPackageInfos(Catalog("1.9.0.1", null, release), out var rejectReason);
+
+			Assert.IsNull(rejectReason);
+			Assert.AreEqual("/passive /norestart LAUNCHAPP=1", packages[0].InstallerArguments);
+		}
+
+		[TestMethod]
 		public void ToPackageInfos_LatestBetaMustMatchNewestBetaBuild()
 		{
 			var catalog = Catalog("1.9.0.0", "1.9.0.1",

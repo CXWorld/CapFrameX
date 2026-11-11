@@ -6,6 +6,9 @@ namespace CapFrameX.Data
 	{
 		[DisplayName("Game Name")]
 		public string Game { get; set; }
+		// Marks the averaged row; its Game text is localized and cannot identify it.
+		[Browsable(false)]
+		public bool IsAverageRow { get; set; }
 		[DisplayName("Creation date")]
 		public string Date { get; set; }
 		[DisplayName("Creation time")]

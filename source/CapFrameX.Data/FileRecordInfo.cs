@@ -62,6 +62,53 @@ namespace CapFrameX.Data
 		public string Resolution { get; private set; }
 		internal bool UsesProcessListGameName { get; set; }
 
+		/// <summary>
+		/// Takes over a newer read of the same record, so a list entry follows a metadata edit
+		/// without being replaced: its selection and the session loaded for it stay.
+		/// </summary>
+		public void UpdateFrom(FileRecordInfo other)
+		{
+			_lines = other._lines;
+			GameName = other.GameName;
+			ProcessName = other.ProcessName;
+			CreationDate = other.CreationDate;
+			CreationTime = other.CreationTime;
+			RecordTime = other.RecordTime;
+			FullPath = other.FullPath;
+			FileInfo = other.FileInfo;
+			CombinedInfo = other.CombinedInfo;
+			DeviceName = other.DeviceName;
+			MotherboardName = other.MotherboardName;
+			OsVersion = other.OsVersion;
+			ProcessorName = other.ProcessorName;
+			SystemRamInfo = other.SystemRamInfo;
+			BaseDriverVersion = other.BaseDriverVersion;
+			DriverPackage = other.DriverPackage;
+			NumberGPUs = other.NumberGPUs;
+			GraphicCardName = other.GraphicCardName;
+			GPUCoreClock = other.GPUCoreClock;
+			GPUMemoryClock = other.GPUMemoryClock;
+			GPUMemory = other.GPUMemory;
+			GPUDriverVersion = other.GPUDriverVersion;
+			Comment = other.Comment;
+			IsAggregated = other.IsAggregated;
+			IsValid = other.IsValid;
+			HasInfoHeader = other.HasInfoHeader;
+			Id = other.Id;
+			Hash = other.Hash;
+			ApiInfo = other.ApiInfo;
+			ResizableBar = other.ResizableBar;
+			WinGameMode = other.WinGameMode;
+			HAGS = other.HAGS;
+			PresentationMode = other.PresentationMode;
+			DisplayLayer = other.DisplayLayer;
+			Resolution = other.Resolution;
+			UsesProcessListGameName = other.UsesProcessListGameName;
+
+			// An empty name tells the bindings that every property may have changed.
+			NotifyPropertyChanged(string.Empty);
+		}
+
 		private FileRecordInfo(FileInfo fileInfo, ISession session)
 			: this(fileInfo, session?.Info, session?.Hash, session?.Runs?.Count ?? 0,
 				session?.Runs?.LastOrDefault()?.CaptureData?.TimeInSeconds?.LastOrDefault() ?? 0)
@@ -449,6 +496,89 @@ namespace CapFrameX.Data
 			{
 				return null;
 			}
+		}
+
+		/// <summary>
+		/// The metadata as read from the file, for the on-disk record index. Taken before the
+		/// process list's display name replaces the stored game name.
+		/// </summary>
+		internal RecordInfoIndexEntry ToIndexEntry()
+			=> new RecordInfoIndexEntry
+			{
+				Id = Id,
+				Hash = Hash,
+				GameName = GameName,
+				ProcessName = ProcessName,
+				CreationDate = CreationDate,
+				CreationTime = CreationTime,
+				RecordTime = RecordTime,
+				CombinedInfo = CombinedInfo,
+				DeviceName = DeviceName,
+				MotherboardName = MotherboardName,
+				OsVersion = OsVersion,
+				ProcessorName = ProcessorName,
+				SystemRamInfo = SystemRamInfo,
+				BaseDriverVersion = BaseDriverVersion,
+				DriverPackage = DriverPackage,
+				NumberGPUs = NumberGPUs,
+				GraphicCardName = GraphicCardName,
+				GPUCoreClock = GPUCoreClock,
+				GPUMemoryClock = GPUMemoryClock,
+				GPUMemory = GPUMemory,
+				GPUDriverVersion = GPUDriverVersion,
+				Comment = Comment,
+				IsAggregated = IsAggregated,
+				IsValid = IsValid,
+				HasInfoHeader = HasInfoHeader,
+				ApiInfo = ApiInfo,
+				ResizableBar = ResizableBar,
+				WinGameMode = WinGameMode,
+				HAGS = HAGS,
+				PresentationMode = PresentationMode,
+				DisplayLayer = DisplayLayer,
+				Resolution = Resolution
+			};
+
+		/// <summary>A record as the index remembers it; the file is not read.</summary>
+		internal static FileRecordInfo FromIndexEntry(FileInfo fileInfo, RecordInfoIndexEntry entry)
+			=> new FileRecordInfo(fileInfo, entry);
+
+		private FileRecordInfo(FileInfo fileInfo, RecordInfoIndexEntry entry)
+		{
+			FileInfo = fileInfo;
+			FullPath = fileInfo.FullName;
+			Id = entry.Id;
+			Hash = entry.Hash;
+			GameName = entry.GameName;
+			ProcessName = entry.ProcessName;
+			CreationDate = entry.CreationDate;
+			CreationTime = entry.CreationTime;
+			RecordTime = entry.RecordTime;
+			CombinedInfo = entry.CombinedInfo;
+			DeviceName = entry.DeviceName;
+			MotherboardName = entry.MotherboardName;
+			OsVersion = entry.OsVersion;
+			ProcessorName = entry.ProcessorName;
+			SystemRamInfo = entry.SystemRamInfo;
+			BaseDriverVersion = entry.BaseDriverVersion;
+			DriverPackage = entry.DriverPackage;
+			NumberGPUs = entry.NumberGPUs;
+			GraphicCardName = entry.GraphicCardName;
+			GPUCoreClock = entry.GPUCoreClock;
+			GPUMemoryClock = entry.GPUMemoryClock;
+			GPUMemory = entry.GPUMemory;
+			GPUDriverVersion = entry.GPUDriverVersion;
+			Comment = entry.Comment;
+			IsAggregated = entry.IsAggregated;
+			IsValid = entry.IsValid;
+			HasInfoHeader = entry.HasInfoHeader;
+			ApiInfo = entry.ApiInfo;
+			ResizableBar = entry.ResizableBar;
+			WinGameMode = entry.WinGameMode;
+			HAGS = entry.HAGS;
+			PresentationMode = entry.PresentationMode;
+			DisplayLayer = entry.DisplayLayer;
+			Resolution = entry.Resolution;
 		}
 
 		public static bool IsMangoHudFile(string line)

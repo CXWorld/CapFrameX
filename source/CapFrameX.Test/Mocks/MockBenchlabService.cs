@@ -2,6 +2,7 @@ using CapFrameX.Contracts.PMD;
 using CapFrameX.PMD.Benchlab;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
@@ -188,7 +189,7 @@ namespace CapFrameX.Test.Mocks
 
             var sample = new BenchlabSensorSample
             {
-                TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                TimeStamp = QpcMilliseconds(),
                 Sensors = sensors
             };
 
@@ -265,7 +266,7 @@ namespace CapFrameX.Test.Mocks
 
             return new BenchlabSensorSample
             {
-                TimeStamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                TimeStamp = QpcMilliseconds(),
                 Sensors = sensors
             };
         }
@@ -337,6 +338,12 @@ namespace CapFrameX.Test.Mocks
         }
 
         /// <summary>
+        /// Milliseconds on the QPC clock, the time base of the real service's samples.
+        /// </summary>
+        private static long QpcMilliseconds()
+            => (long)Math.Floor(Stopwatch.GetTimestamp() / (double)Stopwatch.Frequency * 1000.0);
+
+        /// <summary>
         /// Generate a batch of samples for bulk testing.
         /// </summary>
         /// <param name="count">Number of samples to generate</param>
@@ -345,7 +352,7 @@ namespace CapFrameX.Test.Mocks
         public IList<BenchlabSensorSample> GenerateSampleBatch(int count, int intervalMs = 100)
         {
             var samples = new List<BenchlabSensorSample>();
-            var startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            var startTime = QpcMilliseconds();
 
             for (int i = 0; i < count; i++)
             {
@@ -370,7 +377,7 @@ namespace CapFrameX.Test.Mocks
             double startCpuPower, double endCpuPower, int intervalMs = 100)
         {
             var samples = new List<BenchlabSensorSample>();
-            var startTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            var startTime = QpcMilliseconds();
 
             for (int i = 0; i < count; i++)
             {

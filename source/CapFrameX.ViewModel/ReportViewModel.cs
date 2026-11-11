@@ -1,5 +1,6 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Data;
 using CapFrameX.EventAggregation.Messages;
 using CapFrameX.Extensions;
@@ -111,7 +112,7 @@ namespace CapFrameX.ViewModel
 
         public void RemoveReportEntry(ReportInfo selectedItem)
         {
-            if (selectedItem.Game.Equals("Averaged values"))
+            if (selectedItem.IsAverageRow)
                 return;
             else
             {
@@ -279,9 +280,15 @@ namespace CapFrameX.ViewModel
         partial void InitializeReportParameters();
 
 
+        /// <returns>Null for a record that could not be loaded or has no frames.</returns>
         private ReportInfo GetReportInfoFromRecordInfo(IFileRecordInfo recordInfo)
         {
             var session = _recordManager.LoadData(recordInfo.FullPath);
+            if (!ComparisonViewModel.HasFrames(session))
+            {
+                _logger?.LogWarning("Report: {path} could not be loaded and was not added.", recordInfo.FullPath);
+                return null;
+            }
 
             double cpuPmdAverage = double.NaN;
             double gpuPmdAverage = double.NaN;
@@ -415,7 +422,7 @@ namespace CapFrameX.ViewModel
 
         private void AddAverageReportInfo(ObservableCollection<ReportInfo> reportInfoCollection)
         {
-            var averageInfo = reportInfoCollection.FirstOrDefault(x => x.Game == "Averaged values");
+            var averageInfo = reportInfoCollection.FirstOrDefault(x => x.IsAverageRow);
 
             if (averageInfo != null)
             {
@@ -428,7 +435,8 @@ namespace CapFrameX.ViewModel
 
                 var report = new ReportInfo
                 {
-                    Game = "Averaged values"
+                    Game = CxLang.T("ReportViewModel_AveragedValues"),
+                    IsAverageRow = true
                 };
 
                 foreach (var propertyInfo in propertyInfos)
@@ -441,8 +449,29 @@ namespace CapFrameX.ViewModel
             }
         }
 
+        /// <summary>
+        /// Adds dropped records: their rows are computed off the UI thread, then all of them are
+        /// added and the average row is computed once. Each row parses its record and computes
+        /// about thirty metrics, which froze the view for a dropped folder.
+        /// </summary>
+        private async System.Threading.Tasks.Task AddReportRecordsAsync(IReadOnlyList<IFileRecordInfo> recordInfos)
+        {
+            var reportInfos = await RecordBatchLoader.LoadAsync(recordInfos, GetReportInfoFromRecordInfo, _logger);
+            if (reportInfos.Count == 0)
+                return;
+
+            foreach (var reportInfo in reportInfos)
+                ReportInfoCollection.Add(reportInfo);
+
+            if (ReportShowAverageRow)
+                AddAverageReportInfo(ReportInfoCollection);
+        }
+
         private void AddReportRecord(ReportInfo reportInfo)
         {
+            if (reportInfo == null)
+                return;
+
             ReportInfoCollection.Add(reportInfo);
 
             if (ReportShowAverageRow)
@@ -470,7 +499,7 @@ namespace CapFrameX.ViewModel
             var propertyInfo = typeof(ReportInfo).GetProperty(column);
             ReportInfoCollection.Sort(c => propertyInfo.GetValue(c), e.Column.SortDirection);
 
-            var averageRow = ReportInfoCollection.FirstOrDefault(x => x.Game == "Averaged values");
+            var averageRow = ReportInfoCollection.FirstOrDefault(x => x.IsAverageRow);
             if (averageRow != null)
                 ReportInfoCollection.Move(ReportInfoCollection.IndexOf(averageRow), ReportInfoCollection.Count - 1);
         }
@@ -507,11 +536,7 @@ namespace CapFrameX.ViewModel
                 {
                     if (frameworkElement.Name == "ReportDataGrid")
                     {
-                        foreach (IFileRecordInfo recordInfo in await GetDroppedRecordInfosAsync(dropInfo.Data))
-                        {
-                            ReportInfo reportInfo = GetReportInfoFromRecordInfo(recordInfo);
-                            AddReportRecord(reportInfo);
-                        }
+                        await AddReportRecordsAsync(await GetDroppedRecordInfosAsync(dropInfo.Data));
                     }
                 }
             }

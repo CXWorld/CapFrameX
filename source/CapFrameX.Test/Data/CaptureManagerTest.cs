@@ -17,11 +17,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reactive.Subjects;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CapFrameX.Test.Data
@@ -253,18 +255,16 @@ namespace CapFrameX.Test.Data
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
         public async Task StartCapture_WhenAlreadyCapturing_ThrowsException()
         {
             _mockCaptureService.StartCaptureService(null);
             var options = CreateValidCaptureOptions();
 
             await _captureManager.StartCapture(options);
-            await _captureManager.StartCapture(options); // Should throw
+            await Assert.ThrowsExactlyAsync<Exception>(() => _captureManager.StartCapture(options));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
         public async Task StartCapture_WithNonExistentProcess_ThrowsException()
         {
             _mockCaptureService.StartCaptureService(null);
@@ -275,7 +275,7 @@ namespace CapFrameX.Test.Data
                 CaptureDelay = 0
             };
 
-            await _captureManager.StartCapture(options);
+            await Assert.ThrowsExactlyAsync<Exception>(() => _captureManager.StartCapture(options));
         }
 
         [TestMethod]
@@ -292,6 +292,68 @@ namespace CapFrameX.Test.Data
 
             // Cancel the delay to cleanup
             await _captureManager.StopCapture();
+        }
+
+        [TestMethod]
+        [DataRow(0.0, DisplayName = "Stopped by hand")]
+        [DataRow(1.0, DisplayName = "Stopped by the capture time")]
+        public async Task StartCapture_WithDelay_RecordsNoFramesFromTheDelay(double captureTime)
+        {
+            // Frames sent until the delay is over carry 40 ms, the frames after it 10 ms. The capture
+            // used to start at the request, so the archive supplied the frames of the delay.
+            const double delay = 1.0;
+            const double delayFrameTime = 40.0;
+            const double captureFrameTime = 10.0;
+            _mockCaptureService.AddProcess("DelayGame", 4321, "0x00000005");
+            _mockCaptureService.UseRealQpcTime = true;
+            _mockCaptureService.StartCaptureService(null);
+            _captureManager.StartFillArchive();
+
+            long delayEnd = long.MaxValue;
+            using var stopEmitting = new CancellationTokenSource();
+            var emitter = Task.Run(async () =>
+            {
+                while (!stopEmitting.IsCancellationRequested)
+                {
+                    bool inDelay = Stopwatch.GetTimestamp() < Interlocked.Read(ref delayEnd);
+                    _mockCaptureService.EmitCustomFrame("DelayGame.exe", 4321, inDelay ? delayFrameTime : captureFrameTime);
+                    await Task.Delay(5);
+                }
+            });
+
+            // Fill the archive, then request the capture. The delay of CaptureManager ends after
+            // delayEnd, which is taken before its request.
+            await Task.Delay(300);
+            Interlocked.Exchange(ref delayEnd, Stopwatch.GetTimestamp() + (long)(delay * Stopwatch.Frequency));
+
+            var options = CreateValidCaptureOptions();
+            options.ProcessInfo = ("DelayGame", 4321);
+            options.CaptureDelay = delay;
+            options.CaptureTime = captureTime;
+            await _captureManager.StartCapture(options);
+
+            if (captureTime > 0)
+            {
+                var timeout = Stopwatch.StartNew();
+                while (_mockRecordManager.FileCount == 0 && timeout.Elapsed < TimeSpan.FromSeconds(20))
+                    await Task.Delay(100);
+            }
+            else
+            {
+                await Task.Delay(1500);
+                await _captureManager.StopCapture();
+            }
+
+            stopEmitting.Cancel();
+            await emitter;
+
+            var frameTimes = _mockRecordManager.LastConvertedPresentLines
+                .Select(line => line.Split(',')[MockCaptureService.MsBetweenPresents_INDEX])
+                .ToList();
+            Assert.AreEqual(1, _mockRecordManager.FileCount, "No capture was written.");
+            Assert.IsTrue(frameTimes.Count > 20, $"The capture has only {frameTimes.Count} frames.");
+            Assert.AreEqual(0, frameTimes.Count(frameTime => frameTime == delayFrameTime.ToString("F4", CultureInfo.InvariantCulture)),
+                "Frames shown during the capture delay ended up in the capture.");
         }
 
         [TestMethod]
@@ -397,10 +459,9 @@ namespace CapFrameX.Test.Data
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
         public async Task StopCapture_WhenNotCapturing_ThrowsException()
         {
-            await _captureManager.StopCapture();
+            await Assert.ThrowsExactlyAsync<Exception>(() => _captureManager.StopCapture());
         }
 
         [TestMethod]
@@ -454,6 +515,58 @@ namespace CapFrameX.Test.Data
             await Task.Delay(3000);
 
             _rtssServiceMock.Verify(x => x.OnOSDOn(), Times.Once);
+            _rtssServiceMock.Verify(x => x.Refresh(), Times.AtLeastOnce);
+        }
+
+        // RTSS keeps the rows it was fed last, also after a switch to another renderer. A tile
+        // overlay got them back next to it after every capture, and RTSS' global OSD switched on.
+        [TestMethod]
+        [DataRow(EOverlayRenderer.InGame)]
+        [DataRow(EOverlayRenderer.HookFree)]
+        public async Task AutoDisableOverlay_WithACapFrameXRenderer_HidesItWithoutTouchingRtss(EOverlayRenderer renderer)
+        {
+            _appConfigurationMock.WireOverlayRenderer(renderer);
+            _appConfigurationMock.Setup(x => x.AutoDisableOverlay).Returns(true);
+            _appConfigurationMock.SetupProperty(x => x.IsOverlayActive, true);
+            var published = new List<bool>();
+            var activeStream = new Subject<bool>();
+            activeStream.Subscribe(published.Add);
+            _overlayServiceMock.Setup(x => x.IsOverlayActiveStream).Returns(activeStream);
+
+            _mockCaptureService.StartCaptureService(null);
+            await _captureManager.StartCapture(CreateValidCaptureOptions());
+
+            Assert.IsFalse(_appConfigurationMock.Object.IsOverlayActive, "The overlay is hidden while capturing.");
+            Assert.IsTrue(_captureManager.OSDAutoDisabled);
+
+            _mockCaptureService.EmitFrames(5);
+            await _captureManager.StopCapture();
+
+            Assert.IsTrue(_appConfigurationMock.Object.IsOverlayActive, "The overlay returns after the capture.");
+            CollectionAssert.AreEqual(new[] { false, true }, published);
+            _rtssServiceMock.Verify(x => x.OnOSDOff(), Times.Never);
+            _rtssServiceMock.Verify(x => x.OnOSDOn(), Times.Never);
+            _rtssServiceMock.Verify(x => x.Refresh(), Times.Never);
+        }
+
+        [TestMethod]
+        public async Task AutoDisableOverlay_RestoresTheRtssOsdAfterASwitchToAnotherRenderer()
+        {
+            _appConfigurationMock.WireOverlayRenderer(EOverlayRenderer.Rtss);
+            _appConfigurationMock.Setup(x => x.AutoDisableOverlay).Returns(true);
+            _appConfigurationMock.SetupProperty(x => x.IsOverlayActive, true);
+
+            _mockCaptureService.StartCaptureService(null);
+            await _captureManager.StartCapture(CreateValidCaptureOptions());
+            _rtssServiceMock.Verify(x => x.OnOSDOff(), Times.Once);
+
+            _appConfigurationMock.Object.OverlayRenderer = EOverlayRenderer.InGame;
+            _mockCaptureService.EmitFrames(5);
+            await _captureManager.StopCapture();
+
+            Assert.IsTrue(_appConfigurationMock.Object.IsOverlayActive);
+            _rtssServiceMock.Verify(x => x.OnOSDOn(), Times.Once, "The capture gives back RTSS' global OSD switch.");
+            _rtssServiceMock.Verify(x => x.Refresh(), Times.Never, "RTSS no longer renders the overlay.");
         }
 
         [TestMethod]
@@ -738,6 +851,222 @@ namespace CapFrameX.Test.Data
 
         #endregion
 
+        #region Capture buffer
+
+        [TestMethod]
+        public async Task Capture_BuffersAndWritesOnlyTheTargetProcess()
+        {
+            // Regression: every row of every process stayed in the buffer until the next capture.
+            _mockCaptureService.AddProcess("TargetGame", 4321, "0x00000005");
+            _mockCaptureService.AddProcess("OtherApp", 5555, "0x00000006");
+            _mockCaptureService.UseRealQpcTime = true;
+            _mockCaptureService.StartCaptureService(null);
+            _captureManager.StartFillArchive();
+
+            using (new FrameEmitter(_mockCaptureService,
+                ("TargetGame.exe", 4321, 10.0), ("OtherApp.exe", 5555, 33.0)))
+            {
+                await Task.Delay(300);
+                await _captureManager.StartCapture(CaptureOptionsFor("TargetGame", 4321));
+                await Task.Delay(1000);
+            }
+            await WaitUntilBufferIsStable();
+
+            var buffered = _captureManager.CaptureBuffer.ToList();
+            Assert.IsTrue(buffered.Count > 20, $"Only {buffered.Count} rows were buffered.");
+            CollectionAssert.AreEqual(new[] { "TargetGame.exe" },
+                buffered.Select(row => row[MockCaptureService.ApplicationName_INDEX]).Distinct().ToArray());
+
+            await _captureManager.StopCapture();
+
+            Assert.AreEqual(1, _mockRecordManager.FileCount, "No capture was written.");
+            CollectionAssert.AreEqual(new[] { "TargetGame.exe" },
+                _mockRecordManager.LastConvertedPresentLines
+                    .Select(line => line.Split(',')[MockCaptureService.ApplicationName_INDEX]).Distinct().ToArray());
+        }
+
+        [TestMethod]
+        public async Task Capture_ReleasesItsBufferOnceTheFileIsWritten()
+        {
+            _mockCaptureService.AddProcess("TargetGame", 4321, "0x00000005");
+            _mockCaptureService.UseRealQpcTime = true;
+            _mockCaptureService.StartCaptureService(null);
+            _captureManager.StartFillArchive();
+
+            using (new FrameEmitter(_mockCaptureService, ("TargetGame.exe", 4321, 10.0)))
+            {
+                await Task.Delay(300);
+                await _captureManager.StartCapture(CaptureOptionsFor("TargetGame", 4321));
+                await Task.Delay(500);
+            }
+            await WaitUntilBufferIsStable();
+            Assert.IsTrue(_captureManager.CaptureBuffer.Count > 0);
+
+            await _captureManager.StopCapture();
+
+            Assert.AreEqual(1, _mockRecordManager.FileCount, "No capture was written.");
+            Assert.AreEqual(0, _captureManager.CaptureBuffer.Count,
+                "The rows of a written capture must not stay referenced until the next capture.");
+        }
+
+        [TestMethod]
+        public async Task Capture_OfSeveralTargetInstances_IsStillRejected()
+        {
+            // All PIDs of the target name are kept, so the multi-instance check still sees them.
+            _mockCaptureService.AddProcess("TargetGame", 4321, "0x00000005");
+            _mockCaptureService.AddProcess("TargetGame", 4322, "0x00000007");
+            _mockCaptureService.UseRealQpcTime = true;
+            _mockCaptureService.StartCaptureService(null);
+            _captureManager.StartFillArchive();
+
+            using (new FrameEmitter(_mockCaptureService,
+                ("TargetGame.exe", 4321, 10.0), ("TargetGame.exe", 4322, 12.0)))
+            {
+                await Task.Delay(300);
+                await _captureManager.StartCapture(CaptureOptionsFor("TargetGame", 4321));
+                await Task.Delay(500);
+            }
+            await WaitUntilBufferIsStable();
+            Assert.AreEqual(2, _captureManager.CaptureBuffer
+                .Select(row => row[MockCaptureService.ProcessID_INDEX]).Distinct().Count());
+
+            await _captureManager.StopCapture();
+
+            Assert.AreEqual(0, _mockRecordManager.FileCount);
+            Assert.IsTrue(LogEntries().Contains("Multi instances detected. Capture data will be filtered."));
+            Assert.AreEqual(0, _captureManager.CaptureBuffer.Count);
+        }
+
+        [TestMethod]
+        public async Task Capture_StopsTheArchiveOnTheFirstRowOfAnyProcess()
+        {
+            // The target is silent and only another process presents. The archive used to stop
+            // on the first buffered row of any process and must not wait for the target now.
+            _mockCaptureService.AddProcess("TargetGame", 4321, "0x00000005");
+            _mockCaptureService.AddProcess("OtherApp", 5555, "0x00000006");
+            _mockCaptureService.UseRealQpcTime = true;
+            _mockCaptureService.StartCaptureService(null);
+            _captureManager.StartFillArchive();
+
+            using (new FrameEmitter(_mockCaptureService, ("OtherApp.exe", 5555, 10.0)))
+            {
+                await Task.Delay(300);
+                await _captureManager.StartCapture(CaptureOptionsFor("TargetGame", 4321));
+                Assert.IsTrue(SpinWait.SpinUntil(() => LogEntries().Contains("Stopped filling Archive"),
+                    TimeSpan.FromSeconds(5)), "The archive kept filling while the target was silent.");
+            }
+            await WaitUntilBufferIsStable();
+            Assert.AreEqual(0, _captureManager.CaptureBuffer.Count);
+
+            await _captureManager.StopCapture();
+
+            Assert.AreEqual(0, _mockRecordManager.FileCount);
+        }
+
+        [TestMethod]
+        public async Task FinishedCapture_LeavesTheBufferOfANewCaptureAlone()
+        {
+            // MCP and REST start a capture without waiting for LockCaptureService, so a new
+            // capture can run while the previous one is still being written.
+            _mockCaptureService.AddProcess("GameA", 4321, "0x00000005");
+            _mockCaptureService.AddProcess("GameB", 7777, "0x00000008");
+            _mockCaptureService.UseRealQpcTime = true;
+            _mockCaptureService.StartCaptureService(null);
+            _captureManager.StartFillArchive();
+            var saveGate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            using (new FrameEmitter(_mockCaptureService, ("GameA.exe", 4321, 10.0), ("GameB.exe", 7777, 20.0)))
+            {
+                await Task.Delay(300);
+                await _captureManager.StartCapture(CaptureOptionsFor("GameA", 4321));
+                await Task.Delay(500);
+
+                _mockRecordManager.BeforeSave = () => saveGate.Task;
+                Task stopA = _captureManager.StopCapture();
+                Assert.IsTrue(SpinWait.SpinUntil(() => _mockRecordManager.LastConvertedPresentLines.Count > 0,
+                    TimeSpan.FromSeconds(10)), "Capture A never reached its write.");
+
+                await _captureManager.StartCapture(CaptureOptionsFor("GameB", 7777));
+                await Task.Delay(500);
+
+                saveGate.SetResult(true);
+                await stopA;
+                Assert.AreEqual(1, _mockRecordManager.FileCount, "Capture A was not written.");
+                Assert.IsTrue(_captureManager.CaptureBuffer.Count > 0,
+                    "Writing capture A released the buffer of capture B.");
+                await Task.Delay(300);
+            }
+            await WaitUntilBufferIsStable();
+
+            _mockRecordManager.BeforeSave = null;
+            await _captureManager.StopCapture();
+
+            Assert.AreEqual(2, _mockRecordManager.FileCount, "Capture B was not written.");
+            var linesOfB = _mockRecordManager.LastConvertedPresentLines;
+            Assert.IsTrue(linesOfB.Count > 20, $"Capture B has only {linesOfB.Count} frames.");
+            CollectionAssert.AreEqual(new[] { "GameB.exe" },
+                linesOfB.Select(line => line.Split(',')[MockCaptureService.ApplicationName_INDEX]).Distinct().ToArray());
+        }
+
+        private static CaptureOptions CaptureOptionsFor(string processName, int processId) => new CaptureOptions
+        {
+            ProcessInfo = (processName, processId),
+            CaptureTime = 0,
+            CaptureDelay = 0,
+            CaptureFileMode = "Json",
+            Comment = "Buffer test"
+        };
+
+        private List<string> LogEntries() => _logEntryManagerMock.Invocations
+            .Where(invocation => invocation.Method.Name == nameof(ILogEntryManager.AddLogEntry))
+            .Select(invocation => (string)invocation.Arguments[0])
+            .ToList();
+
+        // Rows reach the buffer on the capture scheduler. Once the emitter stopped, this waits
+        // for the last of them, so the buffer can be read without a concurrent writer.
+        private async Task WaitUntilBufferIsStable()
+        {
+            int previous = -1;
+            for (int i = 0; i < 50; i++)
+            {
+                int current = _captureManager.CaptureBuffer.Count;
+                if (current == previous)
+                    return;
+                previous = current;
+                await Task.Delay(50);
+            }
+        }
+
+        // Emits one row per process every 5 ms on the real QPC clock until disposed.
+        private sealed class FrameEmitter : IDisposable
+        {
+            private readonly CancellationTokenSource _stop = new CancellationTokenSource();
+            private readonly Task _loop;
+
+            public FrameEmitter(MockCaptureService service,
+                params (string Application, int ProcessId, double FrameTime)[] processes)
+            {
+                _loop = Task.Run(async () =>
+                {
+                    while (!_stop.IsCancellationRequested)
+                    {
+                        foreach (var (application, processId, frameTime) in processes)
+                            service.EmitCustomFrame(application, processId, frameTime);
+                        await Task.Delay(5);
+                    }
+                });
+            }
+
+            public void Dispose()
+            {
+                _stop.Cancel();
+                _loop.Wait(TimeSpan.FromSeconds(5));
+                _stop.Dispose();
+            }
+        }
+
+        #endregion
+
         #region Helper Methods
 
         /// <summary>
@@ -796,6 +1125,41 @@ namespace CapFrameX.Test.Data
                 Assert.IsTrue(time < startTimeMs,
                     $"timestamp {time} is still on the raw timeline, not rebased onto the capture start");
             }
+        }
+
+        [TestMethod]
+        public void DropFramesOfFirstStartTime_DropsTheFrameBeforeTheCaptureStart()
+        {
+            var rows = CreateRecordLines(startTimeMs: 11_848_037, frameCount: 5);
+
+            var kept = _captureManager.DropFramesOfFirstStartTime(rows);
+
+            CollectionAssert.AreEqual(rows.Skip(1).ToList(), kept);
+        }
+
+        /// <summary>
+        /// Field regression (Mafia: The Old Country with FSR frame generation, 2026-10-31): the
+        /// generated and the real frame of a pair share one CPUStartQPCTime. Dropping one row
+        /// left the real frame of the pair before the capture start as the first frame, and every
+        /// capture began with that half pair.
+        /// </summary>
+        [TestMethod]
+        public void DropFramesOfFirstStartTime_DropsTheWholeFrameGenerationPair()
+        {
+            int timeIndex = ((ICaptureService)_mockCaptureService).CPUStartQPCTimeInMs_Index;
+            var pairs = CreateRecordLines(startTimeMs: 11_848_037, frameCount: 3);
+            var rows = new List<string[]>();
+            foreach (var pair in pairs)
+            {
+                rows.Add(pair);
+                rows.Add((string[])pair.Clone()); // the real frame, same CPUStartQPCTime
+            }
+
+            var kept = _captureManager.DropFramesOfFirstStartTime(rows);
+
+            CollectionAssert.AreEqual(rows.Skip(2).ToList(), kept);
+            Assert.AreEqual(pairs[1][timeIndex], kept[0][timeIndex],
+                "the file must start with the first pair after the capture start");
         }
 
         // Rows shaped like the capture service's own layout, with a raw CPUStartQPCTime that is

@@ -70,9 +70,50 @@ namespace CapFrameX.Test.Sensor
                 List<ISensor> core5 = cpu.Sensors.Where(s => s.Name.StartsWith("Core #5 ", StringComparison.Ordinal)).ToList();
 
                 CollectionAssert.AreEquivalent(
-                    new[] { SensorType.Clock, SensorType.Load },
+                    new[] { SensorType.Clock, SensorType.Clock, SensorType.Load },
                     core5.Select(s => s.SensorType).ToArray());
-                Assert.IsTrue(core5.All(s => s.Name == "Core #5 D"), string.Join(", ", core5.Select(s => s.Name)));
+                Assert.IsTrue(core5.All(s => s.Name == "Core #5 D" || s.Name == "Core #5 D (Effective)"), string.Join(", ", core5.Select(s => s.Name)));
+            });
+        }
+
+        [TestMethod]
+        [DataRow(SimulatedCpuKind.IntelCpu, "P,E")]
+        [DataRow(SimulatedCpuKind.IntelLpeCpu, "P,E,LPE")]
+        [DataRow(SimulatedCpuKind.AmdHybridCpu, "P,D")]
+        public void HybridLayouts_MaxClocksMatchCurrentReadingsOfEachCoreType(SimulatedCpuKind kind, string labels)
+        {
+            WithSimulatedCpu(kind, cpu =>
+            {
+                for (int sample = 0; sample < 3; sample++)
+                {
+                    cpu.Update();
+                    foreach (string label in labels.Split(','))
+                    {
+                        foreach (bool effective in new[] { false, true })
+                        {
+                            string suffix = $" {label}" + (effective ? " (Effective)" : string.Empty);
+                            ISensor[] sources = cpu.Sensors.Where(sensor => sensor.SensorType == SensorType.Clock
+                                && sensor.Name.StartsWith("Core #", StringComparison.Ordinal)
+                                && sensor.Name.EndsWith(suffix, StringComparison.Ordinal)).ToArray();
+                            Assert.IsTrue(sources.Length > 0);
+                            string name = $"CPU {label} Max" + (effective ? " Effective" : string.Empty);
+                            ISensor aggregate = cpu.Sensors.Single(sensor => sensor.SensorType == SensorType.Clock && sensor.Name == name);
+                            Assert.AreEqual(sources.Max(sensor => sensor.Value), aggregate.Value, name);
+                        }
+                    }
+                }
+
+                Assert.AreEqual(cpu.Sensors.Length, cpu.Sensors.Select(sensor => sensor.Identifier.ToString()).Distinct().Count());
+            });
+        }
+
+        [TestMethod]
+        public void HomogeneousLayout_DoesNotPublishCoreTypeMaxClocks()
+        {
+            WithSimulatedCpu(SimulatedCpuKind.Amd17Cpu, cpu =>
+            {
+                Assert.IsFalse(cpu.Sensors.Any(sensor => sensor.Name.StartsWith("CPU P Max", StringComparison.Ordinal)
+                    || sensor.Name.StartsWith("CPU D Max", StringComparison.Ordinal)));
             });
         }
 

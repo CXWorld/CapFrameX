@@ -68,9 +68,10 @@ namespace CapFrameX.PMD.Powenetics
             _isServiceRunning = true;
             SetDownsampledStream();
 
-            // Troughput after downsampling
+            // Packets per 2 s as the device sends them. After the time-based downsampling the rate
+            // is always 1000 / DownSamplingSize and would hide the real device rate.
             _pmdThroughput =
-                _pmdChannelStream
+                _pmdDriver.PmdChannelStream
                 .Select(channels => 1)
                 .Buffer(TimeSpan.FromSeconds(2))
                 .Select(buffer => buffer.Count());
@@ -81,12 +82,19 @@ namespace CapFrameX.PMD.Powenetics
 
         private void SetDownsampledStream()
         {
+            // DownSamplingSize is a length in ms; bins follow the packet times because the device
+            // does not send exactly one packet per millisecond.
+            var downsampler = new PoweneticsDownsampler(DownSamplingSize);
+
             _pmdChannelStreamDisposable?.Dispose();
             _pmdChannelStreamDisposable = _pmdDriver
                 .PmdChannelStream
                 .ObserveOn(new EventLoopScheduler())
-                .Buffer(DownSamplingSize)
-                .Subscribe(channels => FilterChannelsBuffer(channels));
+                .Subscribe(channels =>
+                {
+                    if (downsampler.TryAdd(channels, out var bin, out var binStart))
+                        FilterChannelsBuffer(bin, binStart);
+                });
         }
 
         public bool ShutDownDriver()
@@ -126,22 +134,28 @@ namespace CapFrameX.PMD.Powenetics
             }
         }
 
-        private void FilterChannelsBuffer(IList<PoweneticsChannel[]> buffer)
+        private void FilterChannelsBuffer(IList<PoweneticsChannel[]> buffer, long binStart)
         {
             PoweneticsChannel[] channels;
 
             switch (DownSamplingMode)
             {
                 case PmdSampleFilterMode.Single:
-                    channels = buffer.Last();
+                    channels = (PoweneticsChannel[])buffer.Last().Clone();
                     break;
                 case PmdSampleFilterMode.Average:
                     channels = GetAveragePmdChannel(buffer);
                     break;
 
                 default:
-                    channels = buffer.Last();
+                    channels = (PoweneticsChannel[])buffer.Last().Clone();
                     break;
+            }
+
+            // The sample stands for its whole bin, which starts at binStart.
+            for (int i = 0; i < channels.Length; i++)
+            {
+                channels[i].TimeStamp = binStart;
             }
 
             _pmdChannelStream.OnNext(channels);
@@ -149,7 +163,7 @@ namespace CapFrameX.PMD.Powenetics
 
         private PoweneticsChannel[] GetAveragePmdChannel(IList<PoweneticsChannel[]> buffer)
         {
-            var avergeSample = buffer.First();
+            var avergeSample = (PoweneticsChannel[])buffer.First().Clone();
 
             for (int i = 0; i < avergeSample.Length; i++)
             {

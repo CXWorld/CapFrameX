@@ -34,6 +34,8 @@ public:
 	void						OnOSDOff();
 	void						OnOSDToggle();
 	std::vector<CString>		RunHistory;
+	std::vector<CString>		RunHistoryLabels;
+	CString						RunHistoryResultLabel = "Result:";
 	std::vector<BOOL>			RunHistoryOutlierFlags;
 	CString						RunHistoryAggregation;
 	std::vector<OverlayEntry>	OverlayEntries;
@@ -43,6 +45,7 @@ public:
 	CString						GetResolution(DWORD processId);
 	std::vector<float>		    GetCurrentFramerate(DWORD processId);
 	std::vector<float>			GetFrameTimesInterval(DWORD processId, DWORD milliSeconds);
+	BOOL						IsSharedMemoryAvailable();
 	BOOL						ShowRunHistory;
 	DWORD						OverlayPositionX;
 	DWORD						OverlayPositionY;
@@ -56,7 +59,8 @@ protected:
 	DWORD						GetSharedMemoryVersion(DWORD* lpOSDEntrySize = NULL);
 	void						IncProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, LONG dwIncrement);
 	void						SetProfileProperty(LPCSTR lpProfile, LPCSTR lpProfileProperty, DWORD dwProperty);
-	void						AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported);
+	void						AddOverlayEntry(CGroupedString* groupedString, OverlayEntry* entry, BOOL bFormatTagsSupported, BOOL bObjTagsSupported, DWORD& dwObjectOffset);
+	CString						GetEntryValue(OverlayEntry* entry, BOOL bObjTagsSupported, DWORD& dwObjectOffset);
 	void						CreateHandles();
 
 	BOOL						m_bMultiLineOutput;

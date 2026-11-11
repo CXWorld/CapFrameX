@@ -2,26 +2,6 @@
 {
 	public abstract class AppMessages
 	{
-		public class DirectoryObserverState
-		{
-			public bool IsObserving { get;}
-
-			public DirectoryObserverState(bool isObserving)
-			{
-				IsObserving = isObserving;
-			}
-		}
-
-		public class UpdateObservedDirectory
-		{
-			public string Directory { get; }
-
-			public UpdateObservedDirectory(string directory)
-			{
-				Directory = directory;
-			}	
-		}
-
 		public class OpenLoginWindow { }
 
 		public class LoginState
@@ -52,5 +32,11 @@
 				IsContentVisible = isContentVisible;
 			}
 		}
+
+		/// <summary>
+		/// Published after CapFrameX changed the Vulkan layer registration (the portable
+		/// version's startup prompt), so the Info tab, the startup page, shows the new state.
+		/// </summary>
+		public class VulkanLayerRegistrationChanged { }
 	}
 }

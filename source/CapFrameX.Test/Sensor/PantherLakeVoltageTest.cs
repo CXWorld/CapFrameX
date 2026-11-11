@@ -138,9 +138,8 @@ namespace CapFrameX.Test.Sensor
             // Close the module
             pawnModule.Close();
 
-            // Assert that at least some MSRs were scanned successfully
-            // The test passes if we could read at least IA32_PERF_STATUS (even if VID is 0)
-            Assert.IsTrue(true, "MSR scan completed successfully");
+            // Completing the scan without an exception is the result: at least IA32_PERF_STATUS
+            // could be read, even if its VID is 0.
         }
 
         /// <summary>
@@ -201,7 +200,6 @@ namespace CapFrameX.Test.Sensor
             }
 
             pawnModule.Close();
-            Assert.IsTrue(true, "Detailed scan completed");
         }
 
         /// <summary>
@@ -299,7 +297,6 @@ namespace CapFrameX.Test.Sensor
             }
 
             pawnModule.Close();
-            Assert.IsTrue(true, "Alternative formula scan completed");
         }
 
         private void CheckAndLog(string formula, float voltage, uint msrAddr, ulong rawValue,
@@ -429,7 +426,6 @@ namespace CapFrameX.Test.Sensor
             }
 
             pawnModule.Close();
-            Assert.IsTrue(true, "All cores voltage test completed");
         }
 
         /// <summary>
@@ -510,7 +506,6 @@ namespace CapFrameX.Test.Sensor
             }
 
             pawnModule.Close();
-            Assert.IsTrue(true, "Alternative formulas test completed");
         }
 
         /// <summary>
@@ -564,7 +559,6 @@ namespace CapFrameX.Test.Sensor
             }
 
             pawnModule.Close();
-            Assert.IsTrue(true, "Per-core dump completed");
         }
 
         private static string GetKnownMsrName(uint address)

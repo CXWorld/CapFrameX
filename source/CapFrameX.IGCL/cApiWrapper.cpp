@@ -620,7 +620,7 @@ ctlEnumerateI2CPinPairs(
                                                     ///< return the avaialble number of i2c pin-pair instances in phI2cPinPairs.
     ctl_i2c_pin_pair_handle_t* phI2cPinPairs        ///< [out][optional][release][range(0, *pCount)] array of i2c pin pair
                                                     ///< instance handles. Need to be allocated by Caller when supplying the
-                                                    ///< *pCount > 0. 
+                                                    ///< *pCount > 0.
                                                     ///< If Count is not equal to actual number of i2c pin-pair instances, it
                                                     ///< will return CTL_RESULT_ERROR_INVALID_SIZE.
     )
@@ -776,14 +776,14 @@ ctlGetAdaperDisplayEncoderProperties(
 *     - CTL_RESULT_ERROR_INVALID_NULL_HANDLE
 *         + `nullptr == hDAhandle`
 *     - CTL_RESULT_ERROR_INVALID_NULL_POINTER
-*         + `nullptr == pZeDevice`
+*         + `nullptr == pZesDevice`
 *         + `nullptr == hInstance`
 *     - ::CTL_RESULT_ERROR_UNSUPPORTED_VERSION - "Unsupported version"
 */
 ctl_result_t CTL_APICALL
 ctlGetZeDevice(
     ctl_device_adapter_handle_t hDAhandle,          ///< [in][release] Handle to display adapter
-    void* pZeDevice,                                ///< [out][release] ze_device handle
+    void* pZesDevice,                               ///< [out][release] zes_device handle
     void** hInstance                                ///< [out][release] Module instance which caller can use to get export
                                                     ///< functions directly
     )
@@ -798,7 +798,7 @@ ctlGetZeDevice(
         ctl_pfnGetZeDevice_t pfnGetZeDevice = (ctl_pfnGetZeDevice_t)GetProcAddress(hinstLibPtr, "ctlGetZeDevice");
         if (pfnGetZeDevice)
         {
-            result = pfnGetZeDevice(hDAhandle, pZeDevice, hInstance);
+            result = pfnGetZeDevice(hDAhandle, pZesDevice, hInstance);
         }
     }
 

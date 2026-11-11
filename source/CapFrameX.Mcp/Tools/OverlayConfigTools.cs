@@ -70,22 +70,23 @@ namespace CapFrameX.Mcp.Tools
             [Description("Group font size/offset percentage used by the OSD formatter.")] int? groupFontSize = null,
             [Description("Number of blank separator rows above this group; must be zero or greater.")] int? groupSeparators = null,
             [Description("Zero-based position in the active overlay entry order.")] int? orderIndex = null,
-            [Description("Save the changed live collection to the active overlay configuration slot.")] bool persist = true)
+            [Description("Save the changed live collection to the active overlay configuration slot.")] bool persist = true,
+            [Description("Percentage display: Text, Bar, or TextAndBar (number before bar). Bar modes require SupportsPercentageBar.")] EOverlayValueDisplayMode? valueDisplayMode = null)
         {
             if (string.IsNullOrWhiteSpace(identifier))
                 throw new ArgumentException("identifier is required", nameof(identifier));
 
             if (!HasAnyEntryUpdate(isEntryEnabled, showOnOverlay, groupName, showGraph, color,
                 groupColor, upperLimitValue, lowerLimitValue, upperLimitColor, lowerLimitColor,
-                valueFontSize, groupFontSize, groupSeparators, orderIndex))
+                valueFontSize, groupFontSize, groupSeparators, orderIndex, valueDisplayMode))
             {
                 throw new ArgumentException("Provide at least one overlay entry option to update.");
             }
 
             var entries = _overlayService.CurrentOverlayEntries ?? Array.Empty<IOverlayEntry>();
-            var entry = entries.FirstOrDefault(candidate =>
-                string.Equals(candidate?.Identifier, identifier, StringComparison.OrdinalIgnoreCase))
-                ?? _overlayEntryProvider.GetOverlayEntry(identifier);
+            var outputEntry = entries.FirstOrDefault(candidate =>
+                string.Equals(candidate?.Identifier, identifier, StringComparison.OrdinalIgnoreCase));
+            var entry = _overlayEntryProvider.GetOverlayEntry(outputEntry?.Identifier ?? identifier);
             if (entry == null)
                 throw new InvalidOperationException($"Overlay entry '{identifier}' not found.");
 
@@ -93,11 +94,19 @@ namespace CapFrameX.Mcp.Tools
                 throw new InvalidOperationException($"Overlay entry '{identifier}' cannot be shown in the current configuration.");
             if (showGraph == true && !entry.ShowGraphIsEnabled)
                 throw new InvalidOperationException($"Overlay entry '{identifier}' does not support a graph.");
+            if (valueDisplayMode.HasValue)
+            {
+                if (!Enum.IsDefined(typeof(EOverlayValueDisplayMode), valueDisplayMode.Value))
+                    throw new ArgumentOutOfRangeException(nameof(valueDisplayMode));
+                if (valueDisplayMode.Value != EOverlayValueDisplayMode.Text && !entry.SupportsPercentageBar)
+                    throw new InvalidOperationException($"Overlay entry '{identifier}' does not support a percentage bar.");
+            }
             if (groupSeparators < 0)
                 throw new ArgumentOutOfRangeException(nameof(groupSeparators), groupSeparators,
                     "Group separators must be zero or greater.");
 
-            int currentOrderIndex = Array.FindIndex(entries, candidate => ReferenceEquals(candidate, entry));
+            int currentOrderIndex = Array.FindIndex(entries, candidate =>
+                string.Equals(candidate?.Identifier, entry.Identifier, StringComparison.OrdinalIgnoreCase));
             if (orderIndex.HasValue)
             {
                 if (currentOrderIndex < 0)
@@ -130,6 +139,8 @@ namespace CapFrameX.Mcp.Tools
                 () => entry.ShowGraph, value => entry.ShowGraph = value, changed);
 
             bool formatChanged = false;
+            formatChanged |= ApplyEntryValue(nameof(IOverlayEntry.ValueDisplayMode), valueDisplayMode,
+                () => entry.ValueDisplayMode, value => entry.ValueDisplayMode = value, changed);
             formatChanged |= ApplyEntryValue(nameof(IOverlayEntry.Color), color,
                 () => entry.Color, value => entry.Color = value, changed);
             formatChanged |= ApplyEntryValue(nameof(IOverlayEntry.GroupColor), groupColor,
@@ -160,7 +171,10 @@ namespace CapFrameX.Mcp.Tools
             }
 
             if (changed.Count > 0)
+            {
                 _overlayEntryProvider.MarkPendingChanges();
+                _overlayService.RequestRefresh();
+            }
 
             bool persisted = persist && changed.Count > 0;
             if (persisted)
@@ -195,6 +209,8 @@ namespace CapFrameX.Mcp.Tools
                 ShowOnOverlayIsEnabled = entry.ShowOnOverlayIsEnabled,
                 ShowGraph = entry.ShowGraph,
                 ShowGraphIsEnabled = entry.ShowGraphIsEnabled,
+                ValueDisplayMode = entry.ValueDisplayMode.ToString(),
+                SupportsPercentageBar = entry.SupportsPercentageBar,
                 Value = entry.Value?.ToString(),
                 FormattedValue = SafeGet(() => entry.FormattedValue),
                 ValueFormat = entry.ValueFormat,
@@ -202,7 +218,7 @@ namespace CapFrameX.Mcp.Tools
                 ValueAlignmentAndDigits = entry.ValueAlignmentAndDigits,
                 ValueFontSize = entry.ValueFontSize,
                 Color = entry.Color,
-                FormattedGroupName = SafeGet(() => entry.FormattedGroupName),
+                FormattedGroupName = SafeGet(() => FormatEnglishGroupName(entry)),
                 GroupNameFormat = entry.GroupNameFormat,
                 GroupColor = entry.GroupColor,
                 GroupFontSize = entry.GroupFontSize,
@@ -223,6 +239,14 @@ namespace CapFrameX.Mcp.Tools
         {
             try { return getter(); }
             catch { return null; }
+        }
+
+        private static string FormatEnglishGroupName(IOverlayEntry entry)
+        {
+            var name = entry?.GroupName ?? string.Empty;
+            return string.IsNullOrWhiteSpace(entry?.GroupNameFormat)
+                ? name
+                : string.Format(CultureInfo.InvariantCulture, entry.GroupNameFormat, name);
         }
 
         private static bool HasAnyEntryUpdate(params object[] values)
