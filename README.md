@@ -2,9 +2,9 @@
 # CapFrameX
 Capture, analyze, and compare game performance on Windows. CapFrameX combines Intel's [PresentMon](https://github.com/GameTechDev/PresentMon) with hardware monitoring, frametime and FPS charts, and configurable overlays.
 
-Version **1.9.0** introduces a refreshed interface, a system information dashboard, a built-in hook-free overlay, expanded GPU telemetry, and lower background polling overhead. The application now runs on **.NET 10**.
+Version **1.9.2** adds the **tile overlay** with its own editor and 45 starter designs, makes the CapFrameX overlay renderers cheaper for the game, and bundles **CX-PresentMon 2.6.1** with capture fixes for long sessions and frame generation. The interface is available in English, German, Spanish, Russian and Korean. The application runs on **.NET 10**.
 
-This branch contains **1.9.2.0-beta**, including critical capture stability fixes in CX-PresentMon 2.6.1 (based on Intel PresentMon 2.6.0). It enables the in-game overlay again, makes it the default renderer for new configurations, and includes the DirectX hook and Vulkan layer DLLs for both x64 and x86, plus the bundled BENCHLAB service, in installer and portable builds. Compatible separately installed BENCHLAB services remain supported. The installer registers each Vulkan layer in its matching HKLM registry view.
+Installer and portable builds include the in-game overlay with the DirectX hook and Vulkan layer DLLs for x64 and x86, and the bundled BENCHLAB service. Compatible separately installed BENCHLAB services remain supported. The installer registers each Vulkan layer in its matching HKLM registry view; the portable version offers to register them at startup.
 
 The current installer defaults to `C:\Program Files\CapFrameX`. It installs the x64 Vulkan layer and its manifest in `C:\Program Files\CapFrameX\vulkan`, and the x86 pair in `C:\Program Files\CapFrameX\vulkan\x86`. Earlier installers used `C:\Program Files (x86)\CapFrameX`.
 
@@ -22,20 +22,20 @@ CapFrameX is sponsored by [Hone](https://hone.gg). We thank Hone for supporting 
 
 # Release
 
-Download **[CapFrameX v1.9.2 Beta](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.2_beta)**, application version **1.9.2.0-beta**. The latest stable release is **[v1.9.1](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.1)**.
-
-> **PC Latency correction:** Disabling **PC Latency** in the settings does **not** fix the PresentMon tracking problem, contrary to our [earlier post on X](https://x.com/CapFrameX/status/2105998858019078230). Application-timing tracking remains active independently of this setting. This beta includes the fix in CX-PresentMon 2.6.1.
-
-> **Important for reviewers:** Do not use the **CapFrameX hook-free overlay** for benchmark measurements. Hiding it can cause frametime spikes, and some AMD and Intel driver versions can have problems with Windows Desktop Window Manager (DWM). Check the active renderer before measuring: with **CapFrameX in-game** selected, Direct3D 9 games, games with a detected anti-cheat (Easy Anti-Cheat, BattlEye, VAC, Call of Duty's Ricochet) and games on the injection blacklist (such as CS2 and VALORANT) show the hook-free overlay. These limitations are separate from the PresentMon fixes in this beta.
+Download **[CapFrameX v1.9.2](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.2)**, application version **1.9.2.4**.
 
 | Package | Use |
 | --- | --- |
-| [Beta installer](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.2_beta/CapFrameX_1.9.2.0_Beta_Installer.zip) | Extract the ZIP and run `CapFrameXBootstrapper.exe`. Setup registers the x64 and x86 Vulkan layers in their matching HKLM registry views. |
-| [Beta portable](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.2_beta/CapFrameX_1.9.2.0_Beta_Portable.zip) | Extract the complete ZIP into a new folder and run `CapFrameX.exe`. Keep `portable.json` beside it to store settings, captures, and logs in the portable folder. |
+| [Installer](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.2/release_1.9.2_installer.zip) | Extract the ZIP and run `CapFrameXBootstrapper.exe`. Setup registers the x64 and x86 Vulkan layers in their matching HKLM registry views. |
+| [Portable](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.2/release_1.9.2_portable.zip) | Extract the complete ZIP into a new folder and run `CapFrameX.exe`. Keep `portable.json` beside it to store settings, captures, and logs in the portable folder. |
 
 Install the **[.NET 10 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/10.0)** before running setup or the portable application. The Desktop Runtime is required even if another .NET version or the plain .NET Runtime is already installed.
 
-Both packages include signed application and dependency binaries, the in-game overlay, and BENCHLAB Service 2.4.0. See the [beta release notes](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.2_beta), [package checksums](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.2_beta/SHA256SUMS.txt), and [Portable Mode](PORTABLE_MODE.md). Development builds are available from the [build archive](https://archive.capframex.com/).
+Both packages include signed application and dependency binaries, the in-game overlay, and BENCHLAB Service 2.4.0. See the [release notes](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.2), [package checksums](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.2/SHA256SUMS.txt), and [Portable Mode](PORTABLE_MODE.md). Development builds are available from the [build archive](https://archive.capframex.com/).
+
+> **Important for reviewers:** Do not use the **CapFrameX hook-free overlay** for benchmark measurements. Hiding it can cause frametime spikes, and some AMD and Intel driver versions can have problems with Windows Desktop Window Manager (DWM). Check the active renderer before measuring: with **CapFrameX in-game** selected, Direct3D 9 games, games with a detected anti-cheat (Easy Anti-Cheat, BattlEye, VAC, Call of Duty's Ricochet) and games on the injection blacklist (such as CS2 and VALORANT) show the hook-free overlay.
+
+> **PC Latency correction:** Disabling **PC Latency** in the settings does **not** fix the PresentMon tracking problem, contrary to our [earlier post on X](https://x.com/CapFrameX/status/2105998858019078230). Application-timing tracking remains active independently of this setting. The fix is part of CX-PresentMon 2.6.1, bundled since 1.9.2.
 
 # Troubleshooting & Known Issues
 The following tips address the most common issues reported by users and can help resolve stability, overlay, and capture-related problems efficiently. We recommend working through them in order if you encounter unexpected behavior.
@@ -82,11 +82,11 @@ The Info tab brings together CPU, GPU, memory, and mainboard details with live t
 
 # Overlay
 
-Choose a renderer under **Overlay → OSD options**. The following describes 1.9.2 Beta; the screenshots show the stable 1.9.0 release.
+Choose a renderer under **Overlay → OSD options**. The following describes 1.9.2; the screenshots show 1.9.0.
 
 | Renderer | Behavior |
 | --- | --- |
-| **CapFrameX in-game** | The default for new configurations in 1.9.2 Beta, with DirectX and Vulkan integration and game compatibility profiles. Available again since v1.9.1. Direct3D 9 games, games with a detected anti-cheat and games on the injection blacklist, which it cannot draw in, get the hook-free overlay instead. |
+| **CapFrameX in-game** | The default for new configurations since 1.9.2, with DirectX and Vulkan integration and game compatibility profiles. Available again since v1.9.1. Direct3D 9 games, games with a detected anti-cheat and games on the injection blacklist, which it cannot draw in, get the hook-free overlay instead. |
 | **CapFrameX hook-free** | Built-in overlay without injecting into the game, with an output-display picker and chart refresh control. See the reviewer warning above before using it for measurements. |
 | **RTSS** | Uses [RivaTuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html), which must be installed separately. |
 | **Off** | No overlay at all: CapFrameX injects nothing into games, creates no overlay window and does not feed RTSS. Captures, sensors and the remote API (`/api/osd`, `/ws/osd`) keep working. Use it for capture-only setups, or to rule out the overlay when a game misbehaves. |
@@ -99,6 +99,15 @@ With **Off**, the overlay switches and the overlay hotkey have no effect. Two th
 Configure individual entries, colors, groups, and three profiles in **Overlay items**. OSD options include opacity, zoom, placement, a position hotkey, and PresentMon replay buffering. Existing renderer selections are preserved. If v1.9.0 migrated your in-game selection to hook-free, you can select in-game again since 1.9.1.
 
 The group name `<APP>` (used by the FPS and frame time entries) shows the game's graphics API, as it does with RTSS. The in-game renderer shows the API it draws with, spelled as RTSS spells it: `D3D11`, `D3D12` or `Vulkan`. The hook-free renderer stays outside the game and shows the runtime that PresentMon reports: `DXGI`, `D3D9`, or `Other` when the game presents through neither, as many Vulkan and OpenGL games do. The in-game renderer also shows the PresentMon runtime until it has determined the API. The API entry of a capture uses the same spelling; captures recorded before this change keep `DX11` or `DX12`.
+
+### Tile overlay
+
+Besides the row overlay of **Overlay items**, the CapFrameX in-game and hook-free renderers draw **tile overlays**: readings, bars, ring gauges, live charts, texts, icons, images and sensor groups (bars or a heatmap, for example every core load) arranged as tiles on a grid or a free canvas. RTSS keeps the row overlay.
+
+- **Overlay → Tile overlay** lists the saved tile profiles. **Show in overlay** activates one, **Use row overlay** returns to the rows.
+- **Open tile editor** opens the editor with a live preview: add tiles from the palette, set their source, size and colors, and save the design as a profile.
+- CapFrameX ships 45 starter designs, from compact corner layouts to hardware themes that name the installed CPU and GPU. Later updates of the starters leave a profile you changed untouched.
+- **Export…** and **Import…** share a design as a JSON file. An imported design is mapped onto the sensors of this PC, and the editor lists what it could not match.
 
 ### OLED pixel orbit
 
@@ -327,7 +336,7 @@ To disable MCP: set `McpEnabled` to `false` and restart CapFrameX. Logs related 
 
 # In-game compatibility profiles
 
-> Editable profiles are available since **1.9.2.1 Beta**. Earlier versions use only the profiles embedded in CapFrameX.
+> Editable profiles are available since **1.9.2**. Earlier versions use only the profiles embedded in CapFrameX.
 
 The **CapFrameX in-game** renderer injects a hook DLL (`cfx_osd_hook.dll`) into DirectX 11 and DirectX 12 games and draws the overlay into the game's own swapchain. Frame-generation and upscaler runtimes (NVIDIA Streamline/DLSS-G, AMD FidelityFX/FSR frame generation, Intel XeSS-FG), proxy DLLs such as OptiScaler, and unusual startup sequences can take presentation away from the hook or collide with it. A compatibility profile tells the hook, for one executable, which presentation route to use and when to inject.
 

@@ -12,6 +12,32 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Signed 1.9.2 release build (2026-11-11)
+
+For the CapFrameX 1.9.2 release (build 1.9.2.4) all five native DLLs, Interop and Controls were
+rebuilt from a clean checkout of OSD commit `44e9468076c08d9a34c0ceb797884ad8b0acaa70` (`main`): the
+native trees in fresh CMake output directories (VS 2026/v145, `RelWithDebInfo`, x64 and Win32, Vulkan
+SDK 1.4.335.0), Interop in `Release|x64` for `net10.0-windows`, Controls by the CapFrameX Release
+build from the sibling checkout. The sources are those of the entries below; only the build and the
+signatures are new. Every file carries the CapFrameX publisher's Certum signature
+(`C0D5481E2ACBB9DD104A825A81EECF55557BA783`) with an RFC 3161 timestamp. Both Vulkan manifests, the
+catalogs and the MinHook license are unchanged.
+
+Verification, with these binaries (before signing) staged into the test output: the native CTest
+suites passed 102 of 102 tests (16 core, 33 per hook bitness, 10 per layer bitness), the CapFrameX
+suite 3531 of 3537 (6 skipped without elevation), and the elevated PresentMon integration tests
+6 of 6 in the two final runs.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `CB5F183FB1ABBE6AA5BB4CF28929ECEDCAB0BCC3321870244CF395FE6BDB35C2` |
+| native\cfx_osd_hook.dll | `60E168181EB2C8C678B4CDF8F8693CB3BCC08D8FF85F8B88BCD710EC8D22BA89` |
+| native\x86\cfx_osd_hook.dll | `DA609F53CEEF5B5580B0ADDF9F81A1AE14B3B8FF7375190C6CF15480420B1F16` |
+| native\vk\cfx_osd_vklayer.dll | `D53C15469E2B8A8DE2F8ECC86E84CCEBA00B9442982C0E4F20BD1E742672E863` |
+| native\vk\x86\cfx_osd_vklayer.dll | `98B945BADCDEDFA080D381F0AB5879F8AD51849EC6F9638CBEDD747527F15BC3` |
+| net10.0-windows\CapFrameX.OSD.Interop.dll | `AFED570D9C0723CEE147E2B89836D0F3105A1ABC6628B71078FC487F732A33F3` |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `279F0DCA724201EA493A901D07D56E7CC67DD18F741AD9C62717FCD57C3A1026` |
+
 ### Ryzen badges for every tier (2026-11-10)
 
 Controls was rebuilt in `Release|x64`, .NET 10 (`dotnet build CapFrameX.OSD.sln -c Release
