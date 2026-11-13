@@ -44,7 +44,7 @@
   "Editor_043": "Lock this element",
   "Editor_044": "Widget",
   "Editor_045": "Edit contents",
-  "Editor_046": "Drag widgets and readings into this container. Resizing it scales its contents together.",
+  "Editor_046": "Drag widgets and readings into this container.",
   "Editor_047": "Linked to your active row profile",
   "Editor_048": "All enabled rows follow the profile selected in Row overlay. Order, groups, colors, limits and number formatting stay linked. Edit them in the Row overlay tab.",
   "Editor_049": "Edit row profile",
@@ -503,5 +503,13 @@
   "Editor_StyleCells": "Full load",
   "Editor_StyleLegend": "Legend and core types",
   "Editor_StyleBackground": "Background",
-  "Editor_StyleBorder": "Border"
+  "Editor_StyleBorder": "Border",
+  "Editor_ContainerScaleContents": "Scale contents when resizing",
+  "Editor_ContainerScaleContentsHint": "On, the container keeps its proportions and everything in it scales evenly. Off, only the frame changes, and it cannot get smaller than its contents.",
+  "Editor_ContainerTrim": "Trim to contents",
+  "Editor_ContainerTrimHint": "Removes the empty space around the contents on every side. Nothing is scaled, and the contents stay where they are.",
+  "Editor_ContainerEmpty": "The container is empty.",
+  "Editor_BarThickness": "Bar thickness",
+  "Editor_BarVerticalHint": "A vertical bar fills the tile's width and height: resize the tile to make it wider, narrower, taller or shorter. The value is shown above the bar, the label below it.",
+  "Editor_BarOrientationInvalid": "A bar's orientation must be horizontal or vertical."
 }

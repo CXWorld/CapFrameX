@@ -12,6 +12,30 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Vertical bars and container scaling in the tile editor (2026-11-13)
+
+Controls was rebuilt in `Release|x64` (MSBuild `-t:Rebuild`) from the OSD working tree on
+`095356f012a5b631b773ebdbdc6cd94d60c500aa` (`main`), whose Controls and Interop sources are those of
+the commit; the tree also held an uncommitted native change of other work, which is in no managed DLL.
+A bar tile stands upright with `orientation` `vertical` (it spans its tile's width, the value above
+and the label below the track) and a horizontal one takes a `thickness`. A container resizes without
+scaling its contents ("Scale contents when resizing" off: the frame stops at the contents), trims to
+its contents ("Trim to contents") and, while its contents scale, keeps its proportions so its text
+grows and shrinks evenly. The layer list shows the lock boxes in one column. The new editor texts
+exist in all five languages; `Editor.en.json` and `Editor.ko.json` are copied here. The native DLLs,
+Interop (still the signed build), both Vulkan manifests and the template catalogs are unchanged. A
+Controls build without this change rejects designs with a vertical bar or a bar thickness.
+
+Verification: a CapFrameX Release build with `CfxOsdFromSource=false` staged exactly this DLL and the
+signed Interop into the test output and passed all 3612 tests outside the `Integration` category,
+among them `OverlayBarAndContainerEditingTest` (with the renderer's pixels of both bar directions) and
+`OverlayTileListLayoutTest`; the native DLLs in that output were the uncommitted ones of this folder.
+The editor changes were also driven by mouse and UI Automation in a CapFrameX built from source.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net10.0-windows\CapFrameX.OSD.Controls.dll | `3C9A7B5B2A12E35D799356E97446125D7F3DBA1EE6D81AC845904DBB0C76DB45` |
+
 ### Signed 1.9.2 release build (2026-11-11)
 
 For the CapFrameX 1.9.2 release (build 1.9.2.4) all five native DLLs, Interop and Controls were

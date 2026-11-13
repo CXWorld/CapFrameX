@@ -44,7 +44,7 @@
   "Editor_043": "이 요소 잠금",
   "Editor_044": "위젯",
   "Editor_045": "내용 편집",
-  "Editor_046": "위젯과 측정값을 이 컨테이너로 끌어 놓으세요. 컨테이너 크기를 조절하면 내부 요소가 함께 확대 또는 축소됩니다.",
+  "Editor_046": "위젯과 측정값을 이 컨테이너로 끌어 놓으세요.",
   "Editor_047": "현재 행 프로필에 연결됨",
   "Editor_048": "활성화된 모든 행은 행 오버레이에서 선택한 프로필을 따릅니다. 순서, 그룹, 색상, 범위 및 숫자 형식이 함께 연결됩니다. 행 오버레이 탭에서 편집하세요.",
   "Editor_049": "행 프로필 편집",
@@ -503,5 +503,13 @@
   "Editor_StyleCells": "최대 부하",
   "Editor_StyleLegend": "범례 및 코어 유형",
   "Editor_StyleBackground": "배경",
-  "Editor_StyleBorder": "테두리"
+  "Editor_StyleBorder": "테두리",
+  "Editor_ContainerScaleContents": "크기 조절 시 내용도 함께 조절",
+  "Editor_ContainerScaleContentsHint": "켜면 컨테이너가 비율을 유지하고 내용 전체가 균일하게 조절됩니다. 끄면 프레임만 바뀌며, 내용보다 작아질 수 없습니다.",
+  "Editor_ContainerTrim": "내용에 맞게 자르기",
+  "Editor_ContainerTrimHint": "내용 주변의 빈 공간을 모든 방향에서 없앱니다. 크기는 조절되지 않으며 내용은 제자리에 있습니다.",
+  "Editor_ContainerEmpty": "컨테이너가 비어 있습니다.",
+  "Editor_BarThickness": "막대 두께",
+  "Editor_BarVerticalHint": "세로 막대는 타일의 너비와 높이를 채웁니다. 타일 크기를 조절해 막대를 넓히거나 좁히거나 높이거나 낮추세요. 값은 막대 위에, 레이블은 아래에 표시됩니다.",
+  "Editor_BarOrientationInvalid": "막대 방향은 가로 또는 세로여야 합니다."
 }
