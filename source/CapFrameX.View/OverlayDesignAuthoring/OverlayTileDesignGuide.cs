@@ -145,7 +145,11 @@ Kinds:
   shows seconds as a clock (h:mm:ss) instead of ""number"".
   A second reading in the same tile: secondaryKey, secondaryUnit, secondaryScale,
   secondaryDigits (0..6), separator (default "" / ""), for example temperature / power.
-- bar: horizontal bar. key, unit, minimum, maximum (the bar's range), digits, showValue.
+- bar: one bar. key, unit, minimum, maximum (the bar's range), digits, showValue. orientation
+  (horizontal, vertical; default horizontal): a horizontal bar draws its label and value above a
+  track of thickness px (1..128, default 8); a vertical one fills from the bottom up across the
+  tile's width, with the value above and the label below the track, which takes the rest of the
+  frame (in a grid, height 24..240 is its length). A vertical bar may be narrow: 8 px plus padding.
 - gauge: ring gauge. key, unit, minimum, maximum, digits, startAngle (degrees, -3600..3600),
   sweepAngle (1..360), thickness, showValue. In a grid, height (24..240) is the diameter.
 - chart: live line chart. key is the series: {SERIES} (frametimes in ms, framerates in FPS per frame,

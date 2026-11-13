@@ -595,6 +595,33 @@ off the scene until set (`OsdTileStyle.DrawnColor`), and the MCP tile document l
 `TileOpacity` (0..1, `editor.tileOpacity`, omitted at 1) scales the alpha of every tile background
 at export (`DrawnBackground`); transparent tiles stay transparent. Tests: `OverlayTileStyleTest`.
 
+### Bar tiles and container resizing
+
+A bar tile is horizontal unless `OsdDesignTile.Orientation` is `"vertical"` (the inspector's Bar
+section, MCP `orientation`). A horizontal bar draws its caption line over a track of `Thickness` px
+(null: 8; the field a gauge uses for its arc, so a change of kind drops it, and `Orientation` too);
+a thicker track makes the tile grow until both fit (`EnsureBarFits`). A vertical bar exports the
+renderer's `orientation: vertical`, which spans the tile's width less a 2 px inset; its `height`
+is the track, which fills the frame between the value above and the label below, one caption line
+each (`VerticalBarCaption`, 12 × 1.3 + 4), and is `Height` in a grid. Unlike other top-level
+tiles (64 px) it may be 8 px plus padding wide. Switching the direction turns a canvas frame
+(`SetBarOrientation`). The renderer drew vertical bars for groups before, so only the Controls
+changed: unchanged bars export byte for byte as before, older renderers draw the new fields, and a
+Controls build without them rejects designs that use them, so the prebuilt Controls must contain them.
+
+Resizing a container scales its contents by default, and then evenly: the canvas inside its padding
+keeps its proportions, so a handle or a typed width or height takes the other side along (the
+gesture in `UpdateResize`, a typed side in `OsdEditorState.ResizeContainerTile`). Before 2026-11-13 a
+handle scaled one axis and the text by the smaller factor (`ScaleChild`, `min(sx, sy)`): a narrower
+container shrank a metric's text, a wider one did not grow it, and narrower-then-wider left it small.
+With "Scale contents when resizing" off (`OsdEditorState.ScaleContainerContents`, not saved) only the
+frame changes
+(`ResizeContainer(…, scaleChildren: false)`): a drag stops at the far edges of the contents, a typed
+size that would cut off a child is refused (`Editor_186`). "Trim to contents" (`TrimContainer`)
+shrinks the frame to the children's bounding box plus the padding on every side and moves it, so the
+children keep their place on the screen. Tests: `OverlayBarAndContainerEditingTest`, which also
+checks the renderer's pixels of both bar directions.
+
 ### Heatmap tiles
 
 A group tile with `GroupDisplay = "heatmap"` exports the native `heatmap` widget, one cell per
