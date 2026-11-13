@@ -15,7 +15,7 @@
         FontFamily="{materialDesign:MaterialDesignFont}">
     <Window.Resources>
         <ResourceDictionary>
-            <converter:AddValueConverter x:Key="AddValueConverter" Offset="-975"/>
+            <converter:AddValueConverter x:Key="AddValueConverter" Offset="-1088"/>
         </ResourceDictionary>
     </Window.Resources>
     <Grid>
