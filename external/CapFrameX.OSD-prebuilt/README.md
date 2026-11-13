@@ -36,6 +36,50 @@ The editor changes were also driven by mouse and UI Automation in a CapFrameX bu
 | --- | --- |
 | net10.0-windows\CapFrameX.OSD.Controls.dll | `3C9A7B5B2A12E35D799356E97446125D7F3DBA1EE6D81AC845904DBB0C76DB45` |
 
+### Sharper overlay text (2026-11-13)
+
+All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64 and
+x86) from the OSD working tree on `44e9468076c08d9a34c0ceb797884ad8b0acaa70` (`main`) with the
+native change below, committed afterwards as `23e73aeff80b9918ff367d3b49d8c2f1e2241182`: the new
+`src/core/TextRendering.h`, `Renderer.h`, `Renderer.cpp`, `OsdInstance.cpp` and `apps/design_test`
+(`text_rendering.h`). The working tree also held the Controls changes committed in between as
+`095356f`, which are in no native DLL. Controls (the entry above), Interop (still the signed
+build), both Vulkan manifests and the template catalogs are unchanged by this entry.
+
+- `Renderer::begin()` sets DirectWrite rendering params on its target: the system's gamma, contrast
+  and ClearType settings with the natural rendering mode. Without params of its own Direct2D let
+  DirectWrite choose, and for the grayscale text of every OSD target that was the symmetric mode,
+  antialiased in both directions, which spread every horizontal stroke whose edge falls between two
+  pixel rows over both. REDLINE's captions (10 design px at scale 0.65 and zoom 110 %, 7 px) read as
+  blurred. Natural keeps the outlines on the pixel grid vertically: edge energy per ink 0.82 instead
+  of 0.66 on REDLINE's captions, names and values, text widths unchanged. Gamma, contrast, grid fitting
+  and whole-pixel layout origins made no measurable difference. `OsdDebug.json` `"textRendering":
+  "symmetric"` restores the former look for A/B runs.
+
+Verification: all 16 core CTests pass (`design` with 564 checks, the new `textRenderingTests` among
+them: natural params on every target, also after a rebind, symmetric hands back the default, sharper
+horizontal edges, same widths), as do the 33 hook and 10 Vulkan CTests on x64 and x86, all without
+compiler warnings. A CapFrameX Release build from source staged exactly these five DLLs into the app
+and the test output and passed all 3606 tests outside the `Integration` category. No game ran with
+these binaries yet.
+
+The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only registrations
+in both HKLM views) were replaced with these two layer DLLs; their hashes match the table. The
+replaced ones, the signed 1.9.2 layers of the next entry, are kept in the ignored
+`temp\vulkan-layer-backup-2026-11-13` of the CapFrameX checkout.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `77E157FCC83EC4638B62E87417C84CB7D0A27831C587BC25B0029F4F31254FB7` |
+| native\cfx_osd_hook.dll | `B80A1A034576067C58EFF3A0A2A118290BF68A650D63F551E2C15E3872487402` |
+| native\x86\cfx_osd_hook.dll | `DAE6A70746ABAD95E5B22618C50EB46CC5CB66AB4E871743E01E6CFE4857E880` |
+| native\vk\cfx_osd_vklayer.dll | `01A4D8A8935674C5249183E317701380303AB8BAAB516872B7662C24C2A8E3A5` |
+| native\vk\x86\cfx_osd_vklayer.dll | `46BF250588C37CB8528B3C3D6094F9123A919F23BAE4984664BDD8CA4A55EB10` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries; the release build replaces
+them with signed ones.
+
 ### Signed 1.9.2 release build (2026-11-11)
 
 For the CapFrameX 1.9.2 release (build 1.9.2.4) all five native DLLs, Interop and Controls were

@@ -574,6 +574,15 @@ UTF-8 into the 128-byte field at `OffFontFamily` (0x18000), behind the records, 
 Controls must contain this change: a Controls build without it rejects designs whose theme font is
 not Segoe UI. Details: the OSD repo's CLAUDE.md.
 
+Every CapFrameX renderer and preview draws text with DirectWrite's natural rendering mode (the
+native core's `TextRendering.h`, set in `Renderer::begin()`): outlines stay on the pixel grid
+vertically. DirectWrite's own choice for grayscale text antialiased in both directions, which blurred
+the horizontal strokes of small text (REDLINE's 7 px captions at design scale 0.65 and zoom 110 %);
+edges are about 25 % sharper and text widths are unchanged. OsdDebug.json `"textRendering":
+"symmetric"` restores the former look for A/B runs. The prebuilt core, hooks and Vulkan layers must
+contain this change (2026-11-13); older ones draw as before. Details: the OSD repo's CLAUDE.md,
+"Text rendering".
+
 ### Tile styles
 
 Every tile owns its colors; the design shares only `TileOpacity` and the font (the editor's Style
