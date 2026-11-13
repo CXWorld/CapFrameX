@@ -60,7 +60,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 30;
+        public const int Version = 31;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -167,6 +167,9 @@ namespace CapFrameX.OSD.Integration
                 // Version twenty-six let the row block of the three hybrid designs follow its rows and put it
                 // last, so a longer row profile no longer clips, and gave Hybrid Thread Deck's thread loads the
                 // design's cyan accent on its neutral panel.
+                // Version thirty-one showed REDLINE's GPU and CPU names without a caption, larger and aligned
+                // with the right edge of the tiles below them, and put the red captions of its Radeon tiles on
+                // a neutral near-black instead of a red-tinted one.
                 // Never replace a renamed or edited profile.
                 string[] previousDesignHashes = entry.Id switch
                 {
@@ -182,7 +185,8 @@ namespace CapFrameX.OSD.Integration
                         "29F584D14371B202EC0DC2B813EBFB9B3C1BD97E049898EEEF730EB134F75A38",
                         "11BD3AAAC5BC84AF1DB602A2123FBA4417F20DB564780B26A83CC2FB2A5CEA69",
                         "6E33A0794A24181015C63E99E1294A2CA2415000BB053CE278C107A5A6160819",
-                        "611C240A718B67887AD76A3D0AA7A4FABE613BBBD07FAE063236BABF6B08FF0E"
+                        "611C240A718B67887AD76A3D0AA7A4FABE613BBBD07FAE063236BABF6B08FF0E",
+                        "AC221771BC3F6CE5681E4AFF8220F5D8AE7AE0494A4EFE87AC7663D033D1BA92"
                     },
                     "RTX-50-Core-Ultra-FUSION-ARL" => new[]
                     {

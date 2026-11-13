@@ -174,6 +174,7 @@ namespace CapFrameX.Test.Integration
         [DataRow(27, 28)]
         [DataRow(28, 29)]
         [DataRow(29, 30)]
+        [DataRow(30, 31)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -186,7 +187,7 @@ namespace CapFrameX.Test.Integration
                 6 => new[] { "Panther-Lake-Arc-Aurora", "OLED-Minimal" },
                 17 => SlickPresetIds,
                 18 => new[] { "RTX-50-Core-FUSION-RPL", "RTX-50-Ryzen-FUSION" },
-                19 or 20 or 21 or 22 or 23 => Array.Empty<string>(),
+                19 or 20 or 21 or 22 or 23 or 31 => Array.Empty<string>(),
                 24 => AnimePresetIds,
                 25 => DuolinePresetIds,
                 27 => new[] { "Blackwell-Thermals-RTX-5090" },
@@ -357,6 +358,7 @@ namespace CapFrameX.Test.Integration
 
             if (presetId == "AMD-Ryzen-Radeon-REDLINE")
             {
+                RevertRedlineToVersionThirty(document);
                 // Version nineteen: the GPU block below the CPU tiles, not above them as in version twenty.
                 var gpu = document.Tiles.Single(tile => tile.Label == "AMD Radeon GPU");
                 var cpuTiles = new[] { "AMD Ryzen CPU", "CORE / THREAD LOADS", "CPU Load Heatmap" }
@@ -400,6 +402,57 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(starter.CanUpdate(earlier), "An unmodified version-eighteen copy gets the higher chart.");
             Assert.IsFalse(starter.CanUpdate(new OverlayDesignProfile(starter.Id, starter.Name, starter.DesignJson, DateTime.UtcNow)),
                 "The current design is never replaced.");
+        }
+
+        [TestMethod]
+        public void RedlineNamesItsHardwareAboveTheTilesAndSetsTheRadeonCaptionsOnANeutralBackground()
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "AMD-Ryzen-Radeon-REDLINE");
+            var document = OsdDesignDocument.FromJson(starter.DesignJson);
+            document.Validate();
+            Assert.AreEqual(starter.DesignJson, OverlayRuntimeDesign.Canonicalize(document.ToJson()), "The starter is stored as the editor saves it.");
+            OsdDesignTile Tile(string key) => document.EnumerateTiles().Single(tile => tile.Key == key);
+
+            // The installed GPU and CPU by name alone, larger than before and ending where the tiles below them end.
+            foreach (var (name, below) in new[] { (Tile("gpuNameShort"), Tile("gpuPower")), (Tile("cpuNameShort"), Tile("cpuPower")) })
+            {
+                Assert.AreEqual("none", name.LabelPosition, name.Key);
+                Assert.AreEqual("right", name.Align, name.Key);
+                Assert.AreEqual(18, name.ValueSize, name.Key);
+                Assert.AreEqual(below.X + below.FrameWidth, name.X + name.FrameWidth, name.Key);
+            }
+            // The red captions of the Radeon tiles keep AMD red; their background is neutral instead of red-tinted.
+            foreach (string key in new[] { "gpuLoad", "gpuTemp", "gpuClock", "gpuPower" })
+            {
+                Assert.AreEqual("#ED1C24FF", Tile(key).LabelColor, key);
+                Assert.AreEqual("#0A0A0CF5", Tile(key).BackgroundColor, key);
+            }
+            // The badge stays generic: the housing and wordmarks without a tier or model layer.
+            var badge = document.EnumerateTiles().Single(tile => tile.Label == "Ryzen badge");
+            Assert.AreEqual("image", badge.Kind);
+
+            RevertRedlineToVersionThirty(document);
+            Assert.IsTrue(starter.CanUpdate(new OverlayDesignProfile(starter.Id, starter.Name, document.ToJson(), DateTime.UtcNow)),
+                "An unmodified version-thirty REDLINE gets the new names and Radeon tiles.");
+        }
+
+        /// <summary>REDLINE before version thirty-one: "GPU /" and "CPU /" captions before smaller, left-aligned names, red-tinted Radeon tiles.</summary>
+        private static void RevertRedlineToVersionThirty(OsdDesignDocument document)
+        {
+            var tiles = document.EnumerateTiles().ToArray();
+            foreach (var (key, x, y, width) in new[] { ("gpuNameShort", 342d, 28d, 164d), ("cpuNameShort", 240d, 14d, 264d) })
+            {
+                var name = tiles.Single(tile => tile.Key == key);
+                name.LabelPosition = "left";
+                name.Align = "left";
+                name.ValueSize = 12;
+                name.X = x;
+                name.Y = y;
+                name.FrameWidth = width;
+                name.FrameHeight = 20;
+            }
+            foreach (string key in new[] { "gpuLoad", "gpuTemp", "gpuClock", "gpuPower" })
+                tiles.Single(tile => tile.Key == key).BackgroundColor = "#140D10DD";
         }
 
         [TestMethod]
