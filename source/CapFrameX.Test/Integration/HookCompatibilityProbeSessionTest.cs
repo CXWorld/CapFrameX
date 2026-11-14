@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using CapFrameX.Contracts.Overlay;
@@ -415,6 +416,81 @@ namespace CapFrameX.Test.Integration
                 session.RemainingBudgetMs(164000), "resuming must not charge the hidden interval");
             Assert.IsTrue(ObserveRendering(session, true, visible, EHookOverlayStatus.Active, 166000)
                 .Any(action => action.Kind == HookProbeActionKind.Learn));
+        }
+
+        // A hidden overlay made a learned route reconfirm at the probe cadence for the whole hidden
+        // time: four status reads per second that could only answer Inconclusive.
+        [TestMethod]
+        public void HiddenLearnedRoute_IsPolledAtTheIdleCadenceUntilItResumes()
+        {
+            HookCompatibilityProbeSession session = Session(streamline: true);
+            LearnVendorStage(session);
+            int requested = HookCompatibilityProbeSession.IdlePollIntervalMs;
+            int Effective() => HookCompatibilityProbeSession.EffectivePollIntervalMs(requested,
+                session.Observing, session.LastVerdict);
+            void Apply(IReadOnlyList<HookProbeAction> actions)
+            {
+                foreach (HookProbeAction action in actions)
+                    if (action.Kind == HookProbeActionKind.SetPollInterval) requested = action.PollIntervalMs;
+            }
+            Assert.AreEqual(HookCompatibilityProbeSession.IdlePollIntervalMs, Effective(), "learned");
+
+            var hidden = new NativeHookStatusSnapshot
+            {
+                Version = 2, Flags = Armed | NativeHookStatusFlags.PresentSeen,
+                AppliedFlags = (uint)session.CurrentStage.Flags
+            };
+            Apply(ObserveRendering(session, true, hidden, EHookOverlayStatus.Hidden, 6000));
+            Assert.AreEqual(HookCompatibilityProbeSession.ProbePollIntervalMs, requested,
+                "the reconfirmation asks for the probe cadence");
+            Assert.IsTrue(session.Observing);
+            Assert.AreEqual(HookCompatibilityProbeSession.IdlePollIntervalMs, Effective(),
+                "but a hidden overlay is polled once per second");
+            for (ulong t = 7000; t <= 60000; t += 1000)
+            {
+                Apply(ObserveRendering(session, true, hidden, EHookOverlayStatus.Hidden, t));
+                Assert.AreEqual(HookCompatibilityProbeSession.IdlePollIntervalMs, Effective(), $"hidden at {t}");
+            }
+
+            var active = new NativeHookStatusSnapshot { Version = 2, Flags = Ready };
+            Apply(ObserveRendering(session, true, active, EHookOverlayStatus.Active, 61000));
+            Assert.AreEqual(HookCompatibilityVerdict.Pending, session.LastVerdict);
+            Assert.AreEqual(HookCompatibilityProbeSession.ProbePollIntervalMs, Effective(),
+                "shown again: the reconfirmation runs at the probe cadence");
+            Apply(ObserveRendering(session, true, active, EHookOverlayStatus.Active, 61000 +
+                HookCompatibilityVerdictClassifier.ProbeSuccessConfirmMs));
+            Assert.AreEqual(HookProbeSettlement.Learned, session.Settlement);
+            Assert.AreEqual(HookCompatibilityProbeSession.IdlePollIntervalMs, Effective(), "reconfirmed");
+        }
+
+        [TestMethod]
+        public void EffectivePollInterval_OnlySlowsAnObservingInconclusiveSession()
+        {
+            const int probe = HookCompatibilityProbeSession.ProbePollIntervalMs;
+            const int idle = HookCompatibilityProbeSession.IdlePollIntervalMs;
+            foreach (HookCompatibilityVerdict verdict in Enum.GetValues(typeof(HookCompatibilityVerdict)))
+            {
+                int expected = verdict == HookCompatibilityVerdict.Inconclusive ? idle : probe;
+                Assert.AreEqual(expected, HookCompatibilityProbeSession.EffectivePollIntervalMs(probe, true, verdict),
+                    verdict.ToString());
+                Assert.AreEqual(probe, HookCompatibilityProbeSession.EffectivePollIntervalMs(probe, false, verdict),
+                    $"{verdict}, not observing");
+                Assert.AreEqual(idle, HookCompatibilityProbeSession.EffectivePollIntervalMs(idle, true, verdict),
+                    $"{verdict}, idle requested");
+            }
+        }
+
+        [TestMethod]
+        public void EvidenceRescansOfAStandDownBackOffToThirtySeconds()
+        {
+            var waits = new List<ulong>();
+            ulong interval = 0;
+            for (int i = 0; i < 8; i++)
+            {
+                interval = HookOverlayManager.NextEvidenceRescanIntervalMs(interval);
+                waits.Add(interval);
+            }
+            CollectionAssert.AreEqual(new ulong[] { 2000, 4000, 8000, 16000, 30000, 30000, 30000, 30000 }, waits);
         }
 
         [TestMethod]

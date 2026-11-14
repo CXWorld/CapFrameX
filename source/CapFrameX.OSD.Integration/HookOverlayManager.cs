@@ -47,6 +47,7 @@ namespace CapFrameX.OSD.Integration
         // scans stay rare, and a process gets only so many re-plans.
         internal const ulong ProbeRearmStandDownMs = 3000;
         internal const ulong ProbeEvidenceRescanIntervalMs = 2000;
+        internal const ulong MaxEvidenceRescanIntervalMs = 30000;
         internal const int MaxProbeRearmsPerProcess = 4;
         internal const int EarlyInjectionPollMs = 25;
         internal const string ProcessStartTraceQuery =
@@ -147,6 +148,7 @@ namespace CapFrameX.OSD.Integration
         private string _probeEvidenceSignature;
         private ulong _probeStandDownSinceTickMs;
         private ulong _nextEvidenceRescanTickMs;
+        private ulong _evidenceRescanIntervalMs;
         private int _probeRearmCount;
         // The sessions of injected processes that are not the selected PID (guarded by _stateGate).
         private readonly HookProbeSessionShelf _parkedProbeSessions = new HookProbeSessionShelf();
@@ -158,6 +160,11 @@ namespace CapFrameX.OSD.Integration
         // Learning is mandatory; legacy HookOverlayAutoCompatibility=false settings are ignored.
         private const bool _autoCompatibility = true;
         private volatile int _statusPollIntervalMs = HookCompatibilityProbeSession.IdlePollIntervalMs;
+        private volatile int _requestedPollIntervalMs = HookCompatibilityProbeSession.IdlePollIntervalMs;
+        private readonly object _identityGate = new object();
+        private int _identityPid;
+        private string _identityName;
+        private string _identityPath;
         private int _injectionStatusPid;
         private string _lastInjectionError;
         private string _nativeFallbackReason;
@@ -351,6 +358,7 @@ namespace CapFrameX.OSD.Integration
                 _probeEvidenceSignature = _probeSession?.Evidence?.Signature;
                 _probeStandDownSinceTickMs = 0;
                 _nextEvidenceRescanTickMs = 0;
+                _evidenceRescanIntervalMs = 0;
                 _probeRearmCount = rearmCount;
                 _lastInjectionError = null;
                 _nativeFallbackReason = _probeSession?.FallbackReason;
@@ -363,6 +371,7 @@ namespace CapFrameX.OSD.Integration
             }
             if (previousPid > 0 && previousPid != pid)
             {
+                ForgetTargetIdentity();
                 // Selection changing does not prove a game crash or a clean exit.
                 _profileReports?.End(previousPid, "target-changed");
                 ResetVulkanLearning();
@@ -944,6 +953,7 @@ namespace CapFrameX.OSD.Integration
                     _probeEvidenceSignature = evidence.Signature;
                     _probeStandDownSinceTickMs = 0;
                     _nextEvidenceRescanTickMs = 0;
+                    _evidenceRescanIntervalMs = 0;
                 }
             }
 
@@ -1081,7 +1091,7 @@ namespace CapFrameX.OSD.Integration
             bool exhausted, string verdict, string detail, bool countAttempt = true,
             bool skipUnchanged = false)
         {
-            if (!TryReadProcessIdentity(pid, out string processName, out string executablePath))
+            if (!TryReadTargetIdentity(pid, out string processName, out string executablePath))
             {
                 Log.Debug("HookOverlay: not recording the compatibility outcome for pid {pid}; its identity is unavailable",
                     pid);
@@ -1133,7 +1143,7 @@ namespace CapFrameX.OSD.Integration
 
         private void AddLearnedEarlyInjectionTarget(int pid, HookCompatibilityStage stage)
         {
-            if (!TryReadProcessIdentity(pid, out string processName, out string executablePath))
+            if (!TryReadTargetIdentity(pid, out string processName, out string executablePath))
                 return;
             var target = new EarlyInjectionTarget(processName, executablePath,
                 stage.EarlyInjectionModule);
@@ -1154,7 +1164,22 @@ namespace CapFrameX.OSD.Integration
 
         private void SetStatusPollInterval(int intervalMs)
         {
-            if (intervalMs <= 0 || intervalMs == _statusPollIntervalMs) return;
+            if (intervalMs <= 0) return;
+            _requestedPollIntervalMs = intervalMs;
+            ApplyStatusPollInterval();
+        }
+
+        // The session asks for the probe cadence; a paused target is polled at the idle one
+        // (HookCompatibilityProbeSession.EffectivePollIntervalMs). Called after every observation.
+        private void ApplyStatusPollInterval()
+        {
+            HookCompatibilityProbeSession session = _probeSession;
+            int requested = _requestedPollIntervalMs;
+            int intervalMs = session != null && session.ProcessId == _currentPid
+                ? HookCompatibilityProbeSession.EffectivePollIntervalMs(requested,
+                    session.Observing, session.LastVerdict)
+                : requested;
+            if (intervalMs == _statusPollIntervalMs) return;
             _statusPollIntervalMs = intervalMs;
             try
             {
@@ -1657,6 +1682,44 @@ namespace CapFrameX.OSD.Integration
                      StringComparison.OrdinalIgnoreCase));
         }
 
+        // Name and path of a running process cannot change. Process.MainModule enumerates the
+        // game's modules, and the status timer, every reconfirmation and the Vulkan learning asked
+        // for them again, so the target's are read once and forgotten with the target.
+        private bool TryReadTargetIdentity(int pid, out string processName,
+            out string executablePath)
+        {
+            lock (_identityGate)
+            {
+                if (pid > 0 && pid == _identityPid)
+                {
+                    processName = _identityName;
+                    executablePath = _identityPath;
+                    return true;
+                }
+            }
+            if (!TryReadProcessIdentity(pid, out processName, out executablePath)) return false;
+            lock (_identityGate)
+            {
+                if (pid == _currentPid)
+                {
+                    _identityPid = pid;
+                    _identityName = processName;
+                    _identityPath = executablePath;
+                }
+            }
+            return true;
+        }
+
+        private void ForgetTargetIdentity()
+        {
+            lock (_identityGate)
+            {
+                _identityPid = 0;
+                _identityName = null;
+                _identityPath = null;
+            }
+        }
+
         private static bool TryReadProcessIdentity(int pid, out string processName,
             out string executablePath)
         {
@@ -1975,6 +2038,7 @@ namespace CapFrameX.OSD.Integration
                     _appConfiguration.IsOverlayActive, _inGameUnavailable);
             ReportHostState();
             ExecuteProbeActions(pid, session, actions);
+            if (session != null) ApplyStatusPollInterval();
         }
 
         /// <summary>
@@ -2004,6 +2068,7 @@ namespace CapFrameX.OSD.Integration
                 if (!settled || nativeState == EHookOverlayStatus.Active)
                 {
                     _probeStandDownSinceTickMs = 0;
+                    _evidenceRescanIntervalMs = 0;
                     return;
                 }
                 if (_probeStandDownSinceTickMs == 0)
@@ -2013,7 +2078,10 @@ namespace CapFrameX.OSD.Integration
                 }
                 if (nowTickMs - _probeStandDownSinceTickMs < ProbeRearmStandDownMs) return;
                 if (nowTickMs < _nextEvidenceRescanTickMs) return;
-                _nextEvidenceRescanTickMs = nowTickMs + ProbeEvidenceRescanIntervalMs;
+                // 2, 4, 8, 16, then every 30 s while the stand-down lasts: a provider that takes
+                // over presentation loads at the switch, which the first scans see.
+                _evidenceRescanIntervalMs = NextEvidenceRescanIntervalMs(_evidenceRescanIntervalMs);
+                _nextEvidenceRescanTickMs = nowTickMs + _evidenceRescanIntervalMs;
                 if (_probeRearmCount >= MaxProbeRearmsPerProcess) return;
                 applied = session.CurrentStage;
                 knownSignature = _probeEvidenceSignature;
@@ -2026,7 +2094,7 @@ namespace CapFrameX.OSD.Integration
             if (!current.IsKnown ||
                 string.Equals(current.Signature, knownSignature, StringComparison.Ordinal))
                 return;
-            if (!TryReadProcessIdentity(pid, out string processName, out _)) return;
+            if (!TryReadTargetIdentity(pid, out string processName, out _)) return;
 
             HookCompatibilityProfileCatalog.TryGetForProcess(pid,
                 out HookCompatibilityProfile catalog, _compatibilityProfiles);
@@ -2046,6 +2114,7 @@ namespace CapFrameX.OSD.Integration
                 _probeSession = rearmed;
                 _probeEvidenceSignature = current.Signature;
                 _probeStandDownSinceTickMs = 0;
+                _evidenceRescanIntervalMs = 0;
                 rearmCount = ++_probeRearmCount;
                 // The hook is already injected; the session needs that to start observing.
                 actions = rearmed.OnInjectionSucceeded(nowTickMs);
@@ -2071,6 +2140,15 @@ namespace CapFrameX.OSD.Integration
 
         // Kept separate from process/module scans so FG-switch tests exercise the manager's
         // actual settlement gate without injecting a hook or loading vendor DLLs.
+        /// <summary>
+        /// The wait after an evidence scan of a standing-down target that found no change:
+        /// <see cref="ProbeEvidenceRescanIntervalMs"/>, doubled after every scan up to
+        /// <see cref="MaxEvidenceRescanIntervalMs"/>. 0 starts a stand-down.
+        /// </summary>
+        internal static ulong NextEvidenceRescanIntervalMs(ulong previousMs)
+            => previousMs == 0 ? ProbeEvidenceRescanIntervalMs
+                : Math.Min(previousMs * 2, MaxEvidenceRescanIntervalMs);
+
         internal static bool CanRearmProbeForChangedEvidence(HookProbeSettlement settlement)
             => settlement == HookProbeSettlement.Learned || settlement == HookProbeSettlement.GaveUp ||
                settlement == HookProbeSettlement.RestartPending;

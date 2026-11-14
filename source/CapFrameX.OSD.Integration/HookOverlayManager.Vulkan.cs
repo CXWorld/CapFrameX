@@ -53,7 +53,7 @@ namespace CapFrameX.OSD.Integration
                     return new HookOverlayStatus(EHookOverlayStatus.Waiting, pid, "Vulkan",
                         $"PID {pid}, Vulkan: waiting for consistent compatibility telemetry.");
                 }
-                if (!TryReadProcessIdentity(pid, out string name, out string path)) return null;
+                if (!TryReadTargetIdentity(pid, out string name, out string path)) return null;
                 _learnedStore.TryGet(name, snapshot.Signature, out HookLearnedProfileEntry learned);
                 bool reset = _vulkanSession?.HasPersistedOutcome == true && learned == null;
                 bool publish = _vulkanSession == null || !_vulkanSession.Matches(snapshot) || reset;

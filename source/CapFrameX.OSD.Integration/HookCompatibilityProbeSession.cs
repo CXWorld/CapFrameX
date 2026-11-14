@@ -75,6 +75,23 @@ namespace CapFrameX.OSD.Integration
         internal const int IdlePollIntervalMs = 1000;
 
         /// <summary>
+        /// The status poll interval the manager runs while the session asked for
+        /// <paramref name="requestedMs"/>. The probe cadence only helps while a verdict can form:
+        /// a paused target (overlay hidden, hook idle or dormant, no Presents) answers
+        /// <see cref="HookCompatibilityVerdict.Inconclusive"/> until it resumes, and every pause
+        /// of a learned route turns into a reconfirmation that asked for the probe cadence. So an
+        /// observing session whose last verdict was inconclusive is polled at the idle cadence;
+        /// its clocks stand still meanwhile, and the first sample after the pause brings the probe
+        /// cadence back.
+        /// </summary>
+        internal static int EffectivePollIntervalMs(int requestedMs, bool observing,
+            HookCompatibilityVerdict lastVerdict)
+            => requestedMs < IdlePollIntervalMs && observing &&
+               lastVerdict == HookCompatibilityVerdict.Inconclusive
+                ? IdlePollIntervalMs
+                : requestedMs;
+
+        /// <summary>
         /// After a live escalation the hook needs one poll interval to apply the new flags and
         /// clear its stand-down. Until it echoes the stage's flags in the status block, samples
         /// still describe the old stage; after this long without an echo the flip failed.
