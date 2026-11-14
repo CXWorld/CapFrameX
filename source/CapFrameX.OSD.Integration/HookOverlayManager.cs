@@ -238,6 +238,9 @@ namespace CapFrameX.OSD.Integration
                 .DistinctUntilChanged()
                 .Subscribe(OnProcessId);
 
+            // The row paths only read the target policy's verdict; its evaluations run in the
+            // background and report a new verdict here.
+            HookTargetPolicy.VerdictChanged += OnTargetVerdictChanged;
             _runtimeSub = frameDataStream.Subscribe(OnFrameRow);
             _statusTimer = new Timer(_ => PublishStatus(), null, 1000, 1000);
             AddConfiguredEarlyInjectionTargets();
@@ -721,8 +724,9 @@ namespace CapFrameX.OSD.Integration
         {
             // The target policy gates the resident hook's visibility as well as injection, so it
             // stays current for the whole session — an anti-cheat module that appears later must
-            // still hide the overlay. Its own cache keeps the per-frame cost at a timestamp
-            // compare. Everything below only serves injection and is dead once that is settled.
+            // still hide the overlay. Rows only read its cached verdict; it scans the game in the
+            // background (HookTargetPolicyCache) and reports a change to OnTargetVerdictChanged.
+            // Everything below only serves injection and is dead once that is settled.
             if (!RefreshTargetPolicy(pid)) return;
             if (IsInjectionAttemptBlocked(pid)) return;
             if (!RefreshVulkanInjectionGate(pid)) return;
@@ -818,7 +822,8 @@ namespace CapFrameX.OSD.Integration
                     }
 
                     string error;
-                    if (!RefreshTargetPolicy(pid))
+                    // A current verdict right before LoadLibrary, not the cached one.
+                    if (!RefreshTargetPolicy(pid, evaluateNow: true))
                     {
                         ReleaseInjectionReservation(pid);
                         return;
@@ -2342,10 +2347,20 @@ namespace CapFrameX.OSD.Integration
             }
         }
 
-        private bool RefreshTargetPolicy(int pid)
+        // Without evaluateNow the call never scans the game (the row thread calls it): without a
+        // verdict yet it returns false and changes nothing, and OnTargetVerdictChanged applies the
+        // verdict once the background evaluation has one.
+        private bool RefreshTargetPolicy(int pid, bool evaluateNow = false)
         {
             string reason = null;
-            bool allowed = pid == _currentPid && HookTargetPolicy.IsAllowed(pid, out reason);
+            bool allowed = false;
+            if (pid == _currentPid)
+            {
+                if (evaluateNow)
+                    allowed = HookTargetPolicy.IsAllowedFresh(pid, out reason);
+                else if (!HookTargetPolicy.TryGetVerdict(pid, out allowed, out reason))
+                    return false;
+            }
             bool visibilityChanged = allowed != _targetAllowed;
             _targetAllowed = allowed;
             bool reasonChanged;
@@ -2379,6 +2394,23 @@ namespace CapFrameX.OSD.Integration
             if (visibilityChanged || reasonChanged) UpdateInGameAvailability();
             if (reasonChanged) PublishStatus();
             return allowed;
+        }
+
+        // A background evaluation of the target policy has a new verdict (thread pool). Apply it
+        // as the rows would, and inject now that the target passes: a paused game delivers no
+        // row that would.
+        private void OnTargetVerdictChanged(int pid)
+        {
+            if (_disposed || pid <= 0 || pid != _currentPid) return;
+            try
+            {
+                if (RefreshTargetPolicy(pid) && _enabled && IsDxgiRuntime(_currentRuntime))
+                    TryInjectAsync(pid);
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "HookOverlay: applying the target policy verdict of pid {pid} failed", pid);
+            }
         }
 
         private void PublishStatus()
@@ -2855,6 +2887,7 @@ namespace CapFrameX.OSD.Integration
                 if (_disposed) return;
                 _disposed = true;
             }
+            HookTargetPolicy.VerdictChanged -= OnTargetVerdictChanged;
             _statusTimer?.Dispose();
             _earlyInjectionTimer?.Dispose();
             StopProcessStartWatcher();

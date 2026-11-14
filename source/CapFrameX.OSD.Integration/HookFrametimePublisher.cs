@@ -104,8 +104,9 @@ namespace CapFrameX.OSD.Integration
             HookFrametimeChannel channel = _channel; // capture; PushSample no-ops if disposed concurrently
             if (channel == null || row == null || _ftIndex < 0 || row.Length <= _ftIndex) return;
             int targetPid = _targetPid;
+            // The row thread only reads the policy's verdict; it never scans the game itself.
             if (!PresentMonFrameFilter.IsForTargetProcess(row, _processIdIndex, targetPid) ||
-                !HookTargetPolicy.IsAllowed(targetPid, out _)) return;
+                !HookTargetPolicy.TryGetVerdict(targetPid, out bool allowed, out _) || !allowed) return;
 
             if (!double.TryParse(row[_ftIndex], NumberStyles.Any, CultureInfo.InvariantCulture, out var ms)
                 || ms <= 0 || ms >= 10000) return;

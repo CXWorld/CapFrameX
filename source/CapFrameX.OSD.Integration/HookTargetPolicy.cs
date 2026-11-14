@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace CapFrameX.OSD.Integration
 {
@@ -78,12 +79,13 @@ namespace CapFrameX.OSD.Integration
             "nvspcap",              // NVIDIA ShadowPlay / GeForce Experience
         };
 
-        private static readonly object Gate = new object();
-        private static readonly long CacheTicks = Math.Max(1, Stopwatch.Frequency * 2L);
-        private static int _cachedPid;
-        private static long _cacheUntil;
-        private static bool _cachedAllowed;
-        private static string _cachedReason;
+        // Verdicts are cached and refreshed off the caller's thread (HookTargetPolicyCache,
+        // HookTargetPolicySchedule): 2 s during the first half minute of a target, then 10 s; a
+        // final denial is kept for the process.
+        private static readonly HookTargetPolicyCache Cache = new HookTargetPolicyCache(
+            pid => new HookTargetPolicyCache.Verdict(EvaluateTarget(pid, out string reason), reason),
+            () => Environment.TickCount64,
+            work => Task.Run(work));
 
         [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
         private struct ModuleEntry32
@@ -124,6 +126,17 @@ namespace CapFrameX.OSD.Integration
         private static extern bool QueryFullProcessImageName(IntPtr process, int flags,
             StringBuilder name, ref int size);
 
+        /// <summary>Raised with the PID after a background evaluation changed its verdict.</summary>
+        internal static event Action<int> VerdictChanged
+        {
+            add => Cache.VerdictChanged += value;
+            remove => Cache.VerdictChanged -= value;
+        }
+
+        /// <summary>
+        /// The verdict for <paramref name="pid"/>. Evaluates on the calling thread only when no
+        /// verdict for the PID exists yet; a stale one is returned and refreshed in the background.
+        /// </summary>
         internal static bool IsAllowed(int pid, out string reason)
         {
             if (pid <= 0)
@@ -131,35 +144,40 @@ namespace CapFrameX.OSD.Integration
                 reason = "no target process";
                 return false;
             }
-
-            lock (Gate)
-            {
-                long now = Stopwatch.GetTimestamp();
-                if (_cachedPid == pid && now < _cacheUntil)
-                {
-                    reason = _cachedReason;
-                    return _cachedAllowed;
-                }
-
-                _cachedAllowed = EvaluateTarget(pid, out _cachedReason);
-                _cachedPid = pid;
-                _cacheUntil = now + CacheTicks;
-                reason = _cachedReason;
-                return _cachedAllowed;
-            }
+            return Cache.IsAllowed(pid, requireFresh: false, out reason);
         }
 
-        internal static void Invalidate(int pid)
+        /// <summary>
+        /// As <see cref="IsAllowed"/>, but a stale verdict is evaluated again on the calling
+        /// thread: right before an injection.
+        /// </summary>
+        internal static bool IsAllowedFresh(int pid, out string reason)
         {
-            lock (Gate)
+            if (pid <= 0)
             {
-                if (pid > 0 && pid != _cachedPid) return;
-                _cachedPid = 0;
-                _cacheUntil = 0;
-                _cachedAllowed = false;
-                _cachedReason = null;
+                reason = "no target process";
+                return false;
             }
+            return Cache.IsAllowed(pid, requireFresh: true, out reason);
         }
+
+        /// <summary>
+        /// The cached verdict without evaluating on the calling thread (the PresentMon row
+        /// paths). Without one it starts an evaluation in the background, returns false and
+        /// raises <see cref="VerdictChanged"/> when it is done.
+        /// </summary>
+        internal static bool TryGetVerdict(int pid, out bool allowed, out string reason)
+        {
+            if (pid <= 0)
+            {
+                allowed = false;
+                reason = "no target process";
+                return true;
+            }
+            return Cache.TryGetVerdict(pid, out allowed, out reason);
+        }
+
+        internal static void Invalidate(int pid) => Cache.Invalidate(pid);
 
         // A process can become visible a few milliseconds before its loader has exposed a stable
         // module list. Early injection retries these readiness failures immediately; a real policy
