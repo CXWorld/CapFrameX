@@ -1,21 +1,24 @@
 # Bundled PresentMon
 
 CapFrameX bundles its own build of the x64 console executable, `CX-PresentMon-2.6.1-x64.exe`:
-Intel's [PresentMon v2.6.0](https://github.com/GameTechDev/PresentMon/releases/tag/v2.6.0)
-release (September 21, 2026) plus the fixes below, which were tested as builds cfx.1 and
-cfx.2, the frame generation fixes of parts 3 and 4, and the flip delay fix of part 5.
+Intel's PresentMon `main` of November 13, 2026 (commit `f50c407a`, version 2.6.1) plus the
+fixes that Intel has not merged yet: the PC latency fix of part 4, the flip delay fix of
+part 5, the animation error fix of part 7 and the time column name of part 8. Intel's `main`
+already contains the fixes of parts 1 to 3 and Intel's own changes since v2.6.0 (part 6).
 `CaptureServiceConfiguration.PresentMonAppName` names the file, and CapFrameX shows the
 version taken from that name.
 
-- Source: branch `cfx/bugfixes` of [CXPresentMon](https://github.com/DevTechProfile/CXPresentMon),
-  Intel tag v2.6.0 plus the fixes, with the version set to 2.6.1. `--help` prints
-  "PresentMon 2.6.1 (CapFrameX build, based on Intel PresentMon 2.6.0)".
-- SHA-256: `e00e22fc3c27855cafde386bd9ee4510f2054e0ff260fee9e2a2cce5567b030b` (build of
-  November 8, 2026, signed on November 11; unsigned it was `9852ef97…`). It adds part 5 to
-  source revision `a57a4a5f`, the build of November 2 (`88d88d37…`). Its build tree is not on
-  `origin` yet, so its revision is still to be recorded here; the fix of part 5 is commit
-  `a3a01e2f` (branch `fix/nvidia-stale-flip-delay`). `--help` and the `PRESENTMON_DIAG_LOG`
-  switch are those of `cfx/bugfixes`, and the 25 tests of the upstream gold suite pass.
+- Source: branch `cfx/main` of [CXPresentMon](https://github.com/DevTechProfile/CXPresentMon),
+  revision `4300683b`. `--help` prints
+  "PresentMon 2.6.1 (CapFrameX build, based on Intel PresentMon main)".
+- SHA-256: `8b3de61342f05e42ef93634a125f07baa3589463f3b364081c3c6772beab253a` (build of
+  November 14, 2026, signed the same day; unsigned it was `409598593e57…`).
+- Replaces the build bundled with CapFrameX 1.9.2 (SHA-256 `e00e22fc3c27…`). That build was
+  documented as revision `a57a4a5f` of `cfx/bugfixes` plus part 5, but its output matches
+  Intel's `main` of early November except where part 4 applies, and it had the `--help` text
+  and diagnostic log of `cfx/bugfixes`: it was built from `cfx/bugfixes` merged with Intel's
+  `main`. With Intel's change of part 6 it wrote no animation error at all when PC latency
+  tracking was on and the game used frame generation that PresentMon does not type (part 7).
 - Signed by "Open Source Developer Mark Daniel Fangmeyer" (Certum, RFC 3161 timestamp). The
   unsigned build of October 31 (SHA-256 `ce7da452…`) was quarantined by Microsoft Defender as
   `Trojan:Win32/Bearfoos.B!ml`, a machine-learning detection; the signed builds were not.
@@ -52,7 +55,8 @@ a core. Reported upstream as
 - Swap chains are pruned relative to the newest present of a batch, and process
   start/stop events no longer stall behind a reused process id.
 - Optional diagnostic log: set the environment variable `PRESENTMON_DIAG_LOG` to `1`
-  (writes `%TEMP%\PresentMonDiag_<pid>.log`) or to a file path. Off by default.
+  (writes `%TEMP%\PresentMonDiag_<pid>.log`) or to a file path. Off by default. Only builds
+  from `cfx/bugfixes` have it; the build based on Intel's `main` (part 6) does not.
 
 ## Changes, part 2 (test build cfx.2)
 
@@ -119,13 +123,56 @@ waits for VSync, such as DWM's, never has its delay applied, so its entry stayed
 of the application's next flip on that thread was dropped. That flip then took DWM's delay,
 which moved its screen time. The newest request now replaces the entry.
 
+## Changes, part 6 (Intel's main)
+
+The build of November 14, 2026 is based on Intel's `main` instead of the v2.6.0 release with
+the fixes of `cfx/bugfixes`. Intel merged parts 1 to 3 in their final form (upstream pull
+requests #702, #703, #706, #724 and #680) and added, among others:
+
+- Animation error and animation time for generated frames (#669). The simulation interval
+  between two application frames is spread over every frame displayed in between, so FSR FG,
+  XeSS-FG and AFMF frames get an animation error, and the values of application frames
+  change accordingly.
+- A process stop from the end-of-trace rundown no longer counts as the process exiting
+  (#729), so presents logged after the kernel session stopped keep their process.
+- The `FrameType` of FSR frame generation reads `AMD FSR-FG`, Intel's spelling, instead of
+  `AMD FSR FG`. CapFrameX counts both as generated frames.
+
+The diagnostic log of part 1 is not part of this build. Parts 4 and 5 are added on top, as
+their pull requests (#725, #730) are still open.
+
+## Changes, part 7 (animation error with untyped frame generation)
+
+Frame generation that does not type its frames, such as DLSS-G through Streamline or a
+replacement behind the DLSS-G interface, presents its generated frames as application frames.
+With PC latency tracking, which CapFrameX enables by default, only the real frames carry a PC
+latency simulation start. Intel's change of part 6 resolves the simulation start per frame,
+so the generated frames fell back to the CPU start, every frame switched the source, and
+every switch started a new animation timeline without a value: `MsAnimationError` was NA and
+`AnimationTime` 0 for every frame. CapFrameX 1.9.2 shipped this.
+
+A frame whose simulation start comes from a lower source than the current timeline's (CPU
+start below PC latency below the app provider) now waits like a generated frame until the
+next frame of the timeline's source, which resolves both. More than eight such frames in a
+row are a real change of source and start a new timeline, as before. Such a frame is
+therefore written up to one real frame later; its values do not change.
+
+## Changes, part 8 (time column with `--qpc_time_ms`)
+
+With `--qpc_time_ms`, which CapFrameX passes, PresentMon named the time column
+`TimeInSeconds` although its values are milliseconds since the recording began. It is now
+`TimeInMs`, as without that argument. CapFrameX takes the time from `CPUStartQPCTimeInMs`
+and reads either name, so captures do not change. Upstream pull request #737.
+
 ## Capture compatibility
 
 `PresentMonServiceConfiguration` starts PresentMon with frame-type tracking, app
 timing, QPC timestamps in milliseconds, a configurable circular buffer and the
 `--write_display_metadata` argument added in 2.6.0. The CSV has 32 columns with PC
 latency tracking, or 31 without it: `VidPnSourceId` and `LayerIndex` follow
-`PresentFlags`, `PresentId` is the last column.
+`PresentFlags`, `PresentId` is the last column. Since part 8 the twelfth column is named
+`TimeInMs`; `COLUMN_HEADER_WITH_PC_LATENCY` and `COLUMN_HEADER_WITHOUT_PC_LATENCY` still call it
+`TimeInSeconds`, which CapFrameX never looks up, so the column positions are what matters.
 
 CapFrameX stores `LayerIndex` per frame and summarizes it as "Display Layer" in the
 record details. PresentMon only fills the three columns for presents it sees in a
@@ -248,3 +295,24 @@ Adds the check for discarded generated frames (part 4) and the signature.
   CapFrameX's arguments: CSV byte-identical to the build of October 31. The traces contain no
   discarded generated frame.
 - `signtool verify /pa` succeeded on the signed executable.
+
+## Build of November 14, 2026
+
+Intel's `main` of November 13 plus parts 4, 5, 7 and 8 (part 6). Release x64, MSVC 14.44.
+
+- PresentMonUnitTests: all 314 tests passed, including two new tests for part 7. One existing
+  PC latency test now closes the animation interval before it checks the waiting frame; its
+  expected PC latency is unchanged. The test projects were built with the v145 toolset,
+  because the vcpkg libraries on the build machine need it.
+- PresentMonTests: the 18 `Tests/Gold` ETL comparisons and the new test for part 8 passed.
+- Replays with CapFrameX's arguments, compared with the build of CapFrameX 1.9.2:
+  - CONTROL Resonant (Radeon RX 9070 XT, frame generation through the DLSS-G interface, PC
+    latency): animation error for 3,572 of 3,575 frames, the 1.9.2 build had none. All other
+    columns are identical.
+  - Mafia: The Old Country (FSR FG): identical except the frame type label of part 6.
+  - AC Shadows (XeSS-FG): identical.
+  - The time column has the same values in all three; only its name changed (part 8).
+- `signtool verify /pa` succeeded on the signed executable (Certum timestamp).
+
+These checks cover recorded traces and tests, not a live game session, and no trace from an
+NVIDIA GPU with DLSS frame generation.
