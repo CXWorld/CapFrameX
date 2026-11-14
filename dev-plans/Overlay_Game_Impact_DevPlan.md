@@ -189,7 +189,7 @@ Games load the **registered** Vulkan layer, which is the copy in `C:\Program Fil
 | A3 | Display configuration query off the present thread | OSD | S | verified | P0 |
 | A4 | Dormant hook: no process snapshot in Present | OSD | S | verified, measured | |
 | A5 | Chart copies of the CPU hosts | OSD | M to L | verified, estimated | P0, user (option c) |
-| A6 | Wake the producer only when a rebuild is due | OSD | S | verified | A7 for the priority |
+| A6 | Wake the producer only when a rebuild is due | OSD | S | verified | |
 | A7 | No lock held over a copy between both threads | OSD | M | verified | |
 | A8 | Shaders compiled at build time | OSD | M | verified | |
 | A9 | Vulkan layer details | OSD | S to M | verified, audit | |
@@ -208,7 +208,7 @@ Games load the **registered** Vulkan layer, which is the copy in `C:\Program Fil
 | C8 | Hook-free bridge details | CapFrameX | S | verified, audit | |
 
 Recommended order: P0; then A1, A3, A4 (small, independent, each removes work that serves
-nothing); A2; A7 before A6; A8; A5 once P0 shows its size; A9, A10. In the CapFrameX repo: C1,
+nothing); A2; A6; A7; A8; A5 once P0 shows its size; A9, A10. In the CapFrameX repo: C1,
 C2, C5 first, then C3, C4, C6, C8, and C7 after its measurement. B1 needs the user in the game and
 decides B2 and B3.
 
@@ -471,10 +471,21 @@ affinity or name.
    extra signal, since the pacer bounds its pickup to one period today as well.
 2. Name the thread (`SetThreadDescription` through `GetProcAddress`, it is missing before
    Windows 10 1607) so profilers show it.
-3. Priority: do not lower it before A7. A producer that is preempted while it holds a lock the
-   present thread needs stalls the game for a scheduler quantum, and a lower priority makes that
-   more likely. After A7 add `OsdDebug.json` `"producerPriority"` for A/B and let a measurement in
-   a CPU-bound game decide the default (section 16).
+3. **Priority: dropped (the user's decision, 2026-11-13).** The producer keeps the priority it
+   starts with; add no priority switch either. Reduce its CPU time by doing less work instead
+   (A1, step 1 above). The reasons:
+   - Priority inversion. The producer holds `feedMutex_` while it copies the frame series
+     (`core\OsdInstance.cpp:779-783`) and, in the D3D12 hook, `g_cpuFrame.mutex` while it copies
+     the panel (`hook\overlay_d3d12.cpp:302-318`); the present thread takes both. `std::mutex`
+     does not raise the owner to its waiter's priority, so a lowered producer preempted inside
+     either lock holds up the game's Present.
+   - Starvation. A priority only decides anything while every core is busy, and then a lowered
+     thread waits for Windows' starvation boost, which takes seconds. A7 removes the inversion,
+     not this. The GPU showed the same pattern: `SetGPUThreadPriority(-7)` starved the hook-free
+     window and was reverted (OSD `7859fc1`, 2026-08-07); as `hookFreeGpuPriority` -7 on
+     2026-11-09 the overlay's own work waited up to 260 ms while the game's slips stayed. A game
+     saturating every core also starved CapFrameX's normal-priority hotkey thread (`3026bddc3`).
+   - A raised priority is no way out: the producer would take time from the game's threads.
 
 **Tests.** `hook_free_pacing_test` holds the pacer tests and the negative control. Add a model of
 the gated signal: for present streams at 60, 90, 144, 240 and 1000 FPS it yields the rebuild times
@@ -872,7 +883,7 @@ integration category (elevated) for a real capture.
 1. The default device of the hook-free window (hardware or WARP), after B1.
 2. An automatic hook-free chart rate and its switch in the UI (B2 a).
 3. Masks and a shader shift for the D3D12 hook and the Vulkan layer (A5 c).
-4. The producer thread's priority (A6), after a measurement in a CPU-bound game.
+4. The producer thread's priority (A6): decided on 2026-11-13, it stays unchanged (A6, step 3).
 5. The row type (C7 b).
 6. Whether the missing geometry shader handling of `D3D11StateBackup` is to be fixed (A10).
 7. Every commit, every prebuilt update and every replacement of the installed layers.
