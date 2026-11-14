@@ -221,18 +221,19 @@
 				    page scrolls sideways instead of cutting the settings off. MinWidth below is their sum.-->
 				<ScrollViewer x:Name="OverlayItemsScrollViewer" Margin="{StaticResource CxTabContentMargin}"
 							  HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
-				<Grid Width="{Binding ViewportWidth, ElementName=OverlayItemsScrollViewer}" MinWidth="990">
+				<Grid Width="{Binding ViewportWidth, ElementName=OverlayItemsScrollViewer}" MinWidth="830">
 					<Grid.RowDefinitions>
 						<RowDefinition Height="*"/>
 					</Grid.RowDefinitions>
-					<!--The smallest window (1488 px) leaves 1000-1050 px here, depending on the record list:
-					    both columns fit, the entry list giving up the most. A wider window widens the list first,
-					    then the settings, each up to its MaxWidth (the list's fits the longest translated
-					    entries); further space stays free.-->
+					<!--A window at 1080p and 150 % leaves 840-855 px here with the record list at its default
+					    width (restored or maximized): both columns fit at their MinWidths, the card labels of the
+					    settings ending in an ellipsis with the full text as tool tip. A wider window widens the list first, then
+					    the settings, each up to its MaxWidth (the list's fits the longest translated entries);
+					    further space stays free.-->
 					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="3*" MinWidth="460" MaxWidth="660"/>
+						<ColumnDefinition Width="3*" MinWidth="415" MaxWidth="660"/>
 						<ColumnDefinition Width="10"/>
-						<ColumnDefinition Width="2*" MinWidth="520" MaxWidth="620"/>
+						<ColumnDefinition Width="2*" MinWidth="405" MaxWidth="620"/>
 					</Grid.ColumnDefinitions>
 		<!--Margin keeps the top edge level with the first card of the right column (spacer-less grid + 5px card margin)-->
 		<Border Style="{StaticResource SectionCard}" Margin="0 0 0 5" Grid.Row="0" Grid.Column="0" >
@@ -243,15 +244,20 @@
 					<!--DataGrid and Overlay hotkey-->
 					<Grid >
 						<Grid.RowDefinitions>
-							<RowDefinition Height="45"></RowDefinition>
+							<RowDefinition Height="Auto" MinHeight="45"></RowDefinition>
 							<RowDefinition Height="35"></RowDefinition>
 							<RowDefinition Height="1*"></RowDefinition>
 							<RowDefinition Height="50"></RowDefinition>
 						</Grid.RowDefinitions>
-						<StackPanel Orientation="Horizontal" Margin="15 0 0 10" HorizontalAlignment="Left">
-							<TextBlock Margin="0 0 10 0" Text="{loc:Tr OverlayView_OverlayItems2}" FontSize="18" VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-						</StackPanel>
-						<StackPanel Grid.Row="0" Margin="0 0 0 10" Orientation="Horizontal" HorizontalAlignment="Right">
+						<!--Title and actions share the row; in the narrow list of a 1080p window at 150 % the
+						    title wraps instead of running under the buttons.-->
+						<Grid Grid.Row="0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						<TextBlock Margin="15 0 10 10" Text="{loc:Tr OverlayView_OverlayItems2}" FontSize="18" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
+						<StackPanel Grid.Column="1" Margin="0 0 0 10" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
 							<Button Width="28" Height="28" Margin="7 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"
 								ToolTip="{loc:Tr OverlayView_SortEntriesByType}" Command="{Binding SortByEntryTypeCommand}"
 								materialDesign:RippleAssist.Feedback="#DD000000">
@@ -335,6 +341,7 @@
 								<materialDesign:PackIcon Kind="Restore" Height="22" Width="22" />
 							</Button>
 						</StackPanel>
+						</Grid>
 						<!--Filter Controls-->
 						<StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10 0 10 5" HorizontalAlignment="Stretch">
 							<TextBox Width="150" Height="28" FontSize="12" VerticalContentAlignment="Center"
@@ -1047,7 +1054,7 @@
 					<Grid>
 						<Grid.RowDefinitions>
 							<RowDefinition Height="Auto" MinHeight="30"></RowDefinition>
-							<RowDefinition Height="40"></RowDefinition>
+							<RowDefinition Height="Auto" MinHeight="40"></RowDefinition>
 							<RowDefinition Height="20"></RowDefinition>
 							<RowDefinition Height="1*"></RowDefinition>
 							<RowDefinition Height="20"></RowDefinition>
@@ -1058,7 +1065,8 @@
 						</Grid.RowDefinitions>
 						<TextBlock Grid.Row="0" Margin="5" HorizontalAlignment="Center" Text="{loc:Tr OverlayView_ApplyToMultipleEntries}" 
 							TextWrapping="Wrap" TextAlignment="Center" FontSize="16"/>
-						<StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
+						<!--Wraps in the narrow card of a 1080p window at 150 %.-->
+						<WrapPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
 							<CheckBox IsChecked="{Binding Checkboxes.Colors}" Margin="5">
 								<TextBlock Text="{loc:Tr OverlayView_Colors}"/>
 							</CheckBox>
@@ -1068,7 +1076,7 @@
 							<CheckBox IsChecked="{Binding Checkboxes.Format}" Margin="5">
 								<TextBlock Text="{loc:Tr OverlayView_Format}"/>
 							</CheckBox>
-						</StackPanel>
+						</WrapPanel>
 						<TextBlock Grid.Row="2"  Text="{loc:Tr OverlayView_GroupName3}" TextAlignment="Left" Margin="10 5 0 0"/>
 						<StackPanel Grid.Row="3" Margin="10 0 0 0" Orientation="Horizontal" VerticalAlignment="Center">
 							<Button Width="28" Height="28" Margin="5 0 10 0" HorizontalAlignment="Left" Style="{StaticResource MaterialDesignFloatingActionMiniSecondaryButton}"

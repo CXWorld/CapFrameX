@@ -10,6 +10,12 @@
              Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
              Loaded="OnLoaded" Unloaded="OnUnloaded" IsVisibleChanged="OnIsVisibleChanged">
     <materialDesign:DialogHost x:Name="ProfileDialogHost" CloseOnClickAway="False">
+    <!--The editor needs about 1100x760 (its own minimum is 1080x560). Larger, the page fills the window;
+        smaller, as on a 1920x1080 display at 150 % (work area 1280x672), it keeps that size and scrolls
+        instead of being cut off at the bottom of the screen.-->
+    <ScrollViewer x:Name="DesignerScrollViewer" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+    <Grid Width="{Binding ViewportWidth, ElementName=DesignerScrollViewer}" Height="{Binding ViewportHeight, ElementName=DesignerScrollViewer}"
+          MinWidth="1104" MinHeight="760">
     <DockPanel Margin="12">
         <Border DockPanel.Dock="Top" Margin="0,0,0,10" Padding="12,8" CornerRadius="6"
                 Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
@@ -102,5 +108,7 @@
             Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
             Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" />
     </DockPanel>
+    </Grid>
+    </ScrollViewer>
     </materialDesign:DialogHost>
 </UserControl>

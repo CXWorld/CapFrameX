@@ -4,7 +4,7 @@
              xmlns:loc="clr-namespace:CapFrameX.MVVM.Localization;assembly=CapFrameX.MVVM"
         xmlns:controls="clr-namespace:CapFrameX.View.Controls"
         Title="{loc:Tr OverlayEditor_Title}" Width="1500" Height="960"
-        MinWidth="1120" MinHeight="810" WindowStartupLocation="CenterOwner"
+        MinWidth="1120" MinHeight="600" WindowStartupLocation="CenterOwner"
         Background="{DynamicResource MaterialDesign.Brush.Card.Background}"
         Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
     <controls:OverlayDesignerControl x:Name="Designer" />

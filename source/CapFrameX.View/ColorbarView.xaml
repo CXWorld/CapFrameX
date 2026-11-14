@@ -129,91 +129,47 @@
 		<materialDesign:ColorZone Mode="PrimaryMid" Foreground="White" Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}">
 			<Grid>
 				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="7*"/>
-					<ColumnDefinition Width="2*"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto"/>
 				</Grid.ColumnDefinitions>
-				<Grid Grid.Column="0" HorizontalAlignment="Left">
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="85"/>
-						<ColumnDefinition Width="0.8*"/>
-						<ColumnDefinition Width="1*"/>
-						<ColumnDefinition Width="1*"/>
-						<ColumnDefinition Width="1*"/>
-						<ColumnDefinition Width="1.4*"/>
-						<ColumnDefinition Width="1.4*"/>
-						<ColumnDefinition Width="1*"/>
-						<ColumnDefinition Width="1*"/>
-						<ColumnDefinition Width="1*"/>
-						<ColumnDefinition Width="1*"/>
-						<ColumnDefinition Width="1*"/>
-					</Grid.ColumnDefinitions>
-					<Image Grid.Column="0" Width="50" Height="50" Margin="5 0 5 0" Source="/Icons/CapFrameXLogoOnly.png"/>
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-                        Grid.Column="1"
-                        Width="120"
-                        HorizontalAlignment="Center"
-                        IsChecked="{Binding InfoIsChecked}"
+				<!-- Every page button is as wide as its label. Fixed widths of 150 in star columns
+				     made the buttons overlap on narrow windows (a click on the right half of a label
+				     selected its neighbour), and the bar did not fit 1280 px (1080p at 150 %). -->
+				<StackPanel Grid.Column="0" Orientation="Horizontal" HorizontalAlignment="Left" ClipToBounds="True">
+					<StackPanel.Resources>
+						<Style TargetType="{x:Type RadioButton}" BasedOn="{StaticResource MaterialDesignTabRadioButton}">
+							<Setter Property="MinWidth" Value="72"/>
+							<Setter Property="Padding" Value="12 12"/>
+						</Style>
+					</StackPanel.Resources>
+					<Image Width="50" Height="50" Margin="17 0 10 0" Source="/Icons/CapFrameXLogoOnly.png"/>
+					<RadioButton IsChecked="{Binding InfoIsChecked}"
                         Content="{loc:Tr ColorbarView_INFO}" />
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-                        Grid.Column="2"
-                        Width="150"
-                        HorizontalAlignment="Center"
-                        IsChecked="{Binding CaptureIsChecked}"
+					<RadioButton IsChecked="{Binding CaptureIsChecked}"
                         Content="{loc:Tr ColorbarView_CAPTURE}"
                         Visibility="{Binding IsCompatibleWithRunningOS, Converter={StaticResource FalseToCollapsedConverter}}"/>
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Grid.Column="3"
-                                 Width="150"
-                                 HorizontalAlignment="Center"
-							 IsChecked="{Binding SingleRecordIsChecked}"
+					<RadioButton IsChecked="{Binding SingleRecordIsChecked}"
 							 Content="{loc:Tr ColorbarView_ANALYSIS}" />
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Grid.Column="4"
-                                 Width="150"
-                                 HorizontalAlignment="Center"
-							 IsChecked="{Binding OverlayIsChecked}"
+					<RadioButton IsChecked="{Binding OverlayIsChecked}"
 							 Content="{loc:Tr ColorbarView_OVERLAY}" />
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Grid.Column="5"
-                                 Width="150"
-                                 HorizontalAlignment="Center"
-							 IsChecked="{Binding RecordComparisonIsChecked}"
+					<RadioButton IsChecked="{Binding RecordComparisonIsChecked}"
 							 Content="{loc:Tr ColorbarView_COMPARISON}" />
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Grid.Column="6"
-                                 Width="150"
-                                 HorizontalAlignment="Center"
-							 IsChecked="{Binding AggregationIsChecked}"
+					<RadioButton IsChecked="{Binding AggregationIsChecked}"
 							 Content="{loc:Tr ColorbarView_AGGREGATION}" />
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-                             Grid.Column="7"
-                                 Width="150"
-                                 HorizontalAlignment="Center"
-                             IsChecked="{Binding SensorIsChecked}"
+					<RadioButton IsChecked="{Binding SensorIsChecked}"
                              Content="{loc:Tr ColorbarView_SENSOR}" />
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Grid.Column="8"
-                                 Width="150"
-                                 HorizontalAlignment="Center"
-							 IsChecked="{Binding PmdIsChecked}"
+					<RadioButton IsChecked="{Binding PmdIsChecked}"
 							 Content="{loc:Tr ColorbarView_PMD}" />
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-							 Grid.Column="9"
-                                 Width="150"
-                                 HorizontalAlignment="Center"
-							 IsChecked="{Binding ReportIsChecked}"
+					<RadioButton IsChecked="{Binding ReportIsChecked}"
 							 Content="{loc:Tr ColorbarView_REPORT}" />
-					<RadioButton Style="{StaticResource MaterialDesignTabRadioButton}"
-                             Grid.Column="11"
-                                 Width="150"
-                                 HorizontalAlignment="Center"
-                             IsChecked="{Binding CloudIsChecked}"
+					<RadioButton IsChecked="{Binding CloudIsChecked}"
                              Content="{loc:Tr ColorbarView_CLOUD}" />
-				</Grid>
+				</StackPanel>
 
-				<materialDesign:PopupBox Grid.Column="1" Margin="0 0 225 0" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
+				<StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+				<materialDesign:PopupBox Margin="12 0 8 0" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
 					RequestBringIntoView="PopupBox_RequestBringIntoView" StaysOpen="False"
-					PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right" x:Name="ScreenshotPopupBox">
+					PlacementMode="BottomAndAlignRightEdges" VerticalAlignment="Center" x:Name="ScreenshotPopupBox">
 					<materialDesign:PopupBox.ToggleContent>
 						<Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 						        VerticalAlignment="Center"
@@ -242,10 +198,10 @@
 					</UniformGrid>
 				</materialDesign:PopupBox>
 
-				<Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-                            Margin="0 0 187 0"
+				<!-- Login and logout share one place: the hidden login button keeps its size. -->
+				<Grid Margin="0 0 16 0" VerticalAlignment="Center">
+				<Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 						    ToolTip="{loc:Tr ColorbarView_Login}"
-                            HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
 						    Width="32" Height="32" Click="Login_Click"
                             Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}" BorderBrush="Transparent"
@@ -253,27 +209,26 @@
 					<materialDesign:PackIcon Kind="Login" Foreground="GreenYellow"/>
 				</Button>
 
-				<Button Grid.Column="1" Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
-                            Margin="0 0 190 0"
+				<Button Style="{StaticResource MaterialDesignFloatingActionMiniButton}"
 						    ToolTip="{loc:Tr ColorbarView_Logout}"
-                            HorizontalAlignment="Right"
 						    materialDesign:RippleAssist.Feedback="#DD000000"
 						    Width="32" Height="32" Click="Logout_Click"
                             Background="{DynamicResource MaterialDesign.Brush.ToolBar.Item.Background}" BorderBrush="Transparent"
 							Visibility="{Binding Path=DataContext.IsLoggedIn, ElementName=ColorbarViewName, Converter={StaticResource TrueToVisibleConverter}}">
 					<materialDesign:PackIcon Kind="Logout" Foreground="DarkRed"/>
 				</Button>
+				</Grid>
 
-				<TextBlock Grid.Column="1" Margin="0 0 60 2" HorizontalAlignment="Right" VerticalAlignment="Center">           
+				<TextBlock Margin="0 0 14 2" VerticalAlignment="Center">
 			        <Hyperlink NavigateUri="https://capframex.com/" RequestNavigate="Hyperlink_RequestNavigate" TextDecorations="None">
 				        <TextBlock FontSize="16" Text="{loc:Tr ColorbarView_CapFrameXCom}" Foreground="White"/>
-			        </Hyperlink>	
+			        </Hyperlink>
 		        </TextBlock>
 
-				<materialDesign:PopupBox Grid.Column="1" DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
+				<materialDesign:PopupBox DataContext="{Binding Path=DataContext, ElementName=ColorbarViewName}"
 					materialDesign:Closed="PopupBox_Closed" RequestBringIntoView="PopupBox_RequestBringIntoView"
-					Margin="16,0,16,0" Padding="0" PopupUniformCornerRadius="10"
-					StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" HorizontalAlignment="Right" Opened="PopupBoxOpened"
+					Margin="0,0,16,0" Padding="0" PopupUniformCornerRadius="10" VerticalAlignment="Center"
+					StaysOpen="True" PlacementMode="BottomAndAlignRightEdges" Opened="PopupBoxOpened"
 					x:Name="OptionsPopupBox">
 					<materialDesign:PopupBox.ToggleContent>
 						<materialDesign:PackIcon Kind="Cog" Width="30" Height="30" Foreground="White"/>
@@ -1097,12 +1052,16 @@
 										<TextBlock Style="{StaticResource SettingsPageTitle}" Text="{loc:Tr ColorbarView_Help2}"/>
 										<TextBlock Grid.Row="1" Style="{StaticResource SettingsPageDescription}"
 												   Text="{loc:Tr ColorbarView_QuickReferenceForWorkingWith}"/>
-										<Border Grid.Row="2" Style="{StaticResource SettingsCard}" Margin="0">
-											<xctk:RichTextBox IsHitTestVisible="False" IsReadOnly="True" BorderThickness="0"
-														  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-														  Background="Transparent"
-														  Text="{Binding Path=DataContext.HelpText, ElementName=ColorbarViewName, Mode=OneWay}"/>
-										</Border>
+										<!--The popup is limited to the work area (562 high at 1080p and 150 %), so the
+										    text scrolls; the wheel reaches the viewer through the card's background.-->
+										<ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+											<Border Style="{StaticResource SettingsCard}" Margin="0">
+												<xctk:RichTextBox IsHitTestVisible="False" IsReadOnly="True" BorderThickness="0"
+															  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
+															  Background="Transparent"
+															  Text="{Binding Path=DataContext.HelpText, ElementName=ColorbarViewName, Mode=OneWay}"/>
+											</Border>
+										</ScrollViewer>
 									</Grid>
 								</DataTemplate>
 							</ContentPresenter.Resources>
@@ -1134,6 +1093,7 @@
 						</Grid>
 					</Border>
 				</materialDesign:PopupBox>
+				</StackPanel>
 			</Grid>
 		</materialDesign:ColorZone>
 	</Grid>

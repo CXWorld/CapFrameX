@@ -128,6 +128,10 @@
             </DataTemplate>-->
 		</ResourceDictionary>
 	</UserControl.Resources>
+	<!-- Sized for the data region of a 1920x1080 display at 150 % (about 860x560 restored, 875x570
+	     maximized): both columns fit side by side. The scroll viewer only takes over when the
+	     record list is widened or the window is smaller. -->
+	<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
 	<Grid VerticalAlignment="Top" HorizontalAlignment="Center">
 		<Grid>
 			<!-- Both columns take the width of their content. A 5*:4* split gave the process cards
@@ -139,7 +143,7 @@
 			</Grid.ColumnDefinitions>
 			<!-- Top margin aligns the process cards with the first card of the
 			     run-history tab on the right (tab strip height + card margin). -->
-			<DockPanel Grid.Column="0" Margin="10 50 0 0">
+			<DockPanel Grid.Column="0" Margin="10 46 0 0">
 				<Grid DockPanel.Dock="Top" HorizontalAlignment="Center">
 					<Grid HorizontalAlignment="Center">
 						<DockPanel>
@@ -149,7 +153,7 @@
 									<ColumnDefinition Width="Auto"/>
 								</Grid.ColumnDefinitions>
 								<!--Running processes card-->
-								<Border Style="{StaticResource SectionCard}" Grid.Column="0" Width="290" Margin="0 0 12 0" Padding="16 12 16 16">
+								<Border Style="{StaticResource SectionCard}" Grid.Column="0" Width="232" Margin="0 0 8 0" Padding="16 12 16 16">
 									<StackPanel>
 										<DockPanel LastChildFill="False">
 											<materialDesign:PackIcon Kind="ApplicationOutline" Width="20" Height="20" VerticalAlignment="Center"
@@ -165,7 +169,7 @@
 										</DockPanel>
 										<Border Margin="0 12 0 0" Style="{StaticResource SectionCardInset}" Padding="0 4 6 4">
 											<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToCapture}" SelectedItem="{Binding SelectedProcessToCapture}"
-												ScrollViewer.VerticalScrollBarVisibility="Auto" FontSize="14" ScrollViewer.CanContentScroll="True" Height="160"
+												ScrollViewer.VerticalScrollBarVisibility="Auto" FontSize="14" ScrollViewer.CanContentScroll="True" Height="148"
 												IsEnabled="{Binding AreButtonsActive}">
 												<ListView.ContextMenu>
 													<ContextMenu>
@@ -185,7 +189,7 @@
 									</StackPanel>
 								</Border>
 								<!--Process ignore list card-->
-								<Border Style="{StaticResource SectionCard}" Grid.Column="1" Width="290" Margin="12 0 0 0" Padding="16 12 16 16">
+								<Border Style="{StaticResource SectionCard}" Grid.Column="1" Width="232" Margin="8 0 0 0" Padding="16 12 16 16">
 									<StackPanel>
 										<DockPanel LastChildFill="False" Height="26">
 											<materialDesign:PackIcon Kind="EyeOffOutline" Width="20" Height="20" VerticalAlignment="Center"
@@ -195,7 +199,7 @@
 										</DockPanel>
 										<Border Margin="0 12 0 0" Style="{StaticResource SectionCardInset}" Padding="0 4 6 4">
 											<ListView IsSynchronizedWithCurrentItem="False" ItemsSource="{Binding ProcessesToIgnore}" SelectedItem="{Binding SelectedProcessToIgnore}"
-												ScrollViewer.VerticalScrollBarVisibility="Auto" FontSize="14" ScrollViewer.CanContentScroll="True" Height="160">
+												ScrollViewer.VerticalScrollBarVisibility="Auto" FontSize="14" ScrollViewer.CanContentScroll="True" Height="148">
 											</ListView>
 										</Border>
 										<Button Margin="0 12 0 0" HorizontalAlignment="Stretch" BorderThickness="0" Height="34" Padding="8 0"
@@ -211,12 +215,12 @@
 							<!--The layout around sizes to its content, so a longer status line would widen the column past
 							    the cards and get cut off. It wraps within the width of the process cards instead.-->
 							<TextBlock DockPanel.Dock="Bottom" Grid.Column="0" Grid.ColumnSpan="2" TextAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
-                                   Margin="0 20 0 0" Text="{Binding CaptureStateInfo}" HorizontalAlignment="Center" FontSize="16" TextWrapping="Wrap"
+                                   Margin="0 12 0 0" Text="{Binding CaptureStateInfo}" HorizontalAlignment="Center" FontSize="16" TextWrapping="Wrap"
                                    MaxWidth="{Binding ActualWidth, ElementName=ProcessCards}" Style="{StaticResource MaterialDesignCaptionTextBlock}" />
 						</DockPanel>
 					</Grid>
 				</Grid>
-				<Border Style="{StaticResource SectionCard}" Margin="0 24 0 0" Padding="16 12 16 16" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
+				<Border Style="{StaticResource SectionCard}" Margin="0 14 0 0" Padding="16 12 16 16" DockPanel.Dock="Bottom" HorizontalAlignment="Center">
 				<StackPanel>
 					<DockPanel LastChildFill="False">
 						<materialDesign:PackIcon Kind="Tune" Width="20" Height="20" VerticalAlignment="Center"
@@ -235,7 +239,7 @@
 						<ColumnDefinition Width="1*"/>
 						<ColumnDefinition Width="1*"/>
 					</Grid.ColumnDefinitions>
-					<TextBox Grid.Row="0" Grid.Column="0" Width="110" wpf:HintAssist.Hint="{loc:Tr CaptureView_CaptureHotkey}" Style="{DynamicResource CxFloatingHintTextBox}"
+					<TextBox Grid.Row="0" Grid.Column="0" Width="100" wpf:HintAssist.Hint="{loc:Tr CaptureView_CaptureHotkey}" Style="{DynamicResource CxFloatingHintTextBox}"
 						 Margin="0" FontSize="14" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"
 						 IsUndoEnabled="False" PreviewKeyDown="CaptureHotkeyTextBox_PreviewKeyDown"
 						 ContextMenu="{x:Null}" InputMethod.IsInputMethodEnabled="False"
@@ -254,12 +258,12 @@
 						</Binding>
 					</TextBox>
 
-					<TextBox x:Name="CaptureTimeTextBox" Grid.Row="0" Grid.Column="1" Width="110" wpf:HintAssist.Hint="{loc:Tr CaptureView_CaptureTimeS}" Style="{DynamicResource CxFloatingHintTextBox}"
-						 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
+					<TextBox x:Name="CaptureTimeTextBox" Grid.Row="0" Grid.Column="1" Width="100" wpf:HintAssist.Hint="{loc:Tr CaptureView_CaptureTimeS}" Style="{DynamicResource CxFloatingHintTextBox}"
+						 Margin="16 0 0 0" FontSize="14" Text="{Binding CaptureTimeString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
 						 PreviewKeyDown="CaptureTimeTextBox_PreviewKeyDown" LostKeyboardFocus="CaptureTimeTextBox_LostKeyboardFocus"
 						 TextChanged="CaptureTimeTextBox_TextChanged" ToolTip="{loc:Tr CaptureView_NoLimitPressEnterOrLeave}"
 						 Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"/>
-					<Button x:Name="CaptureTimeScopeButton" Grid.Row="1" Grid.Column="1" Margin="26 3 0 0" Padding="4 0"
+					<Button x:Name="CaptureTimeScopeButton" Grid.Row="1" Grid.Column="1" Margin="12 3 0 0" Padding="4 0"
 						 HorizontalAlignment="Left" VerticalAlignment="Top" Height="26" MinWidth="0" FontSize="11"
 						 IsEnabled="{Binding AreButtonsActive}" ToolTip="{Binding CaptureTimeScopeToolTip}"
 						 AutomationProperties.Name="{loc:Tr CaptureView_CaptureDurationScope}" Click="CaptureTimeScopeButton_Click"
@@ -304,15 +308,15 @@
 						</Button.ContextMenu>
 					</Button>
 
-					<TextBox Grid.Row="0" Grid.Column="2" Width="110" wpf:HintAssist.Hint="{loc:Tr CaptureView_CaptureDelayS}" Style="{DynamicResource CxFloatingHintTextBox}"
-					 Margin="30 0 0 0" FontSize="14" Text="{Binding CaptureDelayString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
+					<TextBox Grid.Row="0" Grid.Column="2" Width="100" wpf:HintAssist.Hint="{loc:Tr CaptureView_CaptureDelayS}" Style="{DynamicResource CxFloatingHintTextBox}"
+					 Margin="16 0 0 0" FontSize="14" Text="{Binding CaptureDelayString, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding AreButtonsActive}"
                      PreviewMouseDown="TextBox_PreviewMouseDown" PreviewKeyDown="TextBox_PreviewKeyDown" MouseLeave="TextBox_MouseLeave" ToolTip="{loc:Tr CaptureView_NoDelay}"
                      PreviewTextInput="NumberValidationTextBox" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" wpf:HintAssist.HintOpacity=".8"/>
 
 					<!--MDIX floats a ComboBox hint ~2px left of the field, where its first letter gets cut.
 					    The explicit offset keeps MDIX's height and aligns it with the TextBox hints beside it.-->
-					<ComboBox Grid.Row="0" Grid.Column="3" Width="120" Height="40" materialDesign:HintAssist.Hint="{loc:Tr CaptureView_HotkeySound}" Style="{StaticResource CxComboBox}"                          
-						  Margin="30 0 0 0" MaxDropDownHeight="200" FontSize="14" materialDesign:HintAssist.IsFloating="True" materialDesign:HintAssist.HintOpacity=".8"
+					<ComboBox Grid.Row="0" Grid.Column="3" Width="100" Height="40" materialDesign:HintAssist.Hint="{loc:Tr CaptureView_HotkeySound}" Style="{StaticResource CxComboBox}"                          
+						  Margin="16 0 0 0" MaxDropDownHeight="200" FontSize="14" materialDesign:HintAssist.IsFloating="True" materialDesign:HintAssist.HintOpacity=".8"
 						  materialDesign:HintAssist.FloatingOffset="0,-14"
 						  ItemsSource="{Binding SoundModes}" SelectedItem="{Binding SelectedSoundMode}" HorizontalAlignment="Left" HorizontalContentAlignment="Left" VerticalAlignment="Bottom" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
 						<ComboBox.ItemTemplate>
@@ -322,7 +326,7 @@
 						</ComboBox.ItemTemplate>
 					</ComboBox>
 
-					<Grid Grid.Row="1" Grid.Column="3" Margin="20 10 -5 0" Width="110" Height="26" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}">
+					<Grid Grid.Row="1" Grid.Column="3" Margin="12 10 -6 0" Width="110" Height="26" Visibility="{Binding ShowVolumeController, Converter={StaticResource FalseToCollapsedConverter}}">
 						<Grid.ColumnDefinitions>
 							<ColumnDefinition Width="18" />
 							<ColumnDefinition Width="70" />
@@ -341,9 +345,9 @@
 				</StackPanel>
 			</Border>
 			</DockPanel>
-			<TabControl Grid.Column="1" Margin="20 14 20 20" Background="Transparent" BorderThickness="0">
+			<TabControl Grid.Column="1" Margin="16 10 10 20" Background="Transparent" BorderThickness="0">
 				<TabItem Header="{loc:Tr CaptureView_RunHistoryAndAggregation}">
-					<StackPanel Width="400" Margin="{StaticResource CxTabContentMargin}">
+					<StackPanel Width="320" Margin="{StaticResource CxTabContentMargin}">
 						<!--Run history card-->
 						<Border Style="{StaticResource SectionCard}" Margin="0 0 0 4" Padding="16 12 16 16">
 							<StackPanel>
@@ -526,7 +530,7 @@
 					</StackPanel>
 				</TabItem>
 				<TabItem Header="{loc:Tr CaptureView_CaptureLogger}">
-					<StackPanel Width="400" Margin="{StaticResource CxTabContentMargin}">
+					<StackPanel Width="320" Margin="{StaticResource CxTabContentMargin}">
 						<Border Style="{StaticResource SectionCard}" Height="415" VerticalAlignment="Top">
 						<Grid>
 							<TextBlock Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Top" Text="{loc:Tr CaptureView_CaptureServiceLoggerOutput}" FontSize="14" Margin="10 10 0 0" 
@@ -595,4 +599,5 @@
 			</TabControl>
 		</Grid>
 	</Grid>
+	</ScrollViewer>
 </UserControl>

@@ -33,6 +33,29 @@ namespace CapFrameX
         [DllImport("user32.dll")]
         private static extern bool EnableMenuItem(IntPtr hMenu, uint uIDEnableItem, uint uEnable);
 
+        [DllImport("user32.dll")]
+        private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint dwFlags);
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern bool GetMonitorInfo(IntPtr hMonitor, ref MONITORINFO lpmi);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct RECT
+        {
+            public int Left, Top, Right, Bottom;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct MONITORINFO
+        {
+            public int cbSize;
+            public RECT rcMonitor;
+            public RECT rcWork;
+            public uint dwFlags;
+        }
+
+        private const uint MONITOR_DEFAULTTONEAREST = 2;
+
         private const uint SC_CLOSE = 0xF060;
         private const uint MF_BYCOMMAND = 0x00000000;
         private const uint MF_GRAYED = 0x00000001;
@@ -124,6 +147,7 @@ namespace CapFrameX
             {
                 //source.AddHook(new HwndSourceHook(HandleMessages));
                 source.CompositionTarget.RenderMode = RenderMode.SoftwareOnly;
+                FitRestoreBoundsToWorkArea(source.Handle);
             }
 
             base.OnSourceInitialized(e);
@@ -141,6 +165,51 @@ namespace CapFrameX
             Dispatcher.BeginInvoke(
                 System.Windows.Threading.DispatcherPriority.ApplicationIdle,
                 new Action(() => IconHelper.RefreshTaskbarIcon(this)));
+        }
+
+        /// <summary>
+        /// Keeps the restored window inside the work area of its monitor. The saved size may come
+        /// from a larger display or a lower scaling (the default of 1488x768 too): on a 1920x1080
+        /// display at 150 % the work area is 1280x672, and the window hung over its edges.
+        /// </summary>
+        private void FitRestoreBoundsToWorkArea(IntPtr hwnd)
+        {
+            try
+            {
+                var monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+                var info = new MONITORINFO { cbSize = Marshal.SizeOf<MONITORINFO>() };
+                if (monitor == IntPtr.Zero || !GetMonitorInfo(monitor, ref info))
+                    return;
+
+                var dpi = System.Windows.Media.VisualTreeHelper.GetDpi(this);
+                var workArea = new Rect(
+                    info.rcWork.Left / dpi.DpiScaleX,
+                    info.rcWork.Top / dpi.DpiScaleY,
+                    (info.rcWork.Right - info.rcWork.Left) / dpi.DpiScaleX,
+                    (info.rcWork.Bottom - info.rcWork.Top) / dpi.DpiScaleY);
+                if (workArea.IsEmpty || workArea.Width <= 0 || workArea.Height <= 0)
+                    return;
+
+                if (!double.IsNaN(Width) && Width > workArea.Width)
+                    Width = Math.Max(MinWidth, workArea.Width);
+                if (!double.IsNaN(Height) && Height > workArea.Height)
+                    Height = Math.Max(MinHeight, workArea.Height);
+
+                double width = double.IsNaN(Width) ? ActualWidth : Width;
+                double height = double.IsNaN(Height) ? ActualHeight : Height;
+                if (!double.IsNaN(Left) && Left + width > workArea.Right)
+                    Left = Math.Max(workArea.Left, workArea.Right - width);
+                if (!double.IsNaN(Top) && Top + height > workArea.Bottom)
+                    Top = Math.Max(workArea.Top, workArea.Bottom - height);
+                if (!double.IsNaN(Left) && Left < workArea.Left)
+                    Left = workArea.Left;
+                if (!double.IsNaN(Top) && Top < workArea.Top)
+                    Top = workArea.Top;
+            }
+            catch (Exception ex)
+            {
+                Log.Logger.Warning(ex, "Could not fit the main window into the work area.");
+            }
         }
 
         private void Resize(object sender, EventArgs e)

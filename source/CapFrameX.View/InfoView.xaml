@@ -81,10 +81,15 @@
                     </Setter.Value>
                 </Setter>
             </Style>
+            <!--Every tile keeps 4 on each side and its grid -4 around it: the gaps stay 8 wide in
+                both directions, also when a row wraps into two (FourTileColumns).-->
             <Style x:Key="MetricTile" TargetType="{x:Type Border}" BasedOn="{StaticResource SectionCardInset}">
                 <Setter Property="Padding" Value="11 8"/>
-                <Setter Property="Margin" Value="0 0 8 0"/>
+                <Setter Property="Margin" Value="4"/>
             </Style>
+            <!--Four tiles need about 110 each for "Temperature" and "1.0 / 18 GB"; in a narrow
+                window (1080p at 150 %) they wrap into 2x2 instead of cutting both off.-->
+            <mvvm:WidthToColumnsConverter x:Key="FourTileColumns" MinColumnWidth="110" Choices="4,2,1"/>
             <Style x:Key="StatusRow" TargetType="{x:Type Border}" BasedOn="{StaticResource SectionCardInset}">
                 <Setter Property="Padding" Value="12 9"/>
                 <Setter Property="Margin" Value="0 0 0 8"/>
@@ -181,7 +186,7 @@
                             <ProgressBar Style="{StaticResource LoadBar}" Value="{Binding CpuLoad, Mode=OneWay}"/>
                         </StackPanel>
 
-                        <UniformGrid Grid.Row="4" Columns="3">
+                        <UniformGrid Grid.Row="4" Columns="3" Margin="-4">
                             <Border Style="{StaticResource MetricTile}">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
@@ -200,7 +205,7 @@
                                     <TextBlock Style="{StaticResource MetricValue}" Text="{Binding CpuTempText}"/>
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource MetricTile}" Margin="0">
+                            <Border Style="{StaticResource MetricTile}">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="Speedometer"/>
@@ -255,7 +260,8 @@
                             <ProgressBar Style="{StaticResource LoadBar}" Value="{Binding GpuLoad, Mode=OneWay}"/>
                         </StackPanel>
 
-                        <UniformGrid Grid.Row="4" Columns="4">
+                        <UniformGrid Grid.Row="4" Margin="-4"
+                                     Columns="{Binding ActualWidth, RelativeSource={RelativeSource Self}, Converter={StaticResource FourTileColumns}}">
                             <Border Style="{StaticResource MetricTile}">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
@@ -283,7 +289,7 @@
                                     <TextBlock Style="{StaticResource MetricValue}" Text="{Binding GpuClockText}"/>
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource MetricTile}" Margin="0">
+                            <Border Style="{StaticResource MetricTile}">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="Memory"/>
@@ -396,7 +402,7 @@
                             <ProgressBar Style="{StaticResource LoadBar}" Value="{Binding RamLoad, Mode=OneWay}"/>
                         </StackPanel>
 
-                        <UniformGrid Grid.Row="4" Columns="2">
+                        <UniformGrid Grid.Row="4" Columns="2" Margin="-4">
                             <Border Style="{StaticResource MetricTile}">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
@@ -406,7 +412,7 @@
                                     <TextBlock Style="{StaticResource MetricValue}" Text="{Binding RamUsedText}"/>
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource MetricTile}" Margin="0">
+                            <Border Style="{StaticResource MetricTile}">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal">
                                         <materialDesign:PackIcon Style="{StaticResource MetricIcon}" Kind="PackageVariantClosed"/>
@@ -424,7 +430,8 @@
             <Border Grid.Row="2" Style="{StaticResource SectionCard}" Margin="5" Padding="20 16">
                 <StackPanel>
                     <TextBlock Style="{StaticResource CardCaption}" Text="{loc:Tr InfoView_SOFTWARECOMPONENTS}"/>
-                    <UniformGrid Columns="4" Margin="0 10 0 0">
+                    <UniformGrid Margin="-4 6 -4 -4"
+                                 Columns="{Binding ActualWidth, RelativeSource={RelativeSource Self}, Converter={StaticResource FourTileColumns}}">
                         <Border Style="{StaticResource MetricTile}" ToolTip="{loc:LanguageBinding {Binding PawnIoStatus.ToolTip}}">
                             <StackPanel>
                                 <DockPanel>
@@ -461,7 +468,7 @@
                                 <TextBlock Style="{StaticResource HardwareDetail}" Margin="0 2 0 0" Text="{loc:LanguageBinding {Binding RtssStatus.State}}"/>
                             </StackPanel>
                         </Border>
-                        <Border Style="{StaticResource MetricTile}" Margin="0" ToolTip="{loc:LanguageBinding {Binding VulkanLayerStatus.ToolTip}}">
+                        <Border Style="{StaticResource MetricTile}" ToolTip="{loc:LanguageBinding {Binding VulkanLayerStatus.ToolTip}}">
                             <StackPanel>
                                 <DockPanel>
                                     <Ellipse DockPanel.Dock="Right" Width="10" Height="10" VerticalAlignment="Center"
@@ -481,7 +488,8 @@
             <Border Grid.Row="3" Style="{StaticResource SectionCard}" Margin="5" Padding="20 16">
                 <StackPanel>
                     <TextBlock Style="{StaticResource CardCaption}" Text="{loc:Tr InfoView_PLATFORMSECURITY}"/>
-                    <UniformGrid Columns="4" Margin="0 10 0 0">
+                    <UniformGrid Margin="-4 6 -4 -4"
+                                 Columns="{Binding ActualWidth, RelativeSource={RelativeSource Self}, Converter={StaticResource FourTileColumns}}">
                         <Border Style="{StaticResource MetricTile}" ToolTip="{loc:LanguageBinding {Binding SecureBootStatus.ToolTip}}">
                             <DockPanel>
                                 <Ellipse DockPanel.Dock="Right" Width="10" Height="10" VerticalAlignment="Center"
@@ -509,7 +517,7 @@
                                 <TextBlock Style="{StaticResource MetricLabel}" FontSize="12" Text="{loc:Tr InfoView_VBS}"/>
                             </DockPanel>
                         </Border>
-                        <Border Style="{StaticResource MetricTile}" Margin="0" ToolTip="{loc:LanguageBinding {Binding MemoryIntegrityStatus.ToolTip}}">
+                        <Border Style="{StaticResource MetricTile}" ToolTip="{loc:LanguageBinding {Binding MemoryIntegrityStatus.ToolTip}}">
                             <DockPanel>
                                 <Ellipse DockPanel.Dock="Right" Width="10" Height="10" VerticalAlignment="Center"
                                          Fill="{Binding MemoryIntegrityStatus.StatusColor}"/>

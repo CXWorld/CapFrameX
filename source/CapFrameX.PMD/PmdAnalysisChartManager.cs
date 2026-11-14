@@ -229,7 +229,9 @@ namespace CapFrameX.PMD
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
-                        MajorStep = 30,
+                        // The step follows the chart height: a fixed 30 W step stacked eleven
+                        // labels on top of each other in a short chart (1080p at 150 %).
+                        IntervalLength = 40,
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         Minimum = 0,
@@ -246,7 +248,9 @@ namespace CapFrameX.PMD
                         FontSize = 13,
                         MajorGridlineStyle = LineStyle.Solid,
                         MajorGridlineThickness = 1,
-                        MajorStep = 30,
+                        // The step follows the chart height: a fixed 30 W step stacked eleven
+                        // labels on top of each other in a short chart (1080p at 150 %).
+                        IntervalLength = 40,
                         MinorTickSize = 0,
                         MajorTickSize = 0,
                         Minimum = 0,

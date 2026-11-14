@@ -39,16 +39,18 @@
 			</Style>
 		</ResourceDictionary>
 	</UserControl.Resources>
-	<Grid Margin="0 30 0 0">
+	<!--577 + 24 + 400 where there is room, centred by MaxWidth; in the data region of 1080p at
+	    150 % (about 875x570) both columns shrink in proportion and the page scrolls if needed.-->
+	<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+	<Grid Margin="10 16 10 12" MaxWidth="1021">
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="1*"/>
-			<ColumnDefinition Width="Auto"/>
-			<ColumnDefinition Width="Auto"/>
-			<ColumnDefinition Width="1*"/>
+			<ColumnDefinition Width="3*" MaxWidth="577"/>
+			<ColumnDefinition Width="24"/>
+			<ColumnDefinition Width="2*" MinWidth="260" MaxWidth="400"/>
 		</Grid.ColumnDefinitions>
 
 		<!--Upload / download column-->
-		<StackPanel Grid.Column="1" Width="577" VerticalAlignment="Top">
+		<StackPanel Grid.Column="0" VerticalAlignment="Top">
 
 			<!--Record upload card-->
 			<Border Style="{StaticResource SectionCard}" Padding="16 12 16 16">
@@ -67,7 +69,7 @@
 					</DockPanel>
 
 					<Grid Margin="0 12 0 0">
-						<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Width="450" x:Name="DragAndDropInfoTextTextBlock"
+						<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="450" Margin="12 0" x:Name="DragAndDropInfoTextTextBlock"
 							TextAlignment="Center" TextWrapping="Wrap" FontSize="16" Panel.ZIndex="1"
 							Visibility="{Binding ShowHelpText, Converter={StaticResource TrueToVisibleConverter}}"
 							Text="{loc:Tr CloudView_DropItemsHereOrDouble}"
@@ -78,7 +80,7 @@
 							dragdrop:DragDrop.UseDefaultDragAdorner="True"
 							dragdrop:DragDrop.DefaultDragAdornerOpacity="0.5"
 							dragdrop:DragDrop.UseDefaultEffectDataTemplate="False"/>
-						<DataGrid x:Name="CloudItemDataGrid" Height="275" FontSize="12"
+						<DataGrid x:Name="CloudItemDataGrid" Height="220" FontSize="12"
 							MouseLeave="CloudItemDataGrid_MouseLeave" SelectionMode="Single"
 							SelectedIndex="{Binding SelectedCloudEntryIndex}" ItemsSource="{Binding CloudEntries}"
 							CanUserSortColumns="False" CanUserAddRows="False" AutoGenerateColumns="False" PreviewKeyDown="CloudItemDataGrid_PreviewKeyDown"
@@ -192,7 +194,7 @@
 		</StackPanel>
 
 		<!--Process list options card-->
-		<Border Style="{StaticResource SectionCard}" Grid.Column="2" Width="400" Margin="24 0 0 0" Padding="16 12 16 16" VerticalAlignment="Top">
+		<Border Style="{StaticResource SectionCard}" Grid.Column="2" Padding="16 12 16 16" VerticalAlignment="Top">
 			<StackPanel>
 				<DockPanel LastChildFill="False" Height="26">
 					<materialDesign:PackIcon Kind="PlaylistEdit" Width="20" Height="20" VerticalAlignment="Center"
@@ -220,8 +222,9 @@
 					</Expander>
 				</Border>
 
-				<StackPanel Margin="4 16 0 4" Orientation="Horizontal">
-					<CheckBox IsChecked="{Binding ShareProcessListEntries}" ToolTipService.ShowDuration="25000">
+				<!--Both options side by side where they fit, else one below the other.-->
+				<WrapPanel Margin="4 16 0 0" Orientation="Horizontal">
+					<CheckBox Margin="0 0 24 4" IsChecked="{Binding ShareProcessListEntries}" ToolTipService.ShowDuration="25000">
 						<CheckBox.ToolTip>
 							<ToolTip StaysOpen="True" MaxWidth="275">
 								<TextBlock Text="{loc:Tr CloudView_AnyNewGameNameOr}" TextWrapping="Wrap"/>
@@ -230,7 +233,7 @@
 						<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow" Text="{loc:Tr CloudView_ShareNewEntries}"
 							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 					</CheckBox>
-					<CheckBox Margin="24 0 0 0" IsChecked="{Binding AutoUpdateProcessList}" ToolTipService.ShowDuration="25000">
+					<CheckBox Margin="0 0 0 4" IsChecked="{Binding AutoUpdateProcessList}" ToolTipService.ShowDuration="25000">
 						<CheckBox.ToolTip>
 							<ToolTip StaysOpen="True" MaxWidth="275">
 								<TextBlock TextWrapping="Wrap"
@@ -240,8 +243,9 @@
 						<TextBlock Padding="5 0 0 0" TextWrapping="WrapWithOverflow" Text="{loc:Tr CloudView_AutoUpdateList}"
 							Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
 					</CheckBox>
-				</StackPanel>
+				</WrapPanel>
 			</StackPanel>
 		</Border>
 	</Grid>
+	</ScrollViewer>
 </UserControl>

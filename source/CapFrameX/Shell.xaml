@@ -10,12 +10,15 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
 		mc:Ignorable="d"
         Title="{loc:Tr Shell_CapFrameX}"
-        Height="768" Width="1488" MinHeight="768" MinWidth="1488" Icon="Icons/cx_icon_BUC.ico"
+        Height="768" Width="1488" MinHeight="600" MinWidth="1224" Icon="Icons/cx_icon_BUC.ico"
         Background="{DynamicResource MaterialDesign.Brush.Background}"
         FontFamily="{materialDesign:MaterialDesignFont}">
     <Window.Resources>
         <ResourceDictionary>
-            <converter:AddValueConverter x:Key="AddValueConverter" Offset="-1088"/>
+            <!-- The left column may grow until the right one reaches its MinWidth (800), the
+                 splitter (5) and the window frame (16) included. The minimum window size fits the
+                 work area of a 1920x1080 display at 150 % scaling (1280x672). -->
+            <converter:AddValueConverter x:Key="AddValueConverter" Offset="-821"/>
         </ResourceDictionary>
     </Window.Resources>
     <Grid>

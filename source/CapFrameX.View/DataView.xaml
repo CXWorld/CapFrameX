@@ -36,10 +36,12 @@
     <Grid Margin="0 6 0 0">
         <!--Analysis main grid-->
         <Grid>
+            <!--The title keeps 8 to the tab headers below it. The toolbar row follows its content:
+                one line, whatever does not fit is in the toolbar's overflow menu.-->
             <Grid.RowDefinitions>
-                <RowDefinition Height="35"/>
+                <RowDefinition Height="40"/>
                 <RowDefinition Height="1*"/>
-                <RowDefinition Height="65"/>
+                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="1*"/>
@@ -47,18 +49,20 @@
             </Grid.ColumnDefinitions>
             <!--Chart, range slider and statistics grid-->
             <Grid Grid.Row="0">
-                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" FontWeight="Bold" FontSize="18" Text="{Binding CurrentGameName}" 
+                <TextBlock HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 8" FontWeight="Bold" FontSize="18" Text="{Binding CurrentGameName}" 
                        Visibility="{Binding IsChecked, Converter={StaticResource TrueToCollapsedConverter}, ElementName=ShowCustomTitleToggleButton}"
 					   Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
-                <TextBox HorizontalAlignment="Center" VerticalAlignment="Bottom" Visibility="{Binding IsChecked, Converter={StaticResource TrueToVisibleConverter}, ElementName=ShowCustomTitleToggleButton}"
+                <TextBox HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0 0 0 6" Visibility="{Binding IsChecked, Converter={StaticResource TrueToVisibleConverter}, ElementName=ShowCustomTitleToggleButton}"
                                  Text="{loc:Tr DataView_TypeYourTitleHere}"  Height="30" MinWidth="50"                                
                                  FontWeight="Bold" FontSize="18" PreviewKeyDown="CustomTitle_PreviewKeyDown"
                                  Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"/>
             </Grid>
             <Grid Grid.Row="1">
+                <!--Both minimums together fit the height of a restored window at 1080p and 150 %
+                    (data region about 560). The lower row holds the stuttering pie (165).-->
                 <Grid.RowDefinitions>
-                    <RowDefinition x:Name="UpperRow" Height="4*" MinHeight="250"/>
-                    <RowDefinition Height="15"/>
+                    <RowDefinition x:Name="UpperRow" Height="4*" MinHeight="200"/>
+                    <RowDefinition Height="9"/>
                     <RowDefinition x:Name="LowerRow" Height="2*" MinHeight="210"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
@@ -263,7 +267,7 @@
                         <TabControl FocusVisualStyle="{x:Null}" x:Name="StatisticsTabControl" >
                             <TabItem Header="{loc:Tr DataView_Stuttering}">
                                 <Grid Margin="{StaticResource CxTabContentMargin}">
-                                    <lvc:PieChart HorizontalAlignment="Left" Margin="13 0 0 0" Width="180" Height="180" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
+                                    <lvc:PieChart HorizontalAlignment="Left" Margin="13 0 0 0" Width="165" Height="165" Hoverable="False" Series="{Binding StutteringStatisticCollection}" 
 								        LegendLocation="Left" DataClick="Chart_OnDataClick" DataTooltip="{x:Null}" StartingRotationAngle="0">
                                         <lvc:PieChart.ChartLegend>
                                             <lvc:DefaultLegend FontSize="14" FontWeight="Medium"/>
@@ -611,16 +615,15 @@
                 </Grid>
             </Grid>
 
-            <!--Toolbar grid-->
-            <Grid Grid.Row="2" Margin="5 5 5 5" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="1*" />
-                </Grid.ColumnDefinitions>
+            <!--Toolbar: always one line. What does not fit (the data region of 1080p at 150 % is about
+                860 wide, the items need about 950 in English and more in other languages) moves from the
+                end into the tool bar's overflow menu, and back once the window is wide enough.-->
+            <Border Grid.Row="2" Margin="5 5 5 5" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+            <ToolBar x:Name="AnalysisToolBar" ToolBarTray.IsLocked="True" Background="Transparent" Padding="0" Margin="0 2"
+                     controls:ToolBarOverflowPlacement.OpensUpward="True"
+                     Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
                 <!--Statistic parameters for FPS values-->
-                <StackPanel Grid.Column="0" Margin="15 8 0 8" Orientation="Horizontal" Visibility="{Binding UseFrametimeStatisticParameters, Converter={StaticResource TrueToCollapsedConverter}}">
+                <StackPanel Margin="15 6 0 6" Orientation="Horizontal" Visibility="{Binding UseFrametimeStatisticParameters, Converter={StaticResource TrueToCollapsedConverter}}">
                     <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_StatisticParameterSettings}"/></TextBlock>
                     <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000"
                                              Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
@@ -706,7 +709,7 @@
                     </materialDesign:PopupBox>
                 </StackPanel>
                 <!--Statistic parameters for Frametime values-->
-                <StackPanel Grid.Column="0" Margin="15 8 0 8" Orientation="Horizontal" Visibility="{Binding UseFrametimeStatisticParameters, Converter={StaticResource TrueToVisibleConverter}}">
+                <StackPanel Margin="15 6 0 6" Orientation="Horizontal" Visibility="{Binding UseFrametimeStatisticParameters, Converter={StaticResource TrueToVisibleConverter}}">
                     <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_StatisticParameterSettings2}"/></TextBlock>
                     <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000"
                                              Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
@@ -801,7 +804,7 @@
                         </materialDesign:Card>
                     </materialDesign:PopupBox>
                 </StackPanel>
-                <StackPanel Grid.Column="1" Margin="30 8 0 8" Orientation="Horizontal">
+                <StackPanel Margin="24 6 0 6" Orientation="Horizontal">
                     <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_AdditionalGraphs}"/></TextBlock>
                     <materialDesign:PopupBox StaysOpen="True" ToolTipService.ShowDuration="25000" IsEnabled= "{Binding AdditionalGraphsEnabled}"
                                              Foreground="{DynamicResource MaterialDesign.Brush.Foreground}">
@@ -890,28 +893,28 @@
                         </materialDesign:Card>
                     </materialDesign:PopupBox>
                 </StackPanel>
-                <StackPanel Grid.Column="3" HorizontalAlignment="Right" Orientation="Horizontal">
-                    <StackPanel Margin="10 0 0 0" VerticalAlignment="Center"  Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_ShowAggregation}"/></TextBlock>
-                        <ToggleButton VerticalAlignment="Center" Margin="10 0 0 0" IsChecked="{Binding ShowAggregationSeparators}"
+                <!--One item per switch, so the menu takes them one at a time.-->
+                <StackPanel Margin="24 6 0 6" VerticalAlignment="Center"  Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_ShowAggregation}"/></TextBlock>
+                    <ToggleButton VerticalAlignment="Center" Margin="10 0 0 0" IsChecked="{Binding ShowAggregationSeparators}"
 								  ToolTip="{loc:Tr DataView_ShowSeparatorLinesForThe}"/>
-                    </StackPanel>
-                    <StackPanel Margin="10 0 0 0" VerticalAlignment="Center"  Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_CustomTitle}"/></TextBlock>
-                        <ToggleButton x:Name="ShowCustomTitleToggleButton" VerticalAlignment="Center" Margin="10 0 0 0"
-								  ToolTip="{loc:Tr DataView_ShowCustomTitleEditBox}"/>
-                    </StackPanel>
-                    <StackPanel  Margin="10 0 0 0" VerticalAlignment="Center" Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_RemoveOutliers}"/></TextBlock>
-                        <ToggleButton Margin="10 0 0 0" VerticalAlignment="Center" IsChecked="{Binding RemoveOutliers}"/>
-                    </StackPanel>
-                    <StackPanel Margin="10 0 5 0" VerticalAlignment="Center" Orientation="Horizontal">
-                        <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_RangeSlider}"/></TextBlock>
-                        <ToggleButton x:Name="RangeSliderActiveToggleButton" VerticalAlignment="Center" Margin="10 0 0 0"
-									  IsChecked="{Binding IsRangeSliderActive}"/>
-                    </StackPanel>
                 </StackPanel>
-            </Grid>
+                <StackPanel Margin="24 6 0 6" VerticalAlignment="Center"  Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_CustomTitle}"/></TextBlock>
+                    <ToggleButton x:Name="ShowCustomTitleToggleButton" VerticalAlignment="Center" Margin="10 0 0 0"
+								  ToolTip="{loc:Tr DataView_ShowCustomTitleEditBox}"/>
+                </StackPanel>
+                <StackPanel  Margin="24 6 0 6" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_RemoveOutliers}"/></TextBlock>
+                    <ToggleButton Margin="10 0 0 0" VerticalAlignment="Center" IsChecked="{Binding RemoveOutliers}"/>
+                </StackPanel>
+                <StackPanel Margin="24 6 10 6" VerticalAlignment="Center" Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"><Run Text="{loc:Tr DataView_RangeSlider}"/></TextBlock>
+                    <ToggleButton x:Name="RangeSliderActiveToggleButton" VerticalAlignment="Center" Margin="10 0 0 0"
+									  IsChecked="{Binding IsRangeSliderActive}"/>
+                </StackPanel>
+            </ToolBar>
+            </Border>
             <!--System info expander-->
             <Expander Margin="0 -6 0 0" Grid.Row="0" Grid.RowSpan="3" Grid.Column="1"
                       Style="{StaticResource CxRailExpander}" Header="{loc:Tr DataView_SYSTEMINFO}"

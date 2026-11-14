@@ -70,10 +70,12 @@
 	<Grid x:Name="ComparisonAreaGrid">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="1*"/>
-			<RowDefinition Height="60"/>
+			<RowDefinition Height="Auto" MinHeight="50"/>
 		</Grid.RowDefinitions>
+		<!--The chart column keeps room for the comparison list in the data region of 1080p at
+		    150 % (about 875 wide); the toolbar below wraps where its switches do not fit.-->
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="1*" MinWidth="685"></ColumnDefinition>
+			<ColumnDefinition Width="1*" MinWidth="520"></ColumnDefinition>
 			<ColumnDefinition Width="270"></ColumnDefinition>
 		</Grid.ColumnDefinitions>
 		<materialDesign:DialogHost Margin="5 10 0 5"
@@ -91,7 +93,7 @@
                             FontSize="18" PreviewKeyDown="CustomTitle_PreviewKeyDown" />
 
 						<!--Second bar chart with no values just to display the legend of the main bar chart without being inside the scrollviewer-->
-						<lvc:CartesianChart DockPanel.Dock="Top" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Center" Width="600" MaxWidth="1000"
+						<lvc:CartesianChart DockPanel.Dock="Top" Grid.Row="0" VerticalAlignment="Top" HorizontalAlignment="Stretch" MaxWidth="600"
 							Height="{Binding ElementName=ComparisonBarChartLegend, Path=ActualHeight}" MinHeight="50"
 							Margin="0 5 0 0" FontSize="14"
                             Series="{Binding ComparisonRowChartSeriesCollectionLegend}"
@@ -410,27 +412,17 @@
 				</TabItem>
 			</TabControl>
 		</materialDesign:DialogHost>
-		<!-- Toolbar-->
-		<Grid Grid.Row="1" Grid.Column="0" Margin="5 0 0 5" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
-			<Grid.ColumnDefinitions>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="Auto"></ColumnDefinition>
-				<ColumnDefinition Width="1*"></ColumnDefinition>
-			</Grid.ColumnDefinitions>
+		<!-- Toolbar: one line where it fits, else it wraps instead of cutting off its last switches-->
+		<Border Grid.Row="1" Grid.Column="0" Margin="5 0 0 5" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+		<WrapPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 3">
 
-			<StackPanel Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10 10 5 0" Orientation="Horizontal">
+			<StackPanel VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10 5 5 5" Orientation="Horizontal">
 				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr ComparisonView_CustomTitle}"/>
 				<ToggleButton x:Name="ShowCustomTitleToggleButton" Margin="10 0 0 0"
 				    ToolTip="{loc:Tr ComparisonView_ShowCustomTitleEditBox}" IsChecked="{Binding ShowCustomTitle}"/>
 			</StackPanel>
 
-			<StackPanel Grid.Column="1" Margin="10 10 5 0" Orientation="Horizontal"
+			<StackPanel Margin="10 5 5 5" Orientation="Horizontal"
                 ToolTip="{loc:Tr ComparisonView_SelectUpTo2Labels}" IsEnabled="{Binding MetricAndLabelOptionsEnabled}">
 				<TextBlock Margin="0 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr ComparisonView_Labels}"/>
 				<materialDesign:PopupBox Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
@@ -468,7 +460,7 @@
 				</materialDesign:PopupBox>
 			</StackPanel>
 
-			<StackPanel Grid.Column="2" Margin="10 10 5 0" Orientation="Horizontal" Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
+			<StackPanel Margin="10 5 5 5" Orientation="Horizontal" Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}"
 				ToolTip="{loc:Tr ComparisonView_SelectMetricsToBeShown}" IsEnabled="{Binding MetricAndLabelOptionsEnabled}">
 				<TextBlock Margin="0 0 0 0" VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr ComparisonView_Metrics}"/>
 				<materialDesign:PopupBox Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
@@ -550,14 +542,14 @@
 				</materialDesign:PopupBox>
 			</StackPanel>
 
-			<StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10 10 5 0" Orientation="Horizontal"
+			<StackPanel VerticalAlignment="Center" HorizontalAlignment="Right" Margin="10 5 5 5" Orientation="Horizontal"
                         Visibility="{Binding IsLineChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
 				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr ComparisonView_Legend}"/>
 				<ToggleButton Name="ContextLegendActiveToggleButton" Margin="10 0 0 0"
 					  ToolTip="{loc:Tr ComparisonView_ShowSelectedLabelsAsChart}" IsChecked="{Binding IsContextLegendActive}"/>
 			</StackPanel>
 
-			<StackPanel Grid.Column="4" Margin="10 10 5 0" VerticalAlignment="Center" Orientation="Horizontal">
+			<StackPanel Margin="10 5 5 5" VerticalAlignment="Center" Orientation="Horizontal">
 				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr ComparisonView_RangeSlider}"/>
 				<ToggleButton Name="RangeSliderActiveToggleButton" Margin="10 0 0 0"
 							  IsChecked="{Binding IsRangeSliderActive}"/>
@@ -576,26 +568,7 @@
 				</StackPanel.Style>
 			</StackPanel>
 
-			<StackPanel Grid.Column="5" Margin="10 10 5 0" VerticalAlignment="Center" Orientation="Horizontal">
-				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr ComparisonView_Grouping}"/>
-				<ToggleButton Margin="10 0 0 0"
-					ToolTip="{loc:Tr ComparisonView_SortEntriesByGameFirst}" IsChecked="{Binding UseComparisonGrouping}"/>
-				<StackPanel.Style>
-					<Style TargetType="StackPanel">
-						<Setter Property="Visibility" Value="Visible"/>
-						<Style.Triggers>
-							<DataTrigger Binding="{Binding IsLineChartTabActive}" Value="True">
-								<Setter Property="Visibility" Value="Collapsed"/>
-							</DataTrigger>
-							<DataTrigger Binding="{Binding IsDistributionTabActive}" Value="True">
-								<Setter Property="Visibility" Value="Collapsed"/>
-							</DataTrigger>
-						</Style.Triggers>
-					</Style>
-				</StackPanel.Style>
-			</StackPanel>
-
-			<StackPanel Grid.Column="4" VerticalAlignment="Center" Margin="10 10 5 0" Orientation="Horizontal">
+			<StackPanel VerticalAlignment="Center" Margin="10 5 5 5" Orientation="Horizontal">
 				<ComboBox Width="Auto" Height="40" materialDesign:HintAssist.Hint="{loc:Tr ComparisonView_SortMethod}" materialDesign:HintAssist.HintOpacity=".8" materialDesign:HintAssist.IsFloating="True"
 					ItemsSource="{Binding SortMetricItemsSource}" DisplayMemberPath="DisplayName" SelectedValuePath="Id" SelectedValue="{Binding SelectedSortMetric}" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"
 					Visibility="{Binding IsBarChartTabActive, Converter={StaticResource TrueToVisibleConverter}}">
@@ -629,7 +602,26 @@
 				</StackPanel.Style>
 			</StackPanel>
 
-            <StackPanel Grid.Column="6" Margin="10 10 5 0" Orientation="Horizontal">
+			<StackPanel Margin="10 5 5 5" VerticalAlignment="Center" Orientation="Horizontal">
+				<TextBlock VerticalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr ComparisonView_Grouping}"/>
+				<ToggleButton Margin="10 0 0 0"
+					ToolTip="{loc:Tr ComparisonView_SortEntriesByGameFirst}" IsChecked="{Binding UseComparisonGrouping}"/>
+				<StackPanel.Style>
+					<Style TargetType="StackPanel">
+						<Setter Property="Visibility" Value="Visible"/>
+						<Style.Triggers>
+							<DataTrigger Binding="{Binding IsLineChartTabActive}" Value="True">
+								<Setter Property="Visibility" Value="Collapsed"/>
+							</DataTrigger>
+							<DataTrigger Binding="{Binding IsDistributionTabActive}" Value="True">
+								<Setter Property="Visibility" Value="Collapsed"/>
+							</DataTrigger>
+						</Style.Triggers>
+					</Style>
+				</StackPanel.Style>
+			</StackPanel>
+
+            <StackPanel Margin="10 5 5 5" Orientation="Horizontal">
                 <TextBlock VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" Text="{loc:Tr ComparisonView_FurtherSettings}"/>
                 <materialDesign:PopupBox Foreground="{DynamicResource MaterialDesign.Brush.Foreground}" StaysOpen="True" ToolTipService.ShowDuration="25000" PlacementMode="TopAndAlignCentres">
                     <materialDesign:Card Width="Auto" Margin="0 0 0 -10">
@@ -710,7 +702,7 @@
                     </Style>
                 </StackPanel.Style>
             </StackPanel>
-            <TextBlock Grid.Column="8" Margin="10 10 10 0"
+            <TextBlock Margin="10 5 10 5" MaxWidth="320"
                        HorizontalAlignment="Right" VerticalAlignment="Center"
                        Text="{Binding ComparisonMetricSourceDescription}"
                        TextTrimming="CharacterEllipsis"
@@ -726,7 +718,8 @@
                     </Style>
                 </TextBlock.Style>
             </TextBlock>
-        </Grid>
+        </WrapPanel>
+        </Border>
 		<!-- Copmparison List -->
 		<StackPanel Margin="5 10 5 5" Grid.Column="1" Grid.RowSpan="2" Orientation="Vertical">
 			<TextBox IsReadOnly="True" Foreground="{DynamicResource MaterialDesign.Brush.Foreground}"

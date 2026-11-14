@@ -45,7 +45,8 @@
 					<Grid.RowDefinitions>
 						<RowDefinition Height="1*"/>
 						<RowDefinition Height="1*"/>
-						<RowDefinition Height="50"/>
+						<!--Grows when the status bar below the charts wraps into two lines.-->
+						<RowDefinition Height="Auto" MinHeight="50"/>
 					</Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="230"/>
@@ -228,7 +229,10 @@
 					</Button>
 					<Grid Grid.Row="2" Grid.Column="1" Margin="0 0 0 2" Background="Transparent">
 						<Border Style="{StaticResource SectionCard}" />
-						<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20 0 0 0">
+						<!--Between the metric and option columns the bar is only about 400 wide at 1080p and
+						    150 %: the status wraps below the controls instead of being drawn over them.-->
+						<WrapPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20 4 10 4">
+						<StackPanel Orientation="Horizontal" Margin="0 5 24 5">
 							<TextBlock Text="{loc:Tr PmdView_StartStopPMD}" FontSize="14" VerticalAlignment="Center" Margin="0 0 0 0"/>
 							<ToggleButton Margin="10 0 0 0" VerticalAlignment="Center" IsChecked="{Binding PoweneticsViewModel.UsePmdService}"
                               ToolTipService.ShowDuration="25000">
@@ -255,11 +259,12 @@
 								</ComboBox.ToolTip>
 							</ComboBox>
 						</StackPanel>
-						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 20 0">
+						<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 5 0 5">
 							<TextBlock VerticalAlignment="Center" FontSize="14" Text="{loc:Tr PmdView_PMDServiceStatus}"/>
 							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{loc:LanguageBinding {Binding PoweneticsViewModel.PmdCaptureStatus, Converter={StaticResource EnumDescriptionConverter}}}"
 								FontWeight="Bold" FontSize="14" Foreground="{Binding PoweneticsViewModel.PmdCaptureStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
 						</StackPanel>
+						</WrapPanel>
 					</Grid>
 					<!--PMD Options (right side menu)-->
 					<Grid Grid.RowSpan="3" Grid.Column="2" Margin="5 0 0 2" Background="Transparent">
@@ -346,7 +351,8 @@
 					<Grid.RowDefinitions>
 						<RowDefinition Height="1*"/>
 						<RowDefinition Height="1*"/>
-						<RowDefinition Height="50"/>
+						<!--Grows when the status bar below the charts wraps into two lines.-->
+						<RowDefinition Height="Auto" MinHeight="50"/>
 					</Grid.RowDefinitions>
 					<Grid.ColumnDefinitions>
 						<ColumnDefinition Width="230"/>
@@ -484,7 +490,8 @@
 					</Button>
 					<Grid Grid.Row="2" Grid.Column="1" Margin="0 0 0 2" Background="Transparent">
 						<Border Style="{StaticResource SectionCard}" />
-						<StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="20 0 0 0">
+						<WrapPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="20 4 10 4">
+						<StackPanel Orientation="Horizontal" Margin="0 5 24 5">
 							<TextBlock Text="{loc:Tr PmdView_StartStopPMD2}" FontSize="14" VerticalAlignment="Center" Margin="0 0 0 0"/>
 							<ToggleButton Margin="10 0 0 0" VerticalAlignment="Center" IsChecked="{Binding BenchlabViewModel.UsePmdService}"
 								ToolTipService.ShowDuration="25000">
@@ -496,11 +503,12 @@
 								</ToggleButton.ToolTip>
 							</ToggleButton>
 						</StackPanel>
-						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0 0 20 0">
+						<StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0 5 0 5">
 							<TextBlock VerticalAlignment="Center" FontSize="14" Text="{loc:Tr PmdView_PMDServiceStatus2}"/>
 							<TextBlock Margin="10 0 0 0" Width="Auto" VerticalAlignment="Center" Text="{loc:LanguageBinding {Binding BenchlabViewModel.PmdServiceStatus, Converter={StaticResource EnumDescriptionConverter}}}"
 								FontWeight="Bold" FontSize="14" Foreground="{Binding BenchlabViewModel.PmdServiceStatus, Converter={StaticResource PmdStatusColorConverter}}"/>
 						</StackPanel>
+						</WrapPanel>
 					</Grid>
 					<!--PMD Options (right side menu)-->
 					<Grid Grid.RowSpan="3" Grid.Column="2" Margin="5 0 0 2" Background="Transparent">
@@ -664,7 +672,9 @@
 							<ComboBoxItem Tag="FPS" Content="FPS"/>
 						</ComboBox>
 					</Grid>
-					<Grid Grid.RowSpan="3" Grid.Column="1" Margin="5 0 0 2" Background="Transparent">
+					<!--Graph selection, averages and efficiency are taller than the charts at 1080p and 150 %.-->
+					<ScrollViewer Grid.RowSpan="3" Grid.Column="1" Margin="5 0 0 2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+					<Grid Background="Transparent">
 						<Grid.RowDefinitions>
 							<RowDefinition Height="180"/>
 							<RowDefinition Height="5"/>
@@ -749,6 +759,7 @@
 							</Grid>
 						</Border>
 					</Grid>
+					</ScrollViewer>
 				</Grid>
 			</TabItem>
 		</TabControl>

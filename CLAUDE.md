@@ -1230,6 +1230,34 @@ once the localization removed the fixed `TabItem` widths. A header is as wide as
 it is cut off. **Do not give a `TabItem` a `Width` or `MinWidth` to make a translation fit.** Tab
 content starts at the left edge of the headers.
 
+## Smallest supported display: 1920x1080 at 150 %
+
+Every page has to work in the work area of a 1080p display at 150 % scaling: 1280x672 DIP. With
+the record list at its default 400, the data region is about 875x570 in a maximized window and
+860x560 in a restored one. Until 2026-11-14 the shell's minimum of 1488x768 laid every page out
+wider and taller than that screen, cutting off the right edge (settings cog, columns) and the
+status bar. The shell's minimum is now 1224x600 (record list 400 + splitter + data region 800 +
+frame), `FitRestoreBoundsToWorkArea` (`Shell.xaml.cs`) shrinks a saved or default window size to
+the work area of its monitor, and the record list may grow until the data region reaches 800
+(`AddValueConverter` offset -821). The pages follow these rules:
+
+- Fixed widths only where their sum fits 860 (Capture: 232 + 232 + 320); otherwise star columns
+  with the former width as `MaxWidth`, centred by the panel's `MaxWidth` (Sensor, Cloud).
+- The analysis toolbar is a WPF `ToolBar` (`AnalysisToolBar`, one item per switch): it stays one
+  line, and whatever does not fit moves from the end into its "⋮" overflow menu, which opens upwards
+  (`ToolBarOverflowPlacement.OpensUpward`, `CapFrameX.View/Controls`), since below it would cover the
+  status bar and the taskbar. The comparison toolbar and the PMD status bars are `WrapPanel`s in
+  `Auto` rows: they take a second line instead of cutting off their last items, in every language.
+- A row of tiles wraps into an even layout through `WidthToColumnsConverter`
+  (`CapFrameX.MVVM/Converter`), bound to the grid's own `ActualWidth` (Info: GPU tiles 4 → 2x2).
+- Pages taller than 560 scroll (Info, Capture, Cloud, PMD Analysis panel, Overlay cards, settings
+  popup pages including Help); the overlay designer window keeps its editor at 1104x760 inside a
+  scroll viewer (`OverlayDesignerControl.xaml`), since the OSD editor's own minimum is 1080x560.
+- The page buttons of the colour bar are as wide as their labels.
+
+Check a layout change at this size, maximized and restored, before it ships. Tests:
+`WidthToColumnsConverterTest`, `ToolBarOverflowPlacementTest`.
+
 ## Overlay editor section headers
 
 MDIX indents every expander header by 24 px (`ExpanderAssist.HorizontalHeaderPadding`, default
