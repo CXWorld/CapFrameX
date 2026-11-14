@@ -880,8 +880,43 @@ namespace CapFrameX.Test.Integration
             };
 
         [TestMethod]
-        public async Task NarrowLease_ComputesOnlyTheOnlineMetricsItShows()
+        public async Task NarrowLease_SnapshotHoldsOnlyTheSourcesItReads()
         {
+            // Every snapshot held the whole catalog, three dictionaries of it per sensor poll,
+            // whatever the design read. A memory total still adds up both of its readings.
+            var temperature = Sensor("/cpu/temperature/0", "CPU Package", "Cpu", "Temperature", "CPU");
+            var load = Sensor("/cpu/load/0", "CPU Total", "Cpu", "Load", "CPU");
+            var used = Sensor("/ram/data/0", "RAM Used", "Memory", "Data", "RAM");
+            var free = Sensor("/ram/data/1", "RAM Available", "Memory", "Data", "RAM");
+            using var fixture = new Fixture(new[] { temperature, load, used, free });
+            var sources = await fixture.Service.GetSourcesAsync();
+            string temperatureId = sources.Single(source => source.Identifier == temperature.Identifier).Id;
+            string loadId = sources.Single(source => source.Identifier == load.Identifier).Id;
+            string totalId = sources.Single(source => source.SemanticKey == "ramTotal").Id;
+            using var lease = fixture.Service.AcquirePreview(() => new[] { temperatureId, totalId, "cpuLoad" });
+
+            var snapshot = await fixture.Next(new Dictionary<ISensorEntry, float>
+            {
+                [temperature] = 61, [load] = 40, [used] = 20, [free] = 12
+            });
+
+            Assert.AreEqual(61d, snapshot.Values[temperatureId]);
+            Assert.AreEqual(32d, snapshot.Values[totalId]);
+            Assert.IsFalse(snapshot.Values.ContainsKey(loadId), "not read by the lease");
+            Assert.IsFalse(snapshot.Values.ContainsKey("cpuLoad"), "a semantic key is no source");
+            Assert.IsTrue(snapshot.Values.Count <= 4, $"{snapshot.Values.Count} values: the read ones and the total's parts");
+
+            using var full = fixture.Service.AcquirePreview();
+            var everything = await fixture.Next(new Dictionary<ISensorEntry, float>
+            {
+                [temperature] = 61, [load] = 40, [used] = 20, [free] = 12
+            });
+            Assert.AreEqual(40d, everything.Values[loadId], "a full lease reads the whole catalog");
+            Assert.AreEqual(sources.Count, everything.Values.Count(pair => sources.Any(source => source.Id == pair.Key)));
+        }
+
+        [TestMethod]
+        public async Task NarrowLease_ComputesOnlyTheOnlineMetricsItShows()        {
             // Regression: every snapshot computed all 14 online metrics, each copying the whole
             // metric window, whatever the tile design showed.
             var metrics = OnlineMetrics();
@@ -892,7 +927,7 @@ namespace CapFrameX.Test.Integration
             var snapshot = await fixture.Next(new Dictionary<ISensorEntry, float>());
 
             Assert.AreEqual(144d, snapshot.Values["metric/OnlineAverage"]);
-            Assert.IsNull(snapshot.Values["metric/OnlineP1"]);
+            Assert.IsFalse(snapshot.Values.ContainsKey("metric/OnlineP1"), "a narrow snapshot holds what its leases read");
             metrics.Verify(m => m.GetOnlineFpsMetricValue(EMetric.Average), Times.Once);
             metrics.Verify(m => m.GetOnlineFpsMetricValue(It.Is<EMetric>(metric => metric != EMetric.Average)), Times.Never);
             metrics.Verify(m => m.GetOnlineFrameTimeMetricValue(It.IsAny<EMetric>()), Times.Never);
@@ -951,8 +986,8 @@ namespace CapFrameX.Test.Integration
             var after = await fixture.Next(new Dictionary<ISensorEntry, float>());
 
             Assert.AreEqual(144d, before.Values["metric/OnlineAverage"]);
-            Assert.IsNull(before.Values["metric/OnlineP1"]);
-            Assert.IsNull(after.Values["metric/OnlineAverage"]);
+            Assert.IsFalse(before.Values.ContainsKey("metric/OnlineP1"));
+            Assert.IsFalse(after.Values.ContainsKey("metric/OnlineAverage"));
             Assert.AreEqual(90d, after.Values["metric/OnlineP1"]);
         }
 

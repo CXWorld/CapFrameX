@@ -59,6 +59,12 @@ namespace CapFrameX.OSD.Integration
         private bool _telemetryFailureReported;
         private ulong _designRevision, _metricsRevision;
         private DateTime _targetChangedUtc;
+        // The inputs of the metrics JSON in _current (UpdateSnapshot).
+        private OverlayRuntimeDesign _metricsInputDesign;
+        private OverlayTelemetrySnapshot _metricsInputTelemetry;
+        private IReadOnlyDictionary<string, string> _metricsInputAliases;
+        private int _metricsInputState;
+        private bool _metricsInputsValid;
 
         public OverlayDesignRuntimePublisher(OverlayDesignService designs, IOverlayTelemetryService telemetry,
             IAppConfiguration configuration, IObservable<int> processIdStream,
@@ -286,7 +292,30 @@ namespace CapFrameX.OSD.Integration
             design = _boundDesign;
             bool changed = _current.Design?.ProfileId != design?.ProfileId || _current.Design?.TemplateJson != design?.TemplateJson;
             if (changed) ++_designRevision;
-            string metrics = design?.CreateMetrics(GetPublishableTelemetry(), _aliases, _averages, DateTime.UtcNow) ?? "{}";
+            DateTime now = DateTime.UtcNow;
+            int telemetryState = GetPublishableTelemetryState(now);
+            string metrics;
+            // The 500 ms heartbeat and every change rebuilt the metrics JSON (a JObject and a
+            // string) from the same inputs. Only averaged keys move with time alone; anything else
+            // depends on the bound design, the latest snapshot, the aliases and what
+            // GetPublishableTelemetry keeps of the snapshot.
+            if (!changed && _averages.IsEmpty && _metricsInputsValid
+                && ReferenceEquals(_metricsInputDesign, design)
+                && ReferenceEquals(_metricsInputTelemetry, _latestTelemetry)
+                && ReferenceEquals(_metricsInputAliases, _aliases)
+                && _metricsInputState == telemetryState)
+            {
+                metrics = _current.MetricsJson;
+            }
+            else
+            {
+                metrics = design?.CreateMetrics(GetPublishableTelemetry(telemetryState), _aliases, _averages, now) ?? "{}";
+                _metricsInputDesign = design;
+                _metricsInputTelemetry = _latestTelemetry;
+                _metricsInputAliases = _aliases;
+                _metricsInputState = telemetryState;
+                _metricsInputsValid = true;
+            }
             if (changed || metrics != _current.MetricsJson || _metricsRevision == 0) ++_metricsRevision;
             _current = new OverlayDesignRuntimeSnapshot(design, metrics, _designRevision, _metricsRevision);
         }
@@ -310,21 +339,31 @@ namespace CapFrameX.OSD.Integration
             return ids;
         }
 
-        private OverlayTelemetrySnapshot GetPublishableTelemetry()
+        private const int TelemetryNone = 0, TelemetryWhole = 1, TelemetryHardwareOnly = 2,
+            TelemetryProcessIndependent = 3;
+
+        // What GetPublishableTelemetry keeps of the latest snapshot at this moment.
+        private int GetPublishableTelemetryState(DateTime now)
         {
             var snapshot = _latestTelemetry;
-            var now = DateTime.UtcNow;
-            if (snapshot == null || snapshot.TimestampUtc > now.AddSeconds(1)) return null;
+            if (snapshot == null || snapshot.TimestampUtc > now.AddSeconds(1)) return TelemetryNone;
             bool expired = now - snapshot.TimestampUtc > TimeSpan.FromSeconds(3);
-            if (_hasProcesses && snapshot.TimestampUtc >= _targetChangedUtc
-                && !expired) return snapshot;
+            if (_hasProcesses && snapshot.TimestampUtc >= _targetChangedUtc && !expired) return TelemetryWhole;
+            return expired ? TelemetryHardwareOnly : TelemetryProcessIndependent;
+        }
+
+        private OverlayTelemetrySnapshot GetPublishableTelemetry(int state)
+        {
+            var snapshot = _latestTelemetry;
+            if (state == TelemetryNone) return null;
+            if (state == TelemetryWhole) return snapshot;
 
             // A slow/background hardware poll leaves its last completed sample valid until
             // the next poll, just as in SensorService. Fresh machine-wide readings (PMD,
             // battery, system information) also survive target changes, while game metrics
             // cannot cross targets. Never merge samples: an explicitly missing/NaN
             // reading in the next snapshot must still replace the previous sensor value.
-            var retainedSources = expired ? _hardwareSourceIds : _processIndependentSourceIds;
+            var retainedSources = state == TelemetryHardwareOnly ? _hardwareSourceIds : _processIndependentSourceIds;
             var values = snapshot.Values.Where(value => retainedSources.Contains(value.Key))
                 .ToDictionary(value => value.Key, value => value.Value, StringComparer.Ordinal);
             var textValues = snapshot.MetricValues.Where(value => value.Value is string && retainedSources.Contains(value.Key))

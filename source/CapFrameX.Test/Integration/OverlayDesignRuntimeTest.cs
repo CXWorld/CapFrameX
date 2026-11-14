@@ -321,6 +321,31 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void HeartbeatsWithoutNewTelemetryReuseTheMetricsJson()
+        {
+            // Every 500 ms heartbeat rebuilt the metrics JSON (a JObject and a string) from the
+            // same snapshot. It still publishes, the native reader checks the header's age.
+            var service = ActiveService();
+            _configuration.Object.IsOverlayActive = true;
+            _configuration.Object.EnableHookOverlay = true;
+            using var telemetry = new FakeTelemetry();
+            using var pids = new Subject<int>();
+            using var ticks = new Subject<long>();
+            var channels = new List<FakeChannel>();
+            using var publisher = Publisher(service, telemetry, pids, ticks, channels);
+            pids.OnNext(42);
+            telemetry.Emit(51);
+            string metrics = publisher.Current.MetricsJson;
+            int count = channels.Last().PublishCount;
+            for (int i = 0; i < 5; i++) ticks.OnNext(i);
+            Assert.AreEqual(count + 5, channels.Last().PublishCount, "every heartbeat still publishes");
+            Assert.IsTrue(ReferenceEquals(metrics, publisher.Current.MetricsJson), "the JSON was rebuilt for the same inputs");
+
+            telemetry.Emit(52);
+            Assert.AreEqual(52, (int)JObject.Parse(publisher.Current.MetricsJson)["cpuLoad"], "a new snapshot builds it again");
+        }
+
+        [TestMethod]
         public void BlockedTargetsAndClassicModeNeverOpenTheDesignChannel()
         {
             var service = ActiveService();

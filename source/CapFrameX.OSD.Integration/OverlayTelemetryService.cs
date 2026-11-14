@@ -481,7 +481,33 @@ namespace CapFrameX.OSD.Integration
             // Every online metric copies the whole metric window, and the CapFrameX values send a
             // ping and query RTSS and the displays. Compute only what some lease shows.
             var required = GetRequiredSourceIds();
-            var values = sources.ToDictionary(source => source.Id, source => (double?)null, StringComparer.Ordinal);
+            // A snapshot holds the sources some lease reads (each one, null while unavailable), or
+            // the whole catalog when a lease needs everything (the editors). It held the whole
+            // catalog for every design, three dictionaries of it per sensor poll. A derived source
+            // also needs what it is derived from: a memory total its two readings, a short
+            // hardware name the full one.
+            HashSet<string> included = required;
+            if (included != null)
+            {
+                void Include(string id)
+                {
+                    if (included.Contains(id)) return;
+                    if (ReferenceEquals(included, required)) included = new HashSet<string>(required, StringComparer.Ordinal);
+                    included.Add(id);
+                }
+                foreach (var source in sources)
+                    if (source.SumSourceIdA != null && required.Contains(source.Id))
+                    {
+                        Include(source.SumSourceIdA);
+                        Include(source.SumSourceIdB);
+                    }
+                if (required.Contains(MetricPrefix + GpuShortName)) Include(MetricPrefix + "CustomGPU");
+                if (required.Contains(MetricPrefix + CpuShortName)) Include(MetricPrefix + "CustomCPU");
+            }
+            var values = new Dictionary<string, double?>(included == null ? sources.Length : Math.Min(sources.Length, included.Count),
+                StringComparer.Ordinal);
+            foreach (var source in sources)
+                if (IsIncluded(source.Id)) values[source.Id] = null;
             var textValues = new Dictionary<string, object>(StringComparer.Ordinal);
             var runtimeValues = new Dictionary<string, float>(StringComparer.Ordinal);
             if (readings != null)
@@ -489,11 +515,13 @@ namespace CapFrameX.OSD.Integration
                     if (pair.Key?.Identifier != null) runtimeValues[pair.Key.Identifier] = pair.Value;
 
             foreach (var source in sources)
-                if (source.IsHardwareSensor && runtimeValues.TryGetValue(source.Identifier, out float value))
+                if (source.IsHardwareSensor && IsIncluded(source.Id)
+                    && runtimeValues.TryGetValue(source.Identifier, out float value))
                     values[source.Id] = Finite(value);
 
-            foreach (var source in sources.Where(source => source.SumSourceIdA != null))
-                if (values.TryGetValue(source.SumSourceIdA, out double? used) && used >= 0
+            foreach (var source in sources)
+                if (source.SumSourceIdA != null && IsIncluded(source.Id)
+                    && values.TryGetValue(source.SumSourceIdA, out double? used) && used >= 0
                     && values.TryGetValue(source.SumSourceIdB, out double? free) && free >= 0)
                     values[source.Id] = Finite(used.Value + free.Value);
 
@@ -550,7 +578,8 @@ namespace CapFrameX.OSD.Integration
                         .ToHashSet(StringComparer.Ordinal));
                 foreach (var source in sources.Where(s => !s.IsHardwareSensor))
                 {
-                    if (classicValues == null || !classicValues.TryGetValue(source.Identifier, out object raw)) continue;
+                    if (!IsIncluded(source.Id) || classicValues == null
+                        || !classicValues.TryGetValue(source.Identifier, out object raw)) continue;
                     if (source.IsText)
                     {
                         var text = NormalizeText(raw);
@@ -588,7 +617,10 @@ namespace CapFrameX.OSD.Integration
             }
             return new OverlayTelemetrySnapshot(timestamp, values, textValues);
 
-            void Set(string identifier, double value) => values["metric/" + identifier] = Finite(value);
+            void Set(string identifier, double value)
+            {
+                if (IsIncluded(MetricPrefix + identifier)) values[MetricPrefix + identifier] = Finite(value);
+            }
 
             void SetIfRequired(string identifier, Func<double> read)
             {
@@ -596,6 +628,8 @@ namespace CapFrameX.OSD.Integration
             }
 
             bool IsRequired(string sourceId) => required == null || required.Contains(sourceId);
+
+            bool IsIncluded(string sourceId) => included == null || included.Contains(sourceId);
 
             void SetShortName(string identifier, string fullIdentifier, Func<string, string> shorten)
             {
