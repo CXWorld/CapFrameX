@@ -75,6 +75,25 @@ namespace CapFrameX.PresentMonInterface
         // Reusable list buffers to avoid allocations during metric calculations
         private List<double> _reusableListBufferA;
         private List<double> _reusableListBufferB;
+
+        // One sorted copy of the realtime window serves the online FPS metrics of one overlay
+        // refresh (OnlineFpsWindow). Recomputed once rows arrived and FPS_WINDOW_REUSE_MS passed,
+        // or after a reset: the metrics of one refresh are asked for within a few milliseconds,
+        // while rows keep arriving at the game's frame rate.
+        private const long FPS_WINDOW_REUSE_MS = 100;
+        private readonly OnlineFpsWindow _frametimeWindow = new OnlineFpsWindow();
+        private readonly OnlineFpsWindow _displaytimeWindow = new OnlineFpsWindow();
+        private long _realtimeVersion; // _lockRealtimeMetric: changes with every row and reset
+        private long _realtimeEpoch;   // _lockRealtimeMetric: changes with every reset
+
+        // The rows of every presenting process arrive on the PresentMon reader thread. Only the
+        // target's go on to the metric thread, filtered by its PID column (no parsing), and only
+        // while a metric is shown: evaluated at most every REALTIME_DEMAND_CHECK_MS.
+        private const long REALTIME_DEMAND_CHECK_MS = 250;
+        private string _currentProcessIdText;
+        private bool _realtimeDemand;
+        private bool _realtimeDemandChecked;
+        private long _realtimeDemandCheckedAtMs;
         // The five-second path is protected by a different lock and therefore
         // must not share the realtime path's mutable scratch buffer.
         private List<double> _reusableListBuffer5Seconds;
@@ -205,8 +224,55 @@ namespace CapFrameX.PresentMonInterface
 
                         _currentProcess = msg.Process;
                         _currentProcessId = msg.ProcessId;
+                        Volatile.Write(ref _currentProcessIdText, msg.ProcessId > 0
+                            ? msg.ProcessId.ToString(CultureInfo.InvariantCulture) : null);
                     }
                 });
+        }
+
+        // PresentMon reader thread: whether a row belongs to the selected process, by its PID column
+        // as PresentMon writes it. UpdateOnlineMetrics checks name and PID again under the lock.
+        internal bool IsRowOfCurrentProcess(string[] lineSplit)
+        {
+            string pid = Volatile.Read(ref _currentProcessIdText);
+            return pid != null && lineSplit != null &&
+                lineSplit.Length > PresentMonCaptureService.ProcessID_INDEX &&
+                string.Equals(lineSplit[PresentMonCaptureService.ProcessID_INDEX], pid, StringComparison.Ordinal);
+        }
+
+        // Metric thread: EvaluateRealtimeMetrics looks up 15 entries; per row that was 15 lookups.
+        // The first row always evaluates (a timestamp sentinel such as long.MinValue overflows in
+        // the subtraction and never comes due).
+        internal bool RealtimeMetricsDemanded()
+        {
+            if (Volatile.Read(ref _telemetryConsumers) > 0) return true;
+            long now = Environment.TickCount64;
+            if (!_realtimeDemandChecked || now - _realtimeDemandCheckedAtMs >= REALTIME_DEMAND_CHECK_MS)
+            {
+                _realtimeDemand = EvaluateRealtimeMetrics();
+                _realtimeDemandCheckedAtMs = now;
+                _realtimeDemandChecked = true;
+            }
+            return _realtimeDemand;
+        }
+
+        // process.Replace(".exe", "") == name, without allocating a string per row.
+        internal static bool EqualsWithoutExe(string column, string name)
+        {
+            if (column == null || name == null) return false;
+            int c = 0, n = 0;
+            while (c < column.Length)
+            {
+                if (c + 4 <= column.Length && string.CompareOrdinal(column, c, ".exe", 0, 4) == 0)
+                {
+                    c += 4;
+                    continue;
+                }
+                if (n >= name.Length || column[c] != name[n]) return false;
+                ++c;
+                ++n;
+            }
+            return n == name.Length;
         }
 
         private void ConnectOnlineMetricDataStream()
@@ -219,8 +285,9 @@ namespace CapFrameX.PresentMonInterface
             _frameDataSubscription = _captureService
                 .FrameDataStream
                 .Skip(1)
+                .Where(IsRowOfCurrentProcess)
                 .ObserveOn(_frameDataScheduler)
-                .Where(x => EvaluateRealtimeMetrics())
+                .Where(x => RealtimeMetricsDemanded())
                 .Subscribe(UpdateOnlineMetrics);
 
             ConnectPmdDataStreams();
@@ -362,14 +429,15 @@ namespace CapFrameX.PresentMonInterface
             string process;
             try
             {
-                process = lineSplit[PresentMonCaptureService.ApplicationName_INDEX].Replace(".exe", "");
+                process = lineSplit[PresentMonCaptureService.ApplicationName_INDEX];
             }
             catch { return; }
 
             lock (_currentProcessLock)
             {
-                if (process != _currentProcess)
+                if (!EqualsWithoutExe(process, _currentProcess))
                     return;
+                process = _currentProcess;
             }
 
             if (!int.TryParse(lineSplit[PresentMonCaptureService.ProcessID_INDEX], out int processId))
@@ -479,13 +547,15 @@ namespace CapFrameX.PresentMonInterface
                         _displayedtimesRealtimeSeconds.Add(displayedTime);
                         _gpuActiveTimesRealtimeSeconds.Add(gpuActiveTime);
                         _cpuActiveTimesRealtimeSeconds.Add(cpuActiveTime);
+                        ++_realtimeVersion;
 
                         // Remove old entries that exceed the metric interval
-                        if (_measuretimesRealtimeSeconds.Any() &&
-                            startTime - _measuretimesRealtimeSeconds.PeekFirst() > MetricInterval)
+                        int metricInterval = MetricInterval;
+                        if (_measuretimesRealtimeSeconds.Count > 0 &&
+                            startTime - _measuretimesRealtimeSeconds.PeekFirst() > metricInterval)
                         {
                             while (_measuretimesRealtimeSeconds.Count > 0 &&
-                                startTime - _measuretimesRealtimeSeconds.PeekFirst() > MetricInterval)
+                                startTime - _measuretimesRealtimeSeconds.PeekFirst() > metricInterval)
                             {
                                 _measuretimesRealtimeSeconds.RemoveFirst();
                                 _frametimesRealtimeSeconds.RemoveFirst();
@@ -508,7 +578,7 @@ namespace CapFrameX.PresentMonInterface
                         _presentModes1Second.Add(presentMode);
 
                         // Remove old entries that exceed the 1 second interval
-                        if (_measuretimes1Second.Any() &&
+                        if (_measuretimes1Second.Count > 0 &&
                             startTime - _measuretimes1Second.PeekFirst() > 1.0)
                         {
                             while (_measuretimes1Second.Count > 0 &&
@@ -529,7 +599,7 @@ namespace CapFrameX.PresentMonInterface
                         _displaytimes5Seconds.Add(displayedTime);
 
                         // Remove old entries that exceed the 5 second interval
-                        if (_measuretimes5Seconds.Any() &&
+                        if (_measuretimes5Seconds.Count > 0 &&
                             startTime - _measuretimes5Seconds.PeekFirst() > FIVE_SECONDS_INTERVAL_LENGTH)
                         {
                             while (_measuretimes5Seconds.Count > 0 &&
@@ -549,7 +619,7 @@ namespace CapFrameX.PresentMonInterface
                         _animationError500Ms.Add(animationError);
 
                         // Remove old entries that exceed the 250ms interval
-                        if (_measuretimes500Ms.Any() &&
+                        if (_measuretimes500Ms.Count > 0 &&
                             startTime - _measuretimes500Ms.PeekFirst() > ANIMATION_ERROR_INTERVAL_LENGTH)
                         {
                             while (_measuretimes500Ms.Count > 0 &&
@@ -625,6 +695,8 @@ namespace CapFrameX.PresentMonInterface
             lock (_lockRealtimeMetric)
             {
                 _currentRuntime = null;
+                ++_realtimeVersion;
+                ++_realtimeEpoch;
                 int capacity = (int)(LIST_CAPACITY * MetricInterval / 20d);
 
                 _frametimesRealtimeSeconds = new CircularBuffer<double>(capacity);
@@ -674,6 +746,16 @@ namespace CapFrameX.PresentMonInterface
                 if (buffer == null || buffer.Count == 0)
                     return double.NaN;
 
+                if (OnlineFpsWindow.Supports(metric))
+                {
+                    var window = CurrentFpsWindow(useDisplayTimes);
+                    if (window.Count == 0 && useDisplayTimes)
+                        window = CurrentFpsWindow(false);
+                    // The provider rounds with the same setting (IFrametimeStatisticProviderOptions
+                    // is the application configuration).
+                    return window.Count == 0 ? double.NaN : window.Get(metric, _appConfiguration.FpsValuesRoundingDigits);
+                }
+
                 var samples = CopyValidTimings(buffer, _reusableListBufferA);
                 if (samples.Count == 0 && useDisplayTimes)
                     samples = CopyValidTimings(_frametimesRealtimeSeconds, _reusableListBufferA);
@@ -684,6 +766,23 @@ namespace CapFrameX.PresentMonInterface
                 return _frametimeStatisticProvider
                     .GetFpsMetricValue(samples, metric);
             }
+        }
+
+        // _lockRealtimeMetric held. The sorted window of one overlay refresh (OnlineFpsWindow).
+        private OnlineFpsWindow CurrentFpsWindow(bool displayTimes)
+        {
+            var window = displayTimes ? _displaytimeWindow : _frametimeWindow;
+            long now = Environment.TickCount64;
+            bool current = window.Epoch == _realtimeEpoch &&
+                (window.Version == _realtimeVersion || now - window.LoadedAtMs < FPS_WINDOW_REUSE_MS);
+            if (!current)
+            {
+                window.Load(displayTimes ? _displayedtimesRealtimeSeconds : _frametimesRealtimeSeconds);
+                window.Version = _realtimeVersion;
+                window.Epoch = _realtimeEpoch;
+                window.LoadedAtMs = now;
+            }
+            return window;
         }
 
         public double GetOnlineFrameTimeMetricValue(EMetric metric)
