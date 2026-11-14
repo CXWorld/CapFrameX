@@ -518,8 +518,9 @@ namespace CapFrameX.OSD.Integration
         {
             int anchor = _appConfiguration.OsdAnchor;
             // The native API consumes the raw EnumDisplayMonitors index, whereas the setting
-            // stores the stable Windows device name exposed in the UI.
-            int monitor = DisplayMonitorResolver.GetMonitorIndex(
+            // stores the stable Windows device name exposed in the UI. Once per OSD refresh, so
+            // the index is cached while the display layout stays the same.
+            int monitor = DisplayMonitorResolver.GetMonitorIndexCached(
                 _appConfiguration.HookFreeDisplayDeviceName);
             int marginX = _appConfiguration.OsdMarginX;
             int marginY = _appConfiguration.OsdMarginY;

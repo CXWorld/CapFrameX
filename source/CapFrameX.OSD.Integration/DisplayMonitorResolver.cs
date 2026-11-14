@@ -57,6 +57,80 @@ namespace CapFrameX.OSD.Integration
         [return: MarshalAs(UnmanagedType.Bool)]
         private static extern bool GetMonitorInfo(IntPtr monitor, ref MONITORINFOEX monitorInfo);
 
+        [DllImport("user32.dll")]
+        private static extern int GetSystemMetrics(int index);
+
+        private const int SM_XVIRTUALSCREEN = 76, SM_YVIRTUALSCREEN = 77, SM_CXVIRTUALSCREEN = 78,
+            SM_CYVIRTUALSCREEN = 79, SM_CMONITORS = 80;
+
+        /// <summary>How long <see cref="GetMonitorIndexCached"/> trusts an index whose display
+        /// layout signature did not change.</summary>
+        internal const long CacheLifetimeMs = 10_000;
+
+        private static readonly object CacheGate = new object();
+        private static readonly MonitorIndexCache Cache = new MonitorIndexCache(GetMonitorIndex,
+            GetLayoutSignature, () => Environment.TickCount64);
+
+        /// <summary>
+        /// <see cref="GetMonitorIndex"/> for every OSD refresh of the hook-free window, which
+        /// enumerated the displays once per refresh. The index is kept while the display count and
+        /// the virtual screen stay the same, for at most <see cref="CacheLifetimeMs"/>: a display
+        /// that is added, removed or moved changes them at once, a new primary display without
+        /// another change shows within the lifetime.
+        /// </summary>
+        internal static int GetMonitorIndexCached(string selectedDeviceName)
+        {
+            lock (CacheGate) return Cache.Get(selectedDeviceName);
+        }
+
+        private static long GetLayoutSignature()
+        {
+            unchecked
+            {
+                long signature = GetSystemMetrics(SM_CMONITORS);
+                signature = signature * 31 + GetSystemMetrics(SM_XVIRTUALSCREEN);
+                signature = signature * 31 + GetSystemMetrics(SM_YVIRTUALSCREEN);
+                signature = signature * 31 + GetSystemMetrics(SM_CXVIRTUALSCREEN);
+                signature = signature * 31 + GetSystemMetrics(SM_CYVIRTUALSCREEN);
+                return signature;
+            }
+        }
+
+        /// <summary>The cache of <see cref="GetMonitorIndexCached"/>; not thread-safe.</summary>
+        internal sealed class MonitorIndexCache
+        {
+            private readonly Func<string, int> _resolve;
+            private readonly Func<long> _layoutSignature;
+            private readonly Func<long> _clockMs;
+            private bool _valid;
+            private string _deviceName;
+            private int _index;
+            private long _signature;
+            private long _resolvedAtMs;
+
+            internal MonitorIndexCache(Func<string, int> resolve, Func<long> layoutSignature, Func<long> clockMs)
+            {
+                _resolve = resolve;
+                _layoutSignature = layoutSignature;
+                _clockMs = clockMs;
+            }
+
+            internal int Get(string deviceName)
+            {
+                long now = _clockMs();
+                long signature = _layoutSignature();
+                if (_valid && signature == _signature && now - _resolvedAtMs < CacheLifetimeMs &&
+                    string.Equals(deviceName, _deviceName, StringComparison.OrdinalIgnoreCase))
+                    return _index;
+                _index = _resolve(deviceName);
+                _deviceName = deviceName;
+                _signature = signature;
+                _resolvedAtMs = now;
+                _valid = true;
+                return _index;
+            }
+        }
+
         /// <summary>
         /// Returns the selected display's index in the same <see cref="EnumDisplayMonitors"/>
         /// ordering consumed by the native hook-free renderer. Missing selections fall back to
