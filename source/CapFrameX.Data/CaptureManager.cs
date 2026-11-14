@@ -61,7 +61,7 @@ namespace CapFrameX.Data
         private readonly IPoweneticsService _poweneticsService;
         private readonly IBenchlabService _benchlabService;
         private readonly ILogEntryManager _logEntryManager;
-        private readonly List<string[]> _captureDataArchive = new List<string[]>();
+        private readonly FrameRowArchive _captureDataArchive = new FrameRowArchive(ARCHIVE_LENGTH);
         private readonly object _archiveLock = new object();
         private readonly ProcessList _processList;
         private CancellationTokenSource _cancelDelay = new CancellationTokenSource();
@@ -344,11 +344,11 @@ namespace CapFrameX.Data
 
                             lock (_archiveLock)
                             {
-                                if (_captureDataArchive.Any())
+                                if (_captureDataArchive.Count > 0)
                                 {
                                     try
                                     {
-                                        captureDataArchiveLastTime = GetCpuStartQpcFromDataLine(_captureDataArchive.Last());
+                                        captureDataArchiveLastTime = GetCpuStartQpcFromDataLine(_captureDataArchive.Last);
                                     }
                                     catch { return; }
                                 }
@@ -561,19 +561,14 @@ namespace CapFrameX.Data
         {
             lock (_archiveLock)
             {
-                if (_captureDataArchive.Count < ARCHIVE_LENGTH)
-                {
-                    _captureDataArchive.Add(lineSplit);
-                }
-                else
-                {
-                    _captureDataArchive.RemoveAt(0);
-                    _captureDataArchive.Add(lineSplit);
-                }
+                _captureDataArchive.Add(lineSplit); // a ring of ARCHIVE_LENGTH rows
             }
         }
 
-        private void ResetArchive() => _captureDataArchive.Clear();
+        private void ResetArchive()
+        {
+            lock (_archiveLock) _captureDataArchive.Clear();
+        }
 
         private void PrepareForNextCapture()
         {
