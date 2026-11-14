@@ -906,5 +906,183 @@ Reported by the audit passes as cheap or already well done; not read again for t
 
 ## 18. Results
 
-Nothing yet. Add the Phase 0 baselines here, then one entry per package: what was built, what the
-tests and measurements showed, what is open.
+### 18.1 Measuring tool and Phase 0 (2026-11-14)
+
+- New in CapFrameX.Test: `tools\measure-osd-present-cost.ps1`. It runs the D3D11 and D3D12 test
+  apps (x64 by default; 240 FPS, `--gpu-load 2`, 1280 x 720) with the hook against the OSD test
+  host and its local test channels, for classic rows (1 s refresh), the FUSION ARL design and the
+  Performance Strip (250 ms publish), 6 s warm-up, 40 s measured (the first `presentStats` block,
+  which holds the warm-up, is dropped). It reads `cfx_present_stats.log` and the verbose
+  `[diag] producer 10s` lines, writes `results.json` and compares with `-BaselineReport`.
+- `presentStats` now also times `colorInfo`, `designFeed` and `panelUpload` and counts the
+  presents above 50 us, 200 us and 1 ms per segment; the producer writes `[diag] producer 10s`.
+- Baseline: `CapFrameX.Test\reports\osd-present-cost\baseline-p0` (OSD 23e73ae plus the counters).
+  Findings that changed the order: `colorInfo` costs about 35 us per present only on HDR outputs
+  (`ColorManagement.cpp` asked for the SDR white level on SDR too); `designFeed` 60 to 110 us on
+  every 250 ms publish (the design JSON parsed on the present thread); on D3D12 the Performance
+  Strip copies 4.47 GB of chart copies per 10 s through the producer, and 5600 to 6300 of 9600
+  presents spend more than 50 us in the hook, most of it the chart copy (A5).
+- Vulkan could not be measured or tested: on this machine (RX 9070 XT) every Vulkan app started
+  at medium integrity, vkcube included and with all implicit layers disabled, fails
+  `vkGetPhysicalDeviceSurfaceCapabilitiesKHR` with `VK_ERROR_UNKNOWN` (-13). Started elevated,
+  vkcube runs (the Integration tests, 18.3), but the loader ignores `VK_LAYER_PATH` for elevated
+  processes, so the layer suites could only test the registered layer in `Program Files`, not this
+  build. The HDR suite needs Windows HDR switched on; it was off.
+- After the OSD commits (`85b2f6a`..`aae744d`) the prebuilts and the installed layers were updated
+  (`external\CapFrameX.OSD-prebuilt\README.md`, entry of 2026-11-14). With the new layer installed,
+  an elevated `Measure-CpuLoad.ps1 -Renderer InGame` over vkcube loaded it from Program Files, it
+  activated and composited without an error. The CPU load runs had left a portable sandbox's layer
+  registered in HKLM (both Program Files entries set to 1); that was undone in the same step.
+
+### 18.2 Package A (in-game renderers)
+
+Built (uncommitted, OSD repo):
+
+- A1 text raster gate (`AnyTileDiffers`, `textRaster` knob, `cfx_osd_request_panel`).
+- A2 steps 1, 2 and 4: designs submitted to the producer (`cfx_osd_submit_design_json`,
+  `cfx_osd_design_result`, `DesignFeed` with the former log lines), the classic rows in one
+  `cfx_osd_update_entries_v2` call, `MetricsShmGet` reusing its buffer and strings.
+- A3 step 1 only: the SDR white level is queried only for HDR spaces. Step 2 (the HDR query on the
+  producer) is open; it needs the HDR suite, see 18.1.
+- A4: `HostSeekPolicy`. The dormant hook probes `Global\CfxOsdOverlayVisible` and takes the
+  process snapshot only when it opens, plus every 15th throttle period regardless, so the test
+  mode (`Local\CfxOsdOverlayVisible_Test`) and an event that another process holds still find a
+  host. The probe opens and closes the event; it does not keep it as `g_visibleEvent`.
+- A5 (b): only the line rows of a changed chart copy are written (`ChartLineRows`,
+  `CpuChartStore::RowsToWrite`).
+- A6 wake gate and thread name (priority unchanged, as decided), A7 lock-free frame ring and pooled
+  D3D12 panel slots, A10 queue capture and XeSS classification without the queue mutex in the
+  common case, B4 (OSD `CLAUDE.md`, `positionFixed` skips an unchanged placement).
+
+Measured, D3D x64 at 240 FPS, baseline -> A1..A7 (one run each; `reports\osd-present-cost\a7`):
+
+| Case | hook > 50 us | hook p99 (us) | rasters / 10 s | producer Mcycles / 10 s | panel MB / 10 s |
+| --- | --- | --- | --- | --- | --- |
+| D3D11 classic | 103 -> 51 | 57.4 -> 35.0 | 48 -> 10 | 421 -> 133 | 16.4 -> 3.4 |
+| D3D11 design | 280 -> 120 | 110.6 -> 118.8 | 48 -> 40 | 1081 -> 956 | 47.1 -> 39.3 |
+| D3D11 strip | 189 -> 122 | 116.0 -> 125.2 | 48 -> 40 | 679 -> 631 | 52.2 -> 43.2 |
+| D3D12 classic | 271 -> 108 | 79.7 -> 59.6 | 48 -> 10 | 442 -> 163 | 16.4 -> 3.4 |
+| D3D12 design | 1982 -> 2009 | 125.8 -> 106.0 | 48 -> 41 | 1262 -> 1170 | 47.4 -> 39.9 |
+| D3D12 strip | 6329 -> 5607 | 139.7 -> 140.7 | 48 -> 40 | 2214 -> 2297 | 52.2 -> 43.2 |
+
+- `designFeed` above 50 us: 120 -> 0 in both design cases (A3). A design publishing every 250 ms
+  still re-rasters 40 times per 10 s: its values change at every publish, as intended.
+- The single maxima (170 to 280 us) moved both ways between runs; one run each does not resolve
+  them. The p50 stayed within 1 us.
+- Regression suites (D3D x64 and x86): tiles, fonts, hide-cost, chart-motion, d3d12-native,
+  frame-cadence, late-attach, generic-d3d11 passed after A1..A7. CTest green in all five trees.
+- The Vulkan layer shares the changed core and feed code (design submit, batched rows, panel
+  request, line rows, the cached presentation window in `vk_compositor.cpp`); it builds and its
+  CTests pass in both trees, but it has not run in a Vulkan process (18.1). Run the Vulkan suites
+  before shipping it.
+
+Final state (A1..A8, A5 b, A10; `reports\osd-present-cost\final`, D3D12 twice more in `final-r2`
+and `final-r3`), baseline -> final:
+
+| Case | hook > 50 us | hook p50 (us) | hook p99.9 (us) | panelUpload > 50 us | producer Mcycles / 10 s |
+| --- | --- | --- | --- | --- | --- |
+| D3D11 classic | 103 -> 55 | 16.9 -> 14.0 | 172 -> 116 | 4 -> 1 | 421 -> 130 |
+| D3D11 design | 280 -> 120 | 17.7 -> 13.9 | 171 -> 124 | 145 -> 120 | 1081 -> 899 |
+| D3D11 strip | 189 -> 121 | 17.9 -> 12.9 | 159 -> 135 | 145 -> 121 | 679 -> 586 |
+| D3D12 classic | 271 -> 285 / 553 / 355 | 21.4 -> 20.0 / 22.6 / 19.9 | 158 -> 174 | 0 -> 0 | 442 -> 149 |
+| D3D12 design | 1982 -> 2797 / 1582 / 726 | 41.0 -> 43.1 / 40.9 / 31.8 | 168 -> 280 | 0 -> 0 | 1262 -> 1161 |
+| D3D12 strip | 6329 -> 3832 / 1881 / 1623 | 57.5 -> 50.7 / 42.9 / 42.9 | 159 -> 242 | 145 -> 52 / 102 / 111 | 2214 -> 2211 |
+
+- A5 (b) shows on the strip: the present thread's chart copy (`panelUpload` p50) fell from 19 to
+  2 us, and the presents above 50 us from 6329 to 1600..3800. The producer still composes and
+  stores 4.47 GB of copies per 10 s; that is A5 (a) and (c).
+- The D3D12 runs scatter widely: in the same runs the game's own Present (`origPresent`, which the
+  overlay does not touch) had 0 to 47 presents above 200 us, and the hook's `composite` tail
+  (command recording and `ExecuteCommandLists`) moved with it. The p99.9 column and the counts
+  above 200 us therefore do not resolve a change; read the medians and the counts above 50 us
+  across the three runs. For D3D12 classic and design they show no gain beyond that scatter
+  (the A7 run alone had shown 271 -> 108 for classic); only the strip improves in every run.
+- After everything, again green: the eight D3D suites, CTest in all five trees (17, 35, 35, 10, 10
+  tests, `baked_shaders` included), the CapFrameX unit tests, and `verify-osd-hookfree-hide.ps1`
+  with the new core (three hide/show cycles at 144 Hz, worst present 7.8 ms).
+
+A8 built afterwards: `cfx_shader_bake` bakes the D3D11 composite and chart shaders and the D3D12
+composite at build time with the former sources, entry points, targets and flags; the `baked_shaders`
+CTest compares the bytecode with a run-time compile. The hook, the layer and the core no longer link
+`d3dcompiler`; the unused D3D11 graph pipeline is removed. Not done of A8: keeping the D3D12 root
+signature and pipeline state across state rebuilds (the compile is gone, the PSO creation stays).
+
+Not built: A9 (Vulkan; untestable here, see 18.1), A5 (a) and (c) ((c) is the user's
+decision), the lock-free early return of A10 (the declined presents feed the status coverage and
+the frame-generation watchdogs that the host's compatibility verdicts read; an early return before
+them changes what the host sees), the geometry shader question of A10 (the user's decision). Checked and left alone in C8: skipping
+the hook-free entry feed for a design without rows; the core takes classic values for designs and
+its commit cadence from that feed (`commitEntriesLocked`).
+
+### 18.3 Package C (CapFrameX.exe)
+
+Built (uncommitted): C1/C2 one sorted window for the online FPS metrics (`OnlineFpsWindow`, equal
+to the statistic provider to the bit) and only the target's rows on the metric thread; C3 target
+policy verdicts refreshed off the row thread (`HookTargetPolicyCache`, 2 s then 10 s, final denials
+kept); C4 1 s status poll while paused, cached target identity, evidence rescans 2..30 s; C5 metrics
+channel encoded into reused buffers (byte for byte as before); C6 metrics JSON reused for unchanged
+inputs, telemetry snapshots with the leased sources only; C7 (a) the capture archive as a ring;
+C8 the hook-free monitor index cached by display layout. Unit tests: 3631 passed after C1..C5,
+3636 of 3636 after everything (a short hardware name needed its full name in the narrowed
+snapshot; fixed, `ShortHardwareNames_FollowTheFullNamesAndOnlyNeedThem`).
+
+Elevated (2026-11-14, from an elevated PowerShell the user confirmed): the unit tests again,
+3636 of 3636, and the `Integration` category, 8 of 8, with vkcube, PresentMon and real captures
+(the capture archive ring of C7 a held 155 to 165 rows per capture). vkcube runs elevated on this
+machine; only the medium-integrity Vulkan processes fail (18.1).
+
+The first CPU load round found a regression of C1: the realtime demand check started its timestamp
+at `long.MinValue`, `now - long.MinValue` overflowed to a negative value, the check never came due,
+and without a telemetry lease (a tile design, the remote API's design feed) no row reached the
+metric thread. The classic online metrics and `/api/metrics` read NaN; the report showed no target
+FPS outside the design scenarios. Fixed with a first-check flag, covered by
+`RowsOfTheTargetReachTheMetricsThroughTheStream`, which drives the real row stream (the earlier
+test called `UpdateOnlineMetrics` directly). The current-build run of that round is void. After the
+fix: 3639 of 3639 unit tests.
+
+CPU load of CapFrameX.exe plus its PresentMon process (`Measure-CpuLoad.ps1`, 30 s warm-up, 60 s
+measured per scenario, D3D11 test app as target; `temp\cpu-load\pkg-c-*`). Baseline rounds 1 to 3
+against the current rounds 2 and 3, run alternately; current round 1 is void (the regression
+above). Total Mcycles/s, mean (range):
+
+| Scenario | Baseline | Current | Change of the means |
+| --- | --- | --- | --- |
+| Idle | 166 (158-180) | 101 (78-124) | -39 %, below the baseline range |
+| PresentMon | 214 (206-230) | 167 (166-169) | -22 %, below |
+| InGame-Hidden | 201 (191-213) | 188 (172-204) | -7 %, overlaps |
+| InGame-NoSensors | 210 (191-235) | 219 (188-251) | +4 %, overlaps |
+| InGame-Sensors | 234 (211-254) | 203 (192-213) | -13 %, overlaps |
+| InGame-Design | 247 (229-265) | 196 (191-201) | -21 %, below |
+| HookFree-Hidden | 176 (161-194) | 170 (165-176) | -3 %, overlaps |
+| HookFree-NoSensors | 215 (208-223) | 221 (214-228) | +3 %, overlaps |
+| HookFree-Sensors | 310 (220-474) | 219 (217-220) | -30 %, overlaps |
+| HookFree-Design | 252 (240-259) | 235 (211-259) | -7 %, overlaps |
+| Rtss-Hidden | 211 (194-234) | 193 (174-212) | -8 %, overlaps |
+| Rtss-NoSensors | 289 (201-464) | 204 (191-217) | -29 %, overlaps |
+| Rtss-Sensors | 224 (193-266) | 195 (191-199) | -13 %, overlaps |
+
+- Clear only where the expectation is strongest: with no or one consumer of the rows, PresentMon's
+  rows of every other presenting process no longer travel to the online metric thread (C1), and a
+  tile design's metrics JSON is no longer rebuilt per heartbeat (C6).
+- The target ran at 144 FPS in some runs and at 240 in others (a few at 19 to 24, one at 3), and
+  CapFrameX's work grows with the rows; normalized per target frame the changes scatter between
+  -17 % and +21 %. These runs do not resolve differences of about 10 % per scenario.
+- The session's shells ran at medium integrity, so the elevated steps ran from a PowerShell the
+  user confirmed through UAC.
+
+The baseline is a worktree of `a7fecbb6` at `artifacts\cpuload-base`, built with the same native
+DLLs as the current build (equal hashes of hook, layer and core), so the comparison measures the
+C# changes alone. To measure again, from an elevated PowerShell in the repository root, the target
+being the D3D11 test app (vkcube runs only elevated on this machine, 18.1):
+
+```powershell
+$common = @{ Renderer = 'InGame','HookFree','Rtss'; OverlayDesign = '*FUSION*ARL*'
+  TargetPath = 'E:\Code\CapFrameX.Test\bin\x64\cfx_d3d11_x64.exe'; TargetProcessName = 'cfx_d3d11_x64'
+  TargetArguments = '--fps 240 --gpu-load 2 --width 1280 --height 720 --duration 900' }
+.\scripts\Measure-CpuLoad.ps1 @common -OutputDirectory temp\cpu-load\pkg-c-base `
+  -AppDirectory artifacts\cpuload-base\source\CapFrameX\bin\x64\Release\net10.0-windows
+.\scripts\Measure-CpuLoad.ps1 @common -OutputDirectory temp\cpu-load\pkg-c-current `
+  -BaselineReport (Get-ChildItem temp\cpu-load\pkg-c-base -Recurse -Filter report.json).FullName
+```
+
+Remove the worktree afterwards with `git worktree remove artifacts\cpuload-base`.

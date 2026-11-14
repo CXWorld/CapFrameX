@@ -235,7 +235,13 @@ capture logs sensors) and with its 500 ms heartbeat, and each one reached the re
   takes over from a snapshot: a design that is new, changed or removed is applied at once (the
   snapshot subscription), values alone wait for `OnEntries` (once per `OSDRefreshPeriod`) or a show.
   So tile values in the hook-free window change as often as the classic rows always did. The
-  publisher keeps its cadence: it also feeds the in-game renderers and the heatmap averages.
+  publisher keeps its cadence: it also feeds the in-game renderers and the heatmap averages. It
+  builds the metrics JSON only when its inputs changed (bound design, telemetry snapshot, aliases,
+  what `GetPublishableTelemetry` keeps of the snapshot) or the design tracks averaged keys; a
+  heartbeat without a new snapshot republishes the same string, so the native reader still sees a
+  fresh header. A telemetry snapshot holds only the sources its leases read (each one, null while
+  unavailable) plus the parts of a memory total; a lease without ids (the editors) gets the whole
+  catalog. Tests: `OverlayDesignRuntimeTest`, `OverlayTelemetryServiceTest` (`NarrowLease_*`).
 - **Only what changed.** The native core keeps what its root surface drew and repaints and
   presents only the tiles that would draw something else, as rectangles (OSD repo CLAUDE.md,
   "Hook-free root: retained surface, partial repaint"). A snapshot whose values format to the same
@@ -426,6 +432,18 @@ reads `Blocked` with "…; the hook-free overlay is shown instead." The design p
 telemetry for the in-game mode anyway, so the stand-in draws the active design. RTSS stays off.
 Tests: `HookOverlayStatusEvaluatorTest` (`HookFreeFallback_*`), `RicochetDetectionTest`.
 
+The policy's evaluation (process, image path, Ricochet's driver, a module snapshot, for a denied
+scan the driver services) ran on the PresentMon reader thread every 2 s for the whole session. Its
+verdict cache (`HookTargetPolicyCache`) evaluates on the calling thread only when no verdict for the
+PID exists, returns a stale one and refreshes it in the background, and reports every changed
+background verdict (`HookTargetPolicy.VerdictChanged`, which `HookOverlayManager` applies and, for a
+target that now passes, injects). The row paths (`HookOverlayManager.OnFrameRow`, `TryInjectAsync`,
+`HookFrametimePublisher`) only read it (`TryGetVerdict`); right before `LoadLibrary` the injection
+asks for a current one (`IsAllowedFresh`). Lifetimes (`HookTargetPolicySchedule`): a clean verdict
+2 s during the first 30 s of a target, then 10 s; a final denial (`RequestsHookFreeFallback`) is
+kept for the process; any other denial, a transient startup failure above all, 2 s. `Invalidate`
+also discards a background evaluation still running for the PID. Tests: `HookTargetPolicyCacheTest`.
+
 ### Graphics API label (`<APP>`)
 
 RTSS resolves its `<APP>` macro itself. For the CapFrameX renderers and the remote API,
@@ -473,6 +491,20 @@ single composed frame does not make it flicker; a tie goes to the newest present
 when nothing else was seen, and 2 s after the last present it is null (the entry reads "N/A"). The entry
 is registered in `RealtimeMetricEntryDict`, so showing it makes the service evaluate rows, but it is
 not one of the numeric `ONLINE_METRIC_NAMES`. Tests: `PresentModeEntryTest`, `OnlineMetricTelemetryTest`.
+
+### Online FPS metrics
+
+`OnlineMetricService` keeps the realtime window (`MetricInterval`, 20 s by default) of the target's
+frame and display times. Its FPS metrics (average, P1, P0.2, P0.1 and the low averages) come from one
+sorted copy of the window (`OnlineFpsWindow`), instead of one copy and one quantile copy per metric
+and refresh. The copy is reused while no frame arrived and, while frames arrive, for up to 100 ms
+(`FPS_WINDOW_REUSE_MS`); a reset starts a new one. The values equal
+`FrametimeStatisticProvider.GetFpsMetricValue` on the same window to the bit (MathNet's R-8 quantile on
+the same order statistics, the same rounding; `OnlineFpsWindowTest`). Only rows of the target reach
+the metric thread (`IsRowOfCurrentProcess`, before `ObserveOn`), and none while no realtime metric is
+demanded. `HookMetricsChannel.Publish` encodes header, records and font name into reused buffers and
+copies them into the view inside the sequence window (byte for byte as before,
+`HookMetricsChannelTest`).
 
 ### OLED pixel orbit
 
@@ -991,10 +1023,18 @@ settings are ignored. All of it is pure and unit-tested; the manager only execut
 - **A frame-generation switch inside the running game** is the case the ladder alone cannot see: the probe
   settled minutes earlier, and a new runtime taking over presentation stands the hook down for good.
   `TryRearmProbeOnEvidenceChange` re-scans the target's modules while the overlay is down (after
-  `ProbeRearmStandDownMs`, at most every `ProbeEvidenceRescanIntervalMs`, at most `MaxProbeRearmsPerProcess`
-  times) and re-plans through `HookCompatibilityStagePlanner.Replan` when the evidence signature really
-  changed. `Replan` keeps the stage the hook is running in the ladder and never starts below it, so what the
-  re-probe learns describes what is actually in effect.
+  `ProbeRearmStandDownMs`, then 2, 4, 8, 16 and every 30 s while the stand-down lasts,
+  `NextEvidenceRescanIntervalMs`; a provider that takes over presentation loads at the switch, which
+  the first scans see; at most `MaxProbeRearmsPerProcess` times) and re-plans through
+  `HookCompatibilityStagePlanner.Replan` when the evidence signature really changed. `Replan` keeps the
+  stage the hook is running in the ladder and never starts below it, so what the re-probe learns
+  describes what is actually in effect.
+- **Status polling**: the timer runs at 1 s and at 250 ms while a session probes or reconfirms. A
+  paused target (overlay hidden, hook idle or dormant, no Presents) answers `Inconclusive`, and every
+  pause of a learned route turns into a reconfirmation, so such a session is polled at 1 s until it
+  resumes (`HookCompatibilityProbeSession.EffectivePollIntervalMs`, applied after every observation).
+  Name and path of the target are read once (`TryReadTargetIdentity`; `MainModule` enumerates the
+  game's modules) and forgotten with the target.
 - **Log lines**: `HookOverlay: compatibility plan for pid …` (evidence, signature, start stage, reason),
   `… compatibility stage k/n (…) … ended with <verdict>: …`, `… learned profile for '<exe>' (…) is now …`.
 
