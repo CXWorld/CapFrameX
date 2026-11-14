@@ -228,6 +228,81 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(31 * 2, HookMetricsChannel.TruncateUtf8(emoji, 127).Length);
         }
 
+        /// <summary>
+        /// Publish encodes the records into a buffer it keeps and copies them in one block. Every
+        /// byte must be what the per-field writes produced before: the UTF-8 text cut at size - 1
+        /// bytes (also inside a character, as before), zeros behind it, the numbers little-endian.
+        /// A second, shorter publish must leave no byte of the first in a reused record.
+        /// </summary>
+        [TestMethod]
+        public void Publish_EncodesEveryFieldAsThePerFieldWritesDid()
+        {
+            var first = new List<OsdEntry>
+            {
+                new OsdEntry { Identifier = "GpuTemp", Group = "GPU", Label = "Temperatur °C", ValueText = "64",
+                    Unit = "°C", Value = 64.25, UpperLimit = 90, LowerLimit = -1.5, IsNumeric = true, Color = 0xFF8800FFu,
+                    ShowGraph = true, Digits = 1, HasUpper = true, UpperColor = 0xFF0000FFu, HasLower = true,
+                    LowerColor = 0x00FF00FFu, Separators = 2, GroupColor = 0x123456FFu, GroupScalePercent = 120,
+                    ValueScalePercent = 80, ValueDisplayMode = OsdValueDisplayMode.TextAndBar },
+                new OsdEntry { Identifier = new string('x', 80), Group = new string('游', 30), Label = "\U0001F600 emoji",
+                    ValueText = null, Unit = "", Value = double.NaN },
+                new OsdEntry { Identifier = "Frametime" }
+            };
+            var second = new List<OsdEntry> { new OsdEntry { Identifier = "A" } };
+
+            using (var channel = HookMetricsChannel.Create(targetPid: 4248, mapName: TestMapName))
+            {
+                channel.Publish(first, flags: 0u, targetPid: 4248);
+                IntPtr view = OpenReadOnlyView();
+                Assert.AreNotEqual(IntPtr.Zero, view);
+                try
+                {
+                    for (int i = 0; i < first.Count; i++)
+                        CollectionAssert.AreEqual(ReferenceRecord(first[i]), ReadRecord(view, i), $"record {i}");
+                    channel.Publish(second, flags: 0u, targetPid: 4248);
+                    CollectionAssert.AreEqual(ReferenceRecord(second[0]), ReadRecord(view, 0),
+                        "a shorter entry leaves nothing of the longer one before it");
+                    Assert.AreEqual(1, Marshal.ReadInt32(view, OffEntryCount));
+                    Assert.AreEqual(0, Marshal.ReadByte(view, HookMetricsChannel.OffFontFamily), "no font, an empty field");
+                }
+                finally
+                {
+                    UnmapViewOfFile(view);
+                }
+            }
+        }
+
+        private static byte[] ReadRecord(IntPtr view, int index)
+        {
+            var bytes = new byte[RecordSize];
+            Marshal.Copy(IntPtr.Add(view, HeaderSize + index * RecordSize), bytes, 0, RecordSize);
+            return bytes;
+        }
+
+        // The record as the per-field writes before 2026-11 produced it (Marshal.WriteInt32 and
+        // WriteStr), written out independently of the channel's code.
+        private static byte[] ReferenceRecord(OsdEntry e)
+        {
+            var record = new byte[RecordSize];
+            void Text(int offset, int size, string s)
+            {
+                if (string.IsNullOrEmpty(s)) return;
+                byte[] bytes = System.Text.Encoding.UTF8.GetBytes(s);
+                Array.Copy(bytes, 0, record, offset, Math.Min(bytes.Length, size - 1));
+            }
+            void Int(int offset, int value) => BitConverter.GetBytes(value).CopyTo(record, offset);
+            void Double(int offset, double value) => BitConverter.GetBytes(value).CopyTo(record, offset);
+            Text(0, 64, e.Identifier); Text(64, 64, e.Group); Text(128, 96, e.Label);
+            Text(224, 64, e.ValueText); Text(288, 16, e.Unit);
+            Double(304, e.Value); Double(312, e.UpperLimit); Double(320, e.LowerLimit);
+            Int(328, e.IsNumeric ? 1 : 0); Int(332, unchecked((int)e.Color)); Int(336, e.ShowGraph ? 1 : 0);
+            Int(340, e.Digits); Int(344, e.HasUpper ? 1 : 0); Int(348, unchecked((int)e.UpperColor));
+            Int(352, e.HasLower ? 1 : 0); Int(356, unchecked((int)e.LowerColor)); Int(360, e.Separators);
+            Int(364, unchecked((int)e.GroupColor)); Int(368, e.GroupScalePercent); Int(372, e.ValueScalePercent);
+            Int(376, (int)e.ValueDisplayMode);
+            return record;
+        }
+
         private static string ReadFontFamily(IntPtr view)
             => Marshal.PtrToStringUTF8(IntPtr.Add(view, HookMetricsChannel.OffFontFamily));
 

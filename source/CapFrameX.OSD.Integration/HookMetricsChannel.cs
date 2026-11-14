@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
@@ -101,6 +102,10 @@ namespace CapFrameX.OSD.Integration
         // Last entry count we warned about, so an over-long entry set logs once per configuration
         // change instead of on every publish tick. -1 = nothing reported yet.
         private int _lastTruncationWarnCount = -1;
+        // Publish encodes into these (guarded by _gate); sized for MaxEntries on first use.
+        private byte[] _records = Array.Empty<byte>();
+        private readonly byte[] _font = new byte[SzFontFamily];
+        private readonly byte[] _scratch = new byte[1024];
 
         [StructLayout(LayoutKind.Sequential)]
         private struct SECURITY_ATTRIBUTES
@@ -234,6 +239,16 @@ namespace CapFrameX.OSD.Integration
                     _lastTruncationWarnCount = -1;
                 }
 
+                // The records and the font are encoded before the sequence opens, into buffers the
+                // channel keeps: two arrays per string and refresh (WriteStr) became none, and the
+                // write window shrinks to two block copies.
+                int recordBytes = count * RecordSize;
+                if (_records.Length < recordBytes) _records = new byte[MaxEntries * RecordSize];
+                for (int i = 0; i < count; i++)
+                    EncodeRecord(_records.AsSpan(i * RecordSize, RecordSize), entries[i]);
+                PutString(_font, 0, SzFontFamily,
+                    (flags & FlagFontFamily) != 0 ? TruncateUtf8(fontFamily.Trim(), SzFontFamily - 1) : null);
+
                 _seq++; // odd => write in progress
                 Marshal.WriteInt32(_view, OffSeq, _seq);
                 Thread.MemoryBarrier();
@@ -244,35 +259,8 @@ namespace CapFrameX.OSD.Integration
                 Marshal.WriteInt32(_view, OffEntryCount, count);
                 Marshal.WriteInt32(_view, OffTargetPid, targetPid);
                 _targetPid = targetPid;
-
-                for (int i = 0; i < count; i++)
-                {
-                    IntPtr rec = IntPtr.Add(_view, HeaderSize + i * RecordSize);
-                    OsdEntry e = entries[i];
-                    WriteStr(rec, RId, SzId, e.Identifier);
-                    WriteStr(rec, RGroup, SzGroup, e.Group);
-                    WriteStr(rec, RLabel, SzLabel, e.Label);
-                    WriteStr(rec, RValueText, SzValueText, e.ValueText);
-                    WriteStr(rec, RUnit, SzUnit, e.Unit);
-                    WriteDouble(rec, RValue, e.Value);
-                    WriteDouble(rec, RUpperLimit, e.UpperLimit);
-                    WriteDouble(rec, RLowerLimit, e.LowerLimit);
-                    Marshal.WriteInt32(rec, RIsNumeric, e.IsNumeric ? 1 : 0);
-                    Marshal.WriteInt32(rec, RColor, unchecked((int)e.Color));
-                    Marshal.WriteInt32(rec, RShowGraph, e.ShowGraph ? 1 : 0);
-                    Marshal.WriteInt32(rec, RDigits, e.Digits);
-                    Marshal.WriteInt32(rec, RHasUpper, e.HasUpper ? 1 : 0);
-                    Marshal.WriteInt32(rec, RUpperColor, unchecked((int)e.UpperColor));
-                    Marshal.WriteInt32(rec, RHasLower, e.HasLower ? 1 : 0);
-                    Marshal.WriteInt32(rec, RLowerColor, unchecked((int)e.LowerColor));
-                    Marshal.WriteInt32(rec, RSeparators, e.Separators);
-                    Marshal.WriteInt32(rec, RGroupColor, unchecked((int)e.GroupColor));
-                    Marshal.WriteInt32(rec, RGroupScale, e.GroupScalePercent);
-                    Marshal.WriteInt32(rec, RValueScale, e.ValueScalePercent);
-                    Marshal.WriteInt32(rec, RValueDisplayMode, (int)e.ValueDisplayMode);
-                }
-                WriteStr(_view, OffFontFamily, SzFontFamily,
-                    (flags & FlagFontFamily) != 0 ? TruncateUtf8(fontFamily.Trim(), SzFontFamily - 1) : null);
+                if (recordBytes > 0) Marshal.Copy(_records, 0, IntPtr.Add(_view, HeaderSize), recordBytes);
+                Marshal.Copy(_font, 0, IntPtr.Add(_view, OffFontFamily), SzFontFamily);
 
                 Thread.MemoryBarrier();
                 _seq++; // even => consistent snapshot ready
@@ -317,15 +305,44 @@ namespace CapFrameX.OSD.Integration
             if (entries.Count > MaxEntries + maxNames) yield return "…";
         }
 
-        private static void WriteStr(IntPtr recBase, int off, int size, string s)
+        // One record as the native reader expects it (overlay_metrics_shm.cpp); every byte of it is
+        // a field, so the whole record is written.
+        private void EncodeRecord(Span<byte> rec, OsdEntry e)
         {
-            var buf = new byte[size]; // zeroed => guaranteed null terminator + clean tail
-            if (!string.IsNullOrEmpty(s))
-            {
-                var bytes = Encoding.UTF8.GetBytes(s);
-                Array.Copy(bytes, buf, Math.Min(bytes.Length, size - 1));
-            }
-            Marshal.Copy(buf, 0, IntPtr.Add(recBase, off), size);
+            PutString(rec, RId, SzId, e.Identifier);
+            PutString(rec, RGroup, SzGroup, e.Group);
+            PutString(rec, RLabel, SzLabel, e.Label);
+            PutString(rec, RValueText, SzValueText, e.ValueText);
+            PutString(rec, RUnit, SzUnit, e.Unit);
+            BinaryPrimitives.WriteInt64LittleEndian(rec.Slice(RValue), BitConverter.DoubleToInt64Bits(e.Value));
+            BinaryPrimitives.WriteInt64LittleEndian(rec.Slice(RUpperLimit), BitConverter.DoubleToInt64Bits(e.UpperLimit));
+            BinaryPrimitives.WriteInt64LittleEndian(rec.Slice(RLowerLimit), BitConverter.DoubleToInt64Bits(e.LowerLimit));
+            BinaryPrimitives.WriteInt32LittleEndian(rec.Slice(RIsNumeric), e.IsNumeric ? 1 : 0);
+            BinaryPrimitives.WriteInt32LittleEndian(rec.Slice(RColor), unchecked((int)e.Color));
+            BinaryPrimitives.WriteInt32LittleEndian(rec.Slice(RShowGraph), e.ShowGraph ? 1 : 0);
+            BinaryPrimitives.WriteInt32LittleEndian(rec.Slice(RDigits), e.Digits);
+            BinaryPrimitives.WriteInt32LittleEndian(rec.Slice(RHasUpper), e.HasUpper ? 1 : 0);
+            BinaryPrimitives.WriteInt32LittleEndian(rec.Slice(RUpperColor), unchecked((int)e.UpperColor));
+            BinaryPrimitives.WriteInt32LittleEndian(rec.Slice(RHasLower), e.HasLower ? 1 : 0);
+            BinaryPrimitives.WriteInt32LittleEndian(rec.Slice(RLowerColor), unchecked((int)e.LowerColor));
+            BinaryPrimitives.WriteInt32LittleEndian(rec.Slice(RSeparators), e.Separators);
+            BinaryPrimitives.WriteInt32LittleEndian(rec.Slice(RGroupColor), unchecked((int)e.GroupColor));
+            BinaryPrimitives.WriteInt32LittleEndian(rec.Slice(RGroupScale), e.GroupScalePercent);
+            BinaryPrimitives.WriteInt32LittleEndian(rec.Slice(RValueScale), e.ValueScalePercent);
+            BinaryPrimitives.WriteInt32LittleEndian(rec.Slice(RValueDisplayMode), (int)e.ValueDisplayMode);
+        }
+
+        // The field zeroed (NUL terminator and a clean tail), then the UTF-8 bytes cut to size - 1
+        // at a byte boundary, as WriteStr wrote them before.
+        private void PutString(Span<byte> target, int offset, int size, string s)
+        {
+            Span<byte> field = target.Slice(offset, size);
+            field.Clear();
+            if (string.IsNullOrEmpty(s)) return;
+            int maximum = Encoding.UTF8.GetMaxByteCount(s.Length);
+            byte[] scratch = maximum <= _scratch.Length ? _scratch : new byte[maximum];
+            int length = Encoding.UTF8.GetBytes(s, 0, s.Length, scratch, 0);
+            scratch.AsSpan(0, Math.Min(length, size - 1)).CopyTo(field);
         }
 
         // WriteStr cuts at a byte boundary; a font name must not end in half a UTF-8 sequence,
@@ -343,9 +360,6 @@ namespace CapFrameX.OSD.Integration
             }
             return builder.ToString();
         }
-
-        private static void WriteDouble(IntPtr recBase, int off, double v)
-            => Marshal.WriteInt64(recBase, off, BitConverter.DoubleToInt64Bits(v));
 
         public void Dispose()
         {
