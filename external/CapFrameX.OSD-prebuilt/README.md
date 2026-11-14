@@ -12,6 +12,64 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Less present-thread and producer work, shaders compiled at build time (2026-11-14)
+
+All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64 and
+x86) from the clean OSD working tree on `aae744dc6a4cadf48036a4d6a41797642fc9b3f9` (`main`), which
+holds four commits on `23e73ae`: `85b2f6a` (present-thread and producer work), `c37e48c` (shaders
+compiled at build time), `393a61b` (hook-free window placement) and `aae744d` (documentation).
+Interop (still the signed build), Controls, both Vulkan manifests and the template catalogs are
+unchanged by this entry. Details and measurements: CapFrameX `dev-plans/Overlay_Game_Impact_DevPlan.md`,
+section 18.
+
+- The in-game producer re-rasters the panel only when a tile would draw something else
+  (`OsdDebug.json` `"textRaster": "always"` restores the former raster on every text tick), is woken
+  only when a rebuild is due and is named "CapFrameX OSD producer". The present thread pushes its
+  frames into a lock-free ring, the D3D12 hook's panel frame rides on pooled slots, designs are parsed
+  on the producer (`cfx_osd_submit_design_json`), classic rows go over in one call, the SDR white
+  level is queried only for HDR, and a dormant hook takes its process snapshot only once CapFrameX's
+  visibility event exists. The D3D12 hook and the Vulkan layer write only the line rows of a changed
+  chart copy; the D3D12 queue capture locks only when the queue changes.
+- `cfx_shader_bake` compiles the HLSL of the D3D11 composite and chart layer and of the D3D12
+  composite at build time; hook, layer and core no longer import `d3dcompiler_47.dll`. The `baked_shaders`
+  CTest pins the bytecode to a run-time compile of the same sources.
+- `presentStats` times `colorInfo`, `designFeed` and `panelUpload` and counts presents above 50 us,
+  200 us and 1 ms; verbose logging adds `[diag] producer 10s`.
+- The hook-free window skips a placement equal to the last one (`positionFixed`).
+
+Verification: 17 core, 35 hook and 10 Vulkan CTests on x64 and x86 pass, without compiler warnings;
+the first commit alone was also built from scratch in a worktree and passed. A CapFrameX Release
+build from source staged exactly these five DLLs and passed the 3639 tests outside the `Integration`
+category, the `Integration` category elevated (8 of 8) and CapFrameX.Test's D3D11/D3D12 suites
+(tiles, fonts, hide-cost, chart-motion, d3d12-native, frame-cadence, late-attach, generic-d3d11,
+x64 and x86) and `verify-osd-hookfree-hide.ps1`. The HDR suite did not run (Windows HDR was off), nor
+did the Vulkan suites: on this machine Vulkan processes fail their surface query at medium
+integrity, and elevated ones ignore `VK_LAYER_PATH`. With the installed layers replaced (below), an
+elevated `Measure-CpuLoad.ps1 -Renderer InGame -Scenario InGame-NoSensors,InGame-Design` over vkcube
+loaded the x64 layer from Program Files; it activated, composited (`composited=1`, also across a
+swapchain recreation) and logged no error, and CapFrameX planned "Vulkan graphics composite". The x86
+layer ran in its CTests only. No game ran with these binaries yet.
+
+The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` were replaced with these
+two layer DLLs; their hashes match the table. The replaced ones (the 2026-11-13 entry's) and an export
+of both HKLM `ImplicitLayers` views are kept in the ignored `temp\vulkan-layer-backup-2026-11-14` of
+the CapFrameX checkout. Before that, the Program Files registrations were active again: a portable
+CapFrameX that `scripts\Measure-CpuLoad.ps1` ran from `temp\cpu-load` had registered its own layer
+and set both Program Files entries to 1; its entries were removed and the Program Files entries set
+back to 0.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `97879CF249F1E2F770D3A7A5DBC6E095BB9855D4B70653998D4DCDDEA48D2717` |
+| native\cfx_osd_hook.dll | `D2493AFFD1FFA469B65A219AB65B7EF40AC427D1B9A23D428C7ADE742C62C56C` |
+| native\x86\cfx_osd_hook.dll | `56A77441BA3448729D449BACA8F5169446E4BF71329A63EC186016D534EC0875` |
+| native\vk\cfx_osd_vklayer.dll | `6DC34EF3BE52DBA2C45D861667DF6B190ABE643449D895CF7A7305F51F7A8E15` |
+| native\vk\x86\cfx_osd_vklayer.dll | `FB8E397D531B5F592A1B692921C75877AC8BB979C17FA5521A9988AB012CACF5` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries; the release build replaces
+them with signed ones.
+
 ### Vertical bars and container scaling in the tile editor (2026-11-13)
 
 Controls was rebuilt in `Release|x64` (MSBuild `-t:Rebuild`) from the OSD working tree on
