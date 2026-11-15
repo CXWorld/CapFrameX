@@ -740,6 +740,35 @@ FPS and the frame time. The native metric draws device names in the theme text c
 color is also the color of both header names. The files are stored as the editor saves them;
 `DuolineStarterShowsTheGpuAboveTheCpuInTheColorsOfTheirVendors` checks layout and colors.
 
+### AQUALINE starter
+
+"AQUALINE - GeForce RTX" (`overlay-templates/AQUALINE-GeForce-RTX.json`, catalog version 32) was rebuilt from a
+picture of an overlay the owner supplied on 2026-11-15; its origin is not recorded. A design adapted
+from another author's work needs a description and a credit like GREENLINE's (`About` in
+`OverlayDesignStarterCatalog`). Three outlined cards stand below each other: the frame rate (the
+current FPS large over "FPS", 1% low and average beside it, the frame time above its graph), then the
+GPU and the CPU, each with an icon, the installed model (`gpuNameShort`/`cpuNameShort`), usage,
+temperature and power over clock and memory in GB. It binds semantic keys only. Captions are text
+tiles, not the labels of the metrics: the renderer draws a text tile semibold like a value, a metric's
+label in the regular weight. The lines between the readings are image tiles, an 8 x 1 px PNG with one
+opaque column stretched to its frame, because a tile cannot be narrower than 8 px. The frame rate and
+the CPU carry Segoe MDL2 Assets glyphs; the speedometer (`EC4A`) is not in the editor's icon list, which
+keeps a glyph it does not know. The GPU card shows NVIDIA's eye as in the picture, so the design suits
+GeForce cards although it binds on any GPU: an image tile with a PNG of
+`Resources/OverlayGraphics/NVIDIA/NVIDIA-Eye.svg`, the eye mark of our `NVIDIA.svg`, in the design's cyan
+(provenance: `SOURCES.md`). An image tile has no tint, so another accent color needs another PNG. The
+picture raises the units beside the values and shades the cards from top to bottom;
+the renderer centres a unit beside its value and fills a tile with one color. Sizes and positions
+follow the picture at 0.597 design units per pixel, within about one unit. A canvas tile draws its text
+from its top and clips at its frame, and a value's baseline sits about 1.03 x its font size below that
+top. The large frame rate first stood in a frame as high as its font: the game showed its digits cut off
+at the bottom (2026-11-15, 110 % zoom), and the names lost their descenders. Every value now keeps at
+least 4 units below its baseline, a name 7; catalog version 33 replaces unmodified version-32 copies.
+Tests:
+`AqualineStarterShowsTheFrameRateTheGpuAndTheCpuOnOutlinedCards`, and
+`AqualineTilesDoNotCutOffTheirTexts`, which renders the design with and without more room below every
+text and compares the pixels.
+
 ### BLACKWELL THERMALS starters
 
 Four starters show the temperatures of an RTX 50 card on a drawing of its board: one reading on each

@@ -81,6 +81,53 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        [DataRow(1.0)]
+        [DataRow(1.1)]
+        [DataRow(1.5)]
+        public void AqualineTilesDoNotCutOffTheirTexts(double zoom)
+        {
+            // A canvas tile draws its text from its top and clips at its frame, and a value's baseline sits about
+            // 1.03 x its font size below that top: in a frame as high as the font the large frame rate lost the
+            // bottom of its digits (2026-11-15, most visible at 110 % zoom). With more room below every text the
+            // design must draw the same pixels. The names carry descenders, the digits round bottoms.
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "AQUALINE-GeForce-RTX");
+            byte[] Render(double room, out int stride)
+            {
+                var design = OsdDesignDocument.FromJson(starter.DesignJson);
+                design.Scale = zoom;
+                foreach (var tile in design.EnumerateTiles().Where(tile => tile.Kind == "metric" || tile.Kind == "text"))
+                    tile.FrameHeight += room;
+                int width = (int)Math.Ceiling(design.Width * zoom) + 48, height = (int)Math.Ceiling(design.CanvasHeight * zoom) + 48;
+                stride = width * 4;
+                using var preview = new OsdPreview();
+                Assert.IsTrue(preview.CreateBitmap(width, height));
+                Assert.IsTrue(preview.LoadTemplateJson(design.ToJson()));
+                Assert.IsTrue(preview.SetMetricsJson(JsonConvert.SerializeObject(new Dictionary<string, object>
+                {
+                    ["fpsCurrent"] = 888.0, ["fps1pctLow"] = 88.0, ["fps"] = 888.0, ["frametimeCurrent"] = 8.8,
+                    ["gpuNameShort"] = "Arc Graphics", ["gpuLoad"] = 88.0, ["gpuTemp"] = 88.0, ["gpuPower"] = 888.0,
+                    ["gpuClock"] = 8888.0, ["vramUsed"] = 88.88,
+                    ["cpuNameShort"] = "Ryzen 9 9950X3D", ["cpuLoad"] = 88.0, ["cpuTemp"] = 88.0, ["cpuPower"] = 888.0,
+                    ["cpuClock"] = 8888.0, ["ramUsed"] = 88.88
+                })));
+                var pixels = new byte[stride * height];
+                var handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);
+                try
+                {
+                    Assert.IsTrue(preview.RenderBitmap(handle.AddrOfPinnedObject(), pixels.Length, stride, .05));
+                }
+                finally { handle.Free(); }
+                return pixels;
+            }
+            byte[] shipped = Render(0, out int rowBytes), roomy = Render(8, out _);
+            Assert.IsTrue(shipped.Any(value => value != 0), "The design must be rendered.");
+            var cutRows = Enumerable.Range(0, shipped.Length / rowBytes)
+                .Where(row => !shipped.AsSpan(row * rowBytes, rowBytes).SequenceEqual(roomy.AsSpan(row * rowBytes, rowBytes))).ToArray();
+            Assert.AreEqual(0, cutRows.Length,
+                $"A tile cuts off its text in the pixel rows {string.Join(", ", cutRows.Take(12))} of {shipped.Length / rowBytes}.");
+        }
+
+        [TestMethod]
         [DataRow("Slick-Overlay-Single-Line", "FPS - Current", "FPS - Label")]
         [DataRow("Slick-Overlay-Single-Line", "GPU - Value - Name", "FPS - Label")]
         [DataRow("Slick-Overlay-Single-Line", "CPU - Value - Name", "FPS - Label")]

@@ -104,7 +104,7 @@ Besides the row overlay of **Overlay items**, the CapFrameX in-game and hook-fre
 
 - **Overlay → Tile overlay** lists the saved tile profiles. **Show in overlay** activates one, **Use row overlay** returns to the rows.
 - **Open tile editor** opens the editor with a live preview: add tiles from the palette, set their source, size and colors, and save the design as a profile.
-- CapFrameX ships 45 starter designs, from compact corner layouts to hardware themes that name the installed CPU and GPU. Later updates of the starters leave a profile you changed untouched.
+- CapFrameX ships 46 starter designs, from compact corner layouts to hardware themes that name the installed CPU and GPU. Later updates of the starters leave a profile you changed untouched.
 - **Export…** and **Import…** share a design as a JSON file. An imported design is mapped onto the sensors of this PC, and the editor lists what it could not match.
 
 ### OLED pixel orbit

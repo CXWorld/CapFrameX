@@ -60,7 +60,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 31;
+        public const int Version = 33;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -119,6 +119,7 @@ namespace CapFrameX.OSD.Integration
                 (Id: "RTX-50-Ryzen-FUSION", Version: 18),
                 (Id: "NVIDIA-GeForce-RTX-GREENLINE", Version: 7),
                 (Id: "ICELINE-Vertical", Version: 7),
+                (Id: "AQUALINE-GeForce-RTX", Version: 32),
                 (Id: "DUOLINE-Radeon-Ryzen", Version: 25),
                 (Id: "DUOLINE-GeForce-Ryzen", Version: 25),
                 (Id: "DUOLINE-Radeon-Intel", Version: 25),
@@ -170,6 +171,8 @@ namespace CapFrameX.OSD.Integration
                 // Version thirty-one showed REDLINE's GPU and CPU names without a caption, larger and aligned
                 // with the right edge of the tiles below them, and put the red captions of its Radeon tiles on
                 // a neutral near-black instead of a red-tinted one.
+                // Version thirty-three gave AQUALINE's large frame rate and its device names room below their text:
+                // a canvas tile clips at its frame, which cut off the bottom of the digits and the descenders.
                 // Never replace a renamed or edited profile.
                 string[] previousDesignHashes = entry.Id switch
                 {
@@ -224,6 +227,7 @@ namespace CapFrameX.OSD.Integration
                         "15BF2A0A4109D67A91B23A1B8E6AFB2EEADEA4FCCFA79265A6E1B110D0419143",
                         "BD5DB1FD01A7D5D7B5FCE3BC2B6C39CD1B2CF16E399786C1798B3AC3B56A90FD"
                     },
+                    "AQUALINE-GeForce-RTX" => new[] { "FE9A03B2EC3A022207C1C30787E3837CA9EC42AE73EBE436E039D7FBE00D13EF" },
                     "turquoise-reference" => new[] { "8D87F7B59BA05436CA4968439662372DE4D6E14FFE199B1CE87598DDE181EB06" },
                     "hybrid-benchmark" => new[] { "7F7D44B0D8CE8CAAD9D448DA2265E6A192AD50DF2E0232882236D7B46C0629EB" },
                     "hybrid-compact" => new[] { "F5EEAC1DAF3BDDF9091F000217553F526FA4D47B3FE34769B39A5F0E74D7C6F3" },

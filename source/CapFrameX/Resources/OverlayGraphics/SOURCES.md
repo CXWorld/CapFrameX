@@ -15,6 +15,7 @@ expanded locally. This lets the offline importer reject external resources.
 | File | Source and provenance | Notes |
 | --- | --- | --- |
 | `NVIDIA/NVIDIA.svg` | [NVIDIA RTX 5090 product page](https://www.nvidia.com/en-us/geforce/graphics-cards/50-series/rtx-5090/) | Original inline `n24-nvidia-logo` SVG symbol placed in a standalone SVG element; paths and colors unchanged. |
+| `NVIDIA/NVIDIA-Eye.svg` | Same original source as `NVIDIA.svg` above | The eye mark alone: the unchanged `nvidia-logo-eye-mark` path with its transform and color. The wordmark and the registered-trademark path are omitted; viewBox fitted around the retained geometry. |
 | `NVIDIA/NVIDIA-Vertical.svg` | [NVIDIA original SVG](https://www.nvidia.com/content/dam/en-zz/Solutions/about-nvidia/logo-and-brand/nvidia-logo-vert.svg), [brand page](https://www.nvidia.com/en-gb/about-nvidia/legal-info/logo-brand-usage/) | Original vertical corporate logo. |
 | `NVIDIA/NVIDIA-GeForce.svg` | [Wikimedia file page](https://commons.wikimedia.org/wiki/File:RTX_30_series_logo_with_slogan.svg), original artwork credited to NVIDIA | GeForce wordmark extracted from the 30-series lockup: the first eight original paths, including the registered-trademark mark, are unchanged. Background, RTX and series/slogan paths omitted; viewBox fitted around the retained geometry. |
 | `NVIDIA/NVIDIA-GeForce-RTX.svg` | [Wikimedia file page](https://commons.wikimedia.org/wiki/File:RTX_30_series_logo_with_slogan.svg), original artwork credited to NVIDIA | Generic GeForce RTX wordmark extracted from the 30-series lockup: the first twelve original paths, including trademark marks, are unchanged. Background and series/slogan paths omitted; viewBox fitted around the retained geometry. |
@@ -57,6 +58,17 @@ FUSION ARL `Intel/Intel-Core-Ultra.svg` (its full viewBox), FUSION RPL
 `Intel/Intel-Core.svg` with a transparent margin of 7.5% on each edge, so that
 its badge has the size of the Core Ultra badge. REDLINE and FUSION Ryzen show the
 Ryzen badge template described below without its model and tier layers.
+
+## AQUALINE starter profile
+
+AQUALINE - GeForce RTX (`overlay-templates/AQUALINE-GeForce-RTX.json`) shows the eye mark of
+`NVIDIA/NVIDIA-Eye.svg` beside the GPU name. It embeds a 121 x 80 pixel PNG,
+4 pixels per unit of the viewBox, rendered with WPF on 2026-11-15 with SVG's
+nonzero fill rule. CapFrameX color variant: the unchanged path filled with the
+design's cyan `#22E1F8` instead of NVIDIA's green, on a transparent background,
+like the one-color glyphs beside the frame rate and the CPU name. This is an
+adaptation, not an unmodified manufacturer download. The lines between the
+readings are an 8 x 1 pixel PNG with one opaque column; no third-party material.
 
 ## Ryzen 5 9600X badge components
 

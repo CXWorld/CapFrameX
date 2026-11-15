@@ -175,6 +175,8 @@ namespace CapFrameX.Test.Integration
         [DataRow(28, 29)]
         [DataRow(29, 30)]
         [DataRow(30, 31)]
+        [DataRow(31, 32)]
+        [DataRow(32, 33)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -187,13 +189,14 @@ namespace CapFrameX.Test.Integration
                 6 => new[] { "Panther-Lake-Arc-Aurora", "OLED-Minimal" },
                 17 => SlickPresetIds,
                 18 => new[] { "RTX-50-Core-FUSION-RPL", "RTX-50-Ryzen-FUSION" },
-                19 or 20 or 21 or 22 or 23 or 31 => Array.Empty<string>(),
+                19 or 20 or 21 or 22 or 23 or 31 or 33 => Array.Empty<string>(),
                 24 => AnimePresetIds,
                 25 => DuolinePresetIds,
                 27 => new[] { "Blackwell-Thermals-RTX-5090" },
                 28 => new[] { "Blackwell-Thermals-RTX-5080", "Blackwell-Thermals-RTX-5070", "Blackwell-Thermals-RTX-5060" },
                 29 => new[] { "BLUELINE-Nova-Lake" },
                 30 => new[] { "Performance-Strip" },
+                32 => new[] { "AQUALINE-GeForce-RTX" },
                 _ =>new[] { "NVIDIA-GeForce-RTX-GREENLINE", "ICELINE-Vertical" }
             };
             CollectionAssert.AreEquivalent(expectedIds,
@@ -302,6 +305,7 @@ namespace CapFrameX.Test.Integration
         [DataRow("Performance-Strip", "Performance Strip", false, 30)]
         [DataRow("NVIDIA-GeForce-RTX-GREENLINE", "GREENLINE - GeForce RTX", true, 7)]
         [DataRow("ICELINE-Vertical", "ICELINE - Vertical", true, 7)]
+        [DataRow("AQUALINE-GeForce-RTX", "AQUALINE - GeForce RTX", true, 32)]
         [DataRow("DUOLINE-Radeon-Ryzen", "DUOLINE - Radeon + Ryzen", false, 25)]
         [DataRow("DUOLINE-GeForce-Ryzen", "DUOLINE - GeForce RTX + Ryzen", false, 25)]
         [DataRow("DUOLINE-Radeon-Intel", "DUOLINE - Radeon + Intel Core", false, 25)]
@@ -526,6 +530,7 @@ namespace CapFrameX.Test.Integration
         [DataRow("RTX-50-Core-Ultra-FUSION-ARL", new[] { "gpuNameShort", "cpuNameShort" })]
         [DataRow("RTX-50-Core-FUSION-RPL", new[] { "gpuNameShort", "cpuNameShort" })]
         [DataRow("RTX-50-Ryzen-FUSION", new[] { "gpuNameShort", "cpuNameShort" })]
+        [DataRow("AQUALINE-GeForce-RTX", new[] { "gpuNameShort", "cpuNameShort" })]
         [DataRow("DUOLINE-Radeon-Ryzen", new[] { "gpuNameShort", "cpuNameShort" })]
         [DataRow("DUOLINE-GeForce-Ryzen", new[] { "gpuNameShort", "cpuNameShort" })]
         [DataRow("DUOLINE-Radeon-Intel", new[] { "gpuNameShort", "cpuNameShort" })]
@@ -623,6 +628,91 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(document.Tiles[0].Y + document.Tiles[0].FrameHeight <= document.Tiles[1].Y, "The GPU block sits above the CPU block.");
             CollectionAssert.AreEqual(new[] { "frametimes", "fpsCurrent", "frametimeCurrent" },
                 document.Tiles[2].Children.Select(tile => tile.Key).ToArray());
+        }
+
+        [TestMethod]
+        public void AqualineStarterShowsTheFrameRateTheGpuAndTheCpuOnOutlinedCards()
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "AQUALINE-GeForce-RTX");
+            var document = OsdDesignDocument.FromJson(starter.DesignJson);
+            document.Validate();
+            Assert.AreEqual(starter.DesignJson, OverlayRuntimeDesign.Canonicalize(document.ToJson()), "The starter is stored as the editor saves it.");
+            // Three outlined cards below each other: the frame rate, then the GPU and the CPU.
+            CollectionAssert.AreEqual(new[] { "Framerate", "GPU", "CPU" }, document.Tiles.Select(tile => tile.Label).ToArray());
+            Assert.IsTrue(document.Tiles.All(card => card.Kind == "container" && card.BorderWidth > 0 && card.BorderColor != null
+                && card.X == 0 && card.FrameWidth == document.Width), "Every card spans the design and draws its outline.");
+            for (int index = 1; index < document.Tiles.Count; index++)
+                Assert.IsTrue(document.Tiles[index - 1].Y + document.Tiles[index - 1].FrameHeight < document.Tiles[index].Y, "The cards keep a gap.");
+            Assert.AreEqual(document.CanvasHeight, document.Tiles[^1].Y + document.Tiles[^1].FrameHeight);
+
+            // Captions are text tiles, which the renderer draws as heavy as the values; a metric's own label is lighter.
+            // Every value is white over its caption in the design's cyan, and both share one frame width.
+            void Captioned(OsdDesignTile card, OsdDesignTile value)
+            {
+                Assert.AreEqual("none", value.LabelPosition, value.Key);
+                var caption = card.Children.Single(tile => tile.Kind == "text" && tile.Text == value.Label);
+                Assert.AreEqual((value.X, value.FrameWidth), (caption.X, caption.FrameWidth), value.Key + ": the caption is centred below its value.");
+                Assert.IsTrue(caption.Y > value.Y, value.Key);
+                Assert.AreEqual(document.TextColor, caption.Color, value.Key);
+                Assert.AreNotEqual(document.TextColor, value.ValueColor, value.Key);
+            }
+
+            // The frame rate card: a speedometer and the heading, the current frame rate large over "FPS", 1% low and
+            // average beside it, then the frame time above its graph.
+            var framerate = document.Tiles[0];
+            Assert.AreEqual("", framerate.Children.Single(tile => tile.Kind == "icon").Glyph);
+            var rates = framerate.Children.Where(tile => tile.Kind == "metric").ToArray();
+            CollectionAssert.AreEqual(new[] { "fpsCurrent", "fps1pctLow", "fps", "frametimeCurrent" }, rates.Select(tile => tile.Key).ToArray());
+            Assert.AreEqual(document.TextColor, rates[0].ValueColor, "The current frame rate has the color of the headings.");
+            Assert.IsTrue(rates.Skip(1).All(tile => tile.ValueSize < rates[0].ValueSize), "The current frame rate is the largest value.");
+            Captioned(framerate, rates[1]);
+            Captioned(framerate, rates[2]);
+            var chart = framerate.Children.Single(tile => tile.Kind == "chart");
+            Assert.AreEqual("frametimes", chart.Key);
+            Assert.IsTrue(chart.Y >= rates[3].Y + rates[3].FrameHeight - 1, "The graph runs below the frame time.");
+
+            // A device card: its mark and the installed model, then usage, temperature and power over clock and
+            // memory, separated by thin lines. The GPU's mark is NVIDIA's eye, an image in the design's cyan; the
+            // CPU's is a glyph.
+            void Device(OsdDesignTile card, string glyph, string nameKey, string[] keys, string[] captions)
+            {
+                var mark = card.Children[0];
+                if (glyph != null)
+                    Assert.AreEqual(("icon", glyph), (mark.Kind, mark.Glyph), nameKey);
+                else
+                    Assert.AreEqual(("image", "NVIDIA logo", "contain"), (mark.Kind, mark.Label, mark.Fit), nameKey);
+                var values = card.Children.Where(tile => tile.Kind == "metric").ToArray();
+                Assert.AreEqual(nameKey, values[0].Key);
+                Assert.IsTrue(mark.X + mark.FrameWidth <= values[0].X, nameKey + ": the mark stands left of the name.");
+                CollectionAssert.AreEqual(keys, values.Skip(1).Select(tile => tile.Key).ToArray());
+                CollectionAssert.AreEqual(captions, card.Children.Where(tile => tile.Kind == "text").Select(tile => tile.Text).ToArray());
+                foreach (var value in values.Skip(1)) Captioned(card, value);
+                CollectionAssert.AreEqual(new[] { "%", "°C", "W", "MHz", "GB" }, values.Skip(1).Select(tile => tile.Unit).ToArray());
+                Assert.AreEqual(2, values[^1].Digits, "Memory in GB with two decimals.");
+                Assert.AreEqual(values[1].Y, values[3].Y, nameKey + ": usage, temperature and power share a row.");
+                Assert.AreEqual(values[4].Y, values[5].Y, nameKey + ": clock and memory share the row below.");
+                Assert.IsTrue(values[4].Y > values[1].Y, nameKey);
+                Assert.AreEqual(3, card.Children.Count(tile => tile.Kind == "image" && tile != mark),
+                    nameKey + ": two lines in the upper row, one in the lower.");
+            }
+            Device(document.Tiles[1], null, "gpuNameShort", new[] { "gpuLoad", "gpuTemp", "gpuPower", "gpuClock", "vramUsed" },
+                new[] { "USAGE", "TEMP", "PWR", "CLOCK", "VRAM" });
+            Device(document.Tiles[2], "", "cpuNameShort", new[] { "cpuLoad", "cpuTemp", "cpuPower", "cpuClock", "ramUsed" },
+                new[] { "USAGE", "TEMP", "PWR", "CLOCK", "RAM" });
+
+            // Version thirty-two: the large frame rate in a frame as high as its font, which cut off the bottom of
+            // its digits, and the names in frames that cut off their descenders.
+            Assert.IsTrue(rates[0].FrameHeight - rates[0].ValueSize >= 6, "The large frame rate keeps room below its digits.");
+            rates[0].Y = 39;
+            rates[0].FrameHeight = 58;
+            rates[0].ValueSize = 57;
+            foreach (var name in document.EnumerateTiles().Where(tile => tile.Key == "gpuNameShort" || tile.Key == "cpuNameShort"))
+            {
+                Assert.IsTrue(name.FrameHeight - name.ValueSize >= 8, name.Key + " keeps room for descenders.");
+                name.FrameHeight = 24;
+            }
+            Assert.IsTrue(starter.CanUpdate(new OverlayDesignProfile(starter.Id, starter.Name, document.ToJson(), DateTime.UtcNow)),
+                "An unmodified version-thirty-two AQUALINE gets the frames that no longer cut off its texts.");
         }
 
         [TestMethod]
@@ -786,6 +876,7 @@ namespace CapFrameX.Test.Integration
         [TestMethod]
         [DataRow("NVIDIA-GeForce-RTX-GREENLINE")]
         [DataRow("ICELINE-Vertical")]
+        [DataRow("AQUALINE-GeForce-RTX")]
         [DataRow("Slick-Overlay-Vertical-Panel")]
         [DataRow("Slick-Overlay-Wide-3-Rows")]
         [DataRow("Slick-Overlay-Compact-2x2")]
