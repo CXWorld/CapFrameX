@@ -1341,6 +1341,18 @@ on the `OsdEditorControl`: every section header of the editor starts where its f
 keeps its chevron at the right edge, like the combo boxes. The OSD Controls stay free of MDIX; do
 not align these headers with margins. Test: `InspectorSectionHeadersStartWhereTheFieldsStart`.
 
+## Overlay editor slider halos
+
+MDIX draws a halo around a slider's thumb while the pointer is over it or it has the focus: 48 px
+around the 18 px thumb, so 15 px past either end of the slider. A scroll area cuts off what leaves it,
+and the inspector's ended 6 px right of its fields and at their left edge: at 100 % tile opacity the
+halo had a flat right side, at a minimum a flat left one. Every inspector tab's `ScrollViewer` now
+reaches the card's edges (margin -12 against the card's padding of 12) and its content keeps 15 px
+beside the fields (`OsdEditorControl.xaml`). The fields keep their width and move 3 px to the right;
+the scroll bar sits at the card's edge. Do not inset the sliders instead: their tracks end where the
+fields end. Keep the three numbers in step when the card's padding or the theme's halo changes. Test:
+`OverlayInspectorSliderTest`, which moves every slider of the inspector to both ends in the app's theme.
+
 ## Settings that cannot be saved, starts from a temporary folder
 
 A failed write of `AppSettings.json` does not end the app. `JsonSettingsStorage` tries a save four
