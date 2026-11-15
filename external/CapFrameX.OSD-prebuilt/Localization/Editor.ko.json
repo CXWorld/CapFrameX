@@ -14,7 +14,7 @@
   "Editor_013": "위젯을 미리보기로 끌어 놓으세요",
   "Editor_014": "격자의 원하는 위치에 놓으세요. 타일은 독립적으로 이동하며, 셀 크기는 레이아웃에서 설정할 수 있습니다.",
   "Editor_015": "드래그하여 추가하거나 두 번 클릭하여 끝에 추가하세요.",
-  "Editor_016": "Ctrl을 누른 채 드래그하면 타일이 복제됩니다. 핸들을 드래그하여 크기를 조절하세요. Escape로 작업을 취소합니다.",
+  "Editor_016": "Ctrl을 누른 채 드래그하면 타일이 복제되고, Ctrl을 누른 채 클릭하면 여러 타일을 선택합니다. 핸들을 드래그하여 크기를 조절하세요. Escape로 작업을 취소합니다.",
   "Editor_017": "타일",
   "Editor_018": "레이어는 뒤에서 앞으로 그려집니다. 컨테이너를 두 번 클릭하여 내부 요소를 편집하세요.",
   "Editor_019": "뒤로 보내기",
@@ -511,5 +511,17 @@
   "Editor_ContainerEmpty": "컨테이너가 비어 있습니다.",
   "Editor_BarThickness": "막대 두께",
   "Editor_BarVerticalHint": "세로 막대는 타일의 너비와 높이를 채웁니다. 타일 크기를 조절해 막대를 넓히거나 좁히거나 높이거나 낮추세요. 값은 막대 위에, 레이블은 아래에 표시됩니다.",
-  "Editor_BarOrientationInvalid": "막대 방향은 가로 또는 세로여야 합니다."
+  "Editor_BarOrientationInvalid": "막대 방향은 가로 또는 세로여야 합니다.",
+  "Editor_PlaceIntoContainer": "컨테이너에 넣기",
+  "Editor_PlaceIntoContainerHint": "선택한 타일과 정확히 같은 크기의 컨테이너를 만들어 타일을 그 안에 넣습니다. 타일은 제자리에 있습니다. 미리보기나 레이어 목록에서 Ctrl을 누른 채 클릭하면 여러 타일을 선택합니다.",
+  "Editor_PlacedIntoContainer": "타일 {0}개를 새 컨테이너에 넣었습니다.",
+  "Editor_SelectionCount": "타일 {0}개 선택됨",
+  "Editor_SelectionHint": "Ctrl을 누른 채 클릭하면 타일을 추가하거나 뺍니다. Escape는 하나만 남깁니다. 아래 필드는 “{0}”을(를) 편집합니다.",
+  "Editor_SelectionLocked": "먼저 선택한 타일의 잠금을 해제하세요.",
+  "Editor_GroupNothing": "컨테이너에 넣을 타일을 선택하세요.",
+  "Editor_GroupOneLevel": "컨테이너에 넣을 타일은 같은 수준에 있어야 합니다.",
+  "Editor_MergeNothing": "추가할 타일을 선택하세요.",
+  "Editor_MergeTooTall": "이 타일들을 추가하면 디자인 높이가 4096 px를 넘습니다. 타일을 줄이거나 먼저 공간을 만드세요.",
+  "Editor_Merged": "“{1}”의 타일 {0}개를 다른 타일 아래에 추가했습니다. 추가한 타일이 선택되어 있으며, “컨테이너에 넣기”로 하나로 묶을 수 있습니다.",
+  "Editor_FitCanvasHint": "캔버스를 타일에 맞춥니다. 너비는 가장 오른쪽 타일까지, 높이는 가장 아래 타일에 격자 두 칸을 더한 만큼입니다."
 }

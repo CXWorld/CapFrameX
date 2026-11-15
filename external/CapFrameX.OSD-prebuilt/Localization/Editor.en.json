@@ -14,7 +14,7 @@
   "Editor_013": "Drag widgets onto the preview",
   "Editor_014": "Drop anywhere on the fine grid. Tiles move independently; the cell size is configurable in Layout.",
   "Editor_015": "Drag to add. Double-click to append.",
-  "Editor_016": "Ctrl + drag duplicates a tile. Drag the handles to resize. Escape cancels a gesture.",
+  "Editor_016": "Ctrl + drag duplicates a tile, Ctrl + click selects several. Drag the handles to resize. Escape cancels a gesture.",
   "Editor_017": "Tiles",
   "Editor_018": "Layers render from back to front. Double-click a container to edit its elements.",
   "Editor_019": "Send backward",
@@ -511,5 +511,17 @@
   "Editor_ContainerEmpty": "The container is empty.",
   "Editor_BarThickness": "Bar thickness",
   "Editor_BarVerticalHint": "A vertical bar fills the tile's width and height: resize the tile to make it wider, narrower, taller or shorter. The value is shown above the bar, the label below it.",
-  "Editor_BarOrientationInvalid": "A bar's orientation must be horizontal or vertical."
+  "Editor_BarOrientationInvalid": "A bar's orientation must be horizontal or vertical.",
+  "Editor_PlaceIntoContainer": "Place into container",
+  "Editor_PlaceIntoContainerHint": "Creates a container exactly as large as the selected tiles and places them into it; they stay where they are. Ctrl + click tiles in the preview or in the layer list to select several.",
+  "Editor_PlacedIntoContainer": "Placed {0} tiles into a new container.",
+  "Editor_SelectionCount": "{0} tiles selected",
+  "Editor_SelectionHint": "Ctrl + click adds a tile or takes it out; Escape keeps only one. The fields below edit “{0}”.",
+  "Editor_SelectionLocked": "Unlock the selected tiles first.",
+  "Editor_GroupNothing": "Select the tiles to place into a container.",
+  "Editor_GroupOneLevel": "The tiles of a container must come from the same level.",
+  "Editor_MergeNothing": "Choose the tiles to add.",
+  "Editor_MergeTooTall": "With these tiles the design would be taller than 4096 px. Add fewer tiles or make room first.",
+  "Editor_Merged": "Added {0} tiles from “{1}” below the others. They are selected: “Place into container” makes them one.",
+  "Editor_FitCanvasHint": "Fits the canvas to its tiles: the width to the rightmost tile, the height to the lowest tile plus two grid cells."
 }

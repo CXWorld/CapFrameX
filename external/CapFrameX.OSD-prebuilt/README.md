@@ -12,6 +12,39 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Several selected tiles, containers from a selection, merged designs (2026-11-15)
+
+Controls was rebuilt in `Release|x64` for `net11.0-windows` (.NET SDK 11.0.100,
+`dotnet build CapFrameX.OSD.sln -c Release --no-incremental`) from the OSD working tree that is now
+commit `24f29f0021b9f4ba0273ebb835f50db49a2201c7` (`main`; four commits on `b0243d6`, from `5d72a22`
+on: the canvas fit, the selection, the merge, the slider halos). Ctrl+click in the preview or the layer
+list selects several tiles (`OsdEditorControl.SelectedElements`); "Place into container" puts them
+into a new container of exactly their bounding box (`OsdDesignDocument.GroupIntoContainer`), and Remove
+takes all of them. `OsdDesignDocument.Merge` and `OsdEditorControl.MergeDesign` add the top-level tiles
+of another design below a design's own, with the look their design gave them. "Fit canvas to content"
+sits below the canvas height and the width instead of between them and fits both: the width to the
+rightmost tile, the height as before. The scroll areas of the inspector reach the card's edges and keep
+15 px beside the fields, so the halo a host theme draws around a slider's thumb is whole at both ends
+of every slider. `OsdLocalization.ValueLabel` names a widget kind for hosts.
+Twelve editor texts were added in all five languages and `Editor_016` names Ctrl + click;
+`Editor.en.json` and `Editor.ko.json` are copied here. Interop was rebuilt along but not
+copied (its sources are unchanged); the native DLLs, both Vulkan manifests and the template catalogs
+are unchanged. `CapFrameX.View` needs this Controls: it calls `MergeDesign`, `SelectedElements` and
+`OsdLocalization.ValueLabel`.
+
+Verification: a CapFrameX Release build with `CfxOsdFromSource=false` staged exactly this DLL, the
+Interop and the native core of this folder into the test output and passed all 3683 tests outside the
+`Integration` category, among them `OverlaySelectionAndMergeTest` (which compares the renderer's pixels
+of tiles before and after they go into a container, and of merged tiles with those of their design,
+and fits the canvas), the merge tests of `OverlayDesignerProfileHostTest` and
+`OverlayInspectorSliderTest`. The maintainer went through the fit button, the selection, "Place into
+container", Remove and the merge by mouse in a CapFrameX built from source and found them in order;
+the slider halos were looked at in off-screen renderings.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net11.0-windows\CapFrameX.OSD.Controls.dll | `C52557ED94AFF46F8A3B0582ACEAD1F05FBFC5ED31EB6691EC8B831ADBC6B170` |
+
 ### .NET 11 managed bridge and editor (2026-11-15)
 
 Interop and Controls were rebuilt in `Release|x64` for `net11.0-windows` (.NET SDK 11.0.100,
