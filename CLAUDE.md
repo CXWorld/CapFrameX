@@ -663,6 +663,52 @@ shrinks the frame to the children's bounding box plus the padding on every side 
 children keep their place on the screen. Tests: `OverlayBarAndContainerEditingTest`, which also
 checks the renderer's pixels of both bar directions.
 
+### Several selected tiles, containers from a selection, merged profiles
+
+Ctrl+click in the preview or the layer list adds a tile of the level being edited to the selection or
+takes it out (`OsdEditorState.ToggleSelection`; `SelectedTiles` in layer order, the public
+`OsdEditorControl.SelectedElements`). `SelectedTile` stays the one tile the inspector edits, the tile
+added last: every other selected tile shows a dashed outline in the preview and a mark in the layer
+list, the resize handles hide, and a card over the inspector names the count. Selecting a tile the
+plain way, Escape, another level and every edit that selects its result leave one tile selected. A
+press with Ctrl still arms the drag, so Ctrl + drag duplicates as before; a copy dropped onto its
+original's frame is refused, as a move always was (a Ctrl+click that moved the pointer a few pixels
+would leave one behind). What works on all selected tiles: "Place into container" and Remove (the
+Delete key), which keeps one tile in the design. Duplicate, the layer order and a drag take the one
+tile.
+
+"Place into container" (the Tiles tab and the selection card; `PlaceSelectionIntoContainer`,
+`OsdDesignDocument.GroupIntoContainer`) puts the selected tiles, one is enough, into a new container
+that is exactly their bounding box, transparent and without padding, so nothing moves or looks
+different (the renderer's pixels are compared). The container takes the layer of the topmost tile, a
+flow design becomes a canvas first, locked tiles and a row block that follows its rows stay out, and
+a refused placement (four nested levels) restores the design and the selection.
+
+"Merge…" in the profile toolbar (`OverlayDesignerControl.MergeProfileAsync`,
+`OverlayDesignMergeDialog`) adds top-level tiles of another saved profile to the design being edited:
+all of them merges two profiles, a container alone takes that container. `OsdEditorControl.MergeDesign`
+runs it as one undoable edit that nothing saves, and selects the added tiles, ready for "Place into
+container". `OsdDesignDocument.Merge` places copies below the design's tiles (after the gap, from the
+left edge, in their arrangement) and grows the canvas. Sizes stay in design units, so the target's
+scale applies, as do its font, corner radius and tile opacity: none of them has a per-tile value, and
+scaling tiles would clip the texts whose size the theme sets. What a tile left to its design's
+defaults becomes its own where the target's default differs (`AdoptDefaults`: every color the tile
+draws, a value line's accent, the padding; the column span is clamped), so a merged tile is drawn pixel
+for pixel as in its profile. A row block of the target that follows its rows moves below the added
+tiles, because it has to stay the lowest tile of its columns. Roles and semantic keys of a starter
+nobody opened bind to this PC's sources first, a flow design is laid out with the renderer's
+measurements, and a merge the design cannot hold (64 tiles, 4096 px) is refused with its reason.
+
+"Fit canvas to content" sits below both sizes of the canvas, the height and the width, not between
+them, and fits both as one edit (`OnFitCanvas`): the height to the lowest tile plus two grid cells, as
+before, and the width to the rightmost tile. The width lands on the next grid line, is at least 220
+and never grows (a 523 px canvas whose tiles end there stays 523); tiles keep their places, so empty
+space left of or above them stays. A full-width design then stretches by the screen width over the
+fitted width. The prebuilt Controls must contain these changes: `CapFrameX.View`
+calls `MergeDesign`, `SelectedElements` and `OsdLocalization.ValueLabel`. Tests:
+`OverlaySelectionAndMergeTest`, `OverlayDesignerProfileHostTest` (`TheMergeDialog…`, `MergingAProfile…`,
+`AMergeTheDesignCannotHold…`).
+
 ### Heatmap tiles
 
 A group tile with `GroupDisplay = "heatmap"` exports the native `heatmap` widget, one cell per

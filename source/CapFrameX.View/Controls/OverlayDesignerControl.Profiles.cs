@@ -337,6 +337,7 @@ namespace CapFrameX.View.Controls
                 SaveProfileButton.IsEnabled = pendingText || valid && _profileSession.IsDirty;
                 DuplicateProfileButton.IsEnabled = valid;
                 ExportProfileButton.IsEnabled = valid;
+                MergeProfileButton.IsEnabled = valid && _profileStore.Profiles.Count > 1;
                 UseDesignButton.IsEnabled = valid && _designService?.CanActivate == true;
                 UseDesignButton.ToolTip = _designService?.CanActivate == true
                     ? CxLang.T("OverlayEditor_UseHint")
@@ -648,6 +649,36 @@ namespace CapFrameX.View.Controls
                 }
                 return Task.CompletedTask;
             });
+        }
+
+        private async void OnMergeProfile(object sender, RoutedEventArgs e) => await MergeProfileAsync();
+
+        /// <summary>
+        /// Asks which tiles of another saved profile to add and adds them below the tiles of the design
+        /// being edited: all of them merges two profiles, a container alone takes just that container. The
+        /// result is an unsaved edit of the working design, which one Undo takes back. Returns whether
+        /// tiles were added.
+        /// </summary>
+        public async Task<bool> MergeProfileAsync()
+        {
+            bool merged = false;
+            await RunProfileActionAsync(async () =>
+            {
+                var others = _profileStore.Profiles.Where(profile => profile.Id != _profileSession.ActiveProfile.Id).ToArray();
+                if (others.Length == 0)
+                {
+                    return;
+                }
+                var dialog = new OverlayDesignMergeDialog(others, _profileSession.ActiveProfile.Name);
+                if (await DialogHost.Show(dialog, _profileDialogId) is not OverlayDesignPromptResult.Confirm
+                    || dialog.SelectedProfile == null)
+                {
+                    return;
+                }
+                // The editor adapts the tiles and refuses what the design cannot hold, saying why.
+                merged = Editor.MergeDesign(dialog.SelectedProfile.DesignJson, dialog.ChosenTiles) > 0;
+            });
+            return merged;
         }
 
         private async Task<IReadOnlyList<OverlayTelemetrySource>> GetImportSourcesAsync()

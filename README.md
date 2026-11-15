@@ -106,6 +106,8 @@ Besides the row overlay of **Overlay items**, the CapFrameX in-game and hook-fre
 - **Open tile editor** opens the editor with a live preview: add tiles from the palette, set their source, size and colors, and save the design as a profile.
 - CapFrameX ships 46 starter designs, from compact corner layouts to hardware themes that name the installed CPU and GPU. Later updates of the starters leave a profile you changed untouched.
 - **Export…** and **Import…** share a design as a JSON file. An imported design is mapped onto the sensors of this PC, and the editor lists what it could not match.
+- **Ctrl + click** selects several tiles in the preview or the layer list. **Place into container** puts them into a new container of exactly their size; nothing moves, and the container then moves, scales and copies them as one.
+- **Merge…** adds tiles of another saved profile below the tiles of the design you are editing: all of them to merge two profiles, or just the containers and tiles you tick. They keep their arrangement and colors; scale, font, corner radius and tile opacity of your design apply. Nothing is saved until you save, and one Undo takes them out again.
 
 ### OLED pixel orbit
 

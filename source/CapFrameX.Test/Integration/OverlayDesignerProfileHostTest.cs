@@ -731,6 +731,128 @@ namespace CapFrameX.Test.Integration
             }
         }
 
+        [TestMethod]
+        public void TheMergeDialogListsTheTopLevelTilesOfAProfileAndTakesAllOfThemAtFirst()
+        {
+            using var fixture = new HostFixture();
+            var design = new OsdDesignDocument { Name = "Cards", IsCanvas = true, Width = 480, CanvasHeight = 320, GridSize = 8 };
+            design.Tiles.Add(new OsdDesignTile { Kind = "metric", Label = "FPS", Key = "fps", Unit = "FPS", X = 0, Y = 0, FrameWidth = 160, FrameHeight = 80 });
+            var card = new OsdDesignTile { Kind = "container", Label = "Card", X = 0, Y = 96, FrameWidth = 320, FrameHeight = 160 };
+            card.Children.Add(new OsdDesignTile { Kind = "metric", Label = "GPU", Key = "gpuLoad", Unit = "%", X = 0, Y = 0, FrameWidth = 120, FrameHeight = 64 });
+            card.Children.Add(new OsdDesignTile { Kind = "text", Label = "Note", Text = "Note", X = 128, Y = 0, FrameWidth = 120, FrameHeight = 64 });
+            design.Tiles.Add(card);
+            var cards = fixture.ReopenStore().Create("Cards", design.ToJson());
+            var damaged = new OverlayDesignProfile("damaged", "Damaged", "{ \"version\": 1 }", DateTime.UtcNow);
+
+            var dialog = new OverlayDesignMergeDialog(new[] { cards, damaged }, "My design");
+            var all = (CheckBox)dialog.FindName("AllTiles");
+            var error = (TextBlock)dialog.FindName("SourceError");
+
+            StringAssert.Contains(((TextBlock)dialog.FindName("MergeMessage")).Text, "“My design”");
+            Assert.AreSame(cards, dialog.SelectedProfile);
+            CollectionAssert.AreEqual(new[] { "FPS", "Card" }, dialog.Choices.Select(choice => choice.Name).ToArray());
+            CollectionAssert.AreEqual(new[] { "Metric", "Container · 2 elements" }, dialog.Choices.Select(choice => choice.Detail).ToArray());
+            CollectionAssert.AreEqual(new[] { 0, 1 }, dialog.ChosenTiles.ToArray(), "All tiles merge the two profiles.");
+            Assert.AreEqual(true, all.IsChecked);
+            Assert.IsTrue(dialog.CanMerge);
+            Assert.AreEqual(Visibility.Collapsed, error.Visibility);
+
+            dialog.Choices[0].IsChosen = false;
+            CollectionAssert.AreEqual(new[] { 1 }, dialog.ChosenTiles.ToArray(), "A container alone can be taken.");
+            Assert.IsNull(all.IsChecked, "Some tiles are chosen.");
+            Assert.IsTrue(dialog.CanMerge);
+            dialog.Choices[1].IsChosen = false;
+            Assert.AreEqual(false, all.IsChecked);
+            Assert.IsFalse(dialog.CanMerge, "Nothing chosen merges nothing.");
+
+            dialog.Choices[1].IsChosen = true;
+            all.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+            CollectionAssert.AreEqual(new[] { 0, 1 }, dialog.ChosenTiles.ToArray(), "The half-checked box completes the choice.");
+            all.RaiseEvent(new RoutedEventArgs(System.Windows.Controls.Primitives.ButtonBase.ClickEvent));
+            Assert.AreEqual(0, dialog.ChosenTiles.Count);
+
+            dialog.SelectedProfile = damaged;
+            Assert.AreEqual(0, dialog.Choices.Count);
+            Assert.IsFalse(dialog.CanMerge);
+            Assert.AreEqual(Visibility.Visible, error.Visibility, "A profile the editor cannot read says so.");
+            StringAssert.StartsWith(error.Text, "This profile cannot be merged: ");
+
+            dialog.SelectedProfile = cards;
+            CollectionAssert.AreEqual(new[] { 0, 1 }, dialog.ChosenTiles.ToArray());
+            Assert.AreEqual(Visibility.Collapsed, error.Visibility);
+        }
+
+        [TestMethod]
+        public void MergingAProfileAddsItsTilesToTheWorkingDesignWithoutSavingIt()
+        {
+            using var fixture = new HostFixture(twoProfiles: true);
+            var host = fixture.Host;
+            Assert.AreEqual("First", host.ProfileSession.ActiveProfile.Name);
+            Assert.IsTrue(fixture.Button("MergeProfileButton").IsEnabled);
+            string saved = fixture.ReopenStore().Get(host.ProfileSession.ActiveProfile.Id).DesignJson;
+            int own = host.Designer.Document.Tiles.Count;
+            int taken = OsdDesignDocument.CreatePreset("Minimal").Tiles.Count;
+
+            // Cancel adds nothing.
+            Assert.IsFalse(RunWithDialog(fixture, () => host.MergeProfileAsync(), session =>
+            {
+                Assert.IsInstanceOfType(session.Content, typeof(OverlayDesignMergeDialog));
+                session.Close(OverlayDesignPromptResult.Cancel);
+            }));
+            Assert.AreEqual(own, host.Designer.Document.Tiles.Count);
+            Assert.IsFalse(host.HasUnsavedChanges);
+
+            Assert.IsTrue(RunWithDialog(fixture, () => host.MergeProfileAsync(), session =>
+            {
+                var dialog = (OverlayDesignMergeDialog)session.Content;
+                var profiles = ((ComboBox)dialog.FindName("SourceSelector")).Items.Cast<OverlayDesignProfile>().ToArray();
+                Assert.IsFalse(profiles.Any(profile => profile.Name == "First"), "A design is not merged into itself.");
+                dialog.SelectedProfile = profiles.Single(profile => profile.Name == "Second");
+                Assert.AreEqual(taken, dialog.Choices.Count);
+                Assert.IsTrue(dialog.CanMerge);
+                session.Close(OverlayDesignPromptResult.Confirm);
+            }));
+
+            Assert.AreEqual(own + taken, host.Designer.Document.Tiles.Count, "The tiles of the other profile joined the design.");
+            Assert.AreEqual(taken, host.Designer.SelectedElements.Count, "The added tiles are selected.");
+            Assert.AreEqual(Visibility.Collapsed, ((TextBlock)host.FindName("ProfileError")).Visibility);
+            Assert.IsTrue(host.HasUnsavedChanges, "The merge is an edit of the working design.");
+            Assert.AreEqual(saved, fixture.ReopenStore().Get(host.ProfileSession.ActiveProfile.Id).DesignJson, "Nothing is saved until the user saves.");
+
+            fixture.Click("SaveProfileButton");
+            DrainDispatcher();
+            Assert.IsFalse(host.HasUnsavedChanges);
+            Assert.AreEqual(own + taken,
+                OsdDesignDocument.FromJson(fixture.ReopenStore().Get(host.ProfileSession.ActiveProfile.Id).DesignJson).Tiles.Count);
+        }
+
+        [TestMethod]
+        public void AMergeTheDesignCannotHoldIsRefusedWithItsReason()
+        {
+            using var fixture = new HostFixture(twoProfiles: true);
+            var host = fixture.Host;
+            var crowd = new OsdDesignDocument { Name = "Crowd", IsCanvas = true, Width = 480, CanvasHeight = 320, GridSize = 8 };
+            for (int index = 0; index < OsdDesignDocument.MaximumTiles; index++)
+                crowd.Tiles.Add(new OsdDesignTile { Kind = "metric", Label = "M" + index, Key = "fps", X = 0, Y = 0, FrameWidth = 96, FrameHeight = 48 });
+            fixture.ReopenStore().Create("Crowd", crowd.ToJson());
+            // The library changed behind the open designer: reopening the profile reads it again.
+            Assert.IsTrue(host.ReloadLibraryAsync(null).GetAwaiter().GetResult());
+            string before = host.Designer.GetTemplateJson();
+
+            Assert.IsFalse(RunWithDialog(fixture, () => host.MergeProfileAsync(), session =>
+            {
+                var dialog = (OverlayDesignMergeDialog)session.Content;
+                dialog.SelectedProfile = ((ComboBox)dialog.FindName("SourceSelector")).Items.Cast<OverlayDesignProfile>().Single(profile => profile.Name == "Crowd");
+                session.Close(OverlayDesignPromptResult.Confirm);
+            }));
+
+            Assert.AreEqual(before, host.Designer.GetTemplateJson(), "A refused merge leaves the design as it was.");
+            Assert.IsFalse(host.HasUnsavedChanges);
+            var error = (TextBlock)host.FindName("ProfileError");
+            Assert.AreEqual(Visibility.Visible, error.Visibility);
+            StringAssert.Contains(error.Text, "64 tiles");
+        }
+
         private static IEnumerable<T> Descendants<T>(DependencyObject parent) where T : DependencyObject
         {
             for (int index = 0; index < VisualTreeHelper.GetChildrenCount(parent); index++)
@@ -761,16 +883,33 @@ namespace CapFrameX.Test.Integration
 
         private static bool RunWithDecision(HostFixture fixture, Func<Task<bool>> startOperation,
             OverlayDesignPromptResult decision, Action whilePromptOpen = null)
+            => RunWithDialog(fixture, startOperation, session =>
+            {
+                whilePromptOpen?.Invoke();
+                session.Close(decision);
+            });
+
+        // Runs an operation that shows a dialog; `answer` sees the open dialog and closes it.
+        private static bool RunWithDialog(HostFixture fixture, Func<Task<bool>> startOperation, Action<DialogSession> answer)
         {
             var dialog = (DialogHost)fixture.Host.FindName("ProfileDialogHost");
             bool prompted = false;
+            Exception failure = null;
             DialogOpenedEventHandler respond = (_, args) =>
             {
                 prompted = true;
                 Dispatcher.CurrentDispatcher.BeginInvoke(new Action(() =>
                 {
-                    whilePromptOpen?.Invoke();
-                    args.Session.Close(decision);
+                    try
+                    {
+                        answer(args.Session);
+                    }
+                    catch (Exception error)
+                    {
+                        // An assertion inside the dialog must fail the test, not leave the dialog open.
+                        failure = error;
+                        if (!args.Session.IsEnded) args.Session.Close(OverlayDesignPromptResult.Cancel);
+                    }
                 }));
             };
             dialog.DialogOpened += respond;
@@ -789,6 +928,7 @@ namespace CapFrameX.Test.Integration
                 if (!operation.IsCompleted) Dispatcher.PushFrame(frame);
                 timeout.Stop();
                 Assert.IsTrue(operation.IsCompleted, "The profile prompt did not complete.");
+                if (failure != null) System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(failure).Throw();
                 Assert.IsTrue(prompted, "An unsaved document must use the existing Save/Discard/Cancel prompt.");
                 return operation.GetAwaiter().GetResult();
             }

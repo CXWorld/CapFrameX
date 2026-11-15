@@ -1,0 +1,45 @@
+<UserControl x:Class="CapFrameX.View.Controls.OverlayDesignMergeDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:loc="clr-namespace:CapFrameX.MVVM.Localization;assembly=CapFrameX.MVVM"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:local="clr-namespace:CapFrameX.View.Controls">
+    <!--Which tiles of another profile join the design being edited. The dialog only collects the choice;
+        the editor adds the tiles as one undoable edit.-->
+    <StackPanel Width="480" Margin="24">
+        <TextBlock Text="{loc:Tr OverlayEditor_MergeTitle}" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
+        <TextBlock x:Name="MergeMessage" Margin="0,12,0,0" TextWrapping="Wrap" />
+        <TextBlock Text="{loc:Tr OverlayEditor_MergeSource}" Margin="0,16,0,4" FontSize="12" Opacity="0.8" />
+        <ComboBox x:Name="SourceSelector" DisplayMemberPath="Name" MaxDropDownHeight="320" SelectionChanged="OnSourceChanged" />
+        <DockPanel Margin="0,16,0,4">
+            <CheckBox x:Name="AllTiles" DockPanel.Dock="Right" Content="{loc:Tr OverlayEditor_MergeAll}" Click="OnAllTilesClicked" />
+            <TextBlock Text="{loc:Tr OverlayEditor_MergeTiles}" FontSize="12" Opacity="0.8" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+        </DockPanel>
+        <Border CornerRadius="4" Padding="10,6" Background="{DynamicResource MaterialDesign.Brush.TextBox.FilledBackground}">
+            <ScrollViewer MaxHeight="260" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ItemsControl x:Name="TileChoices">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <CheckBox IsChecked="{Binding IsChosen}" Margin="0,3">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" MaxWidth="260" TextTrimming="CharacterEllipsis" />
+                                    <TextBlock Text="{Binding Detail}" Margin="8,0,0,0" Opacity="0.65" />
+                                </StackPanel>
+                            </CheckBox>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+        <TextBlock x:Name="SourceError" Margin="0,8,0,0" FontSize="12" TextWrapping="Wrap" Visibility="Collapsed"
+                   Foreground="{DynamicResource MaterialDesign.Brush.Primary}" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+            <Button Content="{loc:Tr OverlayEditor_Cancel}" Padding="12,4" Margin="0,0,8,0"
+                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                    CommandParameter="{x:Static local:OverlayDesignPromptResult.Cancel}" />
+            <Button x:Name="ConfirmButton" Content="{loc:Tr OverlayEditor_MergeConfirm}" Padding="16,4"
+                    Command="{x:Static materialDesign:DialogHost.CloseDialogCommand}"
+                    CommandParameter="{x:Static local:OverlayDesignPromptResult.Confirm}" />
+        </StackPanel>
+    </StackPanel>
+</UserControl>
