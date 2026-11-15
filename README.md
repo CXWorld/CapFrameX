@@ -31,7 +31,7 @@ Download **[CapFrameX v1.9.2](https://github.com/CXWorld/CapFrameX/releases/tag/
 
 Install the **[.NET 10 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/10.0)** before running setup or the portable application. The Desktop Runtime is required even if another .NET version or the plain .NET Runtime is already installed.
 
-Both packages include signed application and dependency binaries, the in-game overlay, and BENCHLAB Service 2.4.0. See the [release notes](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.2), [package checksums](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.2/SHA256SUMS.txt), and [Portable Mode](PORTABLE_MODE.md). Development builds are available from the [build archive](https://archive.capframex.com/).
+Both packages include signed application and dependency binaries, the in-game overlay, and BENCHLAB Service 2.4.0. See the [release notes](https://github.com/CXWorld/CapFrameX/releases/tag/v1.9.2), [package checksums](https://github.com/CXWorld/CapFrameX/releases/download/v1.9.2/SHA256SUMS.txt), and [Portable Mode](PORTABLE_MODE.md). Development builds are available from the [build archive](https://archive.capframex.com/); those of 1.9.3 need the [.NET 11 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/11.0).
 
 > **PC Latency correction:** Disabling **PC Latency** in the settings does **not** fix the PresentMon tracking problem, contrary to our [earlier post on X](https://x.com/CapFrameX/status/2105998858019078230). Application-timing tracking remains active independently of this setting. The fix is part of CX-PresentMon 2.6.1, bundled since 1.9.2.
 
@@ -39,7 +39,7 @@ Both packages include signed application and dependency binaries, the in-game ov
 The following tips address the most common issues reported by users and can help resolve stability, overlay, and capture-related problems efficiently. We recommend working through them in order if you encounter unexpected behavior.
 
 1. **Ensure you are running the latest version**  
-   Install the latest [stable release](https://github.com/CXWorld/CapFrameX/releases/latest) and its required .NET Desktop Runtime. Versions 1.9.x require **.NET 10 Desktop Runtime (x64)**; the installer checks for it before proceeding.
+   Install the latest [stable release](https://github.com/CXWorld/CapFrameX/releases/latest) and its required .NET Desktop Runtime. Versions 1.9.0 to 1.9.2 require the **.NET 10 Desktop Runtime (x64)**, versions from 1.9.3 on the **[.NET 11 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/11.0)**; the installer checks for it before proceeding.
 
 2. **Reset application settings**  
    In some cases, corrupted or outdated configuration files may cause problems. Close CapFrameX, back up your configuration, and rename
@@ -793,7 +793,7 @@ That's it! All `*.json` files in the `Localization` folder are automatically emb
 # Requirements
 
 * Windows x64
-* [.NET 10 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/10.0), installed separately; checked by setup and the portable application host
+* [.NET 11 Desktop Runtime (x64)](https://dotnet.microsoft.com/download/dotnet/11.0) from 1.9.3 on (1.9.0 to 1.9.2: [.NET 10](https://dotnet.microsoft.com/download/dotnet/10.0)), installed separately; checked by setup and the portable application host
 * Microsoft Visual C++ Redistributable (x64); setup checks for it. See [portable requirements](PORTABLE_MODE.md#requirements) when running without setup.
 * .NET Framework 4.7.2 or later for the installer's custom actions
 * RTSS only when selecting the RTSS overlay renderer

@@ -18,7 +18,7 @@ namespace CapFrameX.Configuration
     /// </summary>
     internal static class DotNetRuntimeDetector
     {
-        internal const int RequiredMajorVersion = 10;
+        internal const int RequiredMajorVersion = 11;
 
         private const string DotNetRuntimeMarker = "System.Private.CoreLib.dll";
         private const string DesktopRuntimeMarker = "PresentationFramework.dll";

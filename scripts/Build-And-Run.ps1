@@ -13,7 +13,7 @@ $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $vswherePath = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
 $installerPath = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\setup.exe"
 $appProject = Join-Path $repositoryRoot "source\CapFrameX\CapFrameX.csproj"
-$appPath = Join-Path $repositoryRoot "source\CapFrameX\bin\x64\Release\net10.0-windows\CapFrameX.exe"
+$appPath = Join-Path $repositoryRoot "source\CapFrameX\bin\x64\Release\net11.0-windows\CapFrameX.exe"
 
 $stateHashProvider = [Security.Cryptography.SHA256]::Create()
 try

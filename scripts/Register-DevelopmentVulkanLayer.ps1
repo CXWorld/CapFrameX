@@ -159,7 +159,7 @@ if ($PSCmdlet.ParameterSetName -eq 'Restore') {
     Write-Host 'Restore affects recorded HKLM registrations only. Purged unsafe HKCU entries will not be recreated.'
 }
 else {
-    if (-not $OutputPath) { $OutputPath = Join-Path $repositoryRoot "source\CapFrameX\bin\x64\$Configuration\net10.0-windows" }
+    if (-not $OutputPath) { $OutputPath = Join-Path $repositoryRoot "source\CapFrameX\bin\x64\$Configuration\net11.0-windows" }
     $OutputPath = [IO.Path]::GetFullPath($OutputPath)
     $payloads = @(
         Get-LayerPayload (Join-Path $OutputPath 'vulkan') 'Registry64' 0x8664

@@ -32,9 +32,9 @@ namespace CapFrameX.Test.Configuration
         }
 
         [TestMethod]
-        [DataRow("10.0.0")]
-        [DataRow("10.0.11")]
-        [DataRow("10.1.0")]
+        [DataRow("11.0.0")]
+        [DataRow("11.0.2")]
+        [DataRow("11.1.0")]
         public void CheckMissingDependencies_CompatibleDesktopRuntime_IsValid(string version)
         {
             AddDesktopRuntime(version);
@@ -49,11 +49,11 @@ namespace CapFrameX.Test.Configuration
         }
 
         [TestMethod]
-        [DataRow("9.0.19")]
-        [DataRow("11.0.0")]
-        [DataRow("10.0.0-preview.7")]
+        [DataRow("10.0.15")]
+        [DataRow("12.0.0")]
+        [DataRow("11.0.0-preview.7")]
         [DataRow("not-a-version")]
-        public void CheckMissingDependencies_IncompatibleDesktopRuntime_ReportsDotNet10Missing(string version)
+        public void CheckMissingDependencies_IncompatibleDesktopRuntime_ReportsDotNet11Missing(string version)
         {
             AddDesktopRuntime(version);
 
@@ -62,12 +62,12 @@ namespace CapFrameX.Test.Configuration
                 isVCRedistx64Installed: true);
 
             Assert.IsFalse(report.Valid);
-            Assert.AreEqual("10.0 (x64)", report.MissingDotNetFrameworkVersion);
+            Assert.AreEqual("11.0 (x64)", report.MissingDotNetFrameworkVersion);
             Assert.IsNull(report.MissingVCRedistVersions);
         }
 
         [TestMethod]
-        public void CheckMissingDependencies_NoDotNetInstallation_ReportsDotNet10Missing()
+        public void CheckMissingDependencies_NoDotNetInstallation_ReportsDotNet11Missing()
         {
             Directory.Delete(_dotNetBasePath, true);
 
@@ -76,44 +76,44 @@ namespace CapFrameX.Test.Configuration
                 isVCRedistx64Installed: true);
 
             Assert.IsFalse(report.Valid);
-            Assert.AreEqual("10.0 (x64)", report.MissingDotNetFrameworkVersion);
+            Assert.AreEqual("11.0 (x64)", report.MissingDotNetFrameworkVersion);
         }
 
         [TestMethod]
-        public void CheckMissingDependencies_EmptyDesktopRuntimeDirectory_ReportsDotNet10Missing()
+        public void CheckMissingDependencies_EmptyDesktopRuntimeDirectory_ReportsDotNet11Missing()
         {
-            AddComponent("shared", "Microsoft.NETCore.App", "10.0.11");
+            AddComponent("shared", "Microsoft.NETCore.App", "11.0.2");
             Directory.CreateDirectory(Path.Combine(
                 _dotNetBasePath,
                 "shared",
                 "Microsoft.WindowsDesktop.App",
-                "10.0.11"));
+                "11.0.2"));
 
             var report = AppDependencyChecker.CheckMissingDependencies(
                 _dotNetBasePath,
                 isVCRedistx64Installed: true);
 
             Assert.IsFalse(report.Valid);
-            Assert.AreEqual("10.0 (x64)", report.MissingDotNetFrameworkVersion);
+            Assert.AreEqual("11.0 (x64)", report.MissingDotNetFrameworkVersion);
         }
 
         [TestMethod]
-        public void CheckMissingDependencies_DesktopComponentWithoutCoreRuntime_ReportsDotNet10Missing()
+        public void CheckMissingDependencies_DesktopComponentWithoutCoreRuntime_ReportsDotNet11Missing()
         {
-            AddComponent("shared", "Microsoft.WindowsDesktop.App", "10.0.11");
+            AddComponent("shared", "Microsoft.WindowsDesktop.App", "11.0.2");
 
             var report = AppDependencyChecker.CheckMissingDependencies(
                 _dotNetBasePath,
                 isVCRedistx64Installed: true);
 
             Assert.IsFalse(report.Valid);
-            Assert.AreEqual("10.0 (x64)", report.MissingDotNetFrameworkVersion);
+            Assert.AreEqual("11.0 (x64)", report.MissingDotNetFrameworkVersion);
         }
 
         [TestMethod]
         [DataRow("shared", "Microsoft.NETCore.App")]
-        [DataRow("sdk", "10.0.400")]
-        public void CheckMissingDependencies_NonDesktopComponentOnly_ReportsDotNet10Missing(
+        [DataRow("sdk", "11.0.100")]
+        public void CheckMissingDependencies_NonDesktopComponentOnly_ReportsDotNet11Missing(
             string firstPathSegment,
             string secondPathSegment)
         {
@@ -123,7 +123,7 @@ namespace CapFrameX.Test.Configuration
             }
             else
             {
-                AddComponent(firstPathSegment, secondPathSegment, "10.0.11");
+                AddComponent(firstPathSegment, secondPathSegment, "11.0.2");
             }
 
             var report = AppDependencyChecker.CheckMissingDependencies(
@@ -131,13 +131,13 @@ namespace CapFrameX.Test.Configuration
                 isVCRedistx64Installed: true);
 
             Assert.IsFalse(report.Valid);
-            Assert.AreEqual("10.0 (x64)", report.MissingDotNetFrameworkVersion);
+            Assert.AreEqual("11.0 (x64)", report.MissingDotNetFrameworkVersion);
         }
 
         [TestMethod]
         public void CheckMissingDependencies_MissingVCRedist_ReportsOnlyVCRedist()
         {
-            AddDesktopRuntime("10.0.11");
+            AddDesktopRuntime("11.0.2");
 
             var report = AppDependencyChecker.CheckMissingDependencies(
                 _dotNetBasePath,
@@ -153,9 +153,9 @@ namespace CapFrameX.Test.Configuration
         [TestMethod]
         public void GetInstalledRequiredDotNetComponents_ReturnsAllMatchingComponents()
         {
-            AddComponent("shared", "Microsoft.NETCore.App", "10.0.11");
-            AddComponent("shared", "Microsoft.WindowsDesktop.App", "10.0.11");
-            AddSdk("10.0.400");
+            AddComponent("shared", "Microsoft.NETCore.App", "11.0.2");
+            AddComponent("shared", "Microsoft.WindowsDesktop.App", "11.0.2");
+            AddSdk("11.0.100");
 
             var components = AppDependencyChecker.GetInstalledRequiredDotNetComponents(_dotNetBasePath);
 

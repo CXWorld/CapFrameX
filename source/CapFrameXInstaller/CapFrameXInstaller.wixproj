@@ -20,7 +20,7 @@
   <Import Project="$(RepoRoot)\version\Version.props" />
   <PropertyGroup>
     <DefineConstants Condition=" '$(Configuration)' == 'Debug' ">$(DefineConstants);Debug</DefineConstants>
-    <DefineConstants>$(DefineConstants);CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\x64\$(Configuration)\net10.0-windows</DefineConstants>
+    <DefineConstants>$(DefineConstants);CapFrameXInstaller.BinaryDir=$(RepoRoot)\source\CapFrameX\bin\x64\$(Configuration)\net11.0-windows</DefineConstants>
     <DefineConstants>$(DefineConstants);CapFrameXVersion=$(CapFrameXVersion);CapFrameXInstallerVersion=$(CapFrameXInstallerVersion)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>

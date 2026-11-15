@@ -46,7 +46,7 @@
                  Before="UpdateAutoStartTask" Sequence="execute" Condition="NOT REMOVE" />
 
     <Launch Condition="Installed OR DOTNETDESKTOPRUNTIMEX64FOUND"
-            Message="CapFrameX requires the .NET 10 Desktop Runtime (x64). Install it from https://dotnet.microsoft.com/download/dotnet/10.0 and run setup again." />
+            Message="CapFrameX requires the .NET 11 Desktop Runtime (x64). Install it from https://dotnet.microsoft.com/download/dotnet/11.0 and run setup again." />
 
     <InstallUISequence>
       <Custom Action="DetectDotNetDesktopRuntime" Before="LaunchConditions"

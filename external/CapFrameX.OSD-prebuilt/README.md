@@ -12,6 +12,30 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### .NET 11 managed bridge and editor (2026-11-15)
+
+Interop and Controls were rebuilt in `Release|x64` for `net11.0-windows` (.NET SDK 11.0.100,
+`dotnet build CapFrameX.OSD.sln -c Release --no-incremental`) from the OSD working tree that is now
+commit `b0243d6b760ce6eb466031665de85646a69a54bf` (branch `dotnet-11`, on `aae744d`), which retargets
+Interop, Controls and Editor.Demo from `net10.0-windows` to `net11.0-windows`. The managed sources are those
+of `095356f`, from which the previous Controls was built, so only the target framework changed. The
+folder `net10.0-windows/` became `net11.0-windows/`, and every consuming project path follows it.
+Both DLLs are unsigned: the signed .NET 10 Interop of 2026-09-19 is gone, and
+`scripts\Sign-ReleasePayload.ps1` signs both in the release payload. The native DLLs, both Vulkan
+manifests, the localization files and the template catalogs are unchanged. The SDK reports 16
+warnings WFO2000 for getters in `OsdEditorState` that return a new collection; .NET 10 did not have
+that analyzer.
+
+Verification: a CapFrameX Release build on .NET 11 with `CfxOsdFromSource=false` staged exactly
+these two DLLs and the native DLLs of this folder into the test output and passed all 3648 tests
+outside the `Integration` category. The `Integration` category, CapFrameX.Test's D3D and Vulkan
+suites and games did not run with these binaries yet.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net11.0-windows\CapFrameX.OSD.Interop.dll | `7D41A960AECDEFABA354F17556277040DFCD0017F6DC3B449D927C2EE2F2E885` |
+| net11.0-windows\CapFrameX.OSD.Controls.dll | `59F0901273B47CF34BA669D4095CA3969FDC545C749C038EC72A1C377A24A3AE` |
+
 ### Less present-thread and producer work, shaders compiled at build time (2026-11-14)
 
 All five native trees were rebuilt clean (VS 2026/v145, `RelWithDebInfo`, `--clean-first`, x64 and
@@ -2235,7 +2259,7 @@ As of the frame-generation telemetry rebuild (2026-10-14):
 
 ## Contents
 
-- `net10.0-windows/` — `CapFrameX.OSD.Interop.dll` (managed P/Invoke bridge, x64) and
+- `net11.0-windows/` — `CapFrameX.OSD.Interop.dll` (managed P/Invoke bridge, x64) and
   `CapFrameX.OSD.Controls.dll` (reusable WPF design editor and native preview)
 - `native/cfx_osd_core.dll` — native renderer (x64, RelWithDebInfo)
 - `native/cfx_osd_hook.dll` — x64 DXGI hook, including exact swapchain capture through

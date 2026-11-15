@@ -37,7 +37,7 @@ namespace CapFrameX.CustomInstallerActions
 
         /// <summary>
         /// Detects the required Desktop Runtime before the MSI launch conditions are evaluated.
-        /// This custom action targets .NET Framework 4.7.2, so it can run before the .NET 10 WPF
+        /// This custom action targets .NET Framework 4.7.2, so it can run before the .NET 11 WPF
         /// application and avoids relying on managed application startup for the prerequisite UX.
         /// </summary>
         [CustomAction]

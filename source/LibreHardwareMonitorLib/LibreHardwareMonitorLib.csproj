@@ -5,7 +5,7 @@
          net472, which dragged the .NET Framework dependency graph into a .NET Core compilation
          (NU1702 + MSB3277 conflicts on Microsoft.Extensions.Logging.Abstractions and
          System.Net.Http). net472 itself became unused once the PmcReader plugin moved to modern .NET. -->
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <RootNamespace>LibreHardwareMonitor</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>

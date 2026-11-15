@@ -49,11 +49,11 @@ All paths are relative to the application directory. You can use `./` or `.\` pr
 
 When running in portable mode, the following dependencies must be installed on the system:
 
-- **.NET 10.0 Desktop Runtime (x64)** - [Download](https://dotnet.microsoft.com/download/dotnet/10.0)
+- **.NET 11.0 Desktop Runtime (x64)** - [Download](https://dotnet.microsoft.com/download/dotnet/11.0) (CapFrameX 1.9.0 to 1.9.2: [.NET 10.0](https://dotnet.microsoft.com/download/dotnet/10.0))
 - **Visual C++ 2015-2022 Redistributable (x64)** - [Download](https://aka.ms/vs/17/release/vc_redist.x64.exe)
 
 The native .NET application host checks the Desktop Runtime before managed startup. Once CapFrameX
-starts, its dependency checker validates the expected .NET 10 Desktop Runtime and Visual C++ runtime.
+starts, its dependency checker validates the expected .NET 11 Desktop Runtime and Visual C++ runtime.
 
 ## Vulkan layer registration
 

@@ -36,7 +36,7 @@ cannot find; a missing one does not fail the build, the sensor groups just fall 
 Every project builds into its own `bin\x64\<Configuration>\<tfm>\` (`obj\` beside it); the native
 projects into `x64\<Configuration>\`. There is no shared output folder: `source\bin` and the flat
 `source\CapFrameX\bin\x64\<Configuration>\` were the former LibreHardwareMonitorLib and .NET
-Framework layouts. Folders for other target frameworks (`net9.0`, `netstandard2.0`, `net472`, ...)
+Framework layouts. Folders for other target frameworks (`net10.0-windows`, `net9.0`, `netstandard2.0`, `net472`, ...)
 are leftovers of earlier builds and can be deleted.
 
 ### Build Installer
@@ -45,7 +45,7 @@ msbuild source\CapFrameXInstaller\CapFrameXInstaller.wixproj /restore /p:Solutio
 msbuild source\CapFrameXBootstrapper\CapFrameXBootstrapper.wixproj /restore /p:SolutionDir=%CD%\ /p:Configuration=Release /p:Platform=x64
 ```
 Build the application (and the native DLLs) first: the MSI's file list is harvested at build time
-from `source\CapFrameX\bin\x64\<Configuration>\net10.0-windows` by the `<Files>` element in
+from `source\CapFrameX\bin\x64\<Configuration>\net11.0-windows` by the `<Files>` element in
 `Product.wxs`, whose `<Exclude>` entries replace the former `heat.exe` step and `filter.xslt`.
 The bundle stays a 32-bit Burn bundle (`InstallerPlatform=x86`), as WiX v3 bundles were; the chained
 MSI is x64. Its VC++ redistributables are remote payloads verified by their Authenticode signer.
@@ -58,7 +58,7 @@ that contain the DLL can downgrade; releases built before it still refuse.
 ### Run Tests
 Tests use MSTest framework:
 ```bash
-vstest.console source\CapFrameX.Test\bin\x64\Release\net10.0-windows\CapFrameX.Test.dll /Platform:x64 /TestCaseFilter:TestCategory!=Integration
+vstest.console source\CapFrameX.Test\bin\x64\Release\net11.0-windows\CapFrameX.Test.dll /Platform:x64 /TestCaseFilter:TestCategory!=Integration
 ```
 
 The filter skips the `Integration` category (nothing else excludes it), which drives the **real** PresentMon capture service and
@@ -67,7 +67,7 @@ app output). Those tests report themselves as *skipped* — not failed — whene
 are missing, so a green run is no evidence that they executed. Run them explicitly, **from an
 elevated shell**:
 ```bash
-vstest.console source\CapFrameX.Test\bin\x64\Release\net10.0-windows\CapFrameX.Test.dll /Platform:x64 /TestCaseFilter:TestCategory=Integration
+vstest.console source\CapFrameX.Test\bin\x64\Release\net11.0-windows\CapFrameX.Test.dll /Platform:x64 /TestCaseFilter:TestCategory=Integration
 ```
 Prerequisites, each of which turns into a skip instead of a failure:
 - administrator privileges (ETW),
@@ -127,7 +127,7 @@ previous one. `-ExtraProviders` adds providers a vendor asks for, `-EtlFile` re-
 
 ### Capture helper for Windows 7
 `tools\CapFrameX.CaptureHelper\` (README there) is a separate WPF app on .NET Framework 4.8, outside
-`CapFrameX.sln`, for Windows 7, where neither CapFrameX (.NET 10) nor any PresentMon from 2.0.0 on
+`CapFrameX.sln`, for Windows 7, where neither CapFrameX (.NET 11) nor any PresentMon from 2.0.0 on
 starts. It bundles PresentMon 1.10.0, one build per bitness (`-p:Platform=x86|x64`; `build.ps1` builds
 and zips both), and runs it with `-output_stdout -qpc_time -no_track_display`. Captures are buffered as
 in `CaptureManager` (an archive of the last 500 rows, every row of the target from the start request on,
@@ -144,7 +144,7 @@ window rules and its Average, P1 and P0.2 (`FrametimeStatisticProvider`, MathNet
 ## Architecture
 
 ### Solution Structure
-The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (`net10.0` / `net10.0-windows`,
+The solution (`CapFrameX.sln`) contains ~40 projects mixing C# (`net11.0` / `net11.0-windows`,
 plus one .NET Framework 4.7.2 installer-action project) and C++ native code.
 
 ### Layer Organization
@@ -175,10 +175,10 @@ plus one .NET Framework 4.7.2 installer-action project) and C++ native code.
 - `CapFrameX.IGCL` - Intel Graphics Control Library
 - `CapFrameX.ADLX` - AMD Display Library
 
-**Webservice (ASP.NET Core, `net10.0`)**
+**Webservice (ASP.NET Core, `net11.0`)**
 - `CapFrameX.Webservice.Host` - API host
 - `CapFrameX.Webservice.Implementation` - Business logic
-- `CapFrameX.Webservice.Data` - DTOs, commands and queries; `net10.0`, and the only
+- `CapFrameX.Webservice.Data` - DTOs, commands and queries; `net11.0`, and the only
   webservice project the desktop app references (through `CapFrameX.ViewModel`)
 
 Data is served from Squidex (`SquidexService`), not from a database — the Entity Framework
@@ -199,8 +199,8 @@ persistence layer was dropped.
 
 ### Build Output
 - Platform: x64
-- Target framework (1.9+): `net10.0-windows` (SDK-style projects; legacy 1.8.x was .NET Framework 4.7.2)
-- Main output: `source\CapFrameX\bin\x64\Release\net10.0-windows\`
+- Target framework: `net11.0-windows` from 1.9.3 on (1.9.0 to 1.9.2: `net10.0-windows`; SDK-style projects; legacy 1.8.x was .NET Framework 4.7.2)
+- Main output: `source\CapFrameX\bin\x64\Release\net11.0-windows\`
 - Installer output: `source\CapFrameXBootstrapper\bin\x64\Release\CapFrameXBootstrapper.exe`
 
 ## Hook-free OSD (external source)
@@ -1286,6 +1286,18 @@ and every DLL not loaded yet (`System.Management`, `RAMSPDToolkit-NDD`). `Tempor
 drive root) or below any `\AppData\Local\Temp\`. `App.OnStartup` then explains it
 (`Appxaml_TemporaryFolder*`, in the configured language, else in the one of Windows) and exits before
 anything is written. Tests: `JsonSettingsStorageSaveFailureTest`, `TemporaryFolderStartTest`.
+
+## Tick counts since .NET 11
+
+On Windows, .NET 11 takes `Environment.TickCount` and `Environment.TickCount64` from
+`QueryUnbiasedInterruptTime`, which leaves out the time the system was asleep; kernel32's
+`GetTickCount`/`GetTickCount64` still count it. Under .NET 10 both were the same; on the development
+PC on 2026-11-15 they were 16.8 days apart. `Environment.TickCount*` is fine for intervals measured
+only in managed code. A value compared with a native tick needs the native clock: the hook's and the
+Vulkan layer's shared-memory stamps (heartbeats, `LastVulkanPresentTickMs`) through
+`HookStatusProbe.CurrentTickCount`, `KBDLLHOOKSTRUCT.time` and `GetMessageTime` through
+`HotkeyLatency.NowTick`. With `Environment.TickCount*` there, the frame-generation tile values stay
+empty after a standby (the hook heartbeat looks days old) and every hotkey latency is wrong.
 
 ## Configuration Files
 - User settings: `%appdata%/CapFrameX/Configuration/AppSettings.json`

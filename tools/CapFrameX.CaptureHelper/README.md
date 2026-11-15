@@ -3,7 +3,7 @@
 A small capture app for Windows 7 and later, built around Intel's PresentMon 1.10.0: the last
 PresentMon that starts on Windows 7. From 2.0.0 on, PresentMon imports `SetThreadDescription`
 (Windows 10 1607) statically, and from 2.4.0 on every start also calls `TdhLoadManifestFromBinary`
-(Windows 10). CapFrameX itself runs on .NET 10, which does not support Windows 7.
+(Windows 10). CapFrameX itself runs on .NET 11 (1.9.0 to 1.9.2: .NET 10), which does not support Windows 7.
 
 ## Requirements
 

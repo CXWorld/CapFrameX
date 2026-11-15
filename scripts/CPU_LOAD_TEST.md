@@ -124,7 +124,7 @@ mains power on laptops, no other load, the same display refresh rate (vkcube run
 
 | Parameter | Default | |
 | --- | --- | --- |
-| `-AppDirectory` | `source\CapFrameX\bin\x64\Release\net10.0-windows` | any CapFrameX folder, e.g. an installation |
+| `-AppDirectory` | `source\CapFrameX\bin\x64\Release\net11.0-windows` | any CapFrameX folder, e.g. an installation |
 | `-Scenario` | `*` | wildcards on scenario names |
 | `-Renderer` | `InGame, HookFree, Rtss` | renderers to measure |
 | `-OverlayDesign` | | tile design: profile ID, exact name or a wildcard that matches one design (`'FUSION ARL*'`) |

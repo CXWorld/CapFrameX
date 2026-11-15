@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net11.0-windows</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <UseWPF>true</UseWPF>
@@ -38,11 +38,11 @@
   </ItemGroup>
   <ItemGroup Condition="'$(CfxOsdFromSource)' != 'true'">
     <Reference Include="CapFrameX.OSD.Controls">
-      <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net10.0-windows\CapFrameX.OSD.Controls.dll</HintPath>
+      <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net11.0-windows\CapFrameX.OSD.Controls.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="CapFrameX.OSD.Interop">
-      <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net10.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
+      <HintPath>..\..\external\CapFrameX.OSD-prebuilt\net11.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>

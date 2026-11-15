@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0-windows</TargetFramework>
+    <TargetFramework>net11.0-windows</TargetFramework>
     <Platforms>x64</Platforms>
     <PlatformTarget>x64</PlatformTarget>
     <Nullable>disable</Nullable>
@@ -104,7 +104,7 @@
 
   <ItemGroup Condition="'$(CfxOsdFromSource)' != 'true'">
     <Reference Include="CapFrameX.OSD.Interop">
-      <HintPath>$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\net10.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
+      <HintPath>$(MSBuildThisFileDirectory)..\..\external\CapFrameX.OSD-prebuilt\net11.0-windows\CapFrameX.OSD.Interop.dll</HintPath>
     </Reference>
   </ItemGroup>
 

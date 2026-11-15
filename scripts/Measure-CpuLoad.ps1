@@ -2101,7 +2101,7 @@ function Invoke-CpuLoadMeasurement
     if (-not [Environment]::Is64BitProcess) { throw 'Run the measurement from a 64-bit PowerShell.' }
     Initialize-NativeMethods
 
-    if (-not $AppDirectory) { $AppDirectory = [IO.Path]::Combine($repositoryRoot, 'source\CapFrameX\bin\x64\Release\net10.0-windows') }
+    if (-not $AppDirectory) { $AppDirectory = [IO.Path]::Combine($repositoryRoot, 'source\CapFrameX\bin\x64\Release\net11.0-windows') }
     $sourceApp = Resolve-UserPath $AppDirectory
     if (-not (Test-Path -LiteralPath ([IO.Path]::Combine($sourceApp, 'CapFrameX.exe')) -PathType Leaf))
     {
