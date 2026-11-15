@@ -105,7 +105,9 @@ namespace CapFrameX.Test.Integration
                 Assert.IsFalse(yieldedBefore);
                 Assert.IsNull(errorBefore);
 
-                view.Write(8, Environment.TickCount64);
+                // The layer stamps its presents with GetTickCount64, as the probe reads them.
+                // Environment.TickCount64 leaves out sleep time since .NET 11 and falls behind.
+                view.Write(8, (long)HookStatusProbe.CurrentTickCount);
                 view.Flush();
 
                 Assert.IsTrue(VulkanActivityProbe.TryHasRecentPresent(pid,

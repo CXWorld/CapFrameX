@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace CapFrameX.Hotkey
 {
@@ -78,12 +79,24 @@ namespace CapFrameX.Hotkey
 
     /// <summary>
     /// Tick-count arithmetic for the hotkey latency diagnostics. The keypress stamp comes from
-    /// the low-level hook data (<c>KBDLLHOOKSTRUCT.time</c>, a GetTickCount value) and is
-    /// compared against <see cref="Environment.TickCount"/>; both wrap after 49.7 days, which
-    /// the unchecked subtraction handles as long as the real gap is below 24.8 days.
+    /// the low-level hook data (<c>KBDLLHOOKSTRUCT.time</c>) or the input message time
+    /// (<c>GetMessageTime</c>), both GetTickCount values, and is compared against
+    /// <see cref="NowTick"/>; both wrap after 49.7 days, which the unchecked subtraction handles
+    /// as long as the real gap is below 24.8 days.
     /// </summary>
     public static class HotkeyLatency
     {
+        /// <summary>
+        /// The clock of the input stamps: kernel32's GetTickCount, which counts the time the
+        /// system was asleep. <see cref="Environment.TickCount"/> no longer does since .NET 11
+        /// (QueryUnbiasedInterruptTime): after the first standby it runs behind the stamps by the
+        /// whole sleep time, and every latency came out wrong.
+        /// </summary>
+        public static int NowTick() => unchecked((int)GetTickCount());
+
+        [DllImport("kernel32.dll")]
+        private static extern uint GetTickCount();
+
         public static int ElapsedMs(int earlierTick, int laterTick)
         {
             var elapsed = unchecked(laterTick - earlierTick);

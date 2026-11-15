@@ -609,7 +609,9 @@ namespace CapFrameX.OSD.Integration
                 || IsRequired(MetricPrefix + "FrameGenerationStatus") ? _hookStatus?.Current : null;
             if (hook != null && hook.ProcessId > 0 && hook.State != EHookOverlayStatus.Disabled
                 && HookStatusProbe.TryRead(hook.ProcessId, out var native, out _)
-                && HookStatusProbe.GetHeartbeatAgeMilliseconds(native.LastHeartbeatTickMs, (ulong)Environment.TickCount64)
+                // The hook stamps its heartbeat with GetTickCount64, which counts sleep time;
+                // Environment.TickCount64 does not since .NET 11.
+                && HookStatusProbe.GetHeartbeatAgeMilliseconds(native.LastHeartbeatTickMs, HookStatusProbe.CurrentTickCount)
                     is >= 0 and <= 3000)
             {
                 textValues["metric/FrameGenerationTechnology"] = HookOverlayStatusEvaluator.DescribeFrameGenerationTechnology(native.FgTechnology);

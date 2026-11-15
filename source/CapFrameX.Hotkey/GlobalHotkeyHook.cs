@@ -292,8 +292,9 @@ namespace CapFrameX.Hotkey
                 // Taken first so the measurement covers everything this thread does. The
                 // keypress stamp is the kernel one (KBDLLHOOKSTRUCT.time); it predates any
                 // scheduling delay of this thread and is the only honest reference for when
-                // the user actually pressed the key.
-                var hookTick = Environment.TickCount;
+                // the user actually pressed the key. Its clock is GetTickCount, not
+                // Environment.TickCount (see HotkeyLatency.NowTick).
+                var hookTick = HotkeyLatency.NowTick();
                 var hookStamp = Stopwatch.GetTimestamp();
                 var pressedTick = e is KeyEventArgsExt ext && ext.Timestamp != 0 ? ext.Timestamp : hookTick;
 

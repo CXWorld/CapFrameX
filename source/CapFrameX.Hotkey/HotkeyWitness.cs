@@ -212,7 +212,7 @@ namespace CapFrameX.Hotkey
                 Injected = keystroke.Injected,
                 EventTime = eventTime,
                 ArrivalMs = arrivalMs,
-                ProcessingDelayMs = HotkeyLatency.ElapsedMs(eventTime, Environment.TickCount),
+                ProcessingDelayMs = HotkeyLatency.ElapsedMs(eventTime, HotkeyLatency.NowTick()),
                 AsyncModifiers = triggerKeyDown ? ModifierState.Read() : HotkeyModifiers.None,
                 ForegroundProcessId = triggerKeyDown ? RawKeyboardInput.GetForegroundProcessId() : 0
             };
