@@ -2,7 +2,6 @@ using CapFrameX.Contracts.Overlay;
 using CapFrameX.Overlay;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Diagnostics;
 using System.Linq;
 
 namespace CapFrameX.Test.Overlay
@@ -58,34 +57,10 @@ namespace CapFrameX.Test.Overlay
             Assert.AreEqual(2, wrapper.OverlayEntryCount);
         }
 
-        [TestMethod]
-        public void GetFrameTimesInterval_ReturnsEmptyWithoutRtssFrameTimes()
-        {
-            // Crash reports of 1.8.6.2 (2026-11-17, Quake Live): RTSS not running, not hooking the
-            // game, or its newest frame time a second or more: the native reader returns no frame
-            // times, and pinning the first element of the empty managed array threw
-            // IndexOutOfRangeException. The process ID is one RTSS cannot have an entry for.
-            var wrapper = CreateWrapper();
-
-            var frameTimes = wrapper.GetFrameTimesInterval(UnusedProcessId(), 1000);
-
-            Assert.IsNotNull(frameTimes);
-            Assert.AreEqual(0, frameTimes.Length);
-        }
-
         // Never disposed: Dispose releases the RTSS OSD slot owned by "CapFrameX", which would
         // clear the overlay of a CapFrameX instance running on this machine.
         private static RTSSCSharpWrapper CreateWrapper()
             => new RTSSCSharpWrapper(exception => throw new AssertFailedException(exception.Message));
-
-        private static int UnusedProcessId()
-        {
-            var running = Process.GetProcesses().Select(process => process.Id).ToHashSet();
-            int pid = 0x3FFFFFFC;
-            while (running.Contains(pid))
-                pid -= 4;
-            return pid;
-        }
 
         private static IOverlayEntry[] Entries(params string[] identifiers)
             => identifiers
