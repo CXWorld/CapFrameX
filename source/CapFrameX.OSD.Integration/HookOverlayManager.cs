@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Overlay;
+using CapFrameX.PresentMonInterface;
 using Serilog;
 using Serilog.Events;
 
@@ -127,6 +128,8 @@ namespace CapFrameX.OSD.Integration
         private volatile int _currentPid;
         private volatile string _currentProcessName;
         private volatile string _currentRuntime;
+        // Decides _currentRuntime from the target's rows; guarded by _stateGate.
+        private readonly PresentRuntimeTracker _runtimeTracker = new PresentRuntimeTracker();
         private volatile bool _disposed;
         private bool _injectionInProgress;
         private bool _injectionSucceeded;
@@ -328,6 +331,7 @@ namespace CapFrameX.OSD.Integration
                 _currentPid = pid;
                 _currentProcessName = processName;
                 _currentRuntime = null;
+                _runtimeTracker.Reset();
                 _targetAllowed = false;
                 _injectionStatusPid = pid;
                 _injectionInProgress = false;
@@ -452,22 +456,34 @@ namespace CapFrameX.OSD.Integration
             string runtime = row[_runtimeColumnIndex]?.Trim();
             if (string.IsNullOrEmpty(runtime)) return;
 
-            bool runtimeChanged;
+            // A process may present through more than one runtime (CS2: DXGI and Other). The
+            // target's runtime is the one most of its presents use (PresentRuntimeTracker), not
+            // the latest row's: following every row flipped it in bursts of up to 26 per second.
+            PresentRuntimeObservation observation;
+            string currentRuntime;
             lock (_stateGate)
             {
                 if (pid != _currentPid) return;
-                _lastTargetFrameRowTickMs = HookStatusProbe.CurrentTickCount;
-                runtimeChanged = !string.Equals(runtime, _currentRuntime,
-                    StringComparison.OrdinalIgnoreCase);
-                if (runtimeChanged) _currentRuntime = runtime;
+                ulong now = HookStatusProbe.CurrentTickCount;
+                _lastTargetFrameRowTickMs = now;
+                observation = _runtimeTracker.Observe(runtime, (long)now);
+                if (observation == PresentRuntimeObservation.Changed)
+                    _currentRuntime = _runtimeTracker.Runtime;
+                currentRuntime = _currentRuntime;
             }
+            bool runtimeChanged = observation == PresentRuntimeObservation.Changed;
             if (runtimeChanged)
             {
                 UpdateHookVisibility();
                 UpdateInGameAvailability();
                 RefreshTargetPolicy(pid);
             }
-            if (IsDxgiRuntime(runtime))
+            else if (observation == PresentRuntimeObservation.AnotherRuntimeSeen)
+            {
+                Log.Information("HookOverlay: target PID {pid} also presents through {runtime}; the overlay follows {current}, the runtime of most of its presents",
+                    pid, runtime, currentRuntime);
+            }
+            if (IsDxgiRuntime(currentRuntime))
             {
                 // Logged with any renderer: a support log must not read as an injection while the
                 // in-game overlay is not selected.
@@ -475,12 +491,13 @@ namespace CapFrameX.OSD.Integration
                     Log.Information(_enabled
                         ? "HookOverlay: target PID {pid} runtime {runtime} -> DXGI hook"
                         : "HookOverlay: target PID {pid} runtime {runtime} -> no injection, the in-game overlay is not selected",
-                        pid, runtime);
-                if (_enabled) TryInjectAsync(pid);
+                        pid, currentRuntime);
+                // Only the rows of the DXGI swapchain, as before the runtime was tracked.
+                if (_enabled && IsDxgiRuntime(runtime)) TryInjectAsync(pid);
             }
             else if (runtimeChanged)
             {
-                Log.Information("HookOverlay: target PID {pid} runtime {runtime} -> no DXGI injection", pid, runtime);
+                Log.Information("HookOverlay: target PID {pid} runtime {runtime} -> no DXGI injection", pid, currentRuntime);
             }
             if (runtimeChanged) PublishStatus();
         }

@@ -450,7 +450,8 @@ RTSS resolves its `<APP>` macro itself. For the CapFrameX renderers and the remo
 `PresentMonOverlayMetrics.ApplySnapshot` replaces it in copies of the entries, in this order: the
 API the in-game renderer proved for the target (`HookOverlayStatus.RenderApi`: `D3D11`/`D3D12` from
 the hook's device type, `Vulkan` from the loaded layer), the PresentMon `PresentRuntime` (`DXGI`,
-`D3D9`, `Other`), then "Performance". The hook-free renderer only has PresentMon. The proven API is
+`D3D9`, `Other`) of most of the target's presents (see "Target runtime"), then "Performance". The
+hook-free renderer only has PresentMon. The proven API is
 bound to the target PID and kept through statuses without one (hidden, idle, transitional): every
 label change renames the group and makes the renderer rebuild its scene. A `Disabled` status (another
 renderer selected) and a PID change drop it. The PresentMon runtime survives a hide too (the entry feed
@@ -459,6 +460,23 @@ PresentMon stop drop it. API names follow RTSS's spelling (`D3D11`, `D3D12`,
 `Vulkan`, `OpenGL`, ...), also in `RTSSCoreControl.cpp` (`IRTSSService.GetApiInfo`): both sources feed a
 capture's `ApiInfo` and the `GraphicsAPI` overlay entry, so they must spell alike. Tests:
 `PresentMonOverlayMetricsTest`.
+
+### Target runtime
+
+A process may present through more than one runtime: CS2 delivered rows of a DXGI and an `Other`
+swapchain on 2026-11-17. Following the latest row, `HookOverlayManager` changed the target's runtime
+in bursts of up to 26 per second, and each change re-evaluated visibility, availability and the
+target policy and wrote a log line (1959 of the 2000 events of a crash report); the `<APP>` label
+renamed its group with the same flips. `PresentRuntimeTracker` (`CapFrameX.PresentMonInterface`, pure)
+now decides the runtime for both: the first one counts at once, another one takes over only with more
+than twice the rows of the current one in the current and the previous second (the window of
+`DominantPresentMode`). A second swapchain that presents now and then never takes over, a process that
+switched is followed within about two seconds. The manager injects on the DXGI rows while DXGI is the
+target's runtime, as before, and logs `HookOverlay: target PID … also presents through …` once per
+further runtime. A PID change resets the tracker, in the metrics also a PresentMon stop. Tests:
+`PresentRuntimeTrackerTest`, `HookOverlayStatusEvaluatorTest`
+(`ASecondRuntimeOfTheTargetDoesNotDecideItsRuntime`), `PresentMonOverlayMetricsTest`
+(`ASecondRuntimeOfTheTargetDoesNotRenameTheGroup`).
 
 ### Frame generation in the frametime graphs
 

@@ -35,7 +35,9 @@ namespace CapFrameX.Overlay
         private double _framerate;
         private double _frametime;
         private double _displayTime;
-        private string _runtime;
+        // The runtime most of the target's presents use: CS2 also presents through Other, and the
+        // label of the latest row renamed the <APP> group, which rebuilds the renderer's scene.
+        private readonly PresentRuntimeTracker _runtime = new PresentRuntimeTracker();
         // PresentMon only knows the presentation runtime (DXGI, D3D9, Other). The in-game renderer
         // knows the API itself, as RTSS does: the hook proves the device type of the swapchain it
         // presents into, the Vulkan layer settles it by being loaded.
@@ -156,7 +158,7 @@ namespace CapFrameX.Overlay
                 {
                     string runtime = row[PresentMonCaptureService.PresentRuntime_INDEX]?.Trim();
                     if (!string.IsNullOrEmpty(runtime) && runtime != "<error>")
-                        _runtime = runtime;
+                        _runtime.Observe(runtime, Environment.TickCount64);
                 }
 
                 if (TryReadTime(row, PresentMonCaptureService.MsBetweenPresents_INDEX, out double frametime))
@@ -226,7 +228,7 @@ namespace CapFrameX.Overlay
                     }
                     if (resolveGroup)
                     {
-                        string runtime = _renderApi ?? _runtime ?? CxLang.Instance.TranslateOverlay("Performance");
+                        string runtime = _renderApi ?? _runtime.Runtime ?? CxLang.Instance.TranslateOverlay("Performance");
                         copy.GroupName = entry.GroupName.Replace("<APP>", runtime);
                     }
                     result[i] = copy;
@@ -238,7 +240,7 @@ namespace CapFrameX.Overlay
         private void ResetLocked()
         {
             ResetIntervalLocked();
-            _runtime = null;
+            _runtime.Reset();
         }
 
         private void ResetIntervalLocked()

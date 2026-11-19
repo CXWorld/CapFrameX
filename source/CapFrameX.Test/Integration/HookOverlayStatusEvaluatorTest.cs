@@ -721,6 +721,36 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void ASecondRuntimeOfTheTargetDoesNotDecideItsRuntime()
+        {
+            // CS2 on 2026-11-17 presented through DXGI and Other. Following the latest row flipped
+            // the runtime in bursts of up to 26 per second, each one a re-evaluation of the target
+            // and a log line.
+            int pid = Process.GetCurrentProcess().Id;
+            using var changes = new Subject<(string key, object value)>();
+            using var pids = new BehaviorSubject<int>(0);
+            using var rows = new Subject<string[]>();
+            var configuration = new Mock<IAppConfiguration>();
+            configuration.SetupGet(x => x.OnValueChanged).Returns(changes);
+            configuration.SetupGet(x => x.EnableHookOverlay).Returns(true);
+            configuration.SetupGet(x => x.IsOverlayActive).Returns(true);
+            using var manager = new HookOverlayManager(configuration.Object, pids, rows,
+                processIdColumnIndex: 0, runtimeColumnIndex: 1,
+                dllPathOverride: @"C:\missing\cfx_osd_hook.dll");
+            bool standsIn() => manager.HookFreeFallbackStream.FirstAsync().Wait();
+
+            pids.OnNext(pid);
+            for (int i = 0; i < 20; i++)
+                rows.OnNext(new[] { pid.ToString(), "Other" });
+            rows.OnNext(new[] { pid.ToString(), "D3D9" });
+            Assert.IsFalse(standsIn(), "one D3D9 present does not make the target a D3D9 game");
+
+            for (int i = 0; i < 50; i++)
+                rows.OnNext(new[] { pid.ToString(), "D3D9" });
+            Assert.IsTrue(standsIn(), "the runtime of most presents decides");
+        }
+
+        [TestMethod]
         public void IsInGameUnavailable_NotForNativeRenderers()
         {
             Assert.IsFalse(HookOverlayManager.IsInGameUnavailable(

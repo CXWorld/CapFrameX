@@ -150,6 +150,22 @@ namespace CapFrameX.Test.Overlay
         }
 
         [TestMethod]
+        public void ASecondRuntimeOfTheTargetDoesNotRenameTheGroup()
+        {
+            // CS2 on 2026-11-17 also presented through Other.
+            using var fixture = new Fixture();
+            fixture.Metrics.SetEnabled(true);
+            for (int i = 0; i < 20; i++)
+                fixture.Frames.OnNext(Row(42, "2", "2", "DXGI"));
+            fixture.Frames.OnNext(Row(42, "2", "2", "Other"));
+            Assert.AreEqual("DXGI", fixture.Snapshot()[0].GroupName, "A label flip renames the group and rebuilds the scene.");
+
+            for (int i = 0; i < 50; i++)
+                fixture.Frames.OnNext(Row(42, "2", "2", "Other"));
+            Assert.AreEqual("Other", fixture.Snapshot()[0].GroupName, "the runtime of most presents decides");
+        }
+
+        [TestMethod]
         public void RepeatedEnable_PreservesTheCurrentInterval()
         {
             using var fixture = new Fixture();
