@@ -813,6 +813,92 @@ namespace CapFrameX.Test.Data
         }
 
         [TestMethod]
+        public async Task CaptureWithRTSSFrameTimes_SurvivesTheWrapperThrowing()
+        {
+            // CapFrameX 1.8.6.2 on 2026-11-17: the read threw on the heartbeat's thread-pool
+            // thread, which ended the app at every capture start.
+            var read = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _appConfigurationMock.Setup(x => x.CaptureRTSSFrameTimes).Returns(true);
+            _rtssServiceMock.Setup(x => x.GetFrameTimesInterval(It.IsAny<int>(), It.IsAny<int>()))
+                .Callback(() => read.TrySetResult(true))
+                .Throws(new IndexOutOfRangeException("Index was outside the bounds of the array."));
+
+            _mockCaptureService.StartCaptureService(null);
+            await _captureManager.StartCapture(CreateValidCaptureOptions());
+            _mockCaptureService.EmitFrames(10);
+            Assert.AreSame(read.Task, await Task.WhenAny(read.Task, Task.Delay(5000)),
+                "the heartbeat reads at the capture start");
+
+            await _captureManager.StopCapture();
+            await Task.Delay(3000);
+
+            Assert.IsFalse(_captureManager.IsCapturing);
+            _loggerMock.Verify(logger => logger.Log(LogLevel.Warning, It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((state, _) => state.ToString().Contains("RTSS frame times")),
+                It.IsAny<IndexOutOfRangeException>(), It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once, "logged once per capture");
+        }
+
+        [TestMethod]
+        public async Task CaptureWithRTSSFrameTimes_SurvivesAnEmptyRead()
+        {
+            // CapFrameX 1.8.6.2 on 2026-11-17 (Quake Live, RTSS not hooking the game): with
+            // "capture RTSS frame times" on, the empty read threw IndexOutOfRangeException on the
+            // capture heartbeat's thread, which ended the app at every capture start.
+            _appConfigurationMock.Setup(x => x.CaptureRTSSFrameTimes).Returns(true);
+            var rtssCalled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _rtssServiceMock.Setup(x => x.GetFrameTimesInterval(It.IsAny<int>(), It.IsAny<int>()))
+                .Callback(() => rtssCalled.TrySetResult(true))
+                .Returns(new float[0]);
+
+            _mockCaptureService.StartCaptureService(null);
+
+            var options = CreateValidCaptureOptions();
+
+            await _captureManager.StartCapture(options);
+            _mockCaptureService.EmitFrames(10);
+
+            Assert.AreSame(rtssCalled.Task, await Task.WhenAny(rtssCalled.Task, Task.Delay(5000)),
+                "the heartbeat reads RTSS at the capture start");
+
+            await _captureManager.StopCapture();
+            await Task.Delay(3000);
+
+            Assert.IsFalse(_captureManager.IsCapturing);
+        }
+
+        [TestMethod]
+        public async Task CaptureWithRTSSFrameTimes_SurvivesAFailingRead()
+        {
+            // The wrapper returns an empty array instead of throwing (see RtssFrameTimesTest);
+            // a read that fails for any other reason is logged once and the capture goes on.
+            _appConfigurationMock.Setup(x => x.CaptureRTSSFrameTimes).Returns(true);
+            var rtssCalled = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _rtssServiceMock.Setup(x => x.GetFrameTimesInterval(It.IsAny<int>(), It.IsAny<int>()))
+                .Callback(() => rtssCalled.TrySetResult(true))
+                .Throws(new InvalidOperationException("RTSS shared memory is gone."));
+
+            _mockCaptureService.StartCaptureService(null);
+
+            var options = CreateValidCaptureOptions();
+
+            await _captureManager.StartCapture(options);
+            _mockCaptureService.EmitFrames(10);
+
+            Assert.AreSame(rtssCalled.Task, await Task.WhenAny(rtssCalled.Task, Task.Delay(5000)),
+                "the heartbeat reads RTSS at the capture start");
+
+            await _captureManager.StopCapture();
+            await Task.Delay(3000);
+
+            Assert.IsFalse(_captureManager.IsCapturing);
+            _loggerMock.Verify(logger => logger.Log(LogLevel.Warning, It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((state, _) => state.ToString().Contains("RTSS frame times")),
+                It.IsAny<InvalidOperationException>(), It.IsAny<Func<It.IsAnyType, Exception, string>>()),
+                Times.Once, "logged once per capture");
+        }
+
+        [TestMethod]
         public async Task CaptureWithDifferentScenarios_HandlesAllScenarios()
         {
             var scenarios = new[]

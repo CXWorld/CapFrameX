@@ -1255,6 +1255,21 @@ multiples of it) instead of by packet count; a bin's `TimeStamp` is its start. `
 the "Sample Rate" display show the raw device packet rate. Unit tests: `CapFrameX.Test/PMD/PmdTimingTest`
 simulates the measured device including the batched delivery.
 
+## RTSS frame times in captures
+
+`CaptureRTSSFrameTimes` (no UI, default off, set in `AppSettings.json`) makes `CaptureManager` read the
+frames of the last second from RTSS once per second of a capture (`IRTSSService.GetFrameTimesInterval`)
+into the session's `RTSSFrameTimes`. RTSS keeps 1024 frame times per application entry
+(`dwStatFrameTimeBuf`, µs); `dwStatFrameTimeBufPos` is the slot it writes next. `RTSSFrameTimeRing::Collect`
+walks back from the newest frame at most once around the ring and stops at a slot RTSS has not
+written. Until 2026-11-18 the walk started at the oldest slot, took every frame twice above about
+1024 FPS and never ended on a ring of zeros, and the wrapper threw `IndexOutOfRangeException` for a
+process RTSS has no frames of (RTSS not running, the game not hooked). The heartbeat runs on the
+thread pool, so every capture start ended the app (crash reports of 1.8.6.2, Quake Live). The wrapper
+now returns an empty array, and the heartbeat logs a failed read once per capture and goes on. Tests:
+`RtssFrameTimesTest` (the ring through `RTSSCSharpWrapper.CollectRingFrameTimes`, internal to
+CapFrameX.Test), `CaptureManagerTest` (`CaptureWithRTSSFrameTimes_SurvivesAFailingRead`).
+
 ## FrameView sensor import
 
 FrameView logs carry hardware sensor columns and repeat the latest reading in every frame row (on an

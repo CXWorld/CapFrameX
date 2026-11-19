@@ -1,5 +1,6 @@
 #pragma once
 #include "RTSSCoreControl.h"
+#include "RTSSFrameTimeRing.h"
 #include <msclr\lock.h>
 #include <string>
 
@@ -315,13 +316,25 @@ public:
 
 	array<float>^ GetFrameTimesInterval(INT processId, INT milliseconds)
 	{
-		std::vector<float> frameTimes = _coreControl->GetFrameTimesInterval((UINT)processId, (UINT)milliseconds);
-		array<float>^ frameTimesArray = gcnew array<float>(static_cast<int>(frameTimes.size()));
-
-		pin_ptr<float> dest = &frameTimesArray[0];
-		std::memcpy(dest, &frameTimes[0], frameTimes.size() * sizeof(float));
-		return frameTimesArray;
+		return ToManagedArray(_coreControl->GetFrameTimesInterval((UINT)processId, (UINT)milliseconds));
 	}
+
+internal:
+	// RTSSFrameTimeRing::Collect on a ring CapFrameX.Test fills (see InternalsVisibleTo in the
+	// .cpp), with the interval in ms as GetFrameTimesInterval takes it.
+	static array<float>^ CollectRingFrameTimes(array<UInt32>^ ring, UInt32 position, UInt32 milliseconds)
+	{
+		if (ring == nullptr || ring->Length != static_cast<int>(RTSSFrameTimeRing::Size))
+			throw gcnew ArgumentException("The ring holds 1024 frame times.", "ring");
+
+		std::vector<DWORD> nativeRing(RTSSFrameTimeRing::Size);
+		for (int i = 0; i < ring->Length; i++)
+			nativeRing[i] = ring[i];
+
+		return ToManagedArray(RTSSFrameTimeRing::Collect(nativeRing.data(), position, 1000 * milliseconds));
+	}
+
+public:
 
 	void SetShowRunHistory(bool showRunHistory)
 	{
@@ -349,6 +362,22 @@ public:
 	}
 
 private:
+	static array<float>^ ToManagedArray(const std::vector<float>& frameTimes)
+	{
+		array<float>^ frameTimesArray = gcnew array<float>(static_cast<int>(frameTimes.size()));
+
+		// RTSS has no frame times of a process it does not track (not running, the game not
+		// hooked, a first frame of a second or more): pinning the first element of the empty
+		// array threw IndexOutOfRangeException on the capture heartbeat's thread, which ended
+		// the app (crash reports of 1.8.6.2 with CaptureRTSSFrameTimes on, 2026-11-17).
+		if (!frameTimes.empty())
+		{
+			pin_ptr<float> dest = &frameTimesArray[0];
+			std::memcpy(dest, frameTimes.data(), frameTimes.size() * sizeof(float));
+		}
+		return frameTimesArray;
+	}
+
 	static void SetPercentageBarProperties(IOverlayEntry^ managedEntry, OverlayEntry& entry)
 	{
 		entry.ValueDisplayMode = static_cast<OverlayValueDisplayMode>(

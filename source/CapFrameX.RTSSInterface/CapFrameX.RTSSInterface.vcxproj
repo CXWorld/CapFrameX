@@ -182,6 +182,7 @@
     <ClInclude Include="OverlayEntry.h" />
     <ClInclude Include="RTSSCoreControl.h" />
     <ClInclude Include="RTSSCSharpWrapper.h" />
+    <ClInclude Include="RTSSFrameTimeRing.h" />
     <ClInclude Include="RTSSHooksInterface.h" />
     <ClInclude Include="RTSSProfileInterface.h" />
     <ClInclude Include="stdafx.h" />

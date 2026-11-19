@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "RTSSSharedMemory.h"
 #include "RTSSCoreControl.h"
+#include "RTSSFrameTimeRing.h"
 #include "GroupedString.h"
 
 #include <shlwapi.h>
@@ -269,6 +270,9 @@ std::vector<float> RTSSCoreControl::GetCurrentFramerate(DWORD processId)
 	return result;
 }
 
+static_assert(sizeof(RTSS_SHARED_MEMORY::RTSS_SHARED_MEMORY_APP_ENTRY::dwStatFrameTimeBuf) ==
+	RTSSFrameTimeRing::Size * sizeof(DWORD), "RTSSFrameTimeRing walks the frame time ring of an RTSS application entry");
+
 std::vector<float> RTSSCoreControl::GetFrameTimesInterval(DWORD processId, DWORD milliSeconds)
 {
 	std::vector<float> frameTimes;
@@ -293,24 +297,8 @@ std::vector<float> RTSSCoreControl::GetFrameTimesInterval(DWORD processId, DWORD
 					{
 						if (pEntry->dwProcessID == processId)
 						{
-							// & 1023 enforces upper limit = 1023 = max index
-							DWORD frameTimePos = pEntry->dwStatFrameTimeBufPos;
-							DWORD frametimeSum = 0;
-
-							for (DWORD i = frameTimePos; i >= 0; i--)
-							{
-								frametimeSum += pEntry->dwStatFrameTimeBuf[i & 1023];
-
-								if (frametimeSum < microseconds)
-								{
-									frameTimes.push_back(pEntry->dwStatFrameTimeBuf[i & 1023] / 1000.0f);
-								}
-								else
-								{
-									break;
-								}
-							}
-
+							frameTimes = RTSSFrameTimeRing::Collect(pEntry->dwStatFrameTimeBuf,
+								pEntry->dwStatFrameTimeBufPos, microseconds);
 							break;
 						}
 					}
@@ -321,7 +309,6 @@ std::vector<float> RTSSCoreControl::GetFrameTimesInterval(DWORD processId, DWORD
 		CloseHandle(hMapFile);
 	}
 
-	std::reverse(frameTimes.begin(), frameTimes.end());
 	return frameTimes;
 }
 

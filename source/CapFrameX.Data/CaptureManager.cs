@@ -1104,12 +1104,30 @@ namespace CapFrameX.Data
             }
 
             const int SAMPLE_INTERVAL_MS = 1000;
-            _aggregatedRTSSFrameTimes = new List<float>();
+            var frameTimes = new List<float>();
+            _aggregatedRTSSFrameTimes = frameTimes;
+            bool readFailed = false;
             return Observable
                 .Timer(DateTimeOffset.UtcNow, TimeSpan.FromMilliseconds(SAMPLE_INTERVAL_MS))
                 .Where(x => IsCapturing)
-                .Subscribe(x => _aggregatedRTSSFrameTimes
-                    .AddRange(_rtssService.GetFrameTimesInterval(processId, SAMPLE_INTERVAL_MS)));
+                .Subscribe(x =>
+                {
+                    // The timer runs on the thread pool: an exception here ended the app, and the
+                    // capture with it (crash reports of 1.8.6.2, 2026-11-17). The capture keeps
+                    // what was read; the failure is logged once per capture.
+                    try
+                    {
+                        frameTimes.AddRange(_rtssService.GetFrameTimesInterval(processId, SAMPLE_INTERVAL_MS));
+                    }
+                    catch (Exception ex)
+                    {
+                        if (!readFailed)
+                        {
+                            readFailed = true;
+                            _logger.LogWarning(ex, "Reading the RTSS frame times of PID {pid} failed; the capture continues.", processId);
+                        }
+                    }
+                });
         }
     }
 
