@@ -1157,7 +1157,7 @@
     "OverlayViewModel_ProfileNotVerified01": "{0}: last tried {1}, not verified yet.",
     "OverlayViewModel_ProfileVerified012": "{0}: {1} (verified {2}).",
     "OverlayViewModel_ProfilesUnavailable0": "Learned compatibility profiles unavailable ({0}).",
-    "OverlayView_AddsDisplayTimesOffUses": "Adds display times. Off uses the hook's local frame times.",
+    "OverlayView_AddsDisplayTimesOffUses": "Adds display times. Off uses the hook's local frame times; tile designs with a display-time chart use PresentMon anyway.",
     "OverlayView_AdjustThePlacementAndBackground": "Adjust the placement and background of CapFrameX overlay content.",
     "OverlayView_AllEntries": "All Entries",
     "OverlayView_AlwaysLearnsCompatibilitySettingsFor": "Always learns compatibility settings for each game.",

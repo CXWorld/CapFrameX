@@ -1156,7 +1156,7 @@
     "OverlayViewModel_ProfileNotVerified01": "{0}: último intento con {1}, todavía sin verificar.",
     "OverlayViewModel_ProfileVerified012": "{0}: {1} (verificado el {2}).",
     "OverlayViewModel_ProfilesUnavailable0": "Los perfiles de compatibilidad aprendidos no están disponibles ({0}).",
-    "OverlayView_AddsDisplayTimesOffUses": "Añade los tiempos de pantalla. Desactivado usa los frametimes locales del hook.",
+    "OverlayView_AddsDisplayTimesOffUses": "Añade los tiempos de pantalla. Desactivado usa los frametimes locales del hook; los diseños de mosaicos con un gráfico de tiempos de pantalla usan PresentMon de todos modos.",
     "OverlayView_AdjustThePlacementAndBackground": "Ajusta la posición y el fondo del contenido del overlay de CapFrameX.",
     "OverlayView_AllEntries": "Todas las entradas",
     "OverlayView_AlwaysLearnsCompatibilitySettingsFor": "Aprende siempre la configuración de compatibilidad de cada juego.",

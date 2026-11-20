@@ -478,6 +478,22 @@ further runtime. A PID change resets the tracker, in the metrics also a PresentM
 (`ASecondRuntimeOfTheTargetDoesNotDecideItsRuntime`), `PresentMonOverlayMetricsTest`
 (`ASecondRuntimeOfTheTargetDoesNotRenameTheGroup`).
 
+### In-game chart source
+
+The in-game hook and the Vulkan layer draw their charts from their own presents unless the metrics
+header carries `FlagPresentMonGraph`; then they replay PresentMon's rows from the ring
+`HookFrametimePublisher` writes (`Global\CfxOsdFrametimesV1`). Only PresentMon knows display times:
+with the hook's presents a design's display-time chart stayed empty (issue 483, 2026-11-20, vkcube
+through the Vulkan layer). `HookGraphSource.UsesPresentMon` therefore takes PresentMon while "Use
+PresentMon frame times" (`HookOverlayUsePresentMonFrametimes`, default off) is on or the active design
+has a display-time series, line or stutter threshold (`OverlayRuntimeDesign.NeedsDisplayTimes`); the
+frame time charts of such a design replay PresentMon's frames too, with the replay delay.
+`HookMetricsPublisher` decides on every tick, `HookFrametimePublisher` at every change of the option
+or the design (`IOverlayDesignService.Changed`). The hook and the layer read the flag at every present
+and open the ring by themselves, so the native side needed no change. The classic `DisplayTime` row
+still follows the option alone (`OverlayEntryProvider`). Tests: `HookGraphSourceTest`,
+`HookMetricsPublisherTest` (`EveryTickPublishesTheGraphSourceOfTheActiveDesign`).
+
 ### Frame generation in the frametime graphs
 
 PresentMon reports a frame-generation pair with one CPU start time (`CPUStartQPCTimeInMs`): the

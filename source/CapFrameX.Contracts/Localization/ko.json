@@ -1156,7 +1156,7 @@
     "OverlayViewModel_ProfileNotVerified01": "{0}: 마지막으로 {1}을(를) 시도했으며 아직 검증되지 않았습니다.",
     "OverlayViewModel_ProfileVerified012": "{0}: {1}({2}에 검증됨).",
     "OverlayViewModel_ProfilesUnavailable0": "학습된 호환성 프로필을 사용할 수 없습니다({0}).",
-    "OverlayView_AddsDisplayTimesOffUses": "화면 표시 간격을 추가합니다. 끄면 후킹에서 측정한 로컬 프레임 시간을 사용합니다.",
+    "OverlayView_AddsDisplayTimesOffUses": "화면 표시 간격을 추가합니다. 끄면 후킹에서 측정한 로컬 프레임 시간을 사용합니다. 화면 표시 간격 차트가 있는 타일 디자인은 항상 PresentMon을 사용합니다.",
     "OverlayView_AdjustThePlacementAndBackground": "CapFrameX 오버레이 콘텐츠의 위치와 배경을 조정합니다.",
     "OverlayView_AllEntries": "모든 항목",
     "OverlayView_AlwaysLearnsCompatibilitySettingsFor": "게임별 호환성 설정을 항상 학습합니다.",

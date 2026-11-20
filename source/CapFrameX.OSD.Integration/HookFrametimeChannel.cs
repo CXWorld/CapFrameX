@@ -8,10 +8,11 @@ namespace CapFrameX.OSD.Integration
     /// <summary>
     /// Streams CapFrameX's PER-FRAME PresentMon frametime + display-time samples to the in-game hook
     /// through a named shared-memory RING, <c>Global\CfxOsdFrametimesV1</c>. This is the "PresentMon"
-    /// graph source (opt-in via <see cref="Contracts.Configuration.IAppConfiguration.HookOverlayUsePresentMonFrametimes"/>),
-    /// strictly separate from the hook's own local present ring: PresentMon data carries ETW-pipeline
-    /// latency, so the renderer buffers + replays it via its playback clock rather than treating it as
-    /// live in-game frametimes.
+    /// graph source (opt-in via <see cref="Contracts.Configuration.IAppConfiguration.HookOverlayUsePresentMonFrametimes"/>,
+    /// or an active design with a display-time chart: <see cref="HookGraphSource"/>), strictly separate
+    /// from the hook's own local present ring: PresentMon data carries ETW-pipeline latency, so the
+    /// renderer buffers + replays it via its playback clock rather than treating it as live in-game
+    /// frametimes.
     ///
     /// SPSC ring: one writer (CapFrameX frame-data stream), one reader (the hook in the game process).
     /// 32-byte header + <see cref="Capacity"/> fixed 24-byte records {timeMs, frametimeMs, displayTimeMs}
@@ -80,7 +81,10 @@ namespace CapFrameX.OSD.Integration
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr LocalFree(IntPtr handle);
 
-        public static HookFrametimeChannel Create()
+        public static HookFrametimeChannel Create() => Create(MapName);
+
+        // Tests use a session-local name instead of the live Global ring.
+        internal static HookFrametimeChannel Create(string mapName)
         {
             var ch = new HookFrametimeChannel();
             try
@@ -99,11 +103,11 @@ namespace CapFrameX.OSD.Integration
                         lpSecurityDescriptor = psd,
                         bInheritHandle = 0
                     };
-                    ch._mapHandle = CreateFileMappingW(INVALID_HANDLE_VALUE, ref sa, PAGE_READWRITE, 0, MapSize, MapName);
+                    ch._mapHandle = CreateFileMappingW(INVALID_HANDLE_VALUE, ref sa, PAGE_READWRITE, 0, MapSize, mapName);
                     int err = Marshal.GetLastWin32Error();
                     if (ch._mapHandle == IntPtr.Zero)
                     {
-                        Log.Warning("HookOverlay: CreateFileMapping('{name}') failed ({err})", MapName, err);
+                        Log.Warning("HookOverlay: CreateFileMapping('{name}') failed ({err})", mapName, err);
                         return ch;
                     }
                     ch._view = MapViewOfFile(ch._mapHandle, FILE_MAP_WRITE, 0, 0, new UIntPtr(MapSize));
@@ -119,7 +123,7 @@ namespace CapFrameX.OSD.Integration
                     Marshal.WriteInt32(ch._view, OffFlags, 0);
                     Marshal.WriteInt64(ch._view, OffWriteIdx, 0);
                     Marshal.WriteInt64(ch._view, OffWriteQpc, 0);
-                    Log.Information("HookOverlay: frametime channel '{name}' created", MapName);
+                    Log.Information("HookOverlay: frametime channel '{name}' created", mapName);
                 }
                 finally
                 {

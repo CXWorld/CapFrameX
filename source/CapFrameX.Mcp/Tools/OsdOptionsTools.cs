@@ -57,7 +57,7 @@ namespace CapFrameX.Mcp.Tools
             [Description("Automatically hide the OSD while a capture is running.")] bool? autoDisableOverlay = null,
             [Description("Include seconds in the system-time OSD entry.")] bool? showSystemTimeSeconds = null,
             [Description("Suppress RTSS output while keeping overlay data available to APIs.")] bool? hideOverlay = null,
-            [Description("For the in-game renderer, use CapFrameX PresentMon frame/display times instead of the hook-local frame times.")] bool? hookOverlayUsePresentMonFrametimes = null,
+            [Description("For the in-game renderer, use CapFrameX PresentMon frame/display times instead of the hook-local frame times. An active tile design with a display-time chart uses them while this is off too.")] bool? hookOverlayUsePresentMonFrametimes = null,
             [Description("PresentMon replay buffer in milliseconds for the in-game PresentMon source and hook-free renderer, 500..10000.")] int? replayBufferSizeMs = null,
             [Description("Maximum hook-free chart refresh rate in Hz; one of 1, 2, 5, 10, 20, 30, 60, or 120.")] int? hookFreeRefreshRate = null,
             [Description("Enable RTSS custom coordinates.")] bool? osdCustomPosition = null,

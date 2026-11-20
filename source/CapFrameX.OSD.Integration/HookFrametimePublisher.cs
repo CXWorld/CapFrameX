@@ -1,5 +1,6 @@
 using System;
 using System.Globalization;
+using System.Reactive;
 using System.Reactive.Linq;
 using CapFrameX.Contracts.Configuration;
 using Serilog;
@@ -10,10 +11,10 @@ namespace CapFrameX.OSD.Integration
     /// Streams CapFrameX's live PresentMon per-frame frametime + display-time samples to the in-game
     /// hook via <see cref="HookFrametimeChannel"/>, so the hook can replay the SAME data its hook-free
     /// sibling shows - but timestamped and buffered, kept strictly separate from the hook's own local
-    /// present ring. Active only while BOTH the in-game hook overlay
-    /// (<see cref="IAppConfiguration.EnableHookOverlay"/>) AND the PresentMon graph source
-    /// (<see cref="IAppConfiguration.HookOverlayUsePresentMonFrametimes"/>) are enabled, and
-    /// only while the selected target passes <see cref="HookTargetPolicy"/>.
+    /// present ring. Active only while the in-game hook overlay
+    /// (<see cref="IAppConfiguration.EnableHookOverlay"/>) draws from PresentMon
+    /// (<see cref="HookGraphSource"/>: the option, or an active design with a display-time chart),
+    /// and only while the selected target passes <see cref="HookTargetPolicy"/>.
     ///
     /// Mirrors the per-frame parsing of <see cref="OsdOverlayBridge.OnFrameRow"/> (same frame stream +
     /// column indices), but writes to shared memory instead of the in-process renderer.
@@ -21,25 +22,49 @@ namespace CapFrameX.OSD.Integration
     public sealed class HookFrametimePublisher : IDisposable
     {
         private readonly IAppConfiguration _appConfiguration;
+        private readonly Func<OverlayRuntimeDesign> _activeDesign;
+        private readonly string _mapName;
         private readonly int _processIdIndex;
         private readonly int _ftIndex;
         private readonly int _displayChangedIndex;
         private readonly Func<int> _startTimeIndexProvider;
         private readonly IDisposable _frameSub;
         private readonly IDisposable _configSub;
+        private readonly IDisposable _designSub;
         private readonly IDisposable _pidSub;
         private readonly object _gate = new object();
         private volatile HookFrametimeChannel _channel;
         private volatile bool _enabled;
         private volatile int _targetPid;
 
+        /// <param name="activeDesign">The design the renderers draw, null for the classic rows.</param>
+        /// <param name="activeDesignChanges">Signals every change of <paramref name="activeDesign"/>.</param>
         public HookFrametimePublisher(IAppConfiguration appConfiguration,
                                       IObservable<string[]> frameDataStream,
                                       IObservable<int> processIdStream,
                                       int processIdColumnIndex,
                                       int frametimeColumnIndex,
                                       int displayChangedColumnIndex,
-                                      Func<int> startTimeIndexProvider)
+                                      Func<int> startTimeIndexProvider,
+                                      Func<OverlayRuntimeDesign> activeDesign = null,
+                                      IObservable<Unit> activeDesignChanges = null)
+            : this(appConfiguration, frameDataStream, processIdStream, processIdColumnIndex,
+                frametimeColumnIndex, displayChangedColumnIndex, startTimeIndexProvider,
+                activeDesign, activeDesignChanges, HookFrametimeChannel.MapName)
+        {
+        }
+
+        // Tests use a session-local mapping instead of the live Global ring.
+        internal HookFrametimePublisher(IAppConfiguration appConfiguration,
+                                        IObservable<string[]> frameDataStream,
+                                        IObservable<int> processIdStream,
+                                        int processIdColumnIndex,
+                                        int frametimeColumnIndex,
+                                        int displayChangedColumnIndex,
+                                        Func<int> startTimeIndexProvider,
+                                        Func<OverlayRuntimeDesign> activeDesign,
+                                        IObservable<Unit> activeDesignChanges,
+                                        string mapName)
         {
             _appConfiguration = appConfiguration ?? throw new ArgumentNullException(nameof(appConfiguration));
             if (processIdColumnIndex < 0)
@@ -48,6 +73,8 @@ namespace CapFrameX.OSD.Integration
             _ftIndex = frametimeColumnIndex;
             _displayChangedIndex = displayChangedColumnIndex;
             _startTimeIndexProvider = startTimeIndexProvider;
+            _activeDesign = activeDesign ?? (() => null);
+            _mapName = mapName;
             if (processIdStream == null) throw new ArgumentNullException(nameof(processIdStream));
 
             RecomputeEnabled();
@@ -61,21 +88,26 @@ namespace CapFrameX.OSD.Integration
                          || x.key == nameof(IAppConfiguration.HookOverlayUsePresentMonFrametimes))
                 .Subscribe(_ => RecomputeEnabled());
 
+            _designSub = activeDesignChanges?.Subscribe(_ => RecomputeEnabled());
+
             if (frameDataStream != null && frametimeColumnIndex >= 0)
                 _frameSub = frameDataStream.Subscribe(OnFrameRow);
         }
+
+        /// <summary>Whether the ring exists, so the hook can replay PresentMon's frames.</summary>
+        internal bool IsPublishing => _channel != null;
 
         private void RecomputeEnabled()
         {
             lock (_gate)
             {
                 bool run = _appConfiguration.EnableHookOverlay
-                        && _appConfiguration.HookOverlayUsePresentMonFrametimes;
+                        && HookGraphSource.UsesPresentMon(_appConfiguration, _activeDesign());
                 if (run == _enabled && (_channel != null) == run) return;
                 _enabled = run;
                 if (run)
                 {
-                    if (_channel == null) _channel = HookFrametimeChannel.Create();
+                    if (_channel == null) _channel = HookFrametimeChannel.Create(_mapName);
                 }
                 else
                 {
@@ -95,7 +127,7 @@ namespace CapFrameX.OSD.Integration
                 // The frametime ring has no per-record PID. Recreate it on every target switch so
                 // a newly selected process can never replay the previous process' samples.
                 _channel?.Dispose();
-                _channel = _enabled ? HookFrametimeChannel.Create() : null;
+                _channel = _enabled ? HookFrametimeChannel.Create(_mapName) : null;
             }
         }
 
@@ -139,6 +171,7 @@ namespace CapFrameX.OSD.Integration
         {
             _frameSub?.Dispose();
             _configSub?.Dispose();
+            _designSub?.Dispose();
             _pidSub?.Dispose();
             lock (_gate) { _channel?.Dispose(); _channel = null; }
         }

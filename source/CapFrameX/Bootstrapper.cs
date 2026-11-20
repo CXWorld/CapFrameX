@@ -40,6 +40,8 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Reactive;
+using System.Reactive.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
@@ -224,15 +226,18 @@ namespace CapFrameX
                         osdOverlayService,
                         config,
                         rtssService.ProcessIdStream,
-                        _pixelOrbit);
+                        _pixelOrbit,
+                        () => _overlayDesignService?.CurrentDesign);
                 }
 
-                // Optional PresentMon graph source for the hook: stream the SAME per-frame frametime +
+                // PresentMon graph source for the hook: stream the SAME per-frame frametime +
                 // display-time data the hook-free bridge consumes into a shared-memory ring the hook
-                // replays. Active only with EnableHookOverlay + HookOverlayUsePresentMonFrametimes; the
-                // hook otherwise uses its own local present ring (the two sources stay strictly separate).
+                // replays. Active with EnableHookOverlay while HookOverlayUsePresentMonFrametimes is on
+                // or the active design has a display-time chart (HookGraphSource); the hook otherwise
+                // uses its own local present ring (the two sources stay strictly separate).
                 using (StartupPerformanceLogger.Measure("Hook frametime publisher initialization"))
                 {
+                    var designService = _overlayDesignService;
                     _hookFrametimePublisher = new OSD.Integration.HookFrametimePublisher(
                         config,
                         osdCaptureService.FrameDataStream,
@@ -240,7 +245,12 @@ namespace CapFrameX
                         PresentMonCaptureService.ProcessID_INDEX,
                         PresentMonCaptureService.MsBetweenPresents_INDEX,
                         PresentMonCaptureService.MsBetweenDisplayChange_INDEX,
-                        () => osdCaptureService.CPUStartQPCTimeInMs_Index);
+                        () => osdCaptureService.CPUStartQPCTimeInMs_Index,
+                        () => designService?.CurrentDesign,
+                        designService == null ? null : Observable.FromEventPattern(
+                                handler => designService.Changed += handler,
+                                handler => designService.Changed -= handler)
+                            .Select(_ => Unit.Default));
                 }
 
                 using (StartupPerformanceLogger.Measure("Shell configuration"))

@@ -22,6 +22,7 @@ namespace CapFrameX.OSD.Integration
         private readonly IOverlayService _overlayService;
         private readonly IAppConfiguration _appConfiguration;
         private readonly OverlayPixelOrbitResolver _pixelOrbit;
+        private readonly Func<OverlayRuntimeDesign> _activeDesign;
         private readonly TargetPolicyCheck _targetPolicy;
         private readonly string _metricsMapName;
         private readonly string _placementMapName;
@@ -41,10 +42,14 @@ namespace CapFrameX.OSD.Integration
         private bool _targetAllowed;
         private string _lastPolicyReason;
 
+        /// <param name="activeDesign">The design the renderers draw, null for the classic rows; it
+        /// decides the graph source together with the option (<see cref="HookGraphSource"/>).</param>
         public HookMetricsPublisher(IOverlayService overlayService, IAppConfiguration appConfiguration,
-            IObservable<int> processIdStream, OverlayPixelOrbitResolver pixelOrbit = null)
+            IObservable<int> processIdStream, OverlayPixelOrbitResolver pixelOrbit = null,
+            Func<OverlayRuntimeDesign> activeDesign = null)
             : this(overlayService, appConfiguration, processIdStream, pixelOrbit,
-                HookTargetPolicy.IsAllowed, HookMetricsChannel.MapName, HookPlacementChannel.MapName)
+                HookTargetPolicy.IsAllowed, HookMetricsChannel.MapName, HookPlacementChannel.MapName,
+                activeDesign)
         {
         }
 
@@ -52,12 +57,14 @@ namespace CapFrameX.OSD.Integration
         // mappings instead of the live Global channels.
         internal HookMetricsPublisher(IOverlayService overlayService, IAppConfiguration appConfiguration,
             IObservable<int> processIdStream, OverlayPixelOrbitResolver pixelOrbit,
-            TargetPolicyCheck targetPolicy, string metricsMapName, string placementMapName)
+            TargetPolicyCheck targetPolicy, string metricsMapName, string placementMapName,
+            Func<OverlayRuntimeDesign> activeDesign = null)
         {
             _overlayService = overlayService ?? throw new ArgumentNullException(nameof(overlayService));
             _appConfiguration = appConfiguration ?? throw new ArgumentNullException(nameof(appConfiguration));
             if (processIdStream == null) throw new ArgumentNullException(nameof(processIdStream));
             _pixelOrbit = pixelOrbit;
+            _activeDesign = activeDesign ?? (() => null);
             _targetPolicy = targetPolicy ?? throw new ArgumentNullException(nameof(targetPolicy));
             _metricsMapName = metricsMapName;
             _placementMapName = placementMapName;
@@ -185,12 +192,13 @@ namespace CapFrameX.OSD.Integration
         }
 
         /// <summary>
-        /// The metrics header flags for the current settings. Published with every snapshot, so a
-        /// changed option reaches the DXGI hook and the Vulkan layer within one publish period.
+        /// The metrics header flags for the current settings and the active design. Published with
+        /// every snapshot, so a changed option or design reaches the DXGI hook and the Vulkan layer
+        /// within one publish period.
         /// </summary>
-        internal static uint BuildHeaderFlags(IAppConfiguration configuration)
+        internal static uint BuildHeaderFlags(IAppConfiguration configuration, OverlayRuntimeDesign activeDesign = null)
         {
-            uint flags = configuration.HookOverlayUsePresentMonFrametimes
+            uint flags = HookGraphSource.UsesPresentMon(configuration, activeDesign)
                 ? HookMetricsChannel.FlagPresentMonGraph : 0u;
             if (!configuration.UseOsdValueSmoothing)
                 flags |= HookMetricsChannel.FlagDisableValueSmoothing;
@@ -242,7 +250,7 @@ namespace CapFrameX.OSD.Integration
                         _overlayService.RunHistory,
                         _overlayService.RunHistoryOutlierFlags,
                         _overlayService.RunHistoryAggregation);
-                    _channel.Publish(list, BuildHeaderFlags(_appConfiguration), targetPid,
+                    _channel.Publish(list, BuildHeaderFlags(_appConfiguration, _activeDesign()), targetPid,
                         _appConfiguration.OsdFontFamily);
                     // Publishes only on change; the renderers re-place the panel on every write.
                     PublishPlacement();

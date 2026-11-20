@@ -1027,7 +1027,7 @@
     "OverlayViewModel_ProfileNotVerified01": "{0}: последним пробовался этап {1}, он ещё не проверен.",
     "OverlayViewModel_ProfileVerified012": "{0}: {1} (проверено {2}).",
     "OverlayViewModel_ProfilesUnavailable0": "Выученные профили совместимости недоступны ({0}).",
-    "OverlayView_AddsDisplayTimesOffUses": "Добавляет время отображения. Если выключено, используются локальные времена кадров внедрения.",
+    "OverlayView_AddsDisplayTimesOffUses": "Добавляет время отображения. Если выключено, используются локальные времена кадров внедрения; плиточные дизайны с графиком времени отображения всё равно используют PresentMon.",
     "OverlayView_AdjustThePlacementAndBackground": "Положение и фон содержимого оверлея CapFrameX.",
     "OverlayView_AllEntries": "Все записи",
     "OverlayView_AlwaysLearnsCompatibilitySettingsFor": "Всегда запоминает параметры совместимости для каждой игры.",

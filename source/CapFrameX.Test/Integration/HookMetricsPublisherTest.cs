@@ -132,6 +132,30 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void EveryTickPublishesTheGraphSourceOfTheActiveDesign()
+        {
+            // Issue 483: a display-time chart stayed empty because the hook drew from its own
+            // presents, which carry no display times.
+            OverlayRuntimeDesign design = null;
+            using var context = new PublisherContext(hookEnabled: true, overlayActive: true, () => design);
+            context.Pids.OnNext(GamePid);
+
+            context.Tick();
+            Assert.AreEqual(0u, context.PublishedFlags() & HookMetricsChannel.FlagPresentMonGraph);
+
+            design = OverlayRuntimeDesign.Parse("id", "Display",
+                "{\"version\":1,\"root\":{\"type\":\"chart\",\"series\":\"displaytimes\"}}");
+            context.Tick();
+            Assert.AreEqual(HookMetricsChannel.FlagPresentMonGraph,
+                context.PublishedFlags() & HookMetricsChannel.FlagPresentMonGraph);
+
+            design = OverlayRuntimeDesign.Parse("id", "Frames",
+                "{\"version\":1,\"root\":{\"type\":\"chart\",\"series\":\"frametimes\"}}");
+            context.Tick();
+            Assert.AreEqual(0u, context.PublishedFlags() & HookMetricsChannel.FlagPresentMonGraph);
+        }
+
+        [TestMethod]
         public void SwitchingTheHookOff_StopsTheChecksAndWithdrawsTheChannel()
         {
             using var context = new PublisherContext(hookEnabled: true, overlayActive: true);
@@ -151,6 +175,7 @@ namespace CapFrameX.Test.Integration
         private sealed class PublisherContext : IDisposable
         {
             private const int OffTargetPid = 16;
+            private const int OffFlags = 20;
             private readonly string _metricsMap =
                 @"Local\CfxOsdMetricsPublisherTest_" + Guid.NewGuid().ToString("N");
             private readonly string _placementMap =
@@ -165,7 +190,8 @@ namespace CapFrameX.Test.Integration
             public readonly List<int> PolicyChecks = new List<int>();
             public readonly HashSet<int> BlockedPids = new HashSet<int>();
 
-            public PublisherContext(bool hookEnabled, bool overlayActive)
+            public PublisherContext(bool hookEnabled, bool overlayActive,
+                Func<OverlayRuntimeDesign> activeDesign = null)
             {
                 _configuration.SetupAllProperties();
                 _configuration.SetupGet(configuration => configuration.OnValueChanged).Returns(_changes);
@@ -175,7 +201,14 @@ namespace CapFrameX.Test.Integration
                 overlay.SetupGet(service => service.OnDictionaryUpdated).Returns(_entries);
                 overlay.SetupGet(service => service.CurrentOverlayEntries).Returns(Array.Empty<IOverlayEntry>());
                 _publisher = new HookMetricsPublisher(overlay.Object, _configuration.Object, Pids,
-                    pixelOrbit: null, CheckPolicy, _metricsMap, _placementMap);
+                    pixelOrbit: null, CheckPolicy, _metricsMap, _placementMap, activeDesign);
+            }
+
+            public uint PublishedFlags()
+            {
+                using var map = MemoryMappedFile.OpenExisting(_metricsMap, MemoryMappedFileRights.Read);
+                using var view = map.CreateViewAccessor(0, 32, MemoryMappedFileAccess.Read);
+                return view.ReadUInt32(OffFlags);
             }
 
             public void Tick() => _entries.OnNext(Array.Empty<IOverlayEntry>());

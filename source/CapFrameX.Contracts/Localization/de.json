@@ -1157,7 +1157,7 @@
     "OverlayViewModel_ProfileNotVerified01": "{0}: zuletzt mit {1} versucht, noch nicht bestätigt.",
     "OverlayViewModel_ProfileVerified012": "{0}: {1} (bestätigt am {2}).",
     "OverlayViewModel_ProfilesUnavailable0": "Erlernte Kompatibilitätsprofile nicht verfügbar ({0}).",
-    "OverlayView_AddsDisplayTimesOffUses": "Ergänzt Displaytimes. Ist die Option aus, werden die lokalen Frametimes des Hooks verwendet.",
+    "OverlayView_AddsDisplayTimesOffUses": "Ergänzt Displaytimes. Ist die Option aus, werden die lokalen Frametimes des Hooks verwendet; Kachel-Designs mit einem Displaytime-Diagramm nutzen trotzdem PresentMon.",
     "OverlayView_AdjustThePlacementAndBackground": "Passe Position und Hintergrund der Inhalte des CapFrameX-Overlays an.",
     "OverlayView_AllEntries": "Alle Einträge",
     "OverlayView_AlwaysLearnsCompatibilitySettingsFor": "Lernt für jedes Spiel immer die passenden Kompatibilitätseinstellungen.",
