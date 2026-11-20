@@ -1,0 +1,2735 @@
+{
+  // =========================================================================
+  // CapFrameX Localization Catalog (Simplified Chinese / 简体中文)
+  // Based on en.json. Technical terms are shown as "中文 (English)" where space allows.
+  // =========================================================================
+  // 2. Set "name" to your native language name (e.g. "Español") and "culture" (e.g. "es-ES").
+  // 3. Translate "strings" (UI), "overlay" (OSD labels), and "phrases" (OSD sensors).
+  // All Localization/*.json files are automatically embedded on build.
+  // =========================================================================
+  "name": "简体中文",
+  "culture": "zh-CN",
+  "strings": {
+    "OverlayDesignError_LayoutDimensions": "预设源布局的缩放或网格尺寸无效。",
+    "OverlayDesignError_GroupLayout": "预设传感器组没有原生成员布局。",
+    "OverlayDesignError_GroupWidth": "传感器组没有可用的内部宽度。",
+    "OverlayDesignError_GroupBars": "传感器组的条形尺寸无效。",
+    "OverlayDesignError_GroupHeight": "传感器组需要更多高度。请加宽其磁贴或增加列数。",
+    "OverlayDesignError_ChannelSecurity": "无法创建设计通道的安全描述符。",
+    "OverlayDesignError_ChannelCreate": "无法创建叠加层 (Overlay) 设计通道。",
+    "OverlayDesignError_ChannelMap": "无法映射叠加层 (Overlay) 设计通道。",
+    "OverlayDesignError_ChannelJson": "设计通道 JSON 不能为空，且不能包含嵌入的 NUL 字符。",
+    "OverlayDesignError_ChannelSize": "设计通道 JSON 超出 1 MiB UTF-8 上限。",
+    "OverlayDesignStatus_RendererRejected": "无 Hook 渲染器拒绝了已保存的设计。之前的叠加层 (Overlay) 仍处于活动状态。",
+    "OverlayDesignStatus_InGame": "游戏内",
+    "OverlayDesignStatus_HookFree": "无 Hook",
+    "OverlayDesignStatus_Off": "渲染器已关闭",
+    "OverlayEditor_Title": "CapFrameX · 磁贴叠加层编辑器",
+    "OverlayEditor_Profile": "磁贴配置文件",
+    "OverlayEditor_ProfileHint": "已保存的磁贴配置文件。编辑器中的选择会在下次打开时恢复。",
+    "OverlayEditor_New": "新建",
+    "OverlayEditor_Duplicate": "复制",
+    "OverlayEditor_Rename": "重命名",
+    "OverlayEditor_Delete": "删除",
+    "OverlayEditor_Save": "保存",
+    "OverlayEditor_Discard": "放弃",
+    "OverlayEditor_Cancel": "取消",
+    "OverlayEditor_SaveHint": "保存此设计 (Ctrl+S)",
+    "OverlayEditor_Use": "使用磁贴叠加层",
+    "OverlayEditor_UseHint": "使用所选的 CapFrameX 渲染器显示此已保存的磁贴配置文件。",
+    "OverlayEditor_Import": "导入…",
+    "OverlayEditor_ImportHint": "将 CapFrameX 设计导入为新的配置文件",
+    "OverlayEditor_Export": "导出…",
+    "OverlayEditor_ExportHint": "将当前设计导出为 JSON",
+    "OverlayEditor_Merge": "合并…",
+    "OverlayEditor_MergeHint": "将另一个配置文件中的磁贴或容器添加到此设计",
+    "OverlayEditor_MergeTitle": "合并配置文件",
+    "OverlayEditor_MergeMessage": "所选磁贴会添加到“{0}”的磁贴下方，并保留原有的排列、颜色和尺寸。缩放、字体、圆角半径和磁贴不透明度采用“{0}”的设置。在保存配置文件之前不会保存任何内容。",
+    "OverlayEditor_MergeSource": "配置文件",
+    "OverlayEditor_MergeTiles": "要添加的磁贴和容器",
+    "OverlayEditor_MergeAll": "全部",
+    "OverlayEditor_MergeContainerItem": "{0} · {1} 个元素",
+    "OverlayEditor_MergeUnreadable": "无法合并此配置文件：{0}",
+    "OverlayEditor_MergeConfirm": "合并",
+    "OverlayEditor_Loading": "正在加载已保存的磁贴配置文件…",
+    "OverlayEditor_SourceHelp": "选择一个预设，然后选择一个磁贴以编辑其数据源和外观。",
+    "OverlayEditor_RefreshSources": "刷新数据源",
+    "OverlayEditor_RefreshSourcesHint": "重新发现所有可用的 CapFrameX 硬件传感器。",
+    "OverlayEditor_DemoSources": "演示预览。连接 CapFrameX 遥测数据后即可选择硬件数据源。",
+    "OverlayEditor_DiscoveringSources": "正在发现 CapFrameX 遥测数据源…",
+    "OverlayEditor_SourcesReady": "{0} 个数据源 · 叠加层 (Overlay) 数值和硬件遥测数据 · 缺失的读数显示为 —",
+    "OverlayEditor_SourcesFailed": "无法刷新数据源：{0}",
+    "OverlayEditor_TelemetryStopped": "实时遥测已停止：{0}",
+    "OverlayEditor_PreviewUnavailable": "实时预览不可用：{0}",
+    "OverlayEditor_RowsFailed": "无法刷新经典行：{0}",
+    "OverlayEditor_RuntimeRefreshFailed": "无法在叠加层 (Overlay) 中刷新已保存的设计。{0}",
+    "OverlayEditor_LoadFailed": "无法加载已保存的设计。{0}",
+    "OverlayEditor_LibraryUnavailable": "配置文件库不可用。{0}",
+    "OverlayEditor_ReadOnlyLibrary": "配置文件库不可用 · 编辑器为只读状态。现有文件已保留。",
+    "OverlayEditor_DesignLoadFailed": "无法加载此设计。编辑器为只读状态；请重新打开设计器重试。{0}",
+    "OverlayEditor_RtssHint": "RTSS 使用行叠加层。在叠加层 (Overlay) 设置中选择“游戏内”或“无 Hook”以启用磁贴叠加层。",
+    "OverlayEditor_DesignUnavailable": "设计不可用 · 已保存的配置文件已保留。",
+    "OverlayEditor_UnsavedText": "未应用的文本 · 按 Enter 或离开输入框以应用。按 Ctrl+S 保存。",
+    "OverlayEditor_InvalidChanges": "未保存的更改 · 保存前请更正高亮显示的值。",
+    "OverlayEditor_UnsavedChanges": "未保存的更改 · 按 Ctrl+S 保存。",
+    "OverlayEditor_Saved": "已保存 · 下次将重新打开此设计。",
+    "OverlayEditor_ShownThisProfile": "此配置文件",
+    "OverlayEditor_RtssInactive": "RTSS：磁贴叠加层已关闭。选择“游戏内”或“无 Hook”以启用设计。",
+    "OverlayEditor_SaveChangesTitle": "保存更改？",
+    "OverlayEditor_SaveChangesMessage": "“{0}”有未保存的更改。继续之前是否保存？",
+    "OverlayEditor_SaveInvalidMessage": "“{0}”有未保存的更改，其中部分值无效。点击取消以更正，或放弃这些更改。",
+    "OverlayEditor_ChooseName": "为此设计选择一个名称。",
+    "OverlayEditor_NameLimit": "最多使用 {0} 个字符。",
+    "OverlayEditor_NameExists": "已存在同名设计。",
+    "OverlayEditor_NewDesign": "新建设计",
+    "OverlayEditor_DuplicateDesign": "复制设计",
+    "OverlayEditor_CopyName": "{0} 副本",
+    "OverlayEditor_RenameDesign": "重命名设计",
+    "OverlayEditor_DeleteTitle": "删除设计？",
+    "OverlayEditor_DeleteMessage": "要从已保存的设计中删除“{0}”吗？",
+    "OverlayEditor_DeleteDirtyMessage": "要从已保存的设计中删除“{0}”吗？其未保存的更改也将被放弃。",
+    "OverlayEditor_FileFilter": "CapFrameX 叠加层设计 (*.json)|*.json",
+    "OverlayEditor_ImportDesign": "导入设计",
+    "OverlayEditor_ImportGeneric": "此设计未指定硬件；将读取本机的传感器。",
+    "OverlayEditor_ImportAdapted": "已适配本机：{0}。",
+    "OverlayEditor_ImportSameHardware": "本机具有此设计所针对的硬件。",
+    "OverlayEditor_ImportUnmapped": "尚未识别本机的传感器；设计将按原样导入。",
+    "OverlayEditor_ImportUnresolved": "{0} 个读数在本机没有匹配的传感器，将保持为空：{1}",
+    "OverlayEditor_ImportIssue_NoMatchingDevice": "没有相同类型和厂商的设备",
+    "OverlayEditor_ImportIssue_AmbiguousDevice": "有多个匹配的设备",
+    "OverlayEditor_ImportIssue_MissingCoreType": "缺少核心类型",
+    "OverlayEditor_ImportIssue_MissingReading": "缺少传感器",
+    "OverlayEditor_ImportIssue_UnknownDevice": "未知设备",
+    "OverlayEditor_ImportUntitledTile": "未命名磁贴",
+    "OverlayEditor_NameHint": "设计名称 (1–80 个字符)",
+    "OverlayEditor_EnterName": "输入设计名称。",
+    "OverlayDesignStatus_Row": "行叠加层",
+    "OverlayDesignStatus_Tile": "磁贴叠加层：{0}",
+    "OverlayDesignStatus_Deleted": "当前使用的磁贴设计已被删除。已恢复行叠加层。",
+    "OverlayDesignStatus_LoadFailedRows": "无法加载已保存的设计；{0}。{1}",
+    "OverlayDesignStatus_LoadFailedActive": "无法加载已保存的设计；最后加载的设计仍处于活动状态。{0}",
+    "OverlayDesignStatus_PublishFailed": "无法发布已保存的设计。行叠加层仍可使用。{0}",
+    "OverlayDesignStatus_StreamStopped": "已保存设计的遥测数据流已停止。{0}",
+    "OverlayDesignStatus_StartersRecovered": "正在恢复已保存设计库，因此未添加入门设计。请先保存恢复后的设计库。",
+    "OverlayDesignStatus_StartersFailed": "无法添加入门设计。现有已保存的设计已保留。{0}",
+    "OverlayDesignStatus_Recovered": "叠加层 (Overlay) 配置文件库已从上一个备份中恢复。保存时将保留已损坏的文件。",
+    "OverlayDesignError_ConfigureFirst": "加载设计器之前，请先配置配置文件库。",
+    "OverlayDesignError_ProfileGone": "此已保存的磁贴配置文件已不存在。请刷新配置文件列表并选择其他配置文件。",
+    "OverlayDesignError_InvalidValues": "保存前请更正无效的设计值，或放弃更改。",
+    "OverlayDesignError_ChangedElsewhere": "正在编辑的配置文件已在其他位置被更改或删除。您的编辑仍保持打开状态；点击取消以继续编辑，或在打开其他配置文件时放弃这些编辑。",
+    "OverlayDesignError_ImportSize": "设计文件超过 1 MB。",
+    "OverlayDesignError_Rtss": "RTSS 使用行叠加层。启用磁贴设计前，请选择“游戏内”或“无 Hook”。",
+    "OverlayDesignError_ConfigurationFolder": "需要配置文件夹。",
+    "OverlayDesignError_ProfileMissing": "该叠加层 (Overlay) 配置文件已不存在。",
+    "OverlayDesignError_ProfileLimit": "配置文件库最多可包含 {0} 个配置文件。",
+    "OverlayDesignError_KeepProfile": "至少保留一个叠加层 (Overlay) 配置文件。删除此配置文件前，请先创建另一个配置文件。",
+    "OverlayDesignError_LibraryMissing": "配置文件库缺失。",
+    "OverlayDesignError_DamagedNoBackup": "叠加层 (Overlay) 配置文件库已损坏，且没有可用的备份。原始文件已保留。",
+    "OverlayDesignError_DamagedBackup": "叠加层 (Overlay) 配置文件库及其备份均已损坏。两个文件均已保留。",
+    "OverlayDesignError_NewerLibrary": "此配置文件库由更新版本的 CapFrameX 保存。",
+    "OverlayDesignError_InvalidLibrary": "配置文件库版本或配置文件数量无效。",
+    "OverlayDesignError_EmptyProfile": "配置文件库中包含空的配置文件。",
+    "OverlayDesignError_DuplicateProfiles": "配置文件库中包含重复的配置文件标识符或名称。",
+    "OverlayDesignError_ModifiedDate": "某个配置文件的修改日期无效。",
+    "OverlayDesignError_SelectedMissing": "配置文件库中缺少所选的叠加层 (Overlay) 配置文件。",
+    "OverlayDesignError_LibraryTooLarge": "叠加层 (Overlay) 配置文件库过大。请先导出并移除未使用的配置文件。",
+    "OverlayDesignError_ConcurrentChange": "叠加层 (Overlay) 配置文件库已在另一个窗口中被更改。保存前请重新打开设计器；您当前的编辑尚未被放弃。",
+    "OverlayDesignError_NameExists": "已存在同名的叠加层 (Overlay) 配置文件。",
+    "OverlayDesignError_NameInvalid": "配置文件名称需为 1–{0} 个字符，且不能包含斜杠或控制字符。",
+    "OverlayDesignError_IdInvalid": "叠加层 (Overlay) 配置文件标识符无效。",
+    "OverlayDesignError_DesignSize": "叠加层 (Overlay) 设计为空或超出 1 MiB 大小上限。",
+    "OverlayDesignError_LibrarySize": "叠加层 (Overlay) 配置文件库超出 16 MiB 大小上限。",
+    "OverlayDesignError_SessionInitialized": "叠加层 (Overlay) 配置文件会话已初始化。",
+    "OverlayDesignError_SessionMissing": "请先初始化叠加层 (Overlay) 配置文件会话。",
+    "OverlayDesignError_StarterMissing": "缺少内置的磁贴叠加层设计：{0}",
+    "OverlayDesignError_NodeLimit": "某个叠加层 (Overlay) 设计超出 512 个节点或 32 层级的上限。",
+    "OverlayDesignError_WidgetType": "某个叠加层 (Overlay) 组件没有类型。",
+    "OverlayDesignError_TelemetryKey": "某个叠加层 (Overlay) 组件的遥测键无效。",
+    "OverlayDesignError_ChildInvalid": "某个叠加层 (Overlay) 组件包含无效的子元素。",
+    "OverlayDesignError_ChildrenArray": "叠加层 (Overlay) 组件的子元素必须是数组。",
+    "OverlayDesignError_SavedSize": "已保存的叠加层 (Overlay) 设计为空或超出 1 MiB 上限。",
+    "OverlayDesignError_TrailingContent": "已保存的叠加层 (Overlay) 设计之后存在意外内容。",
+    "OverlayDesignError_SceneVersion": "已保存的叠加层 (Overlay) 设计版本不受支持或没有原生场景。",
+    "OverlayDesignError_TelemetryCapacity": "所选的叠加层 (Overlay) 读数超出遥测通道容量。",
+    "OverlayDesignError_StreamStart": "无法启动遥测数据流。",
+    "OverlayView_OverlayMode": "叠加层 (Overlay) 模式",
+    "OverlayDesigns_Tab": "磁贴叠加层",
+    "OverlayDesigns_Title": "磁贴叠加层",
+    "OverlayDesigns_Description": "在可配置的网格上排列遥测磁贴和关联的行叠加层，然后使用 CapFrameX 渲染器进行预览。",
+    "OverlayDesigns_Open": "打开磁贴编辑器",
+    "OverlayDesigns_Refresh": "刷新配置文件",
+    "OverlayDesigns_Empty": "在编辑器中创建并保存磁贴叠加层后，即可在此处选择。",
+    "OverlayDesigns_Saved": "已保存的磁贴配置文件",
+    "OverlayDesignStarter_SlickVerticalPanel": "放在屏幕角落的磨砂玻璃面板，所有读数一目了然：当前 FPS 及平均值、1% Low 和 0.1% Low，GPU 和 CPU 的名称、占用率、频率、功耗、温度和内存，带图形 API 的帧时间 (Frametime) 曲线图，以及驱动版本。",
+    "OverlayDesignStarter_SlickWide3Rows": "将完整的读数分三行显示在宽幅磨砂玻璃条上，适合放在屏幕顶部或底部边缘：FPS 及平均值和 Low 值，并排显示的 GPU 和 CPU，带图形 API 的帧时间 (Frametime) 曲线图，以及驱动版本。",
+    "OverlayDesignStarter_SlickCompact2x2": "以小巧的占用空间显示所有读数：FPS 及平均值和 Low 值，带图形 API 和驱动版本的帧时间 (Frametime) 曲线图，以及位于四格磨砂玻璃区块中的 GPU 和 CPU 读数。",
+    "OverlayDesignStarter_SlickSingleLine": "横贯屏幕的极简磨砂玻璃条：FPS 及平均值和 Low 值，GPU 和 CPU 读数，帧时间 (Frametime) 曲线图，图形 API 和驱动版本。适用于宽度至少 1920 像素的屏幕。",
+    "OverlayDesignStarter_SlickCredit": "改编自 HeyOkay 为 RivaTuner Statistics Server 制作的 Slick Overlay。布局、图标和面板图形 © 2026 HeyOkay，依据 MIT License 使用。",
+    "OverlayDesignStarter_SlickNotes": "原版使用 Adderley Bold 字体；此版本使用 Windows 自带的 Bahnschrift 字体。与原版一样，CPU 和 GPU 仅显示型号，例如 i5-14600K 或 RTX 5070 Ti；如果名称仍然过长，可在选项中的“自定义硬件标签”下替换。",
+    "OverlayDesignLink_SlickOverlay": "GitHub 上的 Slick Overlay",
+    "OverlayDesignLink_SlickOverlayAuthor": "GitHub 上的 HeyOkay",
+    "OverlayDesignLink_SlickOverlayLicense": "MIT License",
+    "OverlayDesignStarter_Greenline": "带绿色标题栏的宽幅面板，标题栏显示已安装 GPU 的名称：GPU 和 CPU 的占用率、温度、频率、功耗和内存分两行显示，下方为位于 1% Low 和平均值之间的当前 FPS、帧时间 (Frametime) 及帧时间曲线图。",
+    "OverlayDesignStarter_GreenlineCredit": "复刻自 YouTube 频道 Geralt Benchmarks 为其 GPU 基准测试设计的叠加层 (Overlay)。",
+    "OverlayDesignLink_GeraltBenchmarks": "YouTube 上的 Geralt Benchmarks",
+    "OverlayDesigns_Edit": "在编辑器中打开",
+    "OverlayDesigns_Show": "在叠加层中显示",
+    "OverlayDesigns_Delete": "删除",
+    "OverlayDesigns_DeleteTitle": "删除磁贴配置文件？",
+    "OverlayDesigns_DeleteMessage": "要从已保存的磁贴配置文件中删除“{0}”吗？",
+    "OverlayDesigns_DeleteActiveNote": "叠加层 (Overlay) 将恢复为行叠加层。",
+    "OverlayDesigns_Cancel": "取消",
+    "OverlayDesigns_KeepOneProfile": "至少保留一个已保存的磁贴配置文件。",
+    "OverlayDesigns_Classic": "使用行叠加层",
+    "OverlayDesigns_Output": "磁贴叠加层输出",
+    "OverlayDesigns_OutputHelp": "“游戏内”和“无 Hook”模式均支持行叠加层和磁贴叠加层。在上方选择一个已保存的磁贴配置文件即可使用。",
+    "OverlayDesigns_RendererHint": "将所选的磁贴配置文件用于当前的“游戏内”或“无 Hook”渲染器。",
+    "OverlayDesigns_InGame": "游戏内叠加层",
+    "OverlayDesigns_HookFree": "无 Hook 叠加层",
+    "OverlayDesigns_Visible": "叠加层可见",
+    "OverlayDesigns_Shown": "已在叠加层中显示",
+    "OverlayDesigns_ShownBadge": "叠加层中",
+
+    // =========================================================================
+    // AGGREGATION VIEW - Merging and averaging multiple benchmark sessions
+    // =========================================================================
+    "AggregationViewModel_ErrorWhileCalculatingResult": "计算结果时出错。请重试。",
+    "AggregationView_Aggregate": "汇总",
+    "AggregationView_AggregateAllEntries": "汇总所有条目",
+    "AggregationView_AggregateExcludingOutliers": "汇总 (Aggregation) 时排除离群值 (Outlier)",
+    "AggregationView_AggregateIncludingOutliers": "汇总\n包含离群值",
+    "AggregationView_AggregationSettings": "汇总 (Aggregation) 设置",
+    "AggregationView_AggregationTable": "汇总 (Aggregation) 表",
+    "AggregationView_Average": "平均值",
+    "AggregationView_Date": "日期",
+    "AggregationView_DropItemsHereOrDouble": "将项目拖放到此处，或在记录列表中双击项目以手动汇总 (Aggregation)。\n\n如需在基准测试期间自动汇总，请使用捕获页面上的设置。",
+    "AggregationView_Game": "游戏",
+    "AggregationView_MetricUsedToDetermineOutliers": "用于判定离群值 (Outlier) 的指标",
+    "AggregationView_OnlyUseEntiresThatAre": "仅使用非离群值 (Outlier) 的条目进行汇总 (Aggregation)",
+    "AggregationView_OutlierMetric": "离群值 (Outlier) 指标",
+    "AggregationView_OutlierPercentage": "离群值 (Outlier) 百分比",
+    "AggregationView_RemoveAllEntries": "移除所有条目",
+    "AggregationView_SecondMetric": "第二指标",
+    "AggregationView_SecondMetricShownInAggregation": "汇总 (Aggregation) 表中显示的第二指标",
+    "AggregationView_ThePercentageTheFPSOf": "条目的 FPS 与所有条目中位数之间允许的偏差百分比，超出则视为离群值 (Outlier)",
+    "AggregationView_ThirdMetric": "第三指标",
+    "AggregationView_ThirdMetricShownInAggregation": "汇总 (Aggregation) 表中显示的第三指标",
+    "AggregationView_Time": "时间",
+    "AggregationView_UseAllEntriesForAggregation": "无论是否为离群值 (Outlier)，均使用所有条目进行汇总 (Aggregation)",
+
+    // =========================================================================
+    // APPLICATION SHELL & GENERAL DIALOGS
+    // =========================================================================
+    "AppHelper_ThereIsAlreadyAnInstance": "已有一个实例正在运行...",
+    "Appxaml_AnUnexpectedErrorOccuredDo": "发生意外错误。是否上传 CapFrameX 日志以供进一步分析？",
+    "Appxaml_EtwSessionConflictDetected": "检测到 ETW 会话冲突",
+    "Appxaml_FatalError": "严重错误",
+    "Appxaml_FrameViewEtwSessionDetected": "检测到 FrameViewService ETW 会话。\n\nNVIDIA FrameView SDK 当前正在运行一个 ETW 跟踪会话，可能与 PresentMon 冲突。如果 CapFrameX 在捕获期间不显示性能指标，请考虑卸载 NVIDIA FrameView SDK。\n\n点击“是”继续，下次仍显示此警告。\n点击“否”继续，并且不再显示此警告。",
+    "Appxaml_SettingsNotSavedInstalled0": "CapFrameX 无法在此文件夹中保存设置：\n{0}\n\n请检查该文件夹是否存在，以及是否有安全程序阻止了 CapFrameX，例如 Windows 安全中心中的“受控文件夹访问”。\n\n在此之前，关闭 CapFrameX 时更改的设置将丢失。",
+    "Appxaml_SettingsNotSavedPortable0": "CapFrameX 无法在此文件夹中保存设置：\n{0}\n\n很可能是某个安全程序阻止了该文件夹，例如 Windows 安全中心中的“受控文件夹访问”。请在其中允许 CapFrameX，或将 CapFrameX 文件夹移动到其他位置，例如 C:\\CapFrameX。\n\n在此之前，关闭 CapFrameX 时更改的设置将丢失。",
+    "Appxaml_SettingsNotSavedTitle": "设置未保存",
+    "Appxaml_TemporaryFolderStart0": "CapFrameX 是从临时文件夹启动的：\n{0}\n\n压缩软件和 Windows 会删除此类文件夹，即使 CapFrameX 正在运行。设置和捕获记录将会丢失。\n\n请将压缩包解压到单独的文件夹（例如 C:\\CapFrameX），然后从该位置启动 CapFrameX。CapFrameX 现在将关闭。",
+    "Appxaml_TemporaryFolderTitle": "从临时文件夹启动",
+    "Appxaml_YourReportIdIs0": "您的报告 ID 为 {0}。\n请在支持请求中附上此 ID。更多信息请访问 https://www.capframex.com/support。",
+
+    // =========================================================================
+    // BENCHLAB - Power unit label
+    // =========================================================================
+    "BenchlabMetricsManager_W": "W",
+
+    // =========================================================================
+    // CAPTURE VIEW - Benchmark recording triggers, hotkeys, process monitoring
+    // =========================================================================
+    "CaptureViewModel_0AutoDetected": "已自动检测到“{0}”。",
+    "CaptureViewModel_0AutoSelectedFrom1Processes": "已从 {1} 个进程中自动选择“{0}”。",
+    "CaptureViewModel_0Selected": "已选择“{0}”。",
+    "CaptureViewModel_CaptureDurationSavedFor": "已为 {0} ({1}) 保存捕获时长。点击以使用全局时长。",
+    "CaptureViewModel_CaptureHotkeyDisabled": "捕获热键已禁用。",
+    "CaptureViewModel_CaptureStartingWithDelay": "捕获将在 {0} 秒延时后开始...",
+    "CaptureViewModel_CapturingInProgress": "正在捕获...",
+    "CaptureViewModel_CapturingInProgressSetTime": "正在捕获 (设定时间：{0} 秒)...",
+    "CaptureViewModel_ChangesApplyTo0Only": "更改仅应用于 {0}",
+    "CaptureViewModel_CreatingCaptureFile": "正在创建捕获文件...",
+    "CaptureViewModel_FrametimeMs": "帧时间 (Frametime) [ms]",
+    "CaptureViewModel_Global": "全局",
+    "CaptureViewModel_GlobalCaptureDuration": "全局捕获时长",
+    "CaptureViewModel_GlobalCaptureDurationClick": "全局捕获时长。点击可为所选游戏单独记住一个时长。",
+    "CaptureViewModel_MultipleProcessesDetected": "检测到多个进程。",
+    "CaptureViewModel_NoLimit": "无限制",
+    "CaptureViewModel_Press0ToStartCapture": "按“{0}”开始捕获。",
+    "CaptureViewModel_Press0ToStartCaptureOfRunningProcess": "按 {0} 开始捕获正在运行的进程。",
+    "CaptureViewModel_Press0ToStopCapture": "按 {0} 停止捕获。",
+    "CaptureViewModel_ProcessListClear": "进程列表为空。",
+    "CaptureViewModel_RemoteCapturingInProgress": "正在远程捕获...",
+    "CaptureViewModel_RemovesThisGamesCustom": " · 移除此游戏的自定义时长",
+    "CaptureViewModel_Samples": "样本数",
+    "CaptureViewModel_SelectAProcessFirst": "请先选择一个进程",
+    "CaptureViewModel_SelectOneOrMoveUnwanted": "选择一个进程，或将不需要的进程移至忽略列表。",
+    "CaptureViewModel_ServiceReady": "服务已就绪...",
+    "CaptureViewModel_StartAnyGameAndPress0": "启动任意游戏 / 应用程序并按“{0}”开始捕获。",
+    "CaptureViewModel_ThisGame": "此游戏",
+    "CaptureViewModel_UsedByGamesWithoutA": " · 用于没有自定义时长的游戏",
+    "CaptureView_AdvancedInfo": "高级信息",
+    "CaptureView_AggregationOfRunHistory": "运行历史汇总 (Aggregation)",
+    "CaptureView_BasicInfo": "基本信息",
+    "CaptureView_CaptureDelayS": "捕获延时 [s]",
+    "CaptureView_CaptureDurationScope": "捕获时长作用范围",
+    "CaptureView_CaptureHotkey": "捕获热键",
+    "CaptureView_CaptureLogger": "捕获日志",
+    "CaptureView_CaptureServiceLoggerOutput": "捕获服务日志输出...",
+    "CaptureView_CaptureSettings": "捕获设置",
+    "CaptureView_CaptureTimeS": "捕获时间 [s]",
+    "CaptureView_ClearLoggerOutput": "清除日志输出",
+    "CaptureView_EnterAValidDuration": "请输入大于或等于 0 秒的有效时长 (0 = 无限制)。",
+    "CaptureView_Errors": "错误",
+    "CaptureView_HotkeyPressBackspaceDeleteOrEsc": "热键最多可组合两个修饰键 (Ctrl、Shift 或 Alt)。按 Backspace、Delete 或 Esc 清除。",
+    "CaptureView_HotkeySound": "热键声音",
+    "CaptureView_IfCheckedTheSingleRuns": "勾选后，除汇总结果外不再单独保存各次运行。",
+    "CaptureView_IfTheSelectedMetricOf": "如果某次运行的所选指标与所有运行的中位数之差超过设定的百分比，该次运行将被标记为离群值 (Outlier)。\n\n\n标记并使用\n历史记录满后，所有运行都将被汇总。\n\n\n标记并替换\n被标记的运行必须由额外的运行替换。\n\n当历史记录中不再包含离群值时，才会汇总各次运行。",
+    "CaptureView_MessageFilter": "消息筛选",
+    "CaptureView_MetricUsedToDetermineOutliers": "用于判定离群值 (Outlier) 的指标",
+    "CaptureView_MoveToIgnoreList": "移至忽略列表",
+    "CaptureView_NoDelay": "0 = 无延时",
+    "CaptureView_NoLimitPressEnterOrLeave": "0 = 无限制。按 Enter 或离开输入框以保存。",
+    "CaptureView_NumberOfRuns": "运行次数",
+    "CaptureView_OnceTheRunHistoryIs": "运行历史记满后，将所有帧时间 (Frametime) 数据合并并保存为一个新的记录文件。\n\n\n这与根据多个单独记录文件计算平均参数不同。它模拟的是在一次基准测试中多次运行同一场景。\n性能参数将基于全部帧时间数据一次性计算。",
+    "CaptureView_OutlierHandling": "离群值 (Outlier) 处理",
+    "CaptureView_OutlierMetric": "离群值 (Outlier) 指标",
+    "CaptureView_OutlierPercentage": "离群值 (Outlier) 百分比",
+    "CaptureView_ProcessIgnoreList": "进程忽略列表",
+    "CaptureView_RememberForThisGame": "为此游戏记住",
+    "CaptureView_RemoveFromIgnoreList": "从忽略列表移除",
+    "CaptureView_ResetAndRescanProcesses": "重置并重新扫描进程",
+    "CaptureView_ResetRunHistory": "重置运行历史",
+    "CaptureView_RunHistory": "运行历史",
+    "CaptureView_RunHistoryAndAggregation": "运行历史与汇总 (Aggregation)",
+    "CaptureView_RunningProcesses": "正在运行的进程",
+    "CaptureView_SaveAggregatedResultOnly": "仅保存汇总结果",
+    "CaptureView_SavesASetNumberOf": "将设定数量的运行保存到历史记录中，历史记录也可显示在叠加层 (Overlay) 上",
+    "CaptureView_SecondMetric": "第二指标",
+    "CaptureView_SecondMetricShownForHistory": "叠加层 (Overlay) 历史条目中显示的第二指标",
+    "CaptureView_ShowProcessDetails": "显示进程详情",
+    "CaptureView_SoundLevelControl": "音量控制",
+    "CaptureView_TheMaxPercentageTheFPS": "某次运行的 FPS 与所有运行中位数之间允许的最大偏差百分比，超过即视为离群值 (Outlier)",
+    "CaptureView_TheNumberOfRunsWritten": "写入历史记录的运行次数。\n未使用汇总 (Aggregation) 时，添加到已满历史记录中的运行将替换最早的一次。",
+    "CaptureView_ThirdMetric": "第三指标",
+    "CaptureView_ThirdMetricShownForHistory": "叠加层 (Overlay) 历史条目中显示的第三指标",
+    "CaptureView_UseGlobalDuration": "使用全局时长",
+
+    // =========================================================================
+    // CLOUD VIEW - Sharing benchmarks on capframex.com
+    // =========================================================================
+    "CloudViewModel_UploadSizeLimitExceeded0": "所选会话的大小超出每次上传 {0} 字节的限制",
+    "CloudView_AnyNewGameNameOr": "您添加的任何新游戏名称或忽略的进程都会发送给我们，以便我们将其添加到我们自己的列表中",
+    "CloudView_AutoUpdateList": "自动更新列表",
+    "CloudView_Comment": "备注",
+    "CloudView_CopyToClipboard": "复制到剪贴板",
+    "CloudView_Date": "日期",
+    "CloudView_DownloadFolder": "下载文件夹",
+    "CloudView_DownloadLinkID": "下载链接 / ID",
+    "CloudView_DownloadLinkID2": "下载链接 / ID",
+    "CloudView_DownloadRecords": "下载记录",
+    "CloudView_DownloadTheRecordsBoundTo": "将与下载 ID 关联的记录下载到指定的下载文件夹",
+    "CloudView_Downloading": "正在下载...",
+    "CloudView_DropItemsHereOrDouble": "将项目拖放到此处，或在记录列表中双击它们",
+    "CloudView_Game": "游戏",
+    "CloudView_ItHoldsInformationAboutThe": "它包含显示的进程名称，以及该进程是否被捕获服务忽略等信息。",
+    "CloudView_ObserveDownloadFolder": "监视下载文件夹",
+    "CloudView_OnFirstStartupYourOwn": "首次启动时，会根据随每个 CapFrameX 新版本提供的默认列表创建并更新您自己的进程列表。该默认列表已包含许多带有正确名称的游戏进程，以及其他需要忽略的进程。",
+    "CloudView_OnStartupYourOwnProcess": "启动时，您自己的进程列表将与我们的在线列表进行比较，您列表中没有的条目都会被添加。\n\n这不会影响您列表中已有进程的忽略/未忽略状态或自定义游戏名称",
+    "CloudView_OptionalUploadDescription": "(可选) 上传说明",
+    "CloudView_ProcessListOptions": "进程列表选项",
+    "CloudView_RecordDownload": "记录下载",
+    "CloudView_RecordUpload": "记录上传",
+    "CloudView_RemoveAllEntries": "移除所有条目",
+    "CloudView_ShareNewEntries": "分享新条目",
+    "CloudView_TheOptionsBelowHelpUs": "以下选项可帮助我们为默认列表获取更多条目，也能直接为您提供我们最新添加的内容。",
+    "CloudView_TheProcessListContainsAll": "进程列表包含 CapFrameX 已知的所有进程。",
+    "CloudView_Time": "时间",
+    "CloudView_UploadRecords": "上传记录",
+    "CloudView_UploadYourRecordsToOur": "将您的记录上传到我们的服务器，并获取一个用于分享的 ID",
+    "CloudView_Uploading": "正在上传...",
+    "CloudView_WhatIsTheProcessList": "什么是进程列表？",
+
+    // =========================================================================
+    // SETTINGS & NAVIGATION (COLORBAR) - Options, hardware detection, overlay
+    // =========================================================================
+    "ColorbarView_AGGREGATION": "汇总",
+    "ColorbarView_ANALYSIS": "分析",
+    "ColorbarView_ActiveSensorsWebSocketURL": "活动传感器 WebSocket URL",
+    "ColorbarView_AddsPresentMonSMsPCLatencyColumn": "在捕获数据中添加 PresentMon 的 MsPCLatency 列。需要重启捕获服务。",
+    "ColorbarView_AdjustAppearanceStartupBehaviorAnd": "调整外观、启动行为和应用程序级服务。",
+    "ColorbarView_AllowsYouToReceiveImportant": "允许在应用启动时接收来自 CX 团队的重要消息",
+    "ColorbarView_AppearanceAndNotifications": "外观与通知",
+    "ColorbarView_Application": "应用程序",
+    "ColorbarView_Application2": "应用程序",
+    "ColorbarView_AskTheCapFrameXUpdateServer": "向 CapFrameX 更新服务器查询是否有新版本可用",
+    "ColorbarView_AutomaticChecksFollowTheInstalled": "自动检查遵循已安装的更新通道。下方仍可选择所有已发布的 Release 和 Beta 版本。",
+    "ColorbarView_AvailableEndpoints": "可用端点",
+    "ColorbarView_AverageTimeWindowInMilliseconds": "平均时间窗口 (毫秒)。",
+    "ColorbarView_CAPTURE": "捕获",
+    "ColorbarView_CHECKFORUPDATES": "检查更新",
+    "ColorbarView_CLOUD": "云端",
+    "ColorbarView_COMPARISON": "对比",
+    "ColorbarView_CPU": "CPU",
+    "ColorbarView_CXRemoteServiceInfoURL": "CX 远程服务信息 URL",
+    "ColorbarView_CapFrameXCom": "CapFrameX.com",
+    "ColorbarView_CaptureFileMode": "捕获文件模式",
+    "ColorbarView_CaptureMetrics": "捕获指标",
+    "ColorbarView_ChartsAndExport": "图表与导出",
+    "ColorbarView_CheckForANewerCapFrameX": "每次启动应用程序时检查是否有更新的 CapFrameX 版本。",
+    "ColorbarView_CheckForUpdatesEveryTime": "每次启动 CapFrameX 时检查更新",
+    "ColorbarView_CheckForUpdatesOrDeliberately": "检查更新，或主动回退到较早的受支持版本。",
+    "ColorbarView_CheckOnStart": "启动时检查",
+    "ColorbarView_ChooseThePrimaryAdapterUsed": "选择用于监控和日志记录的主显卡。更改后请重启 CapFrameX。",
+    "ColorbarView_ChooseTheTimingDataStored": "选择用于性能分析的计时数据以及捕获记录的存储方式。",
+    "ColorbarView_ChooseWhereScreenshotsCreatedFrom": "选择通过工具栏创建的截图的保存位置。",
+    "ColorbarView_ChooseWhetherTheHardwareNamesStored": "选择随捕获记录保存的硬件名称是自动检测还是手动输入。",
+    "ColorbarView_Close": "关闭",
+    "ColorbarView_CloseThisMessageAndNot": "关闭此消息，在有新消息之前不再显示",
+    "ColorbarView_ConfigureCapFrameXToMatchYour": "配置 CapFrameX 以适应您的工作流程。",
+    "ColorbarView_ConfigureChartsCaptureMetricsLatency": "配置图表、捕获指标和文件格式、延迟跟踪以及截图。",
+    "ColorbarView_ConfigureLocalServiceAccessAnd": "配置本地服务访问，并查看 CapFrameX 提供的端点。",
+    "ColorbarView_ControlHowCapFrameXStartsAnd": "控制 CapFrameX 的启动方式以及最小化时的行为。",
+    "ColorbarView_ControlHowFPSValuesAre": "控制 FPS 数值的计算、显示和导出方式。",
+    "ColorbarView_ControlWhichPowerSensorIs": "控制功耗相关指标使用哪个功耗传感器。",
+    "ColorbarView_Copy": "复制",
+    "ColorbarView_CustomHardwareLabels": "自定义硬件标签",
+    "ColorbarView_DarkMode": "深色模式",
+    "ColorbarView_DecimalPlaces": "小数位数",
+    "ColorbarView_DisplayedDecimalPlaces": "显示的小数位数。",
+    "ColorbarView_EnableMCPServer": "启用 MCP 服务器",
+    "ColorbarView_EnablePCLatencyTrackingVia": "通过 PresentMon 启用 PC 延迟 (PC Latency) 跟踪。启用后，捕获数据中将提供“MsPCLatency”列。\n需要重启捕获服务才能生效。",
+    "ColorbarView_EnablesTheLocalMCPEndpoint": "启用用于工具集成的本地 MCP 端点。更改此设置后请重启 CapFrameX。",
+    "ColorbarView_Events": "事件",
+    "ColorbarView_ExposeTheLocalMCPEndpoint": "开放用于工具集成的本地 MCP 端点。需要重启。",
+    "ColorbarView_FPSDecimals": "FPS 小数位数",
+    "ColorbarView_FPSGraphFilter": "FPS 曲线图过滤器",
+    // Dropdown hint for selecting capture file format (JSON vs JSON + CSV)
+    "ColorbarView_FileMode": "文件模式",
+    "ColorbarView_GPU": "GPU",
+    "ColorbarView_GraphExportResolution": "曲线图导出分辨率",
+    "ColorbarView_GraphicsAdapter": "显卡",
+    "ColorbarView_HTTPURLToAccessThe": "用于访问当前叠加层 (Overlay) 输出的 HTTP URL (叠加层需处于激活状态)",
+    "ColorbarView_Hardware": "硬件",
+    "ColorbarView_Hardware2": "硬件",
+    "ColorbarView_HardwareInfoSource": "硬件信息来源",
+    // Settings card title for hardware info source
+    "ColorbarView_HardwareLabels": "硬件标签",
+    "ColorbarView_Height": "高度",
+    "ColorbarView_Help": "帮助",
+    "ColorbarView_Help2": "帮助",
+    "ColorbarView_HideOSDOnRTSS": "在 RTSS 中隐藏 OSD",
+    "ColorbarView_INFO": "信息",
+    "ColorbarView_IfCheckedTheOverlayWill": "勾选后，叠加层 (Overlay) 将不会在 RTSS 中显示，但仍可通过远程 API 访问。",
+    "ColorbarView_IfSensorDataOfA": "如果记录的传感器数据包含“TBP Sim”值 (仅限 RDNA + Intel Arc GPU)，则在 FPS/W 等分析中使用这些值代替“GPU Total”。\n要使更改生效，需要重新加载分析和对比页面，并且报告页面中已插入的记录需要重新添加。",
+    "ColorbarView_ImportantMessage": "重要消息：",
+    "ColorbarView_InstallAnyPublishedReleaseFrom": "可安装从",
+    "ColorbarView_InstalledVersion": "已安装版本",
+    "ColorbarView_InterfaceLanguage": "界面语言",
+    // Description for "JSON + CSV" file mode option
+    "ColorbarView_JSONCSVAdditionallySaves": "JSON + CSV 会额外将每条记录的全部 PresentMon 数据保存为 CSV 文件。",
+    "ColorbarView_JSONRecordsAreSavedAs": "JSON：\n记录以 JSON 文件保存，包含所有必要数据。\n\nJSON + CSV：\n除 JSON 文件外，还会为每条记录创建一个 CSV 文件。CSV 包含全部 PresentMon 数据，用于特殊分析。",
+    "ColorbarView_KeepCapFrameXRunningInThe": "最小化时让 CapFrameX 在通知区域中继续运行。",
+    "ColorbarView_KeepTheOverlayAvailableThrough": "保持叠加层 (Overlay) 可通过远程 API 访问，但不在 RTSS 中显示。",
+    "ColorbarView_LanguageOfMenusPagesAnd": "菜单、页面和对话框的语言。",
+    "ColorbarView_LanguageOfOverlayLabelsSuch": "叠加层 (Overlay) 标签 (如 CPU、GPU Hot Spot 和帧时间) 的语言。与界面语言相互独立。",
+    "ColorbarView_LatestBeta": "最新 Beta 版",
+    "ColorbarView_LatestRelease": "最新正式版",
+    "ColorbarView_LaunchCapFrameXAutomaticallyAfterSigning": "登录系统后自动启动 CapFrameX。",
+    "ColorbarView_ListeningPortForTheLocal": "本地远程服务的监听端口。需要重启。",
+    "ColorbarView_Login": "登录",
+    "ColorbarView_Logout": "注销",
+    "ColorbarView_Mainboard": "主板",
+    "ColorbarView_ManageTheLocalWebService": "管理本地 Web 服务、RTSS 输出和 MCP 集成。",
+    "ColorbarView_MinimizeToTray": "最小化到托盘",
+    "ColorbarView_MoreCloselyReflectsDisplayedFrames": "更贴近实际显示的帧，推荐在使用帧生成 (Frame Generation) 时选用。",
+    "ColorbarView_NetworkTarget": "网络目标",
+    "ColorbarView_NumberOfPresentEventsPresentMon": "PresentMon 在其环形缓冲区中保留的 present 事件数量 (--set_circular_buffer_size)。如果在极高帧率下出现丢帧，请调大此值；PresentMon 自身的默认值为 2048。\n更改此项会重启捕获服务，需要片刻时间。服务停止或正在捕获时，此设置将被锁定。",
+    "ColorbarView_OSDHTTPURL": "OSD HTTP URL",
+    "ColorbarView_OSDLanguage": "OSD 语言",
+    "ColorbarView_OSDWebSocketURL": "OSD WebSocket URL",
+    "ColorbarView_OVERLAY": "叠加层",
+    "ColorbarView_OnwardSelectingAnOlderVersion": "起的任意已发布版本。选择较旧版本将执行显式回退。",
+    "ColorbarView_OpenCapFrameXWithoutBringingThe": "启动 CapFrameX 时不将主窗口置于前台。",
+    "ColorbarView_OpenScreenshotFolder": "打开截图文件夹",
+    "ColorbarView_Options": "选项",
+    "ColorbarView_Options2": "选项",
+    "ColorbarView_OverrideTheHardwareNamesStored": "覆盖随捕获记录保存的硬件名称。",
+    "ColorbarView_PMD": "PMD",
+    "ColorbarView_PackagesAreVerifiedBeforeInstallation": "安装包在安装前会经过验证。",
+    "ColorbarView_PersonalizeTheInterfaceAndChoose": "个性化界面，并选择是否允许 CapFrameX 显示团队消息。",
+    "ColorbarView_PingURL": "Ping URL",
+    "ColorbarView_PixelDimensionsUsedByGraph": "图表导出使用的像素尺寸。",
+    "ColorbarView_Port": "端口",
+    "ColorbarView_PowerAnalysis": "功耗分析",
+    "ColorbarView_PreferSimulatedTotalBoardPower": "对支持的 RDNA 和 Intel Arc GPU 优先使用模拟的整卡功耗 (total board power) 数据。",
+    "ColorbarView_PresentMonEventBuffer": "PresentMon 事件缓冲区",
+    "ColorbarView_PrimaryGraphicsAdapter": "主显卡",
+    "ColorbarView_PublishedVersion": "发布版本",
+    "ColorbarView_QuickReferenceForWorkingWith": "CapFrameX 使用快速参考。",
+    "ColorbarView_RAM": "RAM",
+    "ColorbarView_REPORT": "报告",
+    "ColorbarView_ReadOnlyAddressesGeneratedFrom": "根据当前服务配置生成的只读地址。",
+    "ColorbarView_ReceiveNotifications": "接收通知",
+    "ColorbarView_Remote": "远程",
+    "ColorbarView_Remote2": "远程",
+    "ColorbarView_RollbackReplacesTheApplicationVersion": "回滚会替换应用程序版本。采集记录和设置会保留，但较新的设置可能与所选版本不兼容。",
+    "ColorbarView_SENSOR": "传感器",
+    "ColorbarView_SHOWUPDATE": "查看更新",
+    "ColorbarView_Save": "保存",
+    "ColorbarView_ScreenshotDirectory": "截图目录",
+    "ColorbarView_Screenshots": "截图",
+    "ColorbarView_SelectMonitoringHardwareAndControl": "选择监控硬件，并控制系统信息的存储方式。",
+    "ColorbarView_SelectResolutionForGraphExport": "选择图表导出分辨率 (通过右键菜单)",
+    "ColorbarView_SelectScreenshotFolder": "选择截图文件夹",
+    "ColorbarView_SensorStreamWebSocketURL": "传感器数据流 WebSocket URL",
+    "ColorbarView_ServiceConfiguration": "服务配置",
+    "ColorbarView_SetTheHostUsedBy": "设置网络 Ping 叠加层 (Overlay) 条目使用的主机。",
+    "ColorbarView_SetsTheNumberOfDecimal": "设置显示的 FPS 数值的小数位数",
+    "ColorbarView_SetsThePrimaryGraphicsAdapter": "设置用于监控和日志记录的主显卡。更改显卡后需重启 CapFrameX。",
+    "ColorbarView_SetsTheTimeWindowFor": "设置平均 FPS 曲线图的区间时间窗口",
+    "ColorbarView_Settings": "设置",
+    "ColorbarView_SettingsMarkedInTheirDescription": "描述中带有标记的设置可能需要重启。",
+    "ColorbarView_ShowImportantMessagesFromThe": "启动时显示来自 CapFrameX 团队的重要消息。",
+    "ColorbarView_ShowWhatTheAvailableUpdate": "查看可用更新包含的内容",
+    "ColorbarView_SizeOfPresentMonSPresent": "PresentMon 呈现 (Present) 事件环形缓冲区的大小。会重启捕获服务。",
+    "ColorbarView_StartMinimized": "启动时最小化",
+    "ColorbarView_StartWithWindows": "随 Windows 启动",
+    "ColorbarView_TakeAScreenshot": "截图",
+    "ColorbarView_TargetVersion": "目标版本",
+    "ColorbarView_TimeWindowMs": "时间窗口 (ms)",
+    "ColorbarView_URLToUseForThe": "网络 Ping 叠加层 (Overlay) 条目使用的 URL",
+    "ColorbarView_Update": "更新",
+    "ColorbarView_Update2": "更新",
+    "ColorbarView_UpdateStatus": "更新状态",
+    "ColorbarView_UseMsBetweenDisplayChangeMetrics": "使用 MsBetweenDisplayChange 指标",
+    "ColorbarView_UseMsBetweenDisplayChangeToCalculatePerformance": "使用 \"MsBetweenDisplayChange\" 计算性能指标。使用帧生成 (Frame Generation) 时，此选项可提供更一致的指标。\nMsBetweenDisplayChange 更接近用户的实际体验。",
+    "ColorbarView_UsePCLatency": "使用 PC 延迟 (PC Latency)",
+    "ColorbarView_UseTBPSimValuesFor": "如可用，使用 TBP Sim 值进行分析",
+    "ColorbarView_UseTheDarkCapFrameXColor": "使用 CapFrameX 深色主题。",
+    "ColorbarView_VersionHistory": "版本历史",
+    "ColorbarView_VersionStatus": "版本状态",
+    "ColorbarView_WebSocketURLToAccessAll": "用于访问传感器选项卡中当前所选全部传感器的 WebSocket URL",
+    "ColorbarView_WebSocketURLToAccessThe": "用于访问当前叠加层 (Overlay) 输出的 WebSocket URL (叠加层需处于启用状态)",
+    "ColorbarView_WebSocketURLToAccessThe2": "用于访问完整传感器数据流的 WebSocket URL",
+    "ColorbarView_WebservicePort": "Web 服务端口",
+    "ColorbarView_Width": "宽度",
+    "ColorbarView_WindowsBehavior": "Windows 行为",
+
+    // =========================================================================
+    // COMPARISON VIEW - Multi-run comparison graphs, bar charts, custom labels
+    // =========================================================================
+    // Chart Y-axis label: frames per second calculated from display change
+    "ComparisonViewModel_DisplayFPS": "显示 FPS",
+    // Chart Y-axis label with unit: frames per second calculated from display change
+    "ComparisonViewModel_DisplayFPSPerSecond": "显示 FPS [1/s]",
+    // Distribution chart Y-axis label: share of time per display-change interval
+    "ComparisonViewModel_DisplayTimeDistribution": "显示时间 (Displaytime) 分布 [%]",
+    // Chart axis label with unit: time between display change samples
+    "ComparisonViewModel_DisplayTimeMs": "显示时间 (Displaytime) [ms]",
+    // L-shape chart axis label: time between display change samples
+    "ComparisonViewModel_DisplayTimeMsLShape": "显示时间 (Displaytime) (ms)",
+    "ComparisonViewModel_FPS": "FPS",
+    "ComparisonViewModel_FPS1S": "FPS [1/s]",
+    "ComparisonViewModel_FrameTimeDistribution": "帧时间 (Frametime) 分布 [%]",
+    "ComparisonViewModel_FrameTimeMs2": "帧时间 (Frametime) [ms]",
+    "ComparisonViewModel_FramesIn01": "{1}s 内 {0} 帧",
+    "ComparisonViewModel_FrametimeMs": "帧时间 (Frametime) [ms]",
+    "ComparisonViewModel_Frametimes": "帧时间数据",
+    "ComparisonViewModel_GPUActiveTimeMs": "GPU 活动时间 (GPU Active) [ms]",
+    "ComparisonViewModel_LegendDisplay": "显示",
+    "ComparisonViewModel_LegendGPUActive": "GPU 活动",
+    "ComparisonViewModel_LegendPresent": "呈现",
+    "ComparisonViewModel_MetricFps01": "{0} FPS ({1})",
+    // Chart Y-axis label: frames per second calculated from present calls
+    "ComparisonViewModel_PresentFPS": "呈现 FPS",
+    // Chart Y-axis label with unit: frames per second calculated from present calls
+    "ComparisonViewModel_PresentFPSPerSecond": "呈现 FPS [1/s]",
+    // Distribution chart Y-axis label: share of time per present interval
+    "ComparisonViewModel_PresentFrametimeDistribution": "呈现帧时间 (Present frametime) 分布 [%]",
+    // Chart axis label with unit: time between present calls
+    "ComparisonViewModel_PresentFrametimeMs": "呈现帧时间 (Present frametime) [ms]",
+    // L-shape chart axis label: time between present calls
+    "ComparisonViewModel_PresentFrametimeMsLShape": "呈现帧时间 (Present frametime) (ms)",
+    "ComparisonViewModel_RecordAlreadyInList": "列表中已包含此记录，因此无法插入。请为对比选择其他记录。",
+    "ComparisonViewModel_RecordingTimeS": "记录时长 [s]",
+    "ComparisonViewModel_RecordingTimeS2": "记录时长 [s]",
+    "ComparisonViewModel_SortCPULabel": "CPU 标签",
+    "ComparisonViewModel_SortCommentLabel": "备注标签",
+    "ComparisonViewModel_SortFirstMetric": "第一指标",
+    "ComparisonViewModel_SortGPULabel": "GPU 标签",
+    "ComparisonViewModel_SortSecondMetric": "第二指标",
+    "ComparisonViewModel_SortThirdMetric": "第三指标",
+    "ComparisonViewModel_SourceDisplayChangesAverageFPS": "来源：显示变化 (平均 FPS：呈现)",
+    "ComparisonViewModel_SourcePresents": "来源：呈现",
+    "ComparisonViewModel_SourcePresentsDisplayDataUnavailable": "来源：呈现 (显示数据不可用)",
+    "ComparisonView_AllComparedRecordsUseThis": "所有对比记录均使用此计时来源；不允许混合显示/呈现对比。",
+    "ComparisonView_AutoScale": "自动缩放：",
+    "ComparisonView_AutoScaleVarianceBarsBased": "根据第一个方差组自动缩放方差条",
+    "ComparisonView_BarCharts": "柱状图",
+    "ComparisonView_ChangeTheOrderInWhich": "更改新曲线图分配颜色的顺序",
+    "ComparisonView_ColorOrder": "颜色\n顺序",
+    "ComparisonView_Comparisons": "对比",
+    "ComparisonView_CustomTitle": "自定义标题：",
+    "ComparisonView_DropItemsHereOrDouble": "将项目拖放到此处，或在记录列表中双击它们。",
+    "ComparisonView_EndS": "结束 (s)",
+    "ComparisonView_EndS2": "结束 (s)",
+    "ComparisonView_FilterMode": "过滤模式",
+    "ComparisonView_FirstLabel": "第一标签",
+    "ComparisonView_FirstMetric": "第一指标",
+    "ComparisonView_FrameTimeDistribution": "帧时间 (Frametime) 分布",
+    "ComparisonView_Frametimes": "帧时间数据",
+    "ComparisonView_FurtherSettings": "更多设置",
+    "ComparisonView_GPUBusyTimes": "GPU-Busy 时间：",
+    "ComparisonView_Grouping": "分组：",
+    "ComparisonView_Labels": "标签",
+    "ComparisonView_Legend": "图例：",
+    "ComparisonView_LegendSize": "图例大小",
+    "ComparisonView_LineChartsLShapes": "折线图/ L 形曲线 (L-shape)",
+    "ComparisonView_MaximumTheSingleHighestValue": "最大值：\n\n单个最高值\n\n\n平均值：\n\n所有值的平均值\n\n\n中位数：\n\n所有值从低到高排序后位于中间的值\n\n\n最小值：\n\n单个最低值\n\n\nX% 百分位 (X% percentile)：\n\n所有值中有 X% 低于此值\n\n\nX% Low 平均值 (X% low average)：\n\n最低 X% 值的平均值\n\n\nX% Low 积分值 (X% low integral)：\n\n在基准测试总时长的 X% 内，数值低于此值\n\n\n自适应标准差 (Adaptive STDEV)：\n\n各值相对于移动平均值的标准差\n\n\nCPU/GPU FPS/10W：\n\n每 10W 功耗对应的平均帧率 (乘以 10，以便与其他 FPS 指标一起使用时生成更具可比性的柱状图)",
+    "ComparisonView_MetricInfo": "指标说明",
+    "ComparisonView_Metrics": "指标",
+    "ComparisonView_OrderInWhichColorsAre": "向新增记录\n应用颜色\n的顺序",
+    "ComparisonView_Percentiles": "百分位 (%)",
+    "ComparisonView_Range": "范围：",
+    "ComparisonView_Range2": "范围：",
+    "ComparisonView_RangeSlider": "范围滑块：",
+    "ComparisonView_RangeSliderEndPoint": "范围滑块终点",
+    "ComparisonView_RangeSliderEndPoint2": "范围滑块终点",
+    "ComparisonView_RangeSliderStartPoint": "范围滑块起点",
+    "ComparisonView_RangeSliderStartPoint2": "范围滑块起点",
+    "ComparisonView_RealTimeUpdate": "实时更新",
+    "ComparisonView_RealTimeUpdate2": "实时更新",
+    "ComparisonView_RelativeMode": "相对模式：",
+    "ComparisonView_RemoveAllComparisons": "移除所有对比",
+    "ComparisonView_SavePlotAsPNG": "将图表保存为 PNG",
+    "ComparisonView_SavePlotAsPNG2": "将图表保存为 PNG",
+    "ComparisonView_SavePlotAsPNG3": "将图表保存为 PNG",
+    "ComparisonView_SavePlotAsSVG": "将图表保存为 SVG",
+    "ComparisonView_SavePlotAsSVG2": "将图表保存为 SVG",
+    "ComparisonView_SavePlotAsSVG3": "将图表保存为 SVG",
+    "ComparisonView_SecondLabel": "第二标签",
+    "ComparisonView_SecondMetric": "第二指标",
+    "ComparisonView_SelectMetricsToBeShown": "选择要显示的指标",
+    "ComparisonView_SelectUpTo2Labels": "为每条记录选择最多 2 个要显示的标签",
+    "ComparisonView_ShowCustomTitleEditBox": "显示自定义标题编辑框",
+    "ComparisonView_ShowGPUBusyTimesInstead": "显示 GPU-Busy 时间，而非常规帧时间数据",
+    "ComparisonView_ShowSelectedLabelsAsChart": "将所选标签显示为图表图例",
+    "ComparisonView_SortEntriesByGameFirst": "先按游戏对条目排序",
+    "ComparisonView_SortMethod": "排序方式",
+    "ComparisonView_StartS": "开始 (s)",
+    "ComparisonView_StartS2": "开始 (s)",
+    "ComparisonView_ThirdMetric": "第三指标",
+    "ComparisonView_TimeDifferencesBetweenTwoConsecutive": "两个连续帧时间 (Frametime) 值之间的时间差",
+    "ComparisonView_ToggleFixedRelativeModeTarget": "切换固定相对模式。可通过鼠标单击选择目标值。",
+    "ComparisonView_TypeYourTitleHere": "在此输入标题...",
+    "ComparisonView_TypeYourTitleHere2": "在此输入标题...",
+    "ComparisonView_TypeYourTitleHere3": "在此输入标题...",
+    "ComparisonView_TypeYourTitleHere4": "在此输入标题...",
+    "ComparisonView_Values": "数值",
+    "ComparisonView_Variances": "方差",
+
+    // =========================================================================
+    // MESSAGE DIALOGS - Shared close buttons
+    // =========================================================================
+    "ConditionalMessageDialog_Close": "关闭",
+
+    // =========================================================================
+    // RECORD LIST (CONTROL VIEW) - Capture folders, record list and record details
+    // =========================================================================
+    "ControlViewModel_SearchIn01Items": "在 \"{0}\" 中搜索 ({1} 项)",
+    "ControlView_Aggregated": "已汇总",
+    "ControlView_Aggregated2": "已汇总",
+    "ControlView_ApplyTheDescriptionsToThe": "将描述应用到所选记录。在输入框中按 Enter 也会保存。",
+    "ControlView_CPU": "CPU",
+    "ControlView_CPU2": "CPU",
+    "ControlView_CPUDescription": "CPU 描述",
+    "ControlView_Captures": "采集记录",
+    "ControlView_ColumnOptions": "列选项",
+    "ControlView_Comment": "备注",
+    "ControlView_Comment2": "备注",
+    "ControlView_Comment3": "备注",
+    "ControlView_CopyPasteRecordingFileS": "复制/粘贴记录文件",
+    "ControlView_CreateNewSubfolder": "新建子文件夹",
+    "ControlView_DateTime": "日期 / 时间",
+    "ControlView_DateTime2": "日期 / 时间",
+    "ControlView_DeleteFolder": "删除文件夹",
+    "ControlView_DeleteRecordingFileS": "删除记录文件",
+    "ControlView_DirectoryIsEmptyRefreshDirectory": "目录为空。请刷新目录 (右键菜单)，或启动游戏后按捕获热键以创建记录。",
+    "ControlView_GPU": "GPU",
+    "ControlView_GPU2": "GPU",
+    "ControlView_GPUDescription": "GPU 描述",
+    "ControlView_Game": "游戏",
+    "ControlView_Loading": "正在加载...",
+    "ControlView_LoadingRecords": "正在加载记录...",
+    "ControlView_MoveRecordingFileS": "移动记录文件",
+    "ControlView_ObservedDirectoryMissingOpenThe": "未找到监视目录。\n打开上方的文件夹标签并选择一个文件夹。",
+    "ControlView_OpenFolder": "打开文件夹",
+    "ControlView_RAM": "RAM",
+    "ControlView_RAM2": "RAM",
+    "ControlView_RAMDescription": "RAM 描述",
+    "ControlView_RecordInfo": "记录信息",
+    "ControlView_RefreshDirectory": "刷新目录",
+    "ControlView_ReloadRootFolder": "重新加载根文件夹",
+    "ControlView_Resolution": "分辨率",
+    "ControlView_RootCaptureFolder": "捕获根文件夹",
+    "ControlView_SAVE": "保存",
+    "CreateFolderDialog_Cancel": "取消",
+    "CreateFolderDialog_Create": "创建",
+    "CreateFolderDialog_NewSubfolderName": "新子文件夹名称",
+
+    // =========================================================================
+    // ANALYSIS VIEW - Frametime graphs, FPS trends, L-shape curves, percentiles
+    // =========================================================================
+    "DataThresholdViewModel_Frames": "帧数",
+    "DataThresholdViewModel_Time": "时间",
+    "DataViewModel_BarAdaptiveSTDEV": "自适应 STDEV",
+    "DataViewModel_BarAverage": "平均值",
+    "DataViewModel_BarAverageAnimationError": "平均 |动画误差|",
+    "DataViewModel_BarCpuFpsPer10W": "CPU FPS/10W",
+    "DataViewModel_BarGpuBusyAverage": "GPU-Busy 平均值",
+    "DataViewModel_BarGpuBusyOnePercentHighAverage": "GPU-Busy 1% High 平均",
+    "DataViewModel_BarGpuBusyOnePercentLowAverage": "GPU-Busy 1% Low 平均",
+    "DataViewModel_BarGpuBusyP1": "GPU-Busy P1",
+    "DataViewModel_BarGpuBusyP99": "GPU-Busy P99",
+    "DataViewModel_BarGpuFpsPer10W": "GPU FPS/10W",
+    "DataViewModel_BarMax": "最大",
+    "DataViewModel_BarMedian": "中位数",
+    "DataViewModel_BarMin": "最小",
+    "DataViewModel_BarOnePercentHighAverage": "1% High 平均值",
+    "DataViewModel_BarOnePercentHighIntegral": "1% High 积分值",
+    "DataViewModel_BarOnePercentLowAverage": "1% Low 平均值",
+    "DataViewModel_BarOnePercentLowIntegral": "1% Low 积分值",
+    "DataViewModel_BarP99AnimationError": "P99 |动画误差|",
+    "DataViewModel_BarPointOnePercentHighAverage": "0.1% High 平均值",
+    "DataViewModel_BarPointOnePercentHighIntegral": "0.1% High 积分值",
+    "DataViewModel_BarPointOnePercentLowAverage": "0.1% Low 平均值",
+    "DataViewModel_BarPointOnePercentLowIntegral": "0.1% Low 积分值",
+    "DataViewModel_FrametimesMs": "帧时间数据 (ms)",
+    "DataViewModel_LowFPS01": "低 FPS：  {0}s ({1}%)",
+    "DataViewModel_NoSensorDataToCopy": "此记录没有可复制的传感器数据。",
+    "DataViewModel_OutlierCleaned0": "{0} (已清除离群值)",
+    "DataViewModel_RemoveOutliersIsOnlyASimulation": "移除离群值 (Outlier) 仅用于模拟没有离群值时各项参数的表现。\n其结果不能作为对该次基准测试运行的最终评估。",
+    "DataViewModel_Smooth01": "流畅：  {0}s ({1}%)",
+    "DataViewModel_Stuttering01": "卡顿：  {0}s ({1}%)",
+    "DataViewModel_VarianceAbove01": "> {0}ms ({1}%)",
+    "DataViewModel_VarianceBelow01": "< {0}ms ({1}%)",
+    "DataView_01Percentile": "0.1% 百分位 (0.1% percentile)",
+    "DataView_02Percentile": "0.2% 百分位 (0.2% percentile)",
+    "DataView_1Percentile": "1% 百分位 (1% percentile)",
+    "DataView_1Percentile2": "1% 百分位 (1% percentile)",
+    "DataView_5Percentile": "5% 百分位 (5% percentile)",
+    "DataView_5Percentile2": "5% 百分位 (5% percentile)",
+    "DataView_95Percentile": "95% 百分位 (95% percentile)",
+    "DataView_95Percentile2": "95% 百分位 (95% percentile)",
+    "DataView_998Percentile": "99.8% 百分位 (99.8% percentile)",
+    "DataView_999Percentile": "99.9% 百分位 (99.9% percentile)",
+    "DataView_99Percentile": "99% 百分位 (99% percentile)",
+    "DataView_99Percentile2": "99% 百分位 (99% percentile)",
+    "DataView_AdaptiveSTDEV": "自适应标准差 (Adaptive STDEV)",
+    "DataView_AdaptiveSTDEV2": "自适应标准差 (Adaptive STDEV)",
+    "DataView_AdditionalGraphs": "附加曲线图：",
+    "DataView_AnimationError": "动画误差 (Animation Error)",
+    "DataView_Average": "平均值",
+    "DataView_Average2": "平均值",
+    "DataView_Average3": "平均值",
+    "DataView_AverageAnimationErrorOnlyMs": "平均 |动画误差 (Animation Error)| (仅 ms)",
+    "DataView_Avg": "平均",
+    "DataView_CPUBusyTimes": "CPU-Busy 时间",
+    "DataView_CPUFPS10W": "CPU FPS/10W",
+    "DataView_CPUFPS10W2": "CPU FPS/10W",
+    "DataView_ChangeFpsThresholdsDirection": "切换 FPS 阈值方向",
+    "DataView_ChangeFpsThresholdsDirection2": "切换 FPS 阈值方向",
+    "DataView_CopyMetrics": "复制指标",
+    "DataView_CopyQuantiles": "复制分位数",
+    "DataView_CopyRawSensorData": "复制原始传感器数据",
+    "DataView_CopyRawSensorData2": "复制原始传感器数据",
+    "DataView_CopySensorDataMinAvg": "复制传感器数据 (最小、平均、最大)",
+    "DataView_CopySensorDataMinAvg2": "复制传感器数据 (最小、平均、最大)",
+    "DataView_CopySystemInfo": "复制系统信息",
+    "DataView_CopyThresholdData": "复制阈值数据",
+    "DataView_CopyThresholdData2": "复制阈值数据",
+    "DataView_Counts": "计数",
+    "DataView_Counts2": "计数",
+    "DataView_CustomTitle": "自定义标题：",
+    "DataView_CutInside": "剪除范围内",
+    "DataView_CutOutside": "剪除范围外",
+    "DataView_EndS": "结束 (s)",
+    "DataView_FPS": "FPS",
+    "DataView_FPS2": "FPS",
+    "DataView_FPSThresholdForTheLow": "低 FPS 时间的 FPS 阈值。\n凡未被计为卡顿、且换算后的 FPS 低于此阈值的帧时间 (Frametime)，都会计入低 FPS 时间。",
+    "DataView_FPSThresholds": "FPS 阈值",
+    "DataView_FPSThresholds2": "FPS 阈值",
+    "DataView_FactorForTheStutteringTime": "卡顿 (Stuttering) 时间的系数。\n凡高于对应移动平均帧时间 (Frametime) × 系数的帧时间，都会计入卡顿时间。",
+    "DataView_FilterMode": "过滤模式",
+    "DataView_FrameTimeDistribution": "帧时间 (Frametime) 分布",
+    "DataView_FrameTimes": "帧时间 (Frametime)",
+    "DataView_GPUBusy1HighAverage": "GPU-Busy 1% High 平均值 (仅 ms)",
+    "DataView_GPUBusy1HighAvg": "GPU-Busy 1% High 平均 (仅 ms)",
+    "DataView_GPUBusy99PercentileOnly": "GPU-Busy 99% 百分位 (仅 ms)",
+    "DataView_GPUBusy99PercentileOnly2": "GPU-Busy 99% 百分位 (仅 ms)",
+    "DataView_GPUBusyAverageOnlyMs": "GPU-Busy 平均值 (仅 ms)",
+    "DataView_GPUBusyAverageOnlyMs2": "GPU-Busy 平均值 (仅 ms)",
+    "DataView_GPUBusyDeviation": "GPU-Busy 偏差：",
+    "DataView_GPUBusyTimes": "GPU-Busy 时间",
+    "DataView_GPUFPS10W": "GPU FPS/10W",
+    "DataView_GPUFPS10W2": "GPU FPS/10W",
+    "DataView_GPULoad": "GPU 占用率",
+    "DataView_GPUPowerLimit": "GPU 功耗墙",
+    "DataView_HardwareTelemetry": "硬件遥测",
+    "DataView_LShape": "L 形曲线 (L-shape)",
+    "DataView_LowFPSThreshold": "低 FPS 阈值",
+    "DataView_Max": "最大",
+    "DataView_Max2": "最大",
+    "DataView_MaxCPUThreadLoad": "最大 CPU 线程占用率",
+    "DataView_Maximum": "最大值",
+    "DataView_Maximum2": "最大值",
+    "DataView_MaximumTheSingleHighestValue": "最大值：\n\n单个最高值\n\n\n平均值：\n\n所有数值的平均值\n\n\n中位数：\n\n所有数值从低到高排序后的中间值\n\n\n最小值：\n\n单个最低值\n\n\nX% 百分位 (X% percentile)：\n\n所有数值中有 X% 低于此值\n\n\nX% Low 平均值 (X% low average)：\n\n最低 X% 数值的平均值\n\n\nX% Low 积分值 (X% low integral)：\n\n在总基准测试时间的 X% 内，数值低于此值\n\n\nGPU-Busy：\n\nGPU 处理一帧所用的时间\n\n\n自适应标准差 (Adaptive STDEV)：\n\n数值相对于移动平均值的标准差",
+    "DataView_MaximumTheSingleHighestValue2": "最大值：\n\n单个最高值\n\n\n平均值：\n\n所有数值的平均值\n\n\n中位数：\n\n所有数值从低到高排序后的中间值\n\n\n最小值：\n\n单个最低值\n\n\nX% 百分位 (X% percentile)：\n\n所有数值中有 X% 低于此值\n\n\nX% High 平均值 (X% high average)：\n\n最高 X% 数值的平均值\n\n\nX% High 积分值 (X% high integral)：\n\n在总基准测试时间的 X% 内，数值高于此值\n\n\nGPU-Busy：\n\nGPU 处理一帧所用的时间\n\n\n自适应标准差 (Adaptive STDEV)：\n\n数值相对于移动平均值的标准差",
+    "DataView_Median": "中位数",
+    "DataView_Median2": "中位数",
+    "DataView_Metric": "指标",
+    "DataView_Min": "最小",
+    "DataView_Min2": "最小",
+    "DataView_Minimum": "最小值",
+    "DataView_Minimum2": "最小值",
+    "DataView_Ms": "ms",
+    "DataView_OnePercentHighAverage": "1% High 平均值 (1% high average)",
+    "DataView_OnePercentHighIntegral": "1% High 积分值 (1% high integral)",
+    "DataView_OnePercentLowAverage": "1% Low 平均值 (1% low average)",
+    "DataView_OnePercentLowIntegral": "1% Low 积分值 (1% low integral)",
+    "DataView_Options": "选项",
+    "DataView_OptionsForTheStutterAnd": "饼图中卡顿 (Stuttering) 和低 FPS 数值的选项",
+    "DataView_P99AnimationErrorOnlyMs": "P99 |动画误差 (Animation Error)| (仅 ms)",
+    "DataView_PCLatency": "PC 延迟 (PC Latency)",
+    "DataView_Percentiles": "百分位 (%)",
+    "DataView_PointOnePercentHighAverage": "0.1% High 平均值 (0.1% high average)",
+    "DataView_PointOnePercentHighIntegral": "0.1% High 积分值 (0.1% high integral)",
+    "DataView_PointOnePercentLowAverage": "0.1% Low 平均值 (0.1% low average)",
+    "DataView_PointOnePercentLowIntegral": "0.1% Low 积分值 (0.1% low integral)",
+    "DataView_PresentMetrics": "呈现指标 (Present Metrics)",
+    "DataView_Range": "范围：",
+    "DataView_RangeSlider": "范围滑块：",
+    "DataView_RangeSliderEndPoint": "范围滑块终点",
+    "DataView_RangeSliderStartPoint": "范围滑块起点",
+    "DataView_RealTimeUpdate": "实时更新",
+    "DataView_RemoveDataInsideOfRange": "移除范围滑块内(蓝色)的数据，并用剩余数据(红色)创建新文件",
+    "DataView_RemoveDataOutsideOfRange": "移除范围滑块外(红色)的数据，并用剩余数据(蓝色)创建新文件",
+    "DataView_RemoveOutliers": "移除离群值 (Outlier)：",
+    "DataView_SYSTEMINFO": "系统信息",
+    "DataView_Sensor": "传感器",
+    "DataView_Sensor2": "传感器",
+    "DataView_SensorData": "传感器数据",
+    "DataView_SensorData2": "传感器数据",
+    "DataView_ShowAdditionalGraphsForCPU": "显示 CPU 和 GPU 占用率的附加曲线图",
+    "DataView_ShowAggregation": "显示汇总 (Aggregation)：",
+    "DataView_ShowAnimationErrorGraph": "显示动画误差 (Animation Error) 曲线图",
+    "DataView_ShowCPUBusyTimeIn": "在帧时间 (Frametime) 曲线图中显示 CPU-Busy 时间",
+    "DataView_ShowCPUUsageGraph": "显示 CPU 占用率曲线图",
+    "DataView_ShowCustomTitleEditBox": "显示自定义标题编辑框",
+    "DataView_ShowGPUBusyTimeIn": "在帧时间 (Frametime) 曲线图中显示 GPU-Busy 时间",
+    "DataView_ShowGPUPowerLimit": "显示 GPU 功耗墙",
+    "DataView_ShowGPUUsageGraph": "显示 GPU 占用率曲线图",
+    "DataView_ShowInCharts": "在图表中显示",
+    "DataView_ShowMaxCPUThreadUsage": "显示 CPU 最高线程占用率曲线图",
+    "DataView_ShowNumberOfFramesAbove": "显示高于或低于阈值的帧数",
+    "DataView_ShowNumberOfFramesAbove2": "显示高于或低于阈值的帧数",
+    "DataView_ShowOrHideTheSystemInfo": "显示或隐藏此记录的系统信息",
+    "DataView_ShowPCLatencyGraph": "显示 PC 延迟 (PC Latency) 曲线图",
+    "DataView_ShowSeparatorLinesForThe": "显示会话内不同运行轮次之间的分隔线",
+    "DataView_ShowThresholdLinesForStuttering": "在帧时间 (Frametime) 和 FPS 图表中显示卡顿 (Stuttering) 和低 FPS 的阈值线",
+    "DataView_ShowTimeAboveOrBelow": "显示高于或低于阈值的时间",
+    "DataView_ShowTimeAboveOrBelow2": "显示高于或低于阈值的时间",
+    "DataView_StartS": "开始 (s)",
+    "DataView_StatisticParameterSettings": "统计参数设置：",
+    "DataView_StatisticParameterSettings2": "统计参数设置：",
+    "DataView_Stuttering": "卡顿 (Stuttering)",
+    "DataView_StutteringFactor": "卡顿系数",
+    "DataView_TimeDifferencesBetweenTwoConsecutive": "两个连续帧时间 (Frametime)\n数值之间的时间差",
+    "DataView_Times": "时间",
+    "DataView_Times2": "时间",
+    "DataView_ToggleBetweenAbsoluteAndRelative": "在绝对值和相对值之间切换",
+    "DataView_ToggleBetweenAbsoluteAndRelative2": "在绝对值和相对值之间切换",
+    "DataView_TotalCPULoad": "CPU 总占用率",
+    "DataView_TypeYourTitleHere": "在此输入标题...",
+    "DataView_Variances": "方差",
+    "DataView_YAxisScale": "Y 轴缩放",
+
+    // =========================================================================
+    // DEBUG MONITOR - CapFrameX and PresentMon resource usage, ETW buffer status
+    // =========================================================================
+    "DebugMonitorWindow_BufferFill": "缓冲区填充 %：",
+    "DebugMonitorWindow_BuffersInUse": "使用中的缓冲区：",
+    "DebugMonitorWindow_BuffersLost": "丢失的缓冲区：",
+    "DebugMonitorWindow_CPUUsage": "CPU 占用率：",
+    "DebugMonitorWindow_CPUUsage2": "CPU 占用率：",
+    "DebugMonitorWindow_DebugMonitor": "调试监视器",
+    "DebugMonitorWindow_ETWBufferStatus": "ETW 缓冲区状态",
+    "DebugMonitorWindow_Error": "错误",
+    "DebugMonitorWindow_EventsLost": "丢失的事件：",
+    "DebugMonitorWindow_MemoryUsage": "内存占用：",
+    "DebugMonitorWindow_MemoryUsage2": "内存占用：",
+    "DebugMonitorWindow_NotRunning": "未运行",
+    "DebugMonitorWindow_ProcessingDelay": "处理延迟：",
+    "DebugMonitorWindow_Running": "运行中",
+    "DebugMonitorWindow_Status": "状态：",
+    "DebugMonitorWindow_TotalBuffers": "缓冲区总数：",
+
+    // =========================================================================
+    // ENUMS & METRICS - Metric descriptions, sensor types, capture file formats
+    // =========================================================================
+    "ECaptureFileMode_Json": "JSON",
+    "ECaptureFileMode_JsonCsv": "JSON + CSV",
+    "EChartYAxisSetting_FullFit": "自适应缩放",
+    "EChartYAxisSetting_IQR": "四分位距 (IQR)",
+    "EChartYAxisSetting_Zero_Eighty": "0-80ms",
+    "EChartYAxisSetting_Zero_Forty": "0-40ms",
+    "EChartYAxisSetting_Zero_Hundred": "0-100ms",
+    "EChartYAxisSetting_Zero_Sixty": "0-60ms",
+    "EChartYAxisSetting_Zero_Ten": "0-10ms",
+    "EChartYAxisSetting_Zero_Thirty": "0-30ms",
+    "EChartYAxisSetting_Zero_Twenty": "0-20ms",
+    "EComparisonContext_API": "API",
+    "EComparisonContext_CPU": "CPU",
+    "EComparisonContext_Custom": "自定义备注",
+    "EComparisonContext_DateTime": "日期和时间",
+    "EComparisonContext_GPU": "GPU",
+    "EComparisonContext_GPUDriver": "GPU 驱动",
+    "EComparisonContext_None": "无",
+    "EComparisonContext_SystemRam": "RAM",
+    "EFilterMode_None": "原始数据",
+    "EFilterMode_RawPlusAverage": "原始 + 平均",
+    "EFilterMode_TimeIntervalAverage": "平均",
+    "EHardwareInfoSource_Auto": "自动检测",
+    "EHardwareInfoSource_Custom": "自定义描述",
+    "EHookOverlayStatus_Active": "活动",
+    "EHookOverlayStatus_Blocked": "已阻止",
+    "EHookOverlayStatus_Disabled": "关",
+    "EHookOverlayStatus_Error": "错误",
+    "EHookOverlayStatus_Hidden": "已隐藏",
+    "EHookOverlayStatus_Idle": "空闲",
+    "EHookOverlayStatus_Initializing": "正在初始化",
+    "EHookOverlayStatus_Injected": "已注入",
+    "EHookOverlayStatus_Injecting": "正在注入",
+    "EHookOverlayStatus_Probing": "正在探测",
+    "EHookOverlayStatus_RestartPending": "需重启游戏",
+    "EHookOverlayStatus_Unavailable": "不可用",
+    "EHookOverlayStatus_Waiting": "等待中",
+    "ELogMessageType_AdvancedInfo": "高级信息",
+    "ELogMessageType_BasicInfo": "基本信息",
+    "ELogMessageType_Error": "错误",
+    "EMetric_AdaptiveStd": "自适应标准差 (Adaptive STDEV)",
+    // Compact / abbreviated label for EMetric_AdaptiveStd (used in tight table headers or OSD)
+    "EMetric_AdaptiveStd_Short": "自适应 STDEV",
+    "EMetric_Average": "平均值",
+    // Compact / abbreviated label for EMetric_Average (used in tight table headers or OSD)
+    "EMetric_Average_Short": "平均",
+    "EMetric_CpuActiveAverage": "CPU 活动时间 (CPU Active) 平均值",
+    // Compact / abbreviated label for EMetric_CpuActiveAverage (used in tight table headers or OSD)
+    "EMetric_CpuActiveAverage_Short": "CPU 平均",
+    "EMetric_CpuFpsPerWatt": "CPU 每 10 W 的 FPS",
+    // Compact / abbreviated label for EMetric_CpuFpsPerWatt (used in tight table headers or OSD)
+    "EMetric_CpuFpsPerWatt_Short": "CPU FPS/10W",
+    "EMetric_GpuActiveAverage": "GPU 活动时间 (GPU Active) 平均值",
+    // Compact / abbreviated label for EMetric_GpuActiveAverage (used in tight table headers or OSD)
+    "EMetric_GpuActiveAverage_Short": "GPU 平均",
+    "EMetric_GpuActiveOnePercentLowAverage": "GPU 活动时间 (GPU Active) 1% Low 平均值 (1% low average)",
+    // Compact / abbreviated label for EMetric_GpuActiveOnePercentLowAverage (used in tight table headers or OSD)
+    "EMetric_GpuActiveOnePercentLowAverage_Short": "GPU 1% Low 平均",
+    "EMetric_GpuActiveP1": "GPU 活动时间 (GPU Active) 1% 百分位 (1% percentile)",
+    // Compact / abbreviated label for EMetric_GpuActiveP1 (used in tight table headers or OSD)
+    "EMetric_GpuActiveP1_Short": "GPU P1",
+    "EMetric_GpuFpsPerWatt": "GPU 每 10 W 的 FPS",
+    // Compact / abbreviated label for EMetric_GpuFpsPerWatt (used in tight table headers or OSD)
+    "EMetric_GpuFpsPerWatt_Short": "GPU FPS/10W",
+    "EMetric_Max": "最大值",
+    // Compact / abbreviated label for EMetric_Max (used in tight table headers or OSD)
+    "EMetric_Max_Short": "最大",
+    "EMetric_Median": "中位数",
+    // Compact / abbreviated label for EMetric_Median (used in tight table headers or OSD)
+    "EMetric_Median_Short": "中位数",
+    "EMetric_Min": "最小值",
+    // Compact / abbreviated label for EMetric_Min (used in tight table headers or OSD)
+    "EMetric_Min_Short": "最小",
+    "EMetric_None": "无",
+    // Compact / abbreviated label for EMetric_None (used in tight table headers or OSD)
+    "EMetric_None_Short": "无",
+    "EMetric_OnePercentLowAverage": "1% Low 平均值 (1% low average)",
+    // Compact / abbreviated label for EMetric_OnePercentLowAverage (used in tight table headers or OSD)
+    "EMetric_OnePercentLowAverage_Short": "1% Low 平均",
+    "EMetric_OnePercentLowIntegral": "1% Low 积分值 (1% low integral)",
+    // Compact / abbreviated label for EMetric_OnePercentLowIntegral (used in tight table headers or OSD)
+    "EMetric_OnePercentLowIntegral_Short": "1% Low 积分",
+    "EMetric_P0dot1": "0.1% 百分位 (0.1% percentile)",
+    // Compact / abbreviated label for EMetric_P0dot1 (used in tight table headers or OSD)
+    "EMetric_P0dot1_Short": "P0.1",
+    "EMetric_P0dot2": "0.2% 百分位 (0.2% percentile)",
+    // Compact / abbreviated label for EMetric_P0dot2 (used in tight table headers or OSD)
+    "EMetric_P0dot2_Short": "P0.2",
+    "EMetric_P1": "1% 百分位 (1% percentile)",
+    // Compact / abbreviated label for EMetric_P1 (used in tight table headers or OSD)
+    "EMetric_P1_Short": "P1",
+    "EMetric_P5": "5% 百分位 (5% percentile)",
+    // Compact / abbreviated label for EMetric_P5 (used in tight table headers or OSD)
+    "EMetric_P5_Short": "P5",
+    "EMetric_P95": "95% 百分位 (95% percentile)",
+    // Compact / abbreviated label for EMetric_P95 (used in tight table headers or OSD)
+    "EMetric_P95_Short": "P95",
+    "EMetric_P99": "99% 百分位 (99% percentile)",
+    // Compact / abbreviated label for EMetric_P99 (used in tight table headers or OSD)
+    "EMetric_P99_Short": "P99",
+    "EMetric_ZerodotOnePercentLowAverage": "0.1% Low 平均值 (0.1% low average)",
+    // Compact / abbreviated label for EMetric_ZerodotOnePercentLowAverage (used in tight table headers or OSD)
+    "EMetric_ZerodotOnePercentLowAverage_Short": "0.1% Low 平均",
+    "EMetric_ZerodotOnePercentLowIntegral": "0.1% Low 积分值 (0.1% low integral)",
+    // Compact / abbreviated label for EMetric_ZerodotOnePercentLowIntegral (used in tight table headers or OSD)
+    "EMetric_ZerodotOnePercentLowIntegral_Short": "0.1% Low 积分",
+    "EMetric_ZerodotTwoPercentLowAverage": "0.2% Low 平均值 (0.2% low average)",
+    // Compact / abbreviated label for EMetric_ZerodotTwoPercentLowAverage (used in tight table headers or OSD)
+    "EMetric_ZerodotTwoPercentLowAverage_Short": "0.2% Low 平均",
+    "EMetric_ZerodotTwoPercentLowIntegral": "0.2% Low 积分值 (0.2% low integral)",
+    // Compact / abbreviated label for EMetric_ZerodotTwoPercentLowIntegral (used in tight table headers or OSD)
+    "EMetric_ZerodotTwoPercentLowIntegral_Short": "0.2% Low 积分",
+    "EOutlierHandling_Ignore": "标记并使用",
+    "EOutlierHandling_Replace": "标记并替换",
+    "EOverlayEntryType_CPU": "CPU 传感器",
+    // Compact / abbreviated label for EOverlayEntryType_CPU (used in tight table headers or OSD)
+    "EOverlayEntryType_CPU_Short": "CPU",
+    "EOverlayEntryType_CX": "应用程序信息",
+    // Compact / abbreviated label for EOverlayEntryType_CX (used in tight table headers or OSD)
+    "EOverlayEntryType_CX_Short": "应用",
+    "EOverlayEntryType_FanController": "风扇控制器传感器",
+    // Compact / abbreviated label for EOverlayEntryType_FanController (used in tight table headers or OSD)
+    "EOverlayEntryType_FanController_Short": "风扇",
+    "EOverlayEntryType_GPU": "GPU 传感器",
+    // Compact / abbreviated label for EOverlayEntryType_GPU (used in tight table headers or OSD)
+    "EOverlayEntryType_GPU_Short": "GPU",
+    "EOverlayEntryType_HDD": "存储传感器",
+    // Compact / abbreviated label for EOverlayEntryType_HDD (used in tight table headers or OSD)
+    "EOverlayEntryType_HDD_Short": "存储",
+    "EOverlayEntryType_Mainboard": "主板传感器",
+    // Compact / abbreviated label for EOverlayEntryType_Mainboard (used in tight table headers or OSD)
+    "EOverlayEntryType_Mainboard_Short": "主板",
+    "EOverlayEntryType_OnlineMetric": "性能指标",
+    // Compact / abbreviated label for EOverlayEntryType_OnlineMetric (used in tight table headers or OSD)
+    "EOverlayEntryType_OnlineMetric_Short": "指标",
+    "EOverlayEntryType_RAM": "内存传感器",
+    // Compact / abbreviated label for EOverlayEntryType_RAM (used in tight table headers or OSD)
+    "EOverlayEntryType_RAM_Short": "RAM",
+    "EOverlayEntryType_Undefined": "其他",
+    // Compact / abbreviated label for EOverlayEntryType_Undefined (used in tight table headers or OSD)
+    "EOverlayEntryType_Undefined_Short": "其他",
+    "EOverlayTemplate_Basic": "基础",
+    "EOverlayTemplate_Detailed": "详细",
+    "EOverlayTemplate_Enthusiast": "发烧友",
+    "EPmdDriverStatus_Connected": "已连接",
+    "EPmdDriverStatus_Error": "错误",
+    "EPmdDriverStatus_Ready": "就绪",
+    "EPmdServiceStatus_Error": "错误",
+    "EPmdServiceStatus_Running": "运行中",
+    "EPmdServiceStatus_Stopped": "已停止",
+    "EPmdServiceStatus_Waiting": "等待中",
+    "EPresentMode_ComposedCompositionAtlas": "Composed: Composition Atlas",
+    "EPresentMode_ComposedCopyWithCPUGDI": "Composed: Copy with CPU GDI",
+    "EPresentMode_ComposedCopyWithGPUGDI": "Composed: Copy with GPU GDI",
+    "EPresentMode_ComposedFlip": "Composed: Flip",
+    "EPresentMode_HardwareComposedIndependentFlip": "Hardware Composed: Independent Flip",
+    "EPresentMode_HardwareIndependentFlip": "Hardware: Independent Flip",
+    "EPresentMode_HardwareLegacyCopyToFrontBuffer": "Hardware: Legacy Copy to front buffer",
+    "EPresentMode_HardwareLegacyFlip": "Hardware: Legacy Flip",
+    "EPresentMode_Other": "其他",
+    "EPresentMode_Unknown": "未知",
+    "EReportSensorName_CpuMaxClock": "CPU 最高频率 (MHz)",
+    "EReportSensorName_CpuMaxThreadUsage": "CPU 最高线程占用率 (%)",
+    "EReportSensorName_CpuPower": "CPU 功耗 (W)",
+    "EReportSensorName_CpuTemp": "CPU 温度 (°C)",
+    "EReportSensorName_CpuUsage": "CPU 占用率 (%)",
+    "EReportSensorName_GpuClock": "GPU 频率 (MHz)",
+    "EReportSensorName_GpuLoadLimit": "GPU 满载时间占比 (%)",
+    "EReportSensorName_GpuPower": "GPU 功耗 (W)",
+    "EReportSensorName_GpuTBPSim": "GPU TBP 模拟值 (W)",
+    "EReportSensorName_GpuTemp": "GPU 温度 (°C)",
+    "EReportSensorName_GpuUsage": "GPU 占用率 (%)",
+    "EReportSensorName_RamUsage": "内存占用 (GB)",
+    "EReportSensorName_VRamUsage": "GPU VRAM 占用 (MB)",
+    "EReportSensorName_VRamUsageGB": "GPU VRAM 占用 (GB)",
+
+    // =========================================================================
+    // EDITING DIALOG - Custom hardware names and benchmark run comments
+    // =========================================================================
+
+    // =========================================================================
+    // OVERLAY DIAGNOSTICS - Extended OSD logging errors
+    // =========================================================================
+    "ExtendedOsdLoggingViewModel_CouldNotBeRead0": "无法读取扩展 OSD 日志：{0}",
+    "ExtendedOsdLoggingViewModel_CouldNotBeUpdated0": "无法更新扩展 OSD 日志：{0}",
+    "ExtendedOsdLoggingViewModel_FolderCouldNotBeOpened0": "无法打开 OSD 日志文件夹：{0}",
+
+    // =========================================================================
+    // CHART CONTEXT MENUS - Copy and export actions of the analysis charts
+    // =========================================================================
+    "FpsGraphControl_CopyFpsGPUBusyFps": "复制 FPS + GPU-Busy FPS 数值 (f)",
+    "FpsGraphControl_CopyFpsGPUBusyFps2": "复制 FPS + GPU-Busy FPS 数据点 (t, f(t))",
+    "FpsGraphControl_CopyFpsPointsTF": "复制 FPS 数据点 (t, f(t))",
+    "FpsGraphControl_CopyFpsValuesF": "复制 FPS 数值 (f)",
+    "FpsGraphControl_SavePlotAsPNG": "将图表保存为 PNG",
+    "FpsGraphControl_SavePlotAsSVG": "将图表保存为 SVG",
+    "FrametimeDistributionGraphControl_CopyDistributionPointsMs": "复制分布数据点 (ms, %)",
+    "FrametimeDistributionGraphControl_SavePlotAsPNG": "将图表保存为 PNG",
+    "FrametimeDistributionGraphControl_SavePlotAsSVG": "将图表保存为 SVG",
+    "FrametimeGraphControl_CopyFrametimeGPUBusyFrametime": "复制帧时间 (Frametime) + GPU-Busy 帧时间数值 (f)",
+    "FrametimeGraphControl_CopyFrametimeGPUBusyFrametime2": "复制帧时间 (Frametime) + GPU-Busy 帧时间数据点 (t, f(t))",
+    "FrametimeGraphControl_CopyFrametimePointsTF": "复制帧时间 (Frametime) 数据点 (t, f(t))",
+    "FrametimeGraphControl_CopyFrametimeValuesF": "复制帧时间 (Frametime) 数值 (f)",
+    "FrametimeGraphControl_SavePlotAsPNG": "将图表保存为 PNG",
+    "FrametimeGraphControl_SavePlotAsSVG": "将图表保存为 SVG",
+
+    // =========================================================================
+    // HOTKEY FIELDS - Placeholder and validation message of hotkey text boxes
+    // =========================================================================
+    "HotkeyValidationRule_HotkeyIsNotValid": "热键无效。",
+    "HotkeyValidationRule_NotSet": "未设置",
+
+    // =========================================================================
+    // SYSTEM INFO VIEW - CPU, GPU, RAM, motherboard and driver details
+    // =========================================================================
+    "InfoViewModel_Detecting": "正在检测...",
+    "InfoViewModel_Disabled": "已禁用",
+    "InfoViewModel_Enabled": "已启用",
+    "InfoViewModel_GraphicsCard": "显卡",
+    "InfoViewModel_Mainboard": "主板",
+    "InfoViewModel_Memory": "内存",
+    "InfoViewModel_OperatingSystem": "操作系统",
+    "InfoViewModel_Processor": "处理器",
+    // {0}: CapFrameX version, {1}: release channel
+    "InfoViewModel_ReportHeader01": "CapFrameX {0} ({1})",
+    "InfoViewModel_Unknown": "未知",
+    "InfoViewModel_VirtualizationBasedSecurity": "基于虚拟化的安全性",
+    "InfoView_Available": "可用",
+    "InfoView_COPYSYSTEMINFO": "复制系统信息",
+    "InfoView_Clock": "频率",
+    "InfoView_Clock2": "频率",
+    "InfoView_CopyTheSystemInformationAsText": "将系统信息复制为文本，例如用于错误报告",
+    "InfoView_Driver0": "驱动 {0}",
+    "InfoView_GRAPHICSCARD": "显卡",
+    "InfoView_HardwareAcceleratedGPUScheduling": "硬件加速 GPU 计划",
+    "InfoView_InUse": "已使用",
+    "InfoView_Load": "占用率",
+    "InfoView_Load2": "占用率",
+    "InfoView_MAINBOARD": "主板",
+    "InfoView_MEMORY": "内存",
+    "InfoView_MemoryIntegrity": "内存完整性",
+    "InfoView_OPERATINGSYSTEM": "操作系统",
+    "InfoView_PLATFORMSECURITY": "平台安全",
+    "InfoView_PROCESSOR": "处理器",
+    "InfoView_PawnIODriver": "PawnIO 驱动",
+    "InfoView_Power": "功耗",
+    "InfoView_Power2": "功耗",
+    "InfoView_PresentMon": "PresentMon",
+    "InfoView_RTSS": "RTSS",
+    "InfoView_ResizableBAR": "Resizable BAR",
+    "InfoView_SOFTWARECOMPONENTS": "软件组件",
+    "InfoView_SecureBoot": "安全启动 (Secure Boot)",
+    "InfoView_Temperature": "温度",
+    "InfoView_Temperature2": "温度",
+    "InfoView_TestSigning": "测试签名模式",
+    "InfoView_Usage": "使用量",
+    "InfoView_VBS": "VBS",
+    "InfoView_VRAM": "VRAM",
+    "InfoView_VulkanLayer": "Vulkan 层",
+    "InfoView_WindowsGameMode": "Windows 游戏模式",
+
+    // =========================================================================
+    // MESSAGE DIALOGS - Shared close buttons
+    // =========================================================================
+    "MessageDialog_Close": "关闭",
+
+    // =========================================================================
+    // OVERLAY CONFIGURATION - OSD layout, grouped sensors, colors, font sizes
+    // =========================================================================
+    "OverlayViewModel_InjectedIntoTheGameFor": "已注入游戏，用于在交换链内绘制曲线图。",
+    "OverlayViewModel_LearnedProfilesNoGame": "已学习 {0} 个兼容性配置文件；未选择游戏。",
+    "OverlayViewModel_NoLearnedCompatibilityProfiles": "尚无已学习的兼容性配置文件。",
+    "OverlayViewModel_NoLearnedProfileForProcess": "{0} 尚无已学习的兼容性配置文件(共 {1} 个)。",
+    "OverlayViewModel_ProfileExhausted0": "{0}：无法确定兼容性；下次启动游戏时将重新探测。",
+    "OverlayViewModel_ProfileNextLaunchStage01": "{0}：下次启动将从 {1} 开始。",
+    "OverlayViewModel_ProfileNotVerified01": "{0}：上次尝试 {1}，尚未验证。",
+    "OverlayViewModel_ProfileVerified012": "{0}：{1} (已验证 {2})。",
+    "OverlayViewModel_ProfilesUnavailable0": "已学习的兼容性配置文件不可用 ({0})。",
+    "OverlayView_AddsDisplayTimesOffUses": "添加显示时间 (Displaytime)。关闭时使用 Hook 的本地帧时间 (Frametime)。",
+    "OverlayView_AdjustThePlacementAndBackground": "调整 CapFrameX 叠加层 (Overlay) 内容的位置和背景。",
+    "OverlayView_AllEntries": "所有条目",
+    "OverlayView_AlwaysLearnsCompatibilitySettingsFor": "始终为每个游戏学习兼容性设置。",
+    "OverlayView_AnchorCornerAndDistanceIn": "无 Hook 渲染器的锚定角和距离(像素)；RTSS 的位置在 RTSS 设置中调整。",
+    "OverlayView_AnimateIntermediateValuesBetweenData": "在数据更新之间以动画显示中间值。关闭后立即显示每个发布的数值；RTSS 不受影响。",
+    "OverlayView_AppearanceAndPosition": "外观和位置",
+    "OverlayView_AppliesToTheHookFree": "适用于无 Hook 渲染器；RTSS 使用其自身的设置。",
+    "OverlayView_Apply": "应用",
+    "OverlayView_ApplySelectedTemplate": "应用所选模板",
+    "OverlayView_ApplyToMultipleEntries": "应用到多个条目",
+    "OverlayView_AutoDisableWhileCapturing": "捕获时自动禁用",
+    "OverlayView_BackgroundOpacity": "背景不透明度",
+    "OverlayView_BottomLeft": "左下",
+    "OverlayView_BottomRight": "右下",
+    "OverlayView_CPUCoreClocks": "CPU 核心频率",
+    "OverlayView_CPUCoreLoads": "CPU 核心占用率",
+    "OverlayView_CPUCorePowers": "CPU 核心功耗",
+    "OverlayView_CPUCoreTemps": "CPU 核心温度",
+    "OverlayView_CPUCoreVoltages": "CPU 核心电压",
+    "OverlayView_CalculationTimeFrame": "计算时间窗口",
+    "OverlayView_CapFrameXHookFree": "CapFrameX 无 Hook",
+    "OverlayView_CapFrameXInGame": "CapFrameX 游戏内",
+    "OverlayView_CaptureItems": "捕获项",
+    "OverlayView_ChartRefreshRate": "图表刷新率",
+    "OverlayView_CheckCPUClocks": "勾选 CPU 频率",
+    "OverlayView_CheckCPUClocks2": "勾选 CPU 频率",
+    "OverlayView_CheckCPUCoreTemps": "勾选 CPU 核心温度",
+    "OverlayView_CheckCPUCoreVoltages": "勾选 CPU 核心电压",
+    "OverlayView_CheckCPULoads": "勾选 CPU 占用率",
+    "OverlayView_CheckCaptureItems": "勾选捕获项",
+    "OverlayView_CheckGPUBasics": "勾选 GPU 基础项",
+    "OverlayView_CheckRAMItems": "勾选 RAM 项",
+    "OverlayView_CheckRealTimeMetrics": "勾选实时指标",
+    "OverlayView_CheckSystemInfo": "勾选系统信息",
+    "OverlayView_ChooseOneOutputBackendRenderer": "选择一个输出后端。特定于渲染器的选项保留在各自的渲染器中。",
+    "OverlayView_ClearFilters": "清除筛选",
+    "OverlayView_CollectDetailedDataForTroubleshooting": "收集详细数据，用于排查 CapFrameX 叠加层 (Overlay) 渲染器的问题。",
+    "OverlayView_Colors": "颜色",
+    "OverlayView_ColorsAndLimits": "颜色与限值",
+    "OverlayView_Config1": "配置  1",
+    "OverlayView_Config2": "配置  2",
+    "OverlayView_Config3": "配置  3",
+    "OverlayView_ConfigHotkey": "配置热键",
+    "OverlayView_ConfigureOverlayControlsAndData": "配置叠加层 (Overlay) 控制项和数据更新间隔。",
+    "OverlayView_ControlWhenTheOverlayIs": "控制叠加层 (Overlay) 何时可见，以及通用条目的行为。",
+    "OverlayView_CustomPosition": "自定义位置",
+    "OverlayView_CyclePosition": "循环切换位置",
+    "OverlayView_Description": "描述",
+    "OverlayView_DetailedDirectXVulkanAndHook": "详细的 DirectX、Vulkan 和无 Hook 日志，包括每次呈现的统计数据。",
+    "OverlayView_Diagnostics": "诊断",
+    "OverlayView_DisableHideOSDOnRTSS": "禁用“在 RTSS 上隐藏 OSD”以显示叠加层 (Overlay)。",
+    "OverlayView_Display": "显示器",
+    "OverlayView_DisplayUsedByTheHook": "无 Hook 叠加层 (Overlay) 使用的显示器",
+    "OverlayView_DragDropToChangeOrder": "拖放以更改顺序",
+    "OverlayView_EntryType": "条目类型",
+    "OverlayView_EntryType2": "条目类型",
+    "OverlayView_ExtendedOSDLogging": "扩展 OSD 日志",
+    "OverlayView_FilterByEntryType": "按条目类型筛选",
+    "OverlayView_Format": "格式",
+    "OverlayView_FormatOptions": "格式选项",
+    "OverlayView_PercentageDisplay": "百分比显示方式",
+    "OverlayView_PercentageDisplayHint": "适用于单位为 % 的条目。条形图使用固定的 0–100% 刻度。在“数值 + 条形图”模式下，百分比显示在条形图之前。",
+    "OverlayView_ValueDisplayText": "数值",
+    "OverlayView_ValueDisplayBar": "条形图",
+    "OverlayView_ValueDisplayTextAndBar": "数值 + 条形图",
+    "OverlayView_GPUBasics": "GPU 基础信息",
+    "OverlayView_General": "常规",
+    "OverlayView_Graph": "曲线图",
+    "OverlayView_GroupColor": "分组颜色：",
+    "OverlayView_GroupControl": "分组控制：",
+    "OverlayView_GroupName": "分组名称",
+    "OverlayView_GroupName2": "分组名称",
+    "OverlayView_GroupName3": "分组名称",
+    "OverlayView_GroupNameFontSize": "分组名称字号",
+    "OverlayView_Groups": "分组",
+    "OverlayView_HardwareController": "硬件控制器",
+    "OverlayView_HideTheOSDWhileA": "基准测试捕获运行期间隐藏 OSD。",
+    "OverlayView_HookFreeAppliesLiveRestart": "无 Hook 模式实时生效。游戏内日志需要重启 CapFrameX 和游戏。",
+    "OverlayView_HookFreeMpoConsequence": "叠加层 (Overlay) 可见时游戏会以 Composed 方式合成，增加延迟并导致帧节奏不均。建议使用游戏内渲染器。",
+    "OverlayView_HookFreeMpoMissing": "此显示器不支持 MPO：",
+    "OverlayView_HookFreeMpoSwitchedOff": "MPO 已关闭 (OverlayTestMode = 5)：",
+    "OverlayView_HookFreeOutputDisplay": "无 Hook 输出显示器",
+    "OverlayView_Hotkey": "热键",
+    "OverlayView_HotkeyCombinableWithUpTo": "热键可与最多两个修饰键 (Ctrl、Shift 或 Alt) 组合",
+    "OverlayView_HotkeyPressBackspaceDeleteOrEsc": "热键可与最多两个修饰键 (Ctrl、Shift 或 Alt) 组合。按 Backspace、Delete 或 Esc 清除。",
+    "OverlayView_IncludeSecondsInTheSystem": "在系统时间叠加层 (Overlay) 条目中显示秒。",
+    "OverlayView_LaunchPreviewApp": "启动预览应用",
+    "OverlayView_Limits": "限值",
+    "OverlayView_LowerLimitColor": "下限 + 颜色：",
+    "OverlayView_LowerLimitColorHint": "数值等于或低于此值时更改数值颜色\n清空此框可停用限值",
+    "OverlayView_ManuallyPositionTheCapFrameXOverlay": "手动定位 CapFrameX 叠加层 (Overlay) 项目。",
+    "OverlayView_MaximumVisibleChartUpdatesPer": "每秒最大可见图表更新次数",
+    "OverlayView_MetricIntervalS": "指标间隔 (s)",
+    "OverlayView_MinOSD": "最简 OSD",
+    "OverlayView_MinimumBufferingUsedToSmooth": "用于平滑突发性 PresentMon 帧数据的最小缓冲。如果曲线图在更新之间停顿，请增大此值；值越高延迟越大。适用于无 Hook 渲染器。",
+    "OverlayView_OSD": "OSD",
+    "OverlayView_OSDOptions": "OSD 选项",
+    "OverlayView_OSDParameterGroupControl": "OSD 参数分组控制",
+    "OverlayView_OSDUpdatePeriod": "OSD 更新周期",
+    "OverlayView_OpenConfigurationFolder": "打开配置文件夹",
+    "OverlayView_OpenOSDLogFolder": "打开 OSD 日志文件夹",
+    "OverlayView_OpenTheFolderContainingThe": "打开包含 OSD 日志文件的文件夹",
+    "OverlayView_OverlayActive": "叠加层已激活",
+    "OverlayView_OverlayCoordinates": "叠加层坐标",
+    "OverlayView_OverlayFont": "叠加层字体",
+    "OverlayView_OverlayFontDescription": "CapFrameX 渲染器 (无 Hook、游戏内、Vulkan) 中行和曲线图的字体。磁贴设计保留叠加层 (Overlay) 编辑器中设置的字体；RTSS 使用其自身的字体设置。",
+    "OverlayView_OverlayHotkey": "叠加层热键",
+    "OverlayView_OverlayItems": "行式叠加层",
+    "OverlayView_OverlayItems2": "行式叠加层项目",
+    "OverlayView_OverlayPosition": "叠加层位置",
+    "OverlayView_PixelOrbit": "OLED 像素位移",
+    "OverlayView_PixelOrbitDescription": "按间隔在范围内每次将叠加层 (Overlay) 移动一个像素，防止静态文字在 OLED 面板上烙印。设计可以指定自己的位移设置。",
+    "OverlayView_PixelOrbitIntervalAndRange": "间隔与范围",
+    "OverlayView_OverlayRefresh": "叠加层刷新",
+    "OverlayView_OverlayRenderer": "叠加层渲染器",
+    "OverlayView_OverlayRendererIsOff": "叠加层 (Overlay) 渲染器已设为“关”。在 OSD 选项中选择一个渲染器以显示叠加层。",
+    "OverlayView_OverlaySize": "叠加层大小",
+    "OverlayView_OverlayTemplate": "叠加层模板",
+    "OverlayView_PercentageFormatHint": "正百分比 = 上标\n负百分比 = 下标",
+    "OverlayView_PositionHotkey": "位置热键",
+    "OverlayView_PositivePercentageSuperscriptNegativePercentage": "正百分比 = 上标\n负百分比 = 下标",
+    "OverlayView_PresentMonReplayBuffer": "PresentMon 回放缓冲",
+    "OverlayView_Preview": "预览",
+    "OverlayView_RAMItems": "RAM 项目",
+    "OverlayView_RTSS": "RTSS",
+    "OverlayView_RealTimeMetrics": "实时指标",
+    "OverlayView_RealTimeMetrics2": "实时指标",
+    "OverlayView_RefreshPeriodMs": "刷新周期 (ms)",
+    "OverlayView_RefreshRate": "刷新率",
+    "OverlayView_RendererOff": "关",
+    "OverlayView_RendererOffDescription": "无叠加层 (Overlay)：不向游戏注入任何内容，不创建叠加层窗口，也不向 RTSS 提供数据。捕获、传感器和远程 API 继续工作。已加载游戏内叠加层的游戏会保持其隐藏，直到重启游戏。",
+    "OverlayView_RequiresRivaTunerStatisticsServer": "需要 RivaTuner Statistics Server。",
+    "OverlayView_ResetMetrics": "重置指标",
+    "OverlayView_ResetMetricsHotkey": "重置指标热键",
+    "OverlayView_ResetToDefaults": "恢复默认",
+    "OverlayView_ResetToDefaults2": "恢复默认",
+    "OverlayView_Revert": "还原",
+    "OverlayView_RevertToLastAppliedTemplate": "还原为上次应用的模板",
+    "OverlayView_SaveSelectionToCurrentConfig": "将所选项保存到当前配置",
+    "OverlayView_SaveSelectionToOtherConfigs": "将所选项保存到其他配置",
+    "OverlayView_Saving": "正在保存...",
+    "OverlayView_ScaleWithResolution": "随分辨率缩放",
+    "OverlayView_ScaleWithResolutionDescription": "保持叠加层 (Overlay) 在屏幕上的占比：大小和边距随游戏分辨率相对 1080p 增大 (2160p 下为两倍)。无 Hook 模式跟随显示器；RTSS 不受影响。",
+    "OverlayView_ScalesTextSpacingAndGraphs": "缩放无 Hook 渲染器的文字、间距和曲线图；RTSS 使用其自身的缩放。",
+    "OverlayView_Search": "搜索...",
+    "OverlayView_SearchInDescriptionGroupName": "在描述、分组名称和标识符中搜索",
+    "OverlayView_SendFutureSessionProfilesGame": "将今后会话的配置文件、游戏/运行时版本和哈希值、Windows、GPU/驱动、渲染进度、游戏窗口状态以及回退/帧生成 (Frame Generation) 诊断信息发送给 CapFrameX 用于分析。报告使用随机 ID；不包含窗口标题、路径、账户信息或原始日志。关闭后将停止上传并删除未发送的报告；已提交的报告会保留。",
+    "OverlayView_SensorType": "传感器类型",
+    "OverlayView_Separators": "分隔符",
+    "OverlayView_SetOSDItemsToMinimum": "将 OSD 项目设为最简。仅显示帧率和帧时间 (Frametime)。",
+    "OverlayView_SetSelectedOptionsForAll": "为该分组名称下的所有条目应用所选选项",
+    "OverlayView_SetSelectedOptionsForAll2": "为该传感器类型的所有条目应用所选选项",
+    "OverlayView_SetSelectedOptionsForAll3": "为所有条目分组应用所选选项",
+    "OverlayView_SetSelectedOptionsForAll4": "为所有条目数值应用所选选项",
+    "OverlayView_SetsTheThreadAffinityFor": "为 Intel 混合架构和具有 2 个 CCD 的 Ryzen CPU 设置线程亲和性。",
+    "OverlayView_ShareOverlayCompatibilityReports": "共享叠加层 (Overlay) 兼容性报告",
+    "OverlayView_ShortcutsAndTiming": "快捷键与时间设置",
+    "OverlayView_ShowOrHideTheOverlay": "显示或隐藏叠加层 (Overlay)",
+    "OverlayView_ShowOrHideTheSelected": "显示或隐藏所选的叠加层 (Overlay) 渲染器。",
+    "OverlayView_SmoothNumericValues": "平滑数值",
+    "OverlayView_SortEntriesByType": "按类型排序条目",
+    "OverlayView_StandardValueColor": "标准数值颜色：",
+    "OverlayView_SwitchConfig": "切换配置",
+    "OverlayView_SystemInfos": "系统信息",
+    "OverlayView_SystemTimeSeconds": "系统时间显示秒",
+    "OverlayView_ThreadAffinityController": "线程亲和性控制器",
+    "OverlayView_ThreadAffinityHotkey": "线程亲和性热键",
+    "OverlayView_ToggleOverlay": "切换叠加层",
+    "OverlayView_TopCenter": "顶部居中",
+    "OverlayView_TopLeft": "左上",
+    "OverlayView_TopRight": "右上",
+    "OverlayView_UncheckCPUClocks": "取消勾选 CPU 频率",
+    "OverlayView_UncheckCPUClocks2": "取消勾选 CPU 频率",
+    "OverlayView_UncheckCPUCoreTemps": "取消勾选 CPU 核心温度",
+    "OverlayView_UncheckCPUCoreVoltages": "取消勾选 CPU 核心电压",
+    "OverlayView_UncheckCPULoads": "取消勾选 CPU 占用率",
+    "OverlayView_UncheckCaptureItems": "取消勾选捕获项目",
+    "OverlayView_UncheckGPUBasics": "取消勾选 GPU 基础信息",
+    "OverlayView_UncheckRAMItems": "取消勾选 RAM 项目",
+    "OverlayView_UncheckRealTimeMetrics": "取消勾选实时指标",
+    "OverlayView_UncheckSystemInfo": "取消勾选系统信息",
+    "OverlayView_UpdateIntervals": "更新间隔",
+    "OverlayView_UpperLimitColor": "上限 + 颜色：",
+    "OverlayView_UpperLimitColorHint": "数值等于或高于此值时更改数值颜色\n清空此框可停用限值",
+    "OverlayView_UsePresentMonFrameTimes": "使用 PresentMon 帧时间 (Frametime)",
+    "OverlayView_UsesDWMDirectCompositionWithoutGame": "使用 DWM/DirectComposition，无需注入游戏，可安全用于受反作弊保护的游戏。",
+    "OverlayView_ValueFontSize": "数值字号",
+    "OverlayView_Values": "数值",
+    "PlatformSecurityStatus_MemoryIntegrityOffToolTip": "内存完整性 (基于虚拟机监控程序的代码完整性) 已关闭。",
+    "PlatformSecurityStatus_MemoryIntegrityOnToolTip": "内存完整性 (基于虚拟机监控程序的代码完整性) 已开启。它会损失一些性能，并会阻止 Microsoft 易受攻击驱动列表中的驱动。",
+    "PlatformSecurityStatus_Off": "关",
+    "PlatformSecurityStatus_On": "开",
+    "PlatformSecurityStatus_Running": "运行中",
+    "PlatformSecurityStatus_SecureBootOffToolTip": "UEFI 安全启动 (Secure Boot) 已关闭。部分反作弊系统在未开启时拒绝运行。",
+    "PlatformSecurityStatus_SecureBootOnToolTip": "UEFI 安全启动 (Secure Boot) 已开启。部分反作弊系统需要开启它，且开启时 Windows 会忽略测试签名选项。",
+    "PlatformSecurityStatus_TestSigningOffToolTip": "Windows 仅加载带有正式签名的驱动。",
+    "PlatformSecurityStatus_TestSigningOnToolTip": "Windows 会加载测试签名的驱动。仅能以此方式加载的驱动在开启安全启动 (Secure Boot) 后将无法工作。",
+    "PlatformSecurityStatus_Unknown": "未知",
+    "PlatformSecurityStatus_VbsOffToolTip": "基于虚拟化的安全性 (VBS) 未运行。",
+    "PlatformSecurityStatus_VbsRunningToolTip": "基于虚拟化的安全性 (VBS) 正在运行。它会损失一些性能，因此只应对比相同设置下的运行轮次。",
+
+    // =========================================================================
+    // POWER MEASUREMENT (PMD / POWENETICS / BENCHLAB) - Real-time power metrics
+    // =========================================================================
+    "PmdAnalysisChartManager_CPUPowerW": "CPU 功耗 [W]",
+    "PmdAnalysisChartManager_GPUPowerW": "GPU 功耗 [W]",
+    "PmdAnalysisChartManager_TimeS": "时间 [s]",
+    "PmdAnalysisChartManager_TimeS2": "时间 [s]",
+    "PmdAnalysisChartManager_TimeS3": "时间 [s]",
+    "PmdAnalysisChartManager_TimeS4": "时间 [s]",
+    "PmdAnalysisChartManager_TimeS5": "时间 [s]",
+    "PmdChart_CpuPowerW": "CPU 功耗 [W]",
+    "PmdChart_FrametimeMs": "帧时间 [ms]",
+    "PmdChart_GpuPowerW": "GPU 功耗 [W]",
+    "PmdChart_PowerW": "功耗 [W]",
+    "PmdChart_TimeS": "时间 [s]",
+    "PmdSampleFilterMode_Average": "N 个取平均",
+    "PmdSampleFilterMode_Single": "N 个取最后一个",
+    "PmdView_ATXPower": "ATX 功耗",
+    "PmdView_AutoStartPMD": "自动启动 PMD",
+    "PmdView_AverageMetrics": "平均指标",
+    "PmdView_Avg": "平均",
+    "PmdView_Avg10": "平均",
+    "PmdView_Avg2": "平均",
+    "PmdView_Avg3": "平均",
+    "PmdView_Avg4": "平均",
+    "PmdView_Avg5": "平均",
+    "PmdView_Avg6": "平均",
+    "PmdView_Avg7": "平均",
+    "PmdView_Avg8": "平均",
+    "PmdView_Avg9": "平均",
+    "PmdView_AvgPMDPower": "平均 PMD 功耗",
+    "PmdView_BENCHLAB": "BENCHLAB",
+    "PmdView_COMPort": "COM 端口",
+    "PmdView_CPU": "CPU :",
+    "PmdView_CPUPower": "CPU 功耗",
+    "PmdView_CPUTotalPower": "CPU 总功耗",
+    "PmdView_ChartLengthS": "图表长度 [s]",
+    "PmdView_ChartLengthS2": "图表长度 [s]",
+    "PmdView_CopyCPUPowerFrameTimes": "复制 CPU 功耗/帧时间 (t, f(t), p(t))",
+    "PmdView_CopyCPUPowerPointsT": "复制 CPU 功耗点 (t, p(t))",
+    "PmdView_CopyCPUPowerValuesF": "复制 CPU 功耗值 (f)",
+    "PmdView_CopyGPUPowerFrameTimes": "复制 GPU 功耗/帧时间 (t, f(t), p(t))",
+    "PmdView_CopyGPUPowerPointsT": "复制 GPU 功耗点 (t, p(t))",
+    "PmdView_CopyGPUPowerValuesF": "复制 GPU 功耗值 (f)",
+    "PmdView_Cur": "当前",
+    "PmdView_Cur10": "当前",
+    "PmdView_Cur2": "当前",
+    "PmdView_Cur3": "当前",
+    "PmdView_Cur4": "当前",
+    "PmdView_Cur5": "当前",
+    "PmdView_Cur6": "当前",
+    "PmdView_Cur7": "当前",
+    "PmdView_Cur8": "当前",
+    "PmdView_Cur9": "当前",
+    "PmdView_DownsamplingFactor": "降采样系数",
+    "PmdView_DownsamplingMode": "降采样模式",
+    "PmdView_EfficiencyFPS10W": "能效 (FPS/10W)",
+    "PmdView_FPS": "FPS :",
+    "PmdView_Frametimes": "帧时间数据",
+    "PmdView_GPU": "GPU :",
+    "PmdView_GPUPower": "GPU 功耗",
+    "PmdView_GPUTotalPower": "GPU 总功耗",
+    "PmdView_GraphSelection": "曲线图选择",
+    "PmdView_LogPMDData": "记录 PMD 数据",
+    "PmdView_LogPMDData2": "记录 PMD 数据",
+    "PmdView_LostPackets": "丢失数据包：",
+    "PmdView_MainboardPower": "主板功耗",
+    "PmdView_Max": "最大",
+    "PmdView_Max10": "最大",
+    "PmdView_Max2": "最大",
+    "PmdView_Max3": "最大",
+    "PmdView_Max4": "最大",
+    "PmdView_Max5": "最大",
+    "PmdView_Max6": "最大",
+    "PmdView_Max7": "最大",
+    "PmdView_Max8": "最大",
+    "PmdView_Max9": "最大",
+    "PmdView_MonitoringIntervalMs": "监控间隔 [ms]",
+    "PmdView_PCIePower": "PCIe 功耗",
+    "PmdView_PCIeSlotPower": "PCIe 插槽功耗",
+    "PmdView_PMDAnalysis": "PMD 分析",
+    "PmdView_PMDCPU": "PMD CPU :",
+    "PmdView_PMDGPU": "PMD GPU :",
+    "PmdView_PMDPower": "PMD 功耗",
+    "PmdView_PMDServiceStatus": "PMD 服务状态：",
+    "PmdView_PMDServiceStatus2": "PMD 服务状态：",
+    "PmdView_Performance": "性能",
+    "PmdView_Performance2": "性能",
+    "PmdView_Powenetics": "Powenetics",
+    "PmdView_ResetPMDMetrics": "重置 PMD 指标",
+    "PmdView_ResetPMDMetrics2": "重置 PMD 指标",
+    "PmdView_SampleRate": "采样率：",
+    "PmdView_SelectTheCOMPort": "选择 COM 端口。",
+    "PmdView_SensorCPU": "传感器 CPU :",
+    "PmdView_SensorGPU": "传感器 GPU :",
+    "PmdView_SensorPower": "传感器功耗",
+    "PmdView_SetsTheDownsamplingMode": "设置降采样模式。",
+    "PmdView_SetsTheLenghtSOf": "设置图表的长度 [s]。",
+    "PmdView_SetsTheLenghtSOf2": "设置图表的长度 [s]。",
+    "PmdView_SetsTheMonitoringIntervalMs": "设置 PMD 设备的监控间隔 [ms]。",
+    "PmdView_SetsTheRefreshRateMs": "设置 PMD 设备的刷新率 [ms]。",
+    "PmdView_ShowCharts": "显示图表",
+    "PmdView_ShowCharts2": "显示图表",
+    "PmdView_SomeNeededPowerSourcesAre": "缺少部分所需的功耗来源，该指标可能不准确",
+    "PmdView_SomeNeededPowerSourcesAre2": "缺少部分所需的功耗来源，该指标可能不准确",
+    "PmdView_StartOrStopBENCHLABMonitoring": "启动或停止 BENCHLAB 监控。使用现有的兼容服务，或启动内置服务。",
+    "PmdView_StartOrStopThePMD": "启动或停止 PMD 服务。",
+    "PmdView_StartStopPMD": "启动/停止 PMD",
+    "PmdView_StartStopPMD2": "启动/停止 PMD",
+    "PmdView_System": "系统 :",
+    "PmdView_System2": "系统 :",
+    "PmdView_SystemPower": "系统功耗",
+    "PmdView_SystemPower2": "系统功耗",
+    "PmdView_Values": "数值",
+    "PortableVulkanLayerPrompt_Failed0": "无法注册 Vulkan 层：\n{0}\n\nCapFrameX 日志中包含脚本输出。",
+    "PortableVulkanLayerPrompt_Install01": "Vulkan 游戏通过 CapFrameX Vulkan 层显示游戏内叠加层 (Overlay)。便携版不会自动注册该层，且此电脑上尚未注册任何 CapFrameX Vulkan 层。\n\n现在注册此文件夹中的层吗？\n{0}\n\nCapFrameX 将运行此文件夹中的脚本 {1}。如果选择“否”，仅当这些层或其注册发生变化时，CapFrameX 才会再次询问。",
+    "PortableVulkanLayerPrompt_Registered": "此文件夹中的 Vulkan 层已注册。重启正在运行的 Vulkan 游戏以加载它们。",
+    "PortableVulkanLayerPrompt_ScriptTimedOut0": "注册脚本未在 {0} s 内完成。",
+    "PortableVulkanLayerPrompt_Title": "CapFrameX Vulkan 层",
+    "PortableVulkanLayerPrompt_Update012": "Vulkan 游戏通过 CapFrameX Vulkan 层显示游戏内叠加层 (Overlay)。当前注册与此便携版不匹配：\n{0}\n\n改为注册此文件夹中的层吗？\n{1}\n\nCapFrameX 将运行此文件夹中的脚本 {2}。它会禁用其他 CapFrameX 层的注册，因此已安装的 CapFrameX 也将使用这些层，直到您修复其安装。如果选择“否”，仅当这些层或其注册发生变化时，CapFrameX 才会再次询问。",
+    "PoweneticsMetricsManager_W": "W",
+    "PoweneticsViewModel_1S": "[1/s]",
+
+    // =========================================================================
+    // OUTLIER DETECTION - Metric compared to find outlier runs (capture and aggregation)
+    // =========================================================================
+    "RelatedMetric_Average": "平均值",
+    "RelatedMetric_Second": "第二",
+    "RelatedMetric_Third": "第三",
+
+    // =========================================================================
+    // REPORT VIEW - Comprehensive tabular benchmark and sensor summary
+    // =========================================================================
+    "ReportViewModel_AveragedValues": "平均值",
+    "ReportView_AdaptiveSTDEV": "自适应标准差 (Adaptive STDEV)",
+    "ReportView_AdaptiveSTDEV2": "自适应标准差 (Adaptive STDEV)",
+    "ReportView_AppLatencyMs": "应用延迟 (ms)",
+    "ReportView_AppLatencyMs2": "应用延迟 (ms)",
+    "ReportView_Average": "平均值",
+    "ReportView_AverageAnimationErrorMs": "平均 |动画误差 (Animation Error)| (ms)",
+    "ReportView_AverageAnimationErrorMs2": "平均 |动画误差 (Animation Error)| (ms)",
+    "ReportView_AverageFPS": "平均 FPS",
+    "ReportView_CPU": "CPU",
+    "ReportView_CPUClockMHz": "CPU 频率 (MHz)",
+    "ReportView_CPUClockMHz2": "CPU 频率 (MHz)",
+    "ReportView_CPUFPS10W": "CPU FPS / 10W",
+    "ReportView_CPUFPS10W2": "CPU FPS/10W",
+    "ReportView_CPUMaxThread": "CPU 最高线程占用率 (%)",
+    "ReportView_CPUMaxThread2": "CPU 最高线程占用率 (%)",
+    "ReportView_CPUName": "CPU 名称",
+    "ReportView_CPUPowerW": "CPU 功耗 (W)",
+    "ReportView_CPUPowerW2": "CPU 功耗 (W)",
+    "ReportView_CPUTempC": "CPU 温度 (°C)",
+    "ReportView_CPUTempC2": "CPU 温度 (°C)",
+    "ReportView_Comment": "备注",
+    "ReportView_Comment2": "备注",
+    "ReportView_CopyTable": "复制表格",
+    "ReportView_CreationDate": "创建日期",
+    "ReportView_CreationDate2": "创建日期",
+    "ReportView_CreationTime": "创建时间",
+    "ReportView_CreationTime2": "创建时间",
+    "ReportView_DropItemsHereOrDouble": "将条目拖放到此处，或在记录列表中双击条目。",
+    "ReportView_GPU": "GPU",
+    "ReportView_GPUBusyAvgMs": "GPU-Busy 平均 (ms)",
+    "ReportView_GPUBusyTimeAvgMs": "GPU-Busy 时间平均 (ms)",
+    "ReportView_GPUBusyTimeDev": "GPU-Busy 时间偏差 (%)",
+    "ReportView_GPUBusyTimeDev2": "GPU-Busy 时间偏差 (%)",
+    "ReportView_GPUClockMHz": "GPU 频率 (MHz)",
+    "ReportView_GPUClockMHz2": "GPU 频率 (MHz)",
+    "ReportView_GPUFPS10W": "GPU FPS / 10W",
+    "ReportView_GPUFPS10W2": "GPU FPS/10W",
+    "ReportView_GPUName": "GPU 名称",
+    "ReportView_GPUPowerW": "GPU 功耗 (W)",
+    "ReportView_GPUPowerW2": "GPU 功耗 (W)",
+    "ReportView_GPUTBPSimW": "GPU TBP 模拟值 (W)",
+    "ReportView_GPUTBPSimW2": "GPU TBP 模拟值 (W)",
+    "ReportView_GPUTempC": "GPU 温度 (°C)",
+    "ReportView_GPUTempC2": "GPU 温度 (°C)",
+    "ReportView_GPUUsage": "GPU 占用率 (%)",
+    "ReportView_GPUUsage2": "GPU 占用率 (%)",
+    "ReportView_GameName": "游戏名称",
+    "ReportView_IfAvailableUsePMDValues": "如果可用，CPU/GPU 功耗和能效使用 PMD 数值，而不是传感器读数。",
+    "ReportView_MaxFPS": "最大 FPS",
+    "ReportView_Maximum": "最大值",
+    "ReportView_Median": "中位数",
+    "ReportView_MedianFPS": "中位数 FPS",
+    "ReportView_MetricsSettings": "指标设置：",
+    "ReportView_MinFPS": "最小 FPS",
+    "ReportView_Minimum": "最小值",
+    "ReportView_OnePercentLowAverage": "1% Low 平均值 (1% low average)",
+    "ReportView_OnePercentLowAverageFps": "1% Low 平均值 (1% low average) FPS",
+    "ReportView_OnePercentLowIntegral": "1% Low 积分值 (1% low integral)",
+    "ReportView_OnePercentLowIntegralFps": "1% Low 积分值 (1% low integral) FPS",
+    "ReportView_P01FPS": "P0.1 FPS",
+    "ReportView_P02FPS": "P0.2 FPS",
+    "ReportView_P1FPS": "P1 FPS",
+    "ReportView_P5FPS": "P5 FPS",
+    "ReportView_P95FPS": "P95 FPS",
+    "ReportView_P99AnimationErrorMs": "P99 |动画误差 (Animation Error)| (ms)",
+    "ReportView_P99AnimationErrorMs2": "P99 |动画误差 (Animation Error)| (ms)",
+    "ReportView_P99FPS": "P99 FPS",
+    "ReportView_Percentile01": "0.1% 百分位 (0.1% percentile)",
+    "ReportView_Percentile02": "0.2% 百分位 (0.2% percentile)",
+    "ReportView_Percentile1": "1% 百分位 (1% percentile)",
+    "ReportView_Percentile5": "5% 百分位 (5% percentile)",
+    "ReportView_Percentile95": "95% 百分位 (95% percentile)",
+    "ReportView_Percentile99": "99% 百分位 (99% percentile)",
+    "ReportView_PointOnePercentLowAverage": "0.1% Low 平均值 (0.1% low average)",
+    "ReportView_PointOnePercentLowAverageFps": "0.1% Low 平均值 (0.1% low average) FPS",
+    "ReportView_PointOnePercentLowIntegral": "0.1% Low 积分值 (0.1% low integral)",
+    "ReportView_PointOnePercentLowIntegralFps": "0.1% Low 积分值 (0.1% low integral) FPS",
+    "ReportView_RAM": "RAM",
+    "ReportView_RAMName": "RAM 名称",
+    "ReportView_RecordTimeS": "记录时长 (s)",
+    "ReportView_RecordingTime": "记录时长",
+    "ReportView_RemoveAllReportEntries": "移除所有报告条目",
+    "ReportView_Samples": "样本数",
+    "ReportView_Samples2": "样本数",
+    "ReportView_SelectMetricsToBeShown": "选择要显示的指标",
+    "ReportView_ShowAverageRow": "显示平均值行",
+    "ReportView_ShowsAnAdditionalRowContaining": "额外显示一行，包含所有已添加记录的 FPS 指标平均值。",
+    "ReportView_UsePMDValues": "使用 PMD 数值",
+
+    // =========================================================================
+    // OVERLAY PROFILE DIALOGS - Reset confirmation and unsaved changes alerts
+    // =========================================================================
+    "ResetOverlayConfigDialog_Cancel": "取消",
+    "ResetOverlayConfigDialog_DoYouReallyWantTo": "确定要重置配置吗？之前的设置将会丢失！",
+    "ResetOverlayConfigDialog_OK": "确定",
+
+    // =========================================================================
+    // SENSOR VIEW - Hardware sensors logging and real-time monitoring
+    // =========================================================================
+    // Multi-line button text: line 1 "Evaluate", line 2 "multiple entries"
+    "SensorViewModel_EvaluateMultipleEntries": "评估\n多个条目",
+    "SensorViewModel_SensorStatisticsForMultipleSelected": "多个所选记录的传感器统计",
+    "SensorViewModel_SensorStatisticsForSelectedRecord": "所选记录的传感器统计",
+    "SensorViewModel_SensorStatisticsForSelectedRecord2": "所选记录的传感器统计",
+    "SensorViewModel_Working": "处理中",
+    "SensorView_AllSensors": "所有传感器",
+    "SensorView_Avg": "平均",
+    "SensorView_CPUBasics": "CPU 基础项",
+    "SensorView_CPUCoreClocks": "CPU 核心频率",
+    "SensorView_CPUThreadLoads": "CPU 线程占用率",
+    "SensorView_CheckAllSensors": "勾选所有传感器",
+    "SensorView_CheckCPUBasics": "勾选 CPU 基础项",
+    "SensorView_CheckCPUCoreClocks": "勾选 CPU 核心频率",
+    "SensorView_CheckCPUThreadLoads": "勾选 CPU 线程占用率",
+    "SensorView_CheckGPUBasics": "勾选 GPU 基础项",
+    "SensorView_CheckOrUncheckGroupsOf": "按组勾选或取消勾选传感器",
+    "SensorView_CopyRawSensorData": "复制原始传感器数据",
+    "SensorView_CopySensorDataMinAvg": "复制传感器数据(最小、平均、最大)",
+    "SensorView_Evaluation": "评估",
+    "SensorView_GPUBasics": "GPU 基础项",
+    "SensorView_GroupControl": "分组控制",
+    "SensorView_LogSensors": "记录传感器",
+    "SensorView_LogsSelectedSensorValuesDuring": "在捕获期间记录所选传感器的数值",
+    "SensorView_Max": "最大",
+    "SensorView_Min": "最小",
+    "SensorView_OpenConfigurationFolder": "打开配置文件夹",
+    "SensorView_ResetToDefaults": "恢复默认",
+    "SensorView_ResyncWindowsPerformanceMonitorWhen": "如果内存计数器显示为 0，请重新同步 Windows 性能监视器。执行后请重启 CX。",
+    "SensorView_SaveSelectedSensorsForLogging": "保存所选的日志记录传感器",
+    "SensorView_SelectTheMethodForEvaluating": "选择评估多个条目的方式。\n\n\n汇总 (Aggregate)：基于所有条目合并后的传感器数据生成报告。\n\n\n平均值 (Average)：基于各个单独报告的平均值生成报告。\n\n(仅包含所有条目中都存在的传感器)",
+    "SensorView_Sensor": "传感器",
+    "SensorView_Sensor2": "传感器",
+    "SensorView_SensorItems": "传感器项",
+    "SensorView_SensorPollingMs": "传感器轮询间隔 [ms]",
+    "SensorView_ShowSensorStatisticsForAll": "显示记录列表中当前选中的所有条目的传感器统计。",
+    "SensorView_Type": "类型",
+    "SensorView_UncheckAllSensors": "取消勾选所有传感器",
+    "SensorView_UncheckCPUBasics": "取消勾选 CPU 基础项",
+    "SensorView_UncheckCPUCoreClocks": "取消勾选 CPU 核心频率",
+    "SensorView_UncheckCPUThreadLoads": "取消勾选 CPU 线程占用率",
+    "SensorView_UncheckGPUBasics": "取消勾选 GPU 基础项",
+    "SensorView_UseForLogging": "用于日志记录",
+
+    // =========================================================================
+    // SHELL, SOUNDS & SPLASH SCREEN - Tray menu, capture sound modes, startup screen
+    // =========================================================================
+    "Shell_CapFrameX": "CapFrameX",
+    "Shell_Close": "关闭",
+    "Shell_OverlayProfileCouldNotBeSaved": "无法保存叠加层 (Overlay) 配置文件。CapFrameX 将保持打开，以免您的更改丢失。",
+    "Shell_ShowMainWindow": "显示主窗口",
+    "SoftwareComponentStatus_BlockedByWindows": "被 Windows 阻止",
+    "SoftwareComponentStatus_Bundled": "已内置",
+    "SoftwareComponentStatus_ConflictingRegistration": "注册冲突",
+    "SoftwareComponentStatus_Incomplete": "不完整",
+    "SoftwareComponentStatus_Installed": "已安装",
+    "SoftwareComponentStatus_Missing": "缺失",
+    "SoftwareComponentStatus_NotInstalled": "未安装",
+    "SoftwareComponentStatus_NotRegistered": "未注册",
+    "SoftwareComponentStatus_PawnIoBlockedToolTip": "Windows 拒绝加载已注册的 PawnIO 驱动(代码完整性，错误 577)。CPU、内存和主板传感器不可用。CapFrameX 日志中会列出需要移除的驱动包。",
+    "SoftwareComponentStatus_PawnIoNotInstalledToolTip": "未安装 PawnIO。CPU、内存和主板传感器不可用。",
+    "SoftwareComponentStatus_PawnIoRunningToolTip": "用于 CPU、内存和主板传感器的内核驱动。",
+    "SoftwareComponentStatus_PawnIoStoppedToolTip": "PawnIO 驱动已安装但未加载。CPU、内存和主板传感器不可用。",
+    "SoftwareComponentStatus_PawnIoUnknownToolTip": "无法查询 PawnIO 服务。",
+    "SoftwareComponentStatus_PresentMonBundledToolTip": "用于记录帧时间 (Frametime) 的捕获后端。",
+    "SoftwareComponentStatus_PresentMonMissingToolTip": "内置的 PresentMon 可执行文件缺失，因此无法开始捕获。请重新安装 CapFrameX。",
+    "SoftwareComponentStatus_Registered": "已注册",
+    "SoftwareComponentStatus_RtssInstalledToolTip": "RivaTuner Statistics Server，供 RTSS 叠加层 (Overlay) 使用。",
+    "SoftwareComponentStatus_RtssNotInstalledToolTip": "未安装 RTSS，因此 RTSS 叠加层 (Overlay) 不可用。游戏内叠加层和无 Hook 叠加层不需要它。",
+    "SoftwareComponentStatus_Running": "运行中",
+    "SoftwareComponentStatus_Stopped": "已停止",
+    "SoftwareComponentStatus_Unknown": "未知",
+    // {0}: implementation version of the Vulkan layer manifest (e.g. 1)
+    "SoftwareComponentStatus_Version0": "v{0}",
+    "SoftwareComponentStatus_VulkanLayerConflictingToolTip": "Vulkan 加载器无法使用的注册项遮蔽了有效的注册项，导致该位数的层被禁用；受影响的游戏不会显示游戏内叠加层 (Overlay)。重新安装 CapFrameX 可移除多余的注册项。",
+    "SoftwareComponentStatus_VulkanLayerIncompleteToolTip": "该层仅针对一种位数注册。另一种位数的 Vulkan 游戏不会显示游戏内叠加层 (Overlay)。重新安装 CapFrameX 会同时注册两种位数。",
+    "SoftwareComponentStatus_VulkanLayerNotRegisteredToolTip": "Vulkan 层未注册，因此 Vulkan 游戏不会显示游戏内叠加层 (Overlay)。重新安装 CapFrameX 即可注册。",
+    "SoftwareComponentStatus_VulkanLayerRegisteredToolTip": "隐式 Vulkan 层，用于在 Vulkan 游戏中绘制游戏内叠加层 (Overlay)。",
+    "SoftwareComponentStatus_VulkanLayerUnknownToolTip": "无法读取 Vulkan 层的注册信息。",
+    "SoundMode_None": "无",
+    "SoundMode_Simple": "简单",
+    "SoundMode_Voice": "语音",
+    "SplashScreenWindow_CapFrameX": "CapFrameX",
+    "SplashScreenWindow_Starting": "正在启动...",
+
+    // =========================================================================
+    // STATUS BAR - Hook overlay status, capture indicators, HAGS status
+    // =========================================================================
+    "StateViewModelSystemStatus_Off": "关",
+    "StateViewModelSystemStatus_On": "开",
+    "StateViewModelSystemStatus_Partial": "部分",
+    "StateViewModel_NoInfoAvailable": "无可用信息",
+    "StateViewModel_Revision0": "修订版本：{0}",
+    "StateViewModel_SwitchTheOverlayOnOrOff": "开启或关闭叠加层 (Overlay)。",
+    "StateViewModel_SwitchTheOverlayOnOrOffHotkey0": "开启或关闭叠加层 (Overlay)(热键 {0})。",
+    // Tooltip shown while waiting for game process detection hook
+    "StateViewModel_WaitingForHookStatus": "正在等待 Hook 状态。",
+    "StateView_CaptureService": "捕获服务：",
+    // Status toggle (active): shown when benchmark capture is in progress
+    "StateView_Capturing": "正在捕获",
+    "StateView_Hook": "Hook：",
+    // User account status: logged in to capframex.com
+    "StateView_LoggedIn": "已登录",
+    "StateView_LoginStatus": "登录状态：",
+    // User account status: not logged in
+    "StateView_NotLoggedIn": "未登录",
+    // Boolean toggle: status is disabled (e.g. HAGS)
+    "StateView_Off": "关",
+    // Boolean toggle: status is enabled (e.g. HAGS)
+    "StateView_On": "开",
+    "StateView_Overlay": "叠加层：",
+    // Status toggle (idle): shown when ready to record a benchmark
+    "StateView_Ready": "就绪",
+    "StateView_ResizableBar": "Resizable Bar：",
+    "StateView_ResizableBarD3D": "Resizable Bar D3D：",
+    "StateView_ResizableBarHW": "Resizable Bar HW：",
+    "StateView_ResizableBarVulkan": "Resizable Bar Vulkan：",
+    "StateView_SensorLogging": "传感器日志：",
+    "StateView_UpdateSystemInfoStatus": "更新系统信息状态",
+    "StateView_Version": "版本：",
+    "StateView_WinGameMode": "Windows 游戏模式：",
+
+    // =========================================================================
+    // SYNCHRONIZATION & DISPLAY TIMING - Display change metrics and latency
+    // =========================================================================
+    "SynchronizationViewModel_AverageInputLag": "平均输入延迟 (Input Lag)",
+    "SynchronizationViewModel_DroppedFrames": "丢弃帧",
+    "SynchronizationViewModel_Expected": "预期",
+    "SynchronizationViewModel_FrametimeInputLagMs": "帧时间 (Frametime) + 输入延迟 (Input Lag) [ms]",
+    "SynchronizationViewModel_FrametimeUntilDisplayedTimeMs": "帧时间 (Frametime) + 至显示时间 [ms]",
+    "SynchronizationViewModel_Frametimes": "帧时间数据",
+    "SynchronizationViewModel_Frametimes2": "帧时间数据",
+    "SynchronizationViewModel_InputLagHigh": "输入延迟上限",
+    "SynchronizationViewModel_InputLagLow": "输入延迟下限",
+    "SynchronizationViewModel_InputLagTimeDistribution": "输入延迟 (Input Lag) 时间分布",
+    "SynchronizationViewModel_LowerBound": "下限",
+    "SynchronizationViewModel_Samples": "样本数",
+    "SynchronizationViewModel_Samples2": "样本数",
+    "SynchronizationViewModel_SyncedFrames": "同步帧",
+    "SynchronizationViewModel_UntilDisplayedTimeDistribution": "至显示时间分布",
+    "SynchronizationViewModel_UntilDisplayedTimes": "至显示时间",
+    "SynchronizationViewModel_UpperBound": "上限",
+    "SynchronizationView_CopyHistogramData": "复制直方图数据",
+    "SynchronizationView_CopyHistogramData2": "复制直方图数据",
+    "SynchronizationView_CopyMetrics": "复制指标",
+    "SynchronizationView_CopyUntilDisplayedTimeValues": "复制至显示时间数值",
+    "SynchronizationView_Distribution": "分布",
+    "SynchronizationView_Distribution2": "分布",
+    "SynchronizationView_ExpectedInputLagMs": "预期输入延迟 (Input Lag) (ms)",
+    "SynchronizationView_FramesWithinMonitorSyncRange": "处于显示器同步范围内的帧：",
+    "SynchronizationView_InputLagApproximation": "输入延迟 (Input Lag) 估算",
+    "SynchronizationView_InputLagOffsetMs": "输入延迟偏移 (ms)：",
+    "SynchronizationView_Lower": "下限",
+    "SynchronizationView_Ms": "ms",
+    "SynchronizationView_Offset": "偏移",
+    "SynchronizationView_OffsetForDisplayAndMouse": "显示器和鼠标/键盘/手柄延迟的偏移量",
+    "SynchronizationView_RangeOpen": "(范围：",
+    "SynchronizationView_SavePlotAsPNG": "将图表另存为 PNG",
+    "SynchronizationView_SavePlotAsPNG2": "将图表另存为 PNG",
+    "SynchronizationView_SavePlotAsSVG": "将图表另存为 SVG",
+    "SynchronizationView_SavePlotAsSVG2": "将图表另存为 SVG",
+    "SynchronizationView_UntilDisplayedTimeMs": "至显示时间 (ms)",
+    "SynchronizationView_UntilDisplayedTimes": "至显示时间",
+    "SynchronizationView_Upper": "上限",
+
+    // =========================================================================
+    // UNSAVED OVERLAY PROFILE DIALOG - Prompt when closing with unsaved overlay changes
+    // =========================================================================
+    "UnsavedOverlayProfileDialog_Cancel": "取消",
+    "UnsavedOverlayProfileDialog_ClosingWithoutSavingPermanentlyDiscards": "不保存直接关闭将永久丢弃当前更改。",
+    "UnsavedOverlayProfileDialog_ExitWithoutSaving": "不保存并退出",
+    "UnsavedOverlayProfileDialog_SaveAndExit": "保存并退出",
+    "UnsavedOverlayProfileDialog_TheCurrentOverlayItemsProfile": "当前叠加层 (Overlay) 项目配置文件包含未保存的更改。是否在关闭 CapFrameX 前保存？",
+    "UnsavedOverlayProfileDialog_UnsavedOverlayProfile": "未保存的叠加层 (Overlay) 配置文件",
+
+    // =========================================================================
+    // AUTO-UPDATER & ROLLBACK - Update notifications and version installation
+    // =========================================================================
+    "UpdateDialog_Cancel": "取消",
+    "UpdateDialog_Close": "关闭",
+    "UpdateDialog_RELEASENOTES": "更新说明",
+    "UpdateDialog_TargetVersion": "目标版本",
+    "UpdateService_ChecksumFailed": "下载的安装包未通过校验和检查，已被丢弃。",
+    "UpdateService_DownloadCancelled": "下载已取消。",
+    "UpdateService_DownloadingVersion": "正在下载版本 {0}...",
+    "UpdateService_LoadingAvailableVersions": "正在加载可用版本...",
+    "UpdateService_NoSelectedVersionToDownload": "未选择要下载的版本。",
+    "UpdateService_NoTargetVersionSelected": "未选择目标版本。",
+    "UpdateService_PackageCouldNotBeDownloaded": "无法下载所选安装包。",
+    "UpdateService_RollbackDownloaded": "回滚到版本 {0} 的安装包已下载，将在下次启动 CapFrameX 时开始回滚。",
+    "UpdateService_RollbackReady": "回滚到版本 {0} 已准备就绪。",
+    "UpdateService_SignatureInvalid": "下载的安装包未经 CapFrameX 发布者签名，已被丢弃。",
+    "UpdateService_StartingDownload": "正在开始下载...",
+    "UpdateService_VersionAlreadyInstalled": "版本 {0} 已安装。",
+    "UpdateService_VersionDownloaded": "版本 {0} 已下载，将在下次启动 CapFrameX 时安装。",
+    "UpdateService_VersionNotInCatalog": "版本 {0} 不在经过验证的发布目录中。",
+    "UpdateService_VersionReady": "版本 {0} 已准备就绪。",
+    "UpdateService_VersionsOlderThanCannotBeInstalled": "无法安装早于 {0} 的版本。",
+    "UpdateViewModel_CapFrameXHasNotCheckedFor": "CapFrameX 尚未检查更新。",
+    "UpdateViewModel_CapFrameXIsUpToDate": "CapFrameX 已是最新版本。",
+    // {0}: channel name, {1}: count of versions available
+    "UpdateViewModel_CapFrameXUpToDateOnChannel": "CapFrameX 在 {0} 通道上已是最新版本。有 {1} 个版本可用。",
+    "UpdateViewModel_CapFrameXUpdate": "CapFrameX 更新",
+    "UpdateViewModel_DownloadSize0MB": "下载大小：{0} MB",
+    // Status while a capture holds back the installation of a downloaded update; {0}: version string
+    "UpdateViewModel_InstallAfterCapture": "版本 {0} 已下载，将在当前捕获结束后立即安装。",
+    // Dialog message when installing a beta release
+    "UpdateViewModel_InstallConfirmationBeta": "现在将下载此 Beta 版本。随后 CapFrameX 会关闭、安装并重新启动。Beta 版本可能不如正式版稳定。",
+    // Dialog message when installing a stable release
+    "UpdateViewModel_InstallConfirmationRegular": "现在将下载更新。随后 CapFrameX 会关闭、安装并重新启动。",
+    // Dialog message when installing an older version (rollback)
+    "UpdateViewModel_InstallConfirmationRollback": "所选版本下载完成后将立即替换当前安装，CapFrameX 会为此关闭。捕获记录和设置会保留，但由较新版本创建的设置可能无法被旧版本识别。",
+    "UpdateViewModel_InstallVersion": "安装版本",
+    "UpdateViewModel_LookingForUpdates": "正在检查更新...",
+    // {0}: channel name (e.g. Beta), {1}: count of other versions available
+    "UpdateViewModel_NoChannelBuildPublished": "当前没有发布 {0} 版本。有 {1} 个其他版本可用。",
+    "UpdateViewModel_NoDescriptionWasProvidedFor": "此更新未提供说明。",
+    "UpdateViewModel_NoUpdateServerIsConfigured": "未配置更新服务器。",
+    // Status shown right before CapFrameX closes to install a downloaded update; {0}: version string
+    "UpdateViewModel_RestartingToInstall": "CapFrameX 将关闭以安装版本 {0}...",
+    "UpdateViewModel_RollBack": "回滚",
+    "UpdateViewModel_RollBackCapFrameX": "回滚 CapFrameX",
+    "UpdateViewModel_TheUpdateCheckFailed": "检查更新失败。",
+    // Status message when update check is cancelled by user
+    "UpdateViewModel_TheUpdateCheckWasCancelled": "检查更新已取消。",
+    // Error message when update server connection fails
+    "UpdateViewModel_TheUpdateServerCouldNotBeReached": "无法连接到更新服务器。",
+    "UpdateViewModel_Update": "更新",
+    // {0}: channel name, {1}: version string (e.g. 1.9.2)
+    "UpdateViewModel_VersionAvailable": "{0} 版本 {1} 可用。",
+    "VulkanLayerRegistrationProbe_LayerDllIsMissing": "层 DLL 缺失",
+    // {0}: registry path of the missing layer manifest
+    "VulkanLayerRegistrationProbe_LeftoverRegistration0": "残留的无清单注册项：{0}",
+    "VulkanLayerRegistrationProbe_NotRegistered": "未注册",
+    "VulkanLayerRegistrationProbe_PointsTo32BitDll": "指向 32 位 DLL",
+    "VulkanLayerRegistrationProbe_PointsTo64BitDll": "指向 64 位 DLL",
+    "VulkanLayerRegistrationProbe_RegisteredInHkcu": "已在 HKCU 中注册"
+  },
+  // =========================================================================
+  // OVERLAY - Real-time On-Screen Display label overrides
+  // =========================================================================
+  "overlay": {
+    "0.1% Low": "0.1% Low",
+    "0.2% Low": "0.2% Low",
+    "1% Low": "1% Low",
+    "<APP>": "<APP>",
+    "Animation Error": "动画误差",
+    "Animation Error (ms)": "动画误差 (ms)",
+    "App Resolution": "应用分辨率",
+    "Application Resolution": "应用程序分辨率",
+    "Average": "平均",
+    "Battery Life": "电池续航",
+    "Battery Life (%)": "电池续航 (%)",
+    "Battery Life Remaining (min)": "剩余续航 (min)",
+    "CPU Active Time Average (ms)": "CPU 活动时间平均 (ms)",
+    "CPU Info": "CPU 信息",
+    "CPUBusy Avg": "CPUBusy 平均",
+    "CX CPU": "CX CPU",
+    "CapFrameX CPU Usage (%)": "CapFrameX CPU 占用率 (%)",
+    "Capture service ready...": "捕获服务就绪...",
+    "Capture service status": "捕获服务状态",
+    "Capture starting in": "捕获开始倒计时",
+    "Capture timer": "捕获计时器",
+    "Click-to-Screen-Response Latency (ms)": "点击到画面延迟 (ms)",
+    "Custom CPU Name": "自定义 CPU 名称",
+    "Custom GPU Name": "自定义 GPU 名称",
+    "Custom RAM Description": "自定义 RAM 描述",
+    "Display 1 Resolution": "显示器 1 分辨率",
+    "Displaytime": "显示时间",
+    "Frame Generation": "帧生成",
+    "Frame Time Average (ms)": "帧时间平均 (ms)",
+    "Frame generation status": "帧生成状态",
+    "Frame generation technology": "帧生成技术",
+    "Framerate": "帧率",
+    "Frametime": "帧时间",
+    "Frametime Avg": "帧时间平均",
+    "GPU Active Time Average (ms)": "GPU 活动时间平均 (ms)",
+    "GPU Active Time Deviation (%)": "GPU 活动时间偏差 (%)",
+    "GPU Driver": "GPU 驱动",
+    "GPU Info": "GPU 信息",
+    "GPU Software Version": "GPU 软件版本",
+    "GPUBusy Avg": "GPUBusy 平均",
+    "GPUBusy Deviation": "GPUBusy 偏差",
+    "Hook": "Hook",
+    "MB Info": "主板信息",
+    "Mainboard Name": "主板名称",
+    "Multiple processes detected": "检测到多个进程",
+    "Network Ping": "网络 Ping",
+    "OS": "OS",
+    "OS Version": "OS 版本",
+    "Overlay hook status": "OSD Hook 状态",
+    "P0.1%": "P0.1%",
+    "P0.2%": "P0.2%",
+    "P1%": "P1%",
+    "PC Latency": "PC 延迟",
+    "PC Latency (ms)": "PC 延迟 (ms)",
+    "PMD CPU Power": "PMD CPU 功耗",
+    "PMD CPU Power (W)": "PMD CPU 功耗 (W)",
+    "PMD GPU Power": "PMD GPU 功耗",
+    "PMD GPU Power (W)": "PMD GPU 功耗 (W)",
+    "PMD Sys Power": "PMD 系统功耗",
+    "PMD System Power (W)": "PMD 系统功耗 (W)",
+    "Ping": "Ping",
+    "Present Mode": "呈现模式",
+    "Present Resolution": "呈现分辨率",
+    "Processing data": "正在处理数据",
+    "RAM Info": "RAM 信息",
+    "Ready to capture...": "准备捕获...",
+    "Real-time 0.1% Low FPS": "实时 0.1% Low FPS",
+    "Real-time 0.2% Low FPS": "实时 0.2% Low FPS",
+    "Real-time 1% Low FPS": "实时 1% Low FPS",
+    "Real-time P0.1 FPS": "实时 P0.1 FPS",
+    "Real-time P0.2 FPS": "实时 P0.2 FPS",
+    "Real-time P1 FPS": "实时 P1 FPS",
+    "Real-time average FPS": "实时平均 FPS",
+    "Recording frametimes": "正在记录帧时间",
+    "Resolution": "分辨率",
+    "Result:": "结果：",
+    "Run history": "运行历史",
+    "Scanning for process...": "正在扫描进程...",
+    "Status:": "状态：",
+    "Stuttering": "卡顿",
+    "Stuttering Time (%)": "卡顿时间 (%)",
+    "System time": "系统时间",
+    "Time": "时间",
+    // Values of the "Overlay hook status" entry (HookOverlayStatusLabel).
+    "Active": "活动",
+    "Blocked": "已阻止",
+    "Error": "错误",
+    "Hidden": "已隐藏",
+    "Idle": "空闲",
+    "Initializing": "正在初始化",
+    "Injected": "已注入",
+    "Injecting": "正在注入",
+    "Off": "关",
+    "Probing": "正在探测",
+    "Restart game": "重启游戏",
+    "Unavailable": "不可用",
+    "Waiting": "等待中"
+  },
+  // Phrases: regex rules for OSD labels that have no exact "overlay" entry (sensor and group names).
+  // Matched case-insensitively ("(?-i)" at the start makes a pattern case-sensitive) and applied
+  // longest pattern first; patterns of the same length run in the order listed, so list a specific
+  // rule above a generic one of the same length. Text in double quotes (game names) is not translated.
+  // Replacements are lowercase: the first letter of the result is capitalized afterwards, unless the
+  // label starts in lower case, like the units "ms" and "min".
+  "phrases": [
+    {
+      "pattern": "^Aggregate$",
+      "replacement": "汇总"
+    },
+    {
+      "pattern": "^TimeSpan$",
+      "replacement": "时间跨度"
+    },
+    {
+      "pattern": "^Timing$",
+      "replacement": "计时"
+    },
+    {
+      "pattern": "CapFrameX overlay refresh",
+      "replacement": "CapFrameX OSD 刷新"
+    },
+    {
+      "pattern": "\\bCPU Max Thread Load\\b",
+      "replacement": "CPU 最大线程占用率"
+    },
+    {
+      "pattern": "\\bGPU Computing\\b",
+      "replacement": "GPU 计算"
+    },
+    {
+      "pattern": "\\bGPU Effective\\b",
+      "replacement": "GPU 有效频率"
+    },
+    {
+      "pattern": "\\bGPU Overvoltage\\b",
+      "replacement": "GPU 超压比例"
+    },
+    {
+      "pattern": "\\bGPU Power Budget\\b",
+      "replacement": "GPU 功耗预算占用"
+    },
+    {
+      "pattern": "\\bGPU Thermal Budget\\b",
+      "replacement": "GPU 温度预算占用"
+    },
+    {
+      "pattern": "\\bGPU Intake\\b",
+      "replacement": "GPU 进风温度"
+    },
+    {
+      "pattern": "\\bMemory Controller\\b",
+      "replacement": "内存控制器"
+    },
+    {
+      "pattern": "\\bData Rate\\b",
+      "replacement": "数据速率"
+    },
+    {
+      "pattern": "\\bUncore Ring\\b",
+      "replacement": "Uncore 环形总线"
+    },
+    {
+      "pattern": "\\bPower Limit\\b",
+      "replacement": "功耗限制"
+    },
+    {
+      "pattern": "\\bThermal Limit\\b",
+      "replacement": "温度限制"
+    },
+    {
+      "pattern": "\\bVoltage Limit\\b",
+      "replacement": "电压限制"
+    },
+    {
+      "pattern": "\\bController Writes to NAND\\b",
+      "replacement": "控制器写入 NAND"
+    },
+    {
+      "pattern": "\\bHost Writes to Controller\\b",
+      "replacement": "主机写入控制器"
+    },
+    {
+      "pattern": "\\bHost Writes\\b",
+      "replacement": "主机写入"
+    },
+    {
+      "pattern": "\\bHost Reads\\b",
+      "replacement": "主机读取"
+    },
+    {
+      "pattern": "\\bCharge/Discharge Current\\b",
+      "replacement": "充/放电电流"
+    },
+    {
+      "pattern": "\\bCharge/Discharge Rate\\b",
+      "replacement": "充/放电功率"
+    },
+    {
+      "pattern": "\\bDesigned Capacity\\b",
+      "replacement": "设计容量"
+    },
+    {
+      "pattern": "\\bFully-Charged Capacity\\b",
+      "replacement": "满充容量"
+    },
+    {
+      "pattern": "\\bRemaining Capacity\\b",
+      "replacement": "剩余容量"
+    },
+    {
+      "pattern": "\\bRemaining Time \\(Estimated\\)",
+      "replacement": "预计剩余时间"
+    },
+    {
+      "pattern": "\\bData Downloaded\\b",
+      "replacement": "已下载数据"
+    },
+    {
+      "pattern": "\\bData Uploaded\\b",
+      "replacement": "已上传数据"
+    },
+    {
+      "pattern": "\\bWater Quality\\b",
+      "replacement": "水质"
+    },
+    {
+      "pattern": "\\bViritual Flow\\b",
+      "replacement": "虚拟流量"
+    },
+    {
+      "pattern": "\\bDissipated Power\\b",
+      "replacement": "散热功率"
+    },
+    {
+      "pattern": "\\bMaxFrequency\\b",
+      "replacement": "最大频率"
+    },
+    {
+      "pattern": "\\bCCDs\\b",
+      "replacement": "CCD"
+    },
+    {
+      "pattern": "\\bGear\\b",
+      "replacement": "Gear 模式"
+    },
+    {
+      "pattern": "\\bTemp\\b",
+      "replacement": "温度"
+    },
+    {
+      "pattern": "\\bPackage\\b",
+      "replacement": "封装"
+    },
+    {
+      "pattern": "\\bFans\\b",
+      "replacement": "风扇"
+    },
+    {
+      "pattern": "\\bFlowmeter\\b",
+      "replacement": "流量计"
+    },
+    {
+      "pattern": "\\bCoolant\\b",
+      "replacement": "冷却液"
+    },
+    {
+      "pattern": "\\bLiquid\\b",
+      "replacement": "液体"
+    },
+    {
+      "pattern": "\\bWater\\b",
+      "replacement": "冷却液"
+    },
+    {
+      "pattern": "\\bPressure\\b",
+      "replacement": "压力"
+    },
+    {
+      "pattern": "\\bConductivity\\b",
+      "replacement": "电导率"
+    },
+    {
+      "pattern": "\\bInput\\b",
+      "replacement": "输入"
+    },
+    {
+      "pattern": "\\bExternal\\b",
+      "replacement": "外部"
+    },
+    {
+      "pattern": "\\bInternal\\b",
+      "replacement": "内部"
+    },
+    {
+      "pattern": "\\bSensor\\b",
+      "replacement": "传感器"
+    },
+    {
+      "pattern": "\\bAlarm\\b",
+      "replacement": "警报"
+    },
+    {
+      "pattern": "\\bAnalog\\b",
+      "replacement": "模拟"
+    },
+    {
+      "pattern": "\\bDigital\\b",
+      "replacement": "数字"
+    },
+    {
+      "pattern": "\\bChannel\\b",
+      "replacement": "通道"
+    },
+    {
+      "pattern": "\\bRead\\b",
+      "replacement": "读取"
+    },
+    {
+      "pattern": "\\bWrite\\b",
+      "replacement": "写入"
+    },
+    {
+      "pattern": "\\bThreads\\b",
+      "replacement": "线程"
+    },
+    {
+      "pattern": "\\bThread\\b",
+      "replacement": "线程"
+    },
+    {
+      "pattern": "\\bJunction\\b",
+      "replacement": "结温"
+    },
+    {
+      "pattern": "\\bThreshold\\b",
+      "replacement": "阈值"
+    },
+    {
+      "pattern": "\\bLifetime\\b",
+      "replacement": "寿命"
+    },
+    {
+      "pattern": "\\bActivity\\b",
+      "replacement": "活动时间"
+    },
+    {
+      "pattern": "\\bModel\\b",
+      "replacement": "型号"
+    },
+    {
+      "pattern": "\\bLimits?\\b",
+      "replacement": "限制"
+    },
+    {
+      "pattern": "\\bStorage\\b",
+      "replacement": "存储设备"
+    },
+    {
+      "pattern": "ready to capture\\.\\.\\.",
+      "replacement": "准备捕获..."
+    },
+    {
+      "pattern": "Run (\\d+):",
+      "replacement": "运行 $1:"
+    },
+    {
+      "pattern": "\\bDisplay (\\d+) Resolution\\b",
+      "replacement": "显示器 $1 分辨率"
+    },
+    {
+      "pattern": "\\bMonitor Refresh Rate\\b",
+      "replacement": "显示器刷新率"
+    },
+    {
+      "pattern": "\\bAMD FLM Latency\\b",
+      "replacement": "AMD FLM 延迟"
+    },
+    {
+      "pattern": "\\bLatency\\b",
+      "replacement": "延迟"
+    },
+    {
+      "pattern": "\\bPerformance\\b",
+      "replacement": "性能"
+    },
+    {
+      "pattern": "\\b([CG]PU) Load/Temp/Pwr\\b",
+      "replacement": "$1 占用率/温度/功耗"
+    },
+    {
+      "pattern": "\\bCPU Max Core Temp\\b",
+      "replacement": "CPU 最高核心温度"
+    },
+    {
+      "pattern": "\\bCPU Max Effective\\b",
+      "replacement": "CPU 最大有效频率"
+    },
+    {
+      "pattern": "\\bCPU Max Clock\\b",
+      "replacement": "CPU 最大频率"
+    },
+    {
+      "pattern": "\\bCPU Effective\\b",
+      "replacement": "CPU 有效频率"
+    },
+    {
+      "pattern": "(?-i)\\bCPU Max\\b",
+      "replacement": "CPU 最大"
+    },
+    {
+      "pattern": "\\bCPU Total\\b",
+      "replacement": "CPU 总计"
+    },
+    {
+      "pattern": "\\bCPU Cores\\b",
+      "replacement": "CPU 核心"
+    },
+    {
+      "pattern": "\\bCPU Graphics\\b",
+      "replacement": "CPU 核显"
+    },
+    {
+      "pattern": "\\b([CG]PU) Package Power\\b",
+      "replacement": "$1 封装功耗"
+    },
+    {
+      "pattern": "\\b([CG]PU) Package\\b",
+      "replacement": "$1 封装"
+    },
+    {
+      "pattern": "\\b([CG]PU) Core Voltage\\b",
+      "replacement": "$1 核心电压"
+    },
+    {
+      "pattern": "\\b([CG]PU) Core\\b",
+      "replacement": "$1 核心"
+    },
+    {
+      "pattern": "\\b([CG]PU) Clocks\\b",
+      "replacement": "$1 频率"
+    },
+    {
+      "pattern": "\\b([CG]PU) Clock\\b",
+      "replacement": "$1 频率"
+    },
+    {
+      "pattern": "\\b([CG]PU) Model\\b",
+      "replacement": "$1 型号"
+    },
+    {
+      "pattern": "\\b([CG]PU) Bus\\b",
+      "replacement": "$1 总线"
+    },
+    {
+      "pattern": "\\bGPU Power Limit\\b",
+      "replacement": "GPU 功耗限制"
+    },
+    {
+      "pattern": "\\bGPU Thermal Limit\\b",
+      "replacement": "GPU 温度限制"
+    },
+    {
+      "pattern": "\\bGPU Voltage Limit\\b",
+      "replacement": "GPU 电压限制"
+    },
+    {
+      "pattern": "\\bGPU Board Power\\b",
+      "replacement": "GPU 板卡功耗"
+    },
+    {
+      "pattern": "\\b([CG]PU) Power\\b",
+      "replacement": "$1 功耗"
+    },
+    {
+      "pattern": "\\b([CG]PU) Voltage\\b",
+      "replacement": "$1 电压"
+    },
+    {
+      "pattern": "\\b(i?GPU|CPU) Load\\b",
+      "replacement": "$1 占用率"
+    },
+    {
+      "pattern": "\\b([CG]PU) Temp\\b",
+      "replacement": "$1 温度"
+    },
+    {
+      "pattern": "\\b([CG]PU) Hot ?Spot\\b",
+      "replacement": "$1 热点"
+    },
+    {
+      "pattern": "\\bGPU Fan\\b",
+      "replacement": "GPU 风扇"
+    },
+    {
+      "pattern": "\\bGPU Media Engine\\b",
+      "replacement": "GPU 媒体引擎"
+    },
+    {
+      "pattern": "\\bGPU Video Engine\\b",
+      "replacement": "GPU 视频引擎"
+    },
+    {
+      "pattern": "\\bGPU PCIe Slot\\b",
+      "replacement": "GPU PCIe 插槽"
+    },
+    {
+      "pattern": "\\bGPU Memory Controller\\b",
+      "replacement": "GPU 显存控制器"
+    },
+    {
+      "pattern": "\\bGPU Memory Bandwidth\\b",
+      "replacement": "GPU 显存带宽"
+    },
+    {
+      "pattern": "\\bGPU Memory Junction\\b",
+      "replacement": "GPU 显存结温"
+    },
+    {
+      "pattern": "\\bGPU Memory Clock\\b",
+      "replacement": "GPU 显存频率"
+    },
+    {
+      "pattern": "\\bGPU Memory\\b",
+      "replacement": "GPU 显存"
+    },
+    {
+      "pattern": "\\bGPU Mem\\b",
+      "replacement": "显存"
+    },
+    {
+      "pattern": "\\bDedicated Game\\b",
+      "replacement": "游戏专用"
+    },
+    {
+      "pattern": "\\bShared Game\\b",
+      "replacement": "游戏共享"
+    },
+    {
+      "pattern": "\\bGame Used\\b",
+      "replacement": "游戏占用"
+    },
+    {
+      "pattern": "\\bVRAM Bandwidth\\b",
+      "replacement": "VRAM 带宽"
+    },
+    {
+      "pattern": "\\bVRAM Hot ?Spot\\b",
+      "replacement": "VRAM 热点"
+    },
+    {
+      "pattern": "\\bVirtual Memory Used\\b",
+      "replacement": "虚拟内存已用"
+    },
+    {
+      "pattern": "\\bVirtual RAM Available\\b",
+      "replacement": "虚拟内存可用"
+    },
+    {
+      "pattern": "\\bVirtual RAM Usage\\b",
+      "replacement": "虚拟内存占用率"
+    },
+    {
+      "pattern": "\\bVirtual RAM Used\\b",
+      "replacement": "虚拟内存已用"
+    },
+    {
+      "pattern": "\\bRAM Usage\\b",
+      "replacement": "RAM 占用率"
+    },
+    {
+      "pattern": "\\bMemory Load\\b",
+      "replacement": "内存占用率"
+    },
+    {
+      "pattern": "\\bTotal Memory\\b",
+      "replacement": "总内存"
+    },
+    {
+      "pattern": "\\bP-Core #(\\d+)",
+      "replacement": "P 核 #$1"
+    },
+    {
+      "pattern": "\\bE-Core #(\\d+)",
+      "replacement": "E 核 #$1"
+    },
+    {
+      "pattern": "\\bCore #(\\d+)",
+      "replacement": "核心 #$1"
+    },
+    {
+      "pattern": "\\bThread #(\\d+)",
+      "replacement": "线程 #$1"
+    },
+    {
+      "pattern": "\\bCore Average\\b",
+      "replacement": "核心平均"
+    },
+    {
+      "pattern": "\\bCore Power\\b",
+      "replacement": "核心功耗"
+    },
+    {
+      "pattern": "\\bCore Max\\b",
+      "replacement": "核心最大"
+    },
+    {
+      "pattern": "\\bCores\\b",
+      "replacement": "核心"
+    },
+    {
+      "pattern": "\\bCore\\b",
+      "replacement": "核心"
+    },
+    {
+      "pattern": "\\(Effective\\)",
+      "replacement": "(有效)"
+    },
+    {
+      "pattern": "\\bEffective\\b",
+      "replacement": "有效"
+    },
+    {
+      "pattern": "\\bAverage Clock\\b",
+      "replacement": "平均频率"
+    },
+    {
+      "pattern": "\\bBus Speed\\b",
+      "replacement": "总线频率"
+    },
+    {
+      "pattern": "\\bTotal Power\\b",
+      "replacement": "总功耗"
+    },
+    {
+      "pattern": "\\bSOC Current\\b",
+      "replacement": "SoC 电流"
+    },
+    {
+      "pattern": "\\bSOC Power\\b",
+      "replacement": "SoC 功耗"
+    },
+    {
+      "pattern": "\\bMisc Current\\b",
+      "replacement": "其他电流"
+    },
+    {
+      "pattern": "\\bIOD Hot ?Spot\\b",
+      "replacement": "IOD 热点"
+    },
+    {
+      "pattern": "\\bDistance to TjMax\\b",
+      "replacement": "距 TjMax 温差"
+    },
+    {
+      "pattern": "\\bFan #(\\d+)",
+      "replacement": "风扇 #$1"
+    },
+    {
+      "pattern": "\\bPump\\b",
+      "replacement": "水泵"
+    },
+    {
+      "pattern": "\\bNetwork Utilization\\b",
+      "replacement": "网络利用率"
+    },
+    {
+      "pattern": "\\bUpload Speed\\b",
+      "replacement": "上传速度"
+    },
+    {
+      "pattern": "\\bDownload Speed\\b",
+      "replacement": "下载速度"
+    },
+    {
+      "pattern": "\\bBattery\\b",
+      "replacement": "电池"
+    },
+    {
+      "pattern": "\\bCharge Level\\b",
+      "replacement": "电量"
+    },
+    {
+      "pattern": "\\bDegradation Level\\b",
+      "replacement": "损耗程度"
+    },
+    {
+      "pattern": "\\bCapacity\\b",
+      "replacement": "容量"
+    },
+    {
+      "pattern": "\\bAvailable Spare Threshold\\b",
+      "replacement": "可用备用空间阈值"
+    },
+    {
+      "pattern": "\\bAvailable Spare\\b",
+      "replacement": "可用备用空间"
+    },
+    {
+      "pattern": "\\bTotal Bytes Written\\b",
+      "replacement": "总写入量"
+    },
+    {
+      "pattern": "\\bWrite Amplification\\b",
+      "replacement": "写入放大"
+    },
+    {
+      "pattern": "\\bLifetime Used\\b",
+      "replacement": "已用寿命"
+    },
+    {
+      "pattern": "\\bRemaining Life\\b",
+      "replacement": "剩余寿命"
+    },
+    {
+      "pattern": "\\bTotal Activity\\b",
+      "replacement": "总活动时间"
+    },
+    {
+      "pattern": "\\bRead Activity\\b",
+      "replacement": "读取活动时间"
+    },
+    {
+      "pattern": "\\bWrite Activity\\b",
+      "replacement": "写入活动时间"
+    },
+    {
+      "pattern": "\\bData Written\\b",
+      "replacement": "已写入数据"
+    },
+    {
+      "pattern": "\\bData Read\\b",
+      "replacement": "已读取数据"
+    },
+    {
+      "pattern": "\\bUsed Space\\b",
+      "replacement": "已用空间"
+    },
+    {
+      "pattern": "\\bRead Rate\\b",
+      "replacement": "读取速度"
+    },
+    {
+      "pattern": "\\bWrite Rate\\b",
+      "replacement": "写入速度"
+    },
+    {
+      "pattern": "\\bDrive\\b",
+      "replacement": "驱动器"
+    },
+    {
+      "pattern": "\\bHot ?Spot\\b",
+      "replacement": "热点"
+    },
+    {
+      "pattern": "\\bTemperature\\b",
+      "replacement": "温度"
+    },
+    {
+      "pattern": "\\bClocks\\b",
+      "replacement": "频率"
+    },
+    {
+      "pattern": "\\bClock\\b",
+      "replacement": "频率"
+    },
+    {
+      "pattern": "\\bUsage\\b",
+      "replacement": "占用率"
+    },
+    {
+      "pattern": "\\bLoad\\b",
+      "replacement": "占用率"
+    },
+    {
+      "pattern": "\\bPower\\b",
+      "replacement": "功耗"
+    },
+    {
+      "pattern": "\\bVoltage\\b",
+      "replacement": "电压"
+    },
+    {
+      "pattern": "\\bCurrent\\b",
+      "replacement": "电流"
+    },
+    {
+      "pattern": "\\bFan\\b",
+      "replacement": "风扇"
+    },
+    {
+      "pattern": "\\bMemory\\b",
+      "replacement": "内存"
+    },
+    {
+      "pattern": "\\bMem\\b",
+      "replacement": "内存"
+    },
+    {
+      "pattern": "\\bAllocated\\b",
+      "replacement": "已分配"
+    },
+    {
+      "pattern": "\\bDedicated\\b",
+      "replacement": "专用"
+    },
+    {
+      "pattern": "\\bShared\\b",
+      "replacement": "共享"
+    },
+    {
+      "pattern": "\\bAvailable\\b",
+      "replacement": "可用"
+    },
+    {
+      "pattern": "\\bUsed\\b",
+      "replacement": "已用"
+    },
+    {
+      "pattern": "\\bFree\\b",
+      "replacement": "空闲"
+    },
+    {
+      "pattern": "\\bTotal\\b",
+      "replacement": "总计"
+    },
+    {
+      "pattern": "\\bAverage\\b",
+      "replacement": "平均"
+    },
+    {
+      "pattern": "(?-i)\\bMax\\b",
+      "replacement": "最大"
+    },
+    {
+      "pattern": "(?-i)\\bMin\\b",
+      "replacement": "最小"
+    },
+    {
+      "pattern": "\\bGame\\b",
+      "replacement": "游戏"
+    },
+    {
+      "pattern": "\\bSpeed\\b",
+      "replacement": "速度"
+    },
+    {
+      "pattern": "\\bBandwidth\\b",
+      "replacement": "带宽"
+    },
+    {
+      "pattern": "\\bSmallData\\b",
+      "replacement": "数据"
+    },
+    {
+      "pattern": "\\bDataRate\\b",
+      "replacement": "数据速率"
+    },
+    {
+      "pattern": "\\bData\\b",
+      "replacement": "数据"
+    },
+    {
+      "pattern": "\\bThroughput\\b",
+      "replacement": "吞吐量"
+    },
+    {
+      "pattern": "\\bFrequency\\b",
+      "replacement": "频率"
+    },
+    {
+      "pattern": "\\bControl\\b",
+      "replacement": "控制"
+    },
+    {
+      "pattern": "\\bLevel\\b",
+      "replacement": "级别"
+    },
+    {
+      "pattern": "\\bFactor\\b",
+      "replacement": "系数"
+    },
+    {
+      "pattern": "\\bFlow\\b",
+      "replacement": "流量"
+    },
+    {
+      "pattern": "\\bEnergy\\b",
+      "replacement": "能耗"
+    },
+    {
+      "pattern": "\\bNoise\\b",
+      "replacement": "噪音"
+    },
+    {
+      "pattern": "\\bHumidity\\b",
+      "replacement": "湿度"
+    }
+  ]
+}
