@@ -27,6 +27,8 @@
     <PackageVersion Include="Microsoft.AspNetCore.Http" Version="2.3.13" />
     <PackageVersion Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.13" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="11.0.0" />
+    <!-- Referenced directly: Microsoft.AspNetCore.Http 2.3.14 still pulls 2.3.13, affected by CVE-2026-118750 (fixed in 2.3.14). -->
+    <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="2.3.14" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="11.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="11.0.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
