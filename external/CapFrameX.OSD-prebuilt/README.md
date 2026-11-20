@@ -12,6 +12,63 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Graph line width of charts (2026-11-20)
+
+All five native trees were rebuilt clean (VS 2026/v145 with MSVC 14.52, `RelWithDebInfo`,
+`--clean-first`, x64 and x86) and Controls in `Release|x64` for `net11.0-windows` (`dotnet build
+CapFrameX.OSD.sln -c Release --no-incremental`) from commit `d2c0b9f538d83aa23cb56abd36731ec40f92c478`
+(`main`, two commits on `96c30d2`): `57f5636` adds the width (`src/core` `ChartGeometry.h`, `Widget.*`,
+`Config.cpp`, `Renderer.*`, `ChartLayer.*`, `ScrollChart.cpp`, `OsdInstance.cpp`, `PreviewInstance.cpp`;
+`apps/design_test` `chartDataLineWidthTests`; the Controls sources `OsdDesignDocument.Composite`,
+`OsdEditorState.Composite`, `OsdTileStyle`, `OsdEditorControl.xaml`; the five `Editor.*.json` catalogs;
+the editor demo's `DesignVerification`; the OSD repo's CLAUDE.md), `d2c0b9f` adds `--line-widths` to
+`cfx_osd_chart_perf_bench`.
+
+- A chart's `"lineWidth"` (scene units, 0..32) sets the width of its lines, every series and stutter
+  threshold alike; `borderWidth` keeps the outline and the grid lines. The width is drawn
+  `lineWidth × uiScale`, antialiased and unrounded like the default line, from 0.5 to 8 physical pixels,
+  in every raster path: hook-free window, in-game D3D11, the CPU producer of the D3D12 hook and the
+  Vulkan layer, the stepped chart layer, the inline lines and the editor preview (× its fit). Without the
+  field the line keeps the process-wide width (OsdDebug.json `"chartLineWidth"`, 1 px).
+- The cap is the raster's cost: on the 1920 px strip 1.5× a one-pixel line at 2 px, 3× at 4 px, 7× at
+  8 px and 24× at 16 px (`cfx_osd_chart_perf_bench --line-widths`).
+- The editor edits it as "Graph line width" in a chart's options, above the outline width
+  (`OsdDesignTile.ChartLineWidth`, 0.5..8 design units, exported × the design scale), scales it with a
+  container, copies it with the tile style and drops it when a chart becomes another kind. The outline's
+  validation message now reads "Chart outline width".
+
+`Editor_ChartGraphLineWidth` and `Editor_ChartGraphLineWidthHint` were added in all five languages;
+`Editor.en.json` and `Editor.ko.json` are copied here. Interop, both Vulkan manifests and the template
+catalogs are unchanged. A Controls build without this change rejects designs that set the width; older
+renderers draw such charts with one-pixel lines.
+
+Verification: the core CTests pass apart from `chart_gpu_raster`, which fails on this machine's RTX 5090
+on `96c30d2` as well ("retracing a line must not accumulate opacity"); `design` has 634 checks, among them
+a flat line's rows in preview bitmaps (one pixel without the field, four at `lineWidth` 4). The 35 hook
+and 10 Vulkan CTests pass on x64 and x86, all without compiler warnings. The editor demo's `--verify`
+(1778 checks) and `--verify-native` (1241 checks for 68 templates) passed with these builds.
+`cfx_vk_host` with the Performance Strip at `lineWidth` 4.5 (`CFX_TEST_DESIGN_FILE`) in a 1262 px window
+(uiScale 0.63): the frame rate line covers two full and two partial rows, against one row without the
+field, through the build tree's layer and, after the replacement below, through the installed one. A
+CapFrameX Release build with `CfxOsdFromSource=false` staged exactly these binaries into the test output
+and ran the tests outside the `Integration` category: all 3750 passed, among them
+`AChartLineWidthIsATileFieldTheRendererDraws` (the field through the MCP tile document and the renderer's
+pixels of a three-pixel line). No game ran with these binaries yet.
+
+The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only CapFrameX
+registrations in both HKLM views) were replaced with these two layer DLLs; their hashes match the
+table. They replaced those of the previous entry (`D7FC0133…`, `3A73C144…`), which are kept in the ignored
+`temp\vulkan-layer-backup-2026-11-20-96c30d2` of the CapFrameX checkout.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `499467C0F50C0921BA4C674FB2672761880ACAC26DC6CA7E463D8ACEED2658D7` |
+| native\cfx_osd_hook.dll | `3ABABA8CC654A278312ED8B2403FFCFDE45EC7DDCDBAD7708F7EA0B0001C8EE0` |
+| native\x86\cfx_osd_hook.dll | `DE9B5519533A41491AE1C938674BF51E7ABC6575EA95CB8888F60DC987C13C10` |
+| native\vk\cfx_osd_vklayer.dll | `26D35F50353F3F60FB32A295FA3E9A4B98CAD7A6310647B0B0CBC6C50F2CC184` |
+| native\vk\x86\cfx_osd_vklayer.dll | `F2BD47D85AB4B83FA188EAC687A5D00DC2873758E306812379C2BC590E7779FE` |
+| net11.0-windows\CapFrameX.OSD.Controls.dll | `9CBEF7517F9A3E1E642E5377058ABAF49A66CF7A5A0272B4E30211993D36795B` |
+
 ### Chart outline and grid line width, whole-pixel chart frames (2026-11-20)
 
 All five native trees were rebuilt clean (VS 2026/v145 with MSVC 14.52, `RelWithDebInfo`,

@@ -450,6 +450,8 @@
   "Editor_StylePlotLines": "Chart outline and grid lines",
   "Editor_ChartLineWidth": "Outline and grid line width",
   "Editor_ChartLineWidthHint": "In design units, drawn in whole pixels. Empty draws one pixel.",
+  "Editor_ChartGraphLineWidth": "Graph line width",
+  "Editor_ChartGraphLineWidthHint": "Every line of the chart, in design units, drawn up to 8 pixels wide. Empty draws one pixel.",
   "Editor_RyzenBadge": "Ryzen {0} badge",
   "Editor_RyzenBadgeFrame": "Frame and branding",
   "Editor_RyzenBadgeTier": "Ryzen tier — {0}",
