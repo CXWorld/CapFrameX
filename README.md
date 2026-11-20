@@ -133,11 +133,11 @@ The **Style** tab holds what all tiles share: **Tile opacity** fades the backgro
 
 A tile design can span the whole width of the screen: in the designer, enable **Layout → Span the full screen width**. The CapFrameX in-game and hook-free renderers then stretch every tile horizontally to the screen width between the left and right margin, at any resolution and aspect ratio. Heights and text keep their size, so charts get longer while values stay at the edge of their tiles. **Edge** below the switch puts the overlay at the top or the bottom of the screen whatever corner it is anchored to, or lets that corner decide; set the horizontal margin to 0 for a strip from edge to edge. The designer shows the design at its own width. RTSS is not affected.
 
-The **Performance Strip** design ([`overlay-templates/Performance-Strip.json`](overlay-templates/Performance-Strip.json), also in the design list) is such a strip along the bottom of the screen: a frame time graph on the left, average, 1% low and current FPS on the right, and the frame rate across the full width below them, both graphs with grid lines.
+The **Performance Strip** design ([`overlay-templates/Performance-Strip.json`](overlay-templates/Performance-Strip.json), also in the design list) is such a strip along the bottom of the screen: a frame time graph on the left, average, 1% low and current FPS on the right, and the frame rate across the full width below them, both graphs with thick grid lines on a dark plot area that stays readable over bright scenes.
 
 ### Frame rate graphs and grid lines
 
-A chart tile can draw the frame rate in two ways: **Framerates** shows 1000 / frame time of every frame, **Frames per second (counted)** the frames presented in the second before every moment, as a frame counter counts them, drawn as a smooth curve that shows no peak or dip the counts do not have. **Grid lines** in a chart's options draws horizontal lines at round values, labelled at the right of the chart.
+A chart tile can draw the frame rate in two ways: **Framerates** shows 1000 / frame time of every frame, **Frames per second (counted)** the frames presented in the second before every moment, as a frame counter counts them, drawn as a smooth curve that shows no peak or dip the counts do not have. **Grid lines** in a chart's options draws horizontal lines at round values, labelled at the right of the chart. **Outline and grid line width** below it makes the chart's outline and grid lines thicker (in design units, drawn in whole pixels); left empty they stay one pixel wide.
 
 ### Custom in-game compatibility profiles
 

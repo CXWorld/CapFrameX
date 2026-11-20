@@ -129,7 +129,7 @@ Every tile owns its colors. A field left out draws the default named after it.
 - chart: color, the line (accent; with chartLines each line has its own color); labelColor, the title,
   scale and legend (textColor); valueColor, the currentValue badge (textColor); chartBackgroundColor,
   the plot area while showBackground is on (#0E0E16EE); chartBorderColor, its outline while
-  showBorder is on (#3A3A4A80).
+  showBorder is on, and its grid lines (#3A3A4A80).
 - group: titleColor (color, then accent); labelColor, the member labels (textColor). As metrics:
   valueColor (color, then textColor) and unitColor. As bars: color, the fill (accent), trackColor and
   valueColor (textColor). As a heatmap: valueColor, the fully loaded cells (textColor), and
@@ -157,7 +157,9 @@ Kinds:
   displaytimes in ms). label is the title, unit the axis unit. showBackground, showBorder,
   showLabels (axis labels and, with several lines, a legend), currentValue (badge with the latest
   value of key), showGridLines (horizontal lines at round values in the outline color, labelled
-  right of the plot instead of the min/max labels). In a grid, height 24..240.
+  right of the plot instead of the min/max labels), chartBorderWidth (0.5..8, the width of the
+  outline and the grid lines in design units, drawn in whole pixels; left out, one pixel). In a
+  grid, height 24..240.
   chartLines (optional, 1..4) draws several lines on one axis instead of the single line of key:
   [{""series"": ""frametimes"", ""kind"": ""value""}, {""series"": ""frametimes"", ""kind"": ""stutter"",
   ""factor"": 2.5, ""color"": ""#E5534BFF""}]. kind ""value"" draws the series, ""stutter"" its adaptive

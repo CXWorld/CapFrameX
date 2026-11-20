@@ -177,6 +177,7 @@ namespace CapFrameX.Test.Integration
         [DataRow(30, 31)]
         [DataRow(31, 32)]
         [DataRow(32, 33)]
+        [DataRow(33, 34)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -189,7 +190,7 @@ namespace CapFrameX.Test.Integration
                 6 => new[] { "Panther-Lake-Arc-Aurora", "OLED-Minimal" },
                 17 => SlickPresetIds,
                 18 => new[] { "RTX-50-Core-FUSION-RPL", "RTX-50-Ryzen-FUSION" },
-                19 or 20 or 21 or 22 or 23 or 31 or 33 => Array.Empty<string>(),
+                19 or 20 or 21 or 22 or 23 or 31 or 33 or 34 => Array.Empty<string>(),
                 24 => AnimePresetIds,
                 25 => DuolinePresetIds,
                 27 => new[] { "Blackwell-Thermals-RTX-5090" },
@@ -750,6 +751,21 @@ namespace CapFrameX.Test.Integration
             Assert.IsTrue(charts[1].Y >= document.Tiles.Where(tile => tile != charts[1]).Max(tile => tile.Y + tile.FrameHeight),
                 "The frame rate history runs below every other tile.");
             Assert.AreEqual(document.CanvasHeight, charts[1].Y + charts[1].FrameHeight);
+
+            // Version thirty-four: over bright scenes the one-pixel lines on a 35 % plot were hard to see. Both charts
+            // draw a dark plot and outlines and grid lines of 1.5 design units in opaque white, two pixels at 1080p.
+            Assert.IsTrue(charts.All(chart => chart.ChartBackgroundColor == "#000000CC" && chart.ChartBorderColor == "#FFFFFFFF"
+                && chart.ChartBorderWidth == 1.5), "Both charts draw a dark plot with white lines.");
+            Assert.IsTrue(scene.Descendants().OfType<JObject>().Where(widget => (string)widget["type"] == "chart")
+                .All(widget => (double?)widget["borderWidth"] == 1.5 * document.Scale), "The renderer receives the line width at the design's scale.");
+            foreach (var chart in charts)
+            {
+                chart.ChartBackgroundColor = "#00000059";
+                chart.ChartBorderColor = "#FFFFFFCC";
+                chart.ChartBorderWidth = null;
+            }
+            Assert.IsTrue(starter.CanUpdate(new OverlayDesignProfile(starter.Id, starter.Name, document.ToJson(), DateTime.UtcNow)),
+                "An unmodified version-thirty Performance Strip gets the darker charts and the wider lines.");
         }
 
         [TestMethod]

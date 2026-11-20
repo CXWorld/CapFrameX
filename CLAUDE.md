@@ -579,6 +579,10 @@ their own width and the anchored corner. Example: the "Performance Strip" starte
 (`overlay-templates/Performance-Strip.json`, catalog version 30, edge bottom), a frame time chart at the
 left, average, 1% low and current FPS at the right and, across the whole width below them, the counted
 frame rate (`framespersecond`), both charts with grid lines; authored at 1280 × scale 1.5 = 1920 px.
+Catalog version 34 (2026-11-20) darkened both plots (`#000000CC` instead of `#00000059`) and drew their
+outlines and grid lines in opaque white at 1.5 design units, two pixels at 1080p and 100 % (see "Counted
+frame rates and grid lines"): the one-pixel lines were hard to see over bright scenes. It replaces
+unmodified version-30 copies.
 Its values carry the unit the binder adds ("FPS"), and a menu shows four-digit frame rates: more than
 a tile may hold. Since 2026-11-06 a value wider than its tile shrinks with its unit until it fits, in
 every design and every CapFrameX renderer, instead of being clipped (OSD repo CLAUDE.md, "Values wider
@@ -605,6 +609,22 @@ have room for) in the outline color, labelled in a column right of the plot inst
 corner labels. The bitmap preview builds its lines before it draws the panel, so a single render shows
 the scale it draws. The prebuilt core, hooks, layers and Controls must contain this change. Tests: OSD
 `design_test` (`countedFramerateTests`), `ACountedFramerateChartIsFedFramesAndDrawsGridLines`.
+
+A chart's outline and grid lines are one physical pixel wide unless the tile sets
+`OsdDesignTile.ChartBorderWidth` (the inspector's "Outline and grid line width", MCP `chartBorderWidth`,
+0.5..8 design units; the chart widget's `borderWidth`, exported × the design scale). The native core
+rounds it × uiScale to whole pixels, at least one, centres a grid line on its value and keeps the
+outline inside the tile, snapped inward to whole pixels; the color stays `ChartBorderColor`. Unset,
+nothing is exported and the outline stays as before. A full-width design shrunk to fit puts its tiles on
+fractional coordinates: there the unsnapped outline read far dimmer than the grid lines, and the
+Performance Strip's right and bottom chart edges looked missing in a 1262 px Vulkan window. Labelled grid
+lines of every chart end 8 units from the right edge, as far as the lines start from the left one (6
+after the line ends for a three-digit label; before 2026-11-20 they nearly touched a two-pixel outline),
+a wider label takes the room up to the outline, and the lowest grid line sits on whole rows too. The
+data line keeps its global width (`chartLineWidth` in OsdDebug.json, 1 px).
+The prebuilt core, hooks, layers and Controls must contain this change (2026-11-20): a Controls build
+without it rejects designs that set it, older renderers draw one-pixel lines. Tests: OSD `design_test`
+(`chartLineWidthTests`), the editor demo's `--verify`, `PerformanceStripSpansTheScreenWidth`.
 
 ### Overlay fonts
 
