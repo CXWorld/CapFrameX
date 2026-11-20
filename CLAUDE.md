@@ -636,11 +636,25 @@ fractional coordinates: there the unsnapped outline read far dimmer than the gri
 Performance Strip's right and bottom chart edges looked missing in a 1262 px Vulkan window. Labelled grid
 lines of every chart end 8 units from the right edge, as far as the lines start from the left one (6
 after the line ends for a three-digit label; before 2026-11-20 they nearly touched a two-pixel outline),
-a wider label takes the room up to the outline, and the lowest grid line sits on whole rows too. The
-data line keeps its global width (`chartLineWidth` in OsdDebug.json, 1 px).
+a wider label takes the room up to the outline, and the lowest grid line sits on whole rows too.
 The prebuilt core, hooks, layers and Controls must contain this change (2026-11-20): a Controls build
 without it rejects designs that set it, older renderers draw one-pixel lines. Tests: OSD `design_test`
 (`chartLineWidthTests`), the editor demo's `--verify`, `PerformanceStripSpansTheScreenWidth`.
+
+A chart's lines, the graph itself, have a width of their own: `OsdDesignTile.ChartLineWidth` (the
+inspector's "Graph line width", above the outline width, MCP `chartLineWidth`, 0.5..8 design units; the
+chart widget's `lineWidth`, exported × the design scale), for every series and stutter threshold of the
+chart alike. The native core draws it × uiScale (`ChartWidget::lineWidthPx`, `ChartLineWidthPx`)
+antialiased and unrounded, from 0.5 to 8 physical pixels, in every raster path (hook-free window,
+in-game D3D11, the CPU producer of the D3D12 hook and the Vulkan layer, the editor preview, × its fit
+there). The cap is the cost: the coverage raster of the 1920 px strip took 1.5× the time of a one-pixel
+line at 2 px, 3× at 4 px, 7× at 8 px and 24× at 16 px (`chart_perf_bench --line-widths`). Unset, nothing
+is exported and the line keeps the process-wide width (`chartLineWidth` in OsdDebug.json, 1 px). The
+container scaling, the tile style copy and a change of kind treat it like the outline width. The
+Performance Strip starter does not set it. The prebuilt core, hooks, layers and Controls must contain
+this change: a Controls build without it rejects designs that set it, older renderers draw one-pixel
+lines. Tests: OSD `design_test` (`chartDataLineWidthTests`), the editor demo's `--verify`,
+`AChartLineWidthIsATileFieldTheRendererDraws`.
 
 ### Overlay fonts
 

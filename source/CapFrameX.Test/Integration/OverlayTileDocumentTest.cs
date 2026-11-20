@@ -112,6 +112,55 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        public void AChartLineWidthIsATileFieldTheRendererDraws()
+        {
+            // The lines of a chart ("Graph line width") have a width of their own, apart from the outline and
+            // the grid lines, in design units like every size.
+            const string chart = @"""kind"": ""chart"", ""key"": ""frametimes"", ""frameWidth"": 300, ""frameHeight"": 120,
+                ""showLabels"": false, ""showBorder"": false, ""color"": ""#FF0000FF"", ""chartBackgroundColor"": ""#000000FF""";
+            OsdDesignDocument Document(string width) => OverlayTileDocument.FromJson(
+                JObject.Parse(@"{ ""width"": 320, ""scale"": 1.5, ""tiles"": [ { " + chart + width + " } ] }"), "Lines", NoSources);
+            var thick = Document(@", ""chartLineWidth"": 2, ""chartBorderWidth"": 1");
+            Assert.AreEqual(2.0, thick.Tiles[0].ChartLineWidth);
+            Assert.AreEqual(2.0, (double?)OverlayTileDocument.ToJson(thick)["tiles"][0]["chartLineWidth"], "The tile document exchanges it.");
+            string json = thick.ToJson();
+            var widget = JObject.Parse(json).Descendants().OfType<JObject>().Single(item => (string)item["type"] == "chart");
+            Assert.AreEqual((3.0, 1.5), ((double)widget["lineWidth"], (double)widget["borderWidth"]),
+                "The renderer receives both widths at the design's scale.");
+            Assert.AreEqual(json, OsdDesignDocument.FromJson(json).ToJson(), "The editor opens it unchanged.");
+            var thin = Document("");
+            Assert.IsNull(thin.Tiles[0].ChartLineWidth);
+            Assert.IsFalse(thin.ToJson().Contains("lineWidth"), "A chart without its own width exports none.");
+            Assert.ThrowsExactly<OverlayDesignAuthoringException>(() => Document(@", ""chartLineWidth"": 9"));
+
+            // A steady 10 ms stream draws a flat line, three pixels wide at 100 % instead of one.
+            int thinRows = Rows(thin), thickRows = Rows(thick);
+            Assert.IsTrue(thinRows is 1 or 2, $"Without its own width the line stays one pixel wide, not {thinRows}.");
+            Assert.IsTrue(thickRows is 3 or 4, $"2 design units at scale 1.5 draw a line three pixels wide, not {thickRows}.");
+
+            static int Rows(OsdDesignDocument document)
+            {
+                const int width = 640, height = 320, stride = width * 4;
+                using var preview = new CapFrameX.OSD.Interop.OsdPreview();
+                Assert.IsTrue(preview.CreateBitmap(width, height));
+                Assert.IsTrue(preview.LoadTemplateJson(document.ToJson()));
+                Assert.IsTrue(preview.SetMetricsJson("{}"));
+                preview.PushSamples(Enumerable.Range(0, 601).Select(i => new CapFrameX.OSD.Interop.OsdStreamSample(1000 + i * 10.0, 10, 0)).ToArray());
+                var tiles = new CapFrameX.OSD.Interop.OsdPreviewTileRect[1];
+                Assert.AreEqual(1, preview.GetLayout(out var layout, tiles));
+                Assert.AreEqual(1, layout.Scale, .001, "The scene must fit the bitmap unscaled.");
+                var pixels = new byte[stride * height];
+                var handle = System.Runtime.InteropServices.GCHandle.Alloc(pixels, System.Runtime.InteropServices.GCHandleType.Pinned);
+                try { Assert.IsTrue(preview.RenderBitmap(handle.AddrOfPinnedObject(), pixels.Length, stride, .05)); }
+                finally { handle.Free(); }
+                int x = (int)(tiles[0].X + tiles[0].Width / 2), rows = 0;
+                for (int y = (int)tiles[0].Y; y < (int)(tiles[0].Y + tiles[0].Height); y++)
+                    if (pixels[y * stride + x * 4 + 2] > 128 && pixels[y * stride + x * 4 + 1] < 64) rows++; // BGRA: red
+                return rows;
+            }
+        }
+
+        [TestMethod]
         public void ContainerChildrenAreSizedToTheContainerAndTheContainerGrows()
         {
             var document = OverlayTileDocument.FromJson(JObject.Parse(@"{
