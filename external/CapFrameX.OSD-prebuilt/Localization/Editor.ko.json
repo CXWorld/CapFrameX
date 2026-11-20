@@ -448,6 +448,8 @@
   "Editor_ChartLineFramesPerSecond": "FPS(집계)",
   "Editor_ChartGridLines": "격자선",
   "Editor_StylePlotLines": "차트 윤곽선 및 격자선",
+  "Editor_ChartLineWidth": "윤곽선 및 격자선 두께",
+  "Editor_ChartLineWidthHint": "디자인 단위이며 정수 픽셀로 그려집니다. 비워 두면 1픽셀로 그립니다.",
   "Editor_RyzenBadge": "Ryzen {0} 배지",
   "Editor_RyzenBadgeFrame": "프레임 및 브랜드 로고",
   "Editor_RyzenBadgeTier": "Ryzen 등급 — {0}",

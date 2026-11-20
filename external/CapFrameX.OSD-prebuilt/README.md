@@ -12,6 +12,76 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Chart outline and grid line width, whole-pixel chart frames (2026-11-20)
+
+All five native trees were rebuilt clean (VS 2026/v145 with MSVC 14.52, `RelWithDebInfo`,
+`--clean-first`, x64 and x86) and Controls in `Release|x64` for `net11.0-windows` (`dotnet build
+CapFrameX.OSD.sln -c Release`) from the OSD working tree that was committed right after the build as
+`96c30d292a3f705ed2bb4e5799d2f067ffa056a7` (`main`, on `ddd102c`): `src/core/Widget.*`, `Config.cpp`,
+`apps/design_test` (`chartLineWidthTests` in `counted_framerate.h`), `hook_poc/src/design_test_publisher.h`,
+the Controls sources (`OsdDesignDocument.Composite`, `OsdEditorState.Composite`, `OsdTileStyle`,
+`OsdEditorControl.xaml`), the five `Editor.*.json` catalogs, the editor demo's `DesignVerification` and
+the OSD repo's CLAUDE.md. The hook and Vulkan build trees had to be configured anew: their caches still
+named MSVC 14.51, which Visual Studio no longer has. The native DLLs were built a second time the same
+day for the frame and label fixes below; Controls is the first build's (the fixes are native only).
+
+- A chart's `"borderWidth"` sets the width of its outline and grid lines, the parts its `borderColor`
+  colors: `borderWidth × uiScale`, rounded to whole physical pixels, at least one. A grid line is
+  centred on its value and stays inside the plot; the outline is drawn inside the tile, so a frame that
+  clips the chart keeps all of it. Without the field both stay one pixel.
+- With the field, the plot fill and the outline sit on whole pixels (snapped inward). A full-width scene
+  shrunk to fit puts tiles on fractional coordinates: in a 1262 px Vulkan window (uiScale 0.63) the
+  Performance Strip's right and bottom chart edges spread over two columns at 62 % and 15 % and looked
+  missing in the game.
+- Every chart with labelled grid lines: the labels end 8 units from the right edge, as far as the lines
+  start from the left one (6 after the line ends for "000"; before, 4 from the edge and 10 after the
+  lines, nearly touching a two-pixel outline). A wider label (a four-digit frame rate) takes the room up
+  to the outline instead of being cut off. The lowest grid line sits on whole rows like the others; on a
+  fractional plot bottom it read grey.
+- The editor edits the width as "Outline and grid line width" in a chart's options
+  (`OsdDesignTile.ChartBorderWidth`, 0.5..8 design units, exported × the design scale), scales it with a
+  container, copies it with the tile style and drops it when a chart becomes another kind. The
+  Performance Strip starter uses 1.5.
+- The standalone hosts' test publisher (`cfx_vk_host --publish-design`, the D3D hosts) publishes the
+  scene file named by `CFX_TEST_DESIGN_FILE` instead of its built-in scene.
+
+`Editor_ChartLineWidth` and `Editor_ChartLineWidthHint` were added in all five languages; `Editor.en.json`
+and `Editor.ko.json` are copied here. Interop, both Vulkan manifests and the template catalogs are
+unchanged. A Controls build without this change rejects designs that set the width; older renderers draw
+their lines one pixel wide and their frames unsnapped.
+
+Verification: all 17 core CTests pass (`design` with 623 checks, among them pixel checks of preview
+bitmaps: three-pixel outline and grid lines centred on the rows of the one-pixel ones, a chart at
+fractional coordinates whose outline sits on whole pixels at full strength on every edge, the label
+distances, a four-digit label drawn whole, every grid line on whole rows), as do the 35 hook and 10
+Vulkan CTests on x64 and x86, all without compiler warnings. The editor demo's `--verify` (1772 checks)
+and `--verify-native` (1241 checks for 68 templates) passed with the first build. `cfx_vk_host` with the
+Performance Strip (`CFX_TEST_DESIGN_FILE`), the build tree's x64 layer (`VK_LOADER_LAYERS_DISABLE=~implicit~`,
+`VK_LAYER_PATH`) and a 1262 px window: every edge of both charts at full white on whole pixels, against
+135 to 179 on the right and bottom edges with the first build. A CapFrameX Release build with
+`CfxOsdFromSource=false` staged exactly these binaries into the test output and ran the tests outside
+the `Integration` category: all 3710 passed, among them `PerformanceStripSpansTheScreenWidth`. No game
+ran with these binaries yet.
+
+The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only CapFrameX
+registrations in both HKLM views) were replaced with these two layer DLLs; their hashes match the
+table. They replaced the first build of this entry (`03C04087…`, `92639AA0…`), which in turn replaced
+those of the 2026-11-04 entry (`EC62A1F5…`, `3C9457D1…`). The 2026-11-04 layers and an export of both
+HKLM `ImplicitLayers` views are kept in the ignored `temp\vulkan-layer-backup-2026-11-20` of the
+CapFrameX checkout.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `697A32709B77E2469BB425F57F34576FCC36EFF3BA7685D38EA7226632CBFDA8` |
+| native\cfx_osd_hook.dll | `1B50AF58DA4A541202A2CD58FD92A8B9184D5B1C1CB38A5DE97ED6BF18C8277F` |
+| native\x86\cfx_osd_hook.dll | `39F6FF444DECF68713B42A3845FE0EAC846907BCC89A0ED487708D8E88AE1AFF` |
+| native\vk\cfx_osd_vklayer.dll | `D7FC013337AA2F6364AC5BFD815F73337F638FF4C5FE49D9B5948DCF2E623D08` |
+| native\vk\x86\cfx_osd_vklayer.dll | `3A73C144D70332C9C168EE661E320F6BB845E55A46E217A3E22634C03C4A957D` |
+| net11.0-windows\CapFrameX.OSD.Controls.dll | `C605B2F39D6AEBCD778A38936BF2E37FBCD388799320B1A29F19892038D2FD7E` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Several selected tiles, containers from a selection, merged designs (2026-11-15)
 
 Controls was rebuilt in `Release|x64` for `net11.0-windows` (.NET SDK 11.0.100,

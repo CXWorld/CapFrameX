@@ -448,6 +448,8 @@
   "Editor_ChartLineFramesPerSecond": "FPS (counted)",
   "Editor_ChartGridLines": "Grid lines",
   "Editor_StylePlotLines": "Chart outline and grid lines",
+  "Editor_ChartLineWidth": "Outline and grid line width",
+  "Editor_ChartLineWidthHint": "In design units, drawn in whole pixels. Empty draws one pixel.",
   "Editor_RyzenBadge": "Ryzen {0} badge",
   "Editor_RyzenBadgeFrame": "Frame and branding",
   "Editor_RyzenBadgeTier": "Ryzen tier — {0}",
