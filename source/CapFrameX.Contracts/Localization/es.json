@@ -661,7 +661,6 @@
     "ControlView_GPU2": "GPU",
     "ControlView_GPUDescription": "Descripción de la GPU",
     "ControlView_Game": "Juego",
-    "ControlView_Loading": "Cargando...",
     "ControlView_LoadingRecords": "Cargando registros...",
     "ControlView_MoveRecordingFileS": "Mover archivos de grabación",
     "ControlView_ObservedDirectoryMissingOpenThe": "Falta la carpeta observada.\nAbre el chip de carpeta de arriba y selecciona una carpeta.",

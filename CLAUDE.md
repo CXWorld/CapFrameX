@@ -1443,6 +1443,30 @@ drive root) or below any `\AppData\Local\Temp\`. `App.OnStartup` then explains i
 (`Appxaml_TemporaryFolder*`, in the configured language, else in the one of Windows) and exits before
 anything is written. Tests: `JsonSettingsStorageSaveFailureTest`, `TemporaryFolderStartTest`.
 
+## Record list folders
+
+The folder tree of the record list (`RecordFolderTree`, `CapFrameX.View/Controls`) holds the capture
+root (`CaptureRootDirectory`) and every folder below it; the observed folder (`ObservedDirectory`) is
+the selected one. The root's default is the placeholder `MyDocuments\CapFrameX\Captures`, which
+follows the documents folder and the portable mode (`IPathService.ResolveDocumentsPlaceholder`). The
+observed folder becomes a full path with the first folder selected in the tree
+(`RecordDirectoryObserver.ObserveDirectory`). So the two stop fitting when the settings move to another
+PC, user or installation, when the documents folder moves (OneDrive backup), and when the observed
+folder is deleted or renamed outside CapFrameX.
+
+`ControlView.BuildTreeView` builds the tree once. Before, `ControlViewModel.EnsureRootDirectory`
+replaces a root that is gone by the default captures folder; after, the root replaces an observed
+folder the tree does not hold (`ObserveRootDirectory`, a warning in `CapFrameX.log`; the setting takes
+the root as it is written, so the placeholder stays one). From 1.8.0 beta (2026-01-12) to 2026-11-20
+the method called itself until it found the observed folder and, while the root existed, changed
+nothing in between: the stack overflowed a few seconds after every start (issue 485). No crash
+report shows it, because a `StackOverflowException` cannot be caught; the Application event log
+records exception code `0xc00000fd`. Paths are compared by the folder they name
+(`RecordFolderPath`, `CapFrameX.Data`: case, a trailing separator, `/`, `..`). "Observe download
+folder" of the Cloud page is the one case in which the root follows: a download folder outside the root
+becomes the root (`MoveRootToObservedDirectoryOutside`), as it did up to 1.7.x. Tests:
+`RecordFolderPathTest`, `RecordFolderTreeTest`, `ControlViewModelFolderTest`.
+
 ## Tick counts since .NET 11
 
 On Windows, .NET 11 takes `Environment.TickCount` and `Environment.TickCount64` from

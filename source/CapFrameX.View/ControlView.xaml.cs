@@ -1,6 +1,5 @@
 ﻿using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
-using CapFrameX.Contracts.Localization;
 using CapFrameX.Extensions;
 using CapFrameX.Extensions.NetStandard;
 using CapFrameX.View.Controls;
@@ -38,8 +37,6 @@ namespace CapFrameX.View
         private string CaptureRootDirectory
             => _viewModel.AppConfiguration.CaptureRootDirectory;
 
-        private string DefaultPath => _viewModel.DefaultCapturesPath;
-
         private bool IsDragDropActive;
         private TreeViewItem ObservedTreeViewItem;
 
@@ -72,110 +69,23 @@ namespace CapFrameX.View
 
         private void BuildTreeView()
         {
-            var root = CreateTreeViewRoot();
-            CreateTreeViewRecursive(TrvStructure.Items[0] as TreeViewItem);
-            JumpToObservedDirectoryItem(root, out var directoryFound);
+            // The tree holds the capture root and the folders below it. A root that is gone is
+            // replaced before the tree is built, an observed folder the tree does not hold after:
+            // one that was deleted or moved outside CapFrameX, or that came with the settings of
+            // another PC, user or installation. Until 2026-11-20 this method called itself until
+            // the observed folder was found, and with an existing root it changed nothing in
+            // between: the stack overflowed at every start (issue 485).
+            var root = RecordFolderTree.Build(TrvStructure, _viewModel.EnsureRootDirectory());
+            var observed = RecordFolderTree.Find(root, ExtractFullPath(ObservedDirectory));
 
-            if (ExtractFullPath(CaptureRootDirectory) == ExtractFullPath(ObservedDirectory))
-                root.IsSelected = true;
-
-            if (!directoryFound)
+            if (observed == null)
             {
-                if (Directory.Exists(ExtractFullPath(CaptureRootDirectory)))
-                {
-                    if (ExtractFullPath(_viewModel.RootDirectory) != ExtractFullPath(CaptureRootDirectory))
-                    {
-                        _viewModel.RootDirectory = ExtractFullPath(CaptureRootDirectory);
-                    }
-                }
-                else
-                {
-                    // Ensure default path exists before setting it
-                    if (!Directory.Exists(DefaultPath))
-                    {
-                        Directory.CreateDirectory(DefaultPath);
-                    }
-                    _viewModel.AppConfiguration.ObservedDirectory = DefaultPath;
-                    _viewModel.RootDirectory = DefaultPath;
-                }
-                BuildTreeView();
-            }
-        }
-
-        private TreeViewItem CreateTreeViewRoot()
-        {
-            TrvStructure.Items.Clear();
-            var mainfoldername = new DirectoryInfo(ExtractFullPath(CaptureRootDirectory));
-            var rootNode = CreateTreeItem(mainfoldername, mainfoldername.Name);
-            TrvStructure.Items.Add(rootNode);
-            rootNode.IsExpanded = true;
-            return rootNode;
-        }
-
-        private TreeViewItem CreateTreeItem(object o, string name)
-        {
-            TreeViewItem item = new TreeViewItem
-            {
-                Header = name,
-                Tag = o
-            };
-            item.Items.Add(CxLang.T("ControlView_Loading"));
-            return item;
-        }
-
-        private void CreateTreeViewRecursive(TreeViewItem item)
-        {
-            if ((item.Items.Count == 1) && (item.Items[0] is string))
-            {
-                item.Items.Clear();
-
-                DirectoryInfo expandedDir = null;
-                if (item.Tag is DriveInfo)
-                    expandedDir = (item.Tag as DriveInfo).RootDirectory;
-                if (item.Tag is DirectoryInfo)
-                    expandedDir = (item.Tag as DirectoryInfo);
-                try
-                {
-                    foreach (DirectoryInfo subDir in expandedDir.GetDirectories())
-                    {
-                        // DirectoryInfo.ToString() returns the full path on .NET Core+
-                        // (it returned just the name on .NET Framework), so use Name here.
-                        var subItem = CreateTreeItem(subDir, subDir.Name);
-                        item.Items.Add(subItem);
-                        CreateTreeViewRecursive(subItem);
-                    }
-                }
-                catch { }
-            }
-        }
-
-        private void JumpToObservedDirectoryItem(TreeViewItem tvi, out bool directoryFound)
-        {
-            directoryFound = false;
-            if (tvi == null)
-                return;
-
-            if ((tvi.Tag as DirectoryInfo).FullName == ExtractFullPath(ObservedDirectory))
-            {
-                tvi.BringIntoView();
-                tvi.IsSelected = true;
-                directoryFound = true;
-                return;
-            }
-            else
-            {
-                tvi.IsExpanded = false;
+                _viewModel.ObserveRootDirectory();
+                observed = root;
             }
 
-            if (tvi.HasItems)
-            {
-                foreach (var item in tvi.Items)
-                {
-                    TreeViewItem temp = item as TreeViewItem;
-                    JumpToObservedDirectoryItem(temp, out directoryFound);
-                    if (directoryFound) break;
-                }
-            }
+            // Selecting an item makes its folder the observed one (TreeViewItem_Selected).
+            RecordFolderTree.Select(observed);
         }
 
         private void SetSortSettings(IAppConfiguration appConfiguration)

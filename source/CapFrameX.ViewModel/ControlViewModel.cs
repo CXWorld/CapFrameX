@@ -488,6 +488,42 @@ namespace CapFrameX.ViewModel
             catch (Exception ex) { _logger.LogError(ex, "Error while deleting folder."); }
         }
 
+        /// <summary>
+        /// The folder tree shows the capture root and the folders below it, so the root has to
+        /// exist before the tree is built: the default captures folder replaces one that is gone.
+        /// </summary>
+        /// <returns>The full path of the root.</returns>
+        public string EnsureRootDirectory()
+        {
+            string root = ResolveDocumentsPath(_appConfiguration.CaptureRootDirectory);
+            if (Directory.Exists(root))
+                return root;
+
+            string defaultRoot = DefaultCapturesPath;
+            Directory.CreateDirectory(defaultRoot);
+            _logger.LogWarning("The capture root directory {root} does not exist. The default captures folder {defaultRoot} replaces it.",
+                root, defaultRoot);
+            RootDirectory = defaultRoot;
+            return defaultRoot;
+        }
+
+        /// <summary>
+        /// Observes the capture root in place of an observed folder the folder tree does not
+        /// hold: one that was deleted or moved outside CapFrameX, or that came with the settings
+        /// of another PC, user or installation (the root is a placeholder that follows the
+        /// documents folder, the observed folder a full path once a folder was selected).
+        /// </summary>
+        public void ObserveRootDirectory()
+        {
+            string root = _appConfiguration.CaptureRootDirectory;
+            _logger.LogWarning("The observed directory {observed} is not among the folders of the capture root {root}. The root is observed instead.",
+                _appConfiguration.ObservedDirectory, root);
+
+            // As the root is written, so the placeholder of the documents folder stays one.
+            _appConfiguration.ObservedDirectory = root;
+            _recordObserver.ObserveDirectory(ResolveDocumentsPath(root));
+        }
+
         public bool OnSelectRootFolder()
         {
             var dialog = new Microsoft.Win32.OpenFolderDialog();
@@ -1074,8 +1110,23 @@ namespace CapFrameX.ViewModel
             _eventAggregator.GetEvent<PubSubEvent<AppMessages.SelectCloudFolder>>()
                 .Subscribe(msg =>
                 {
+                    MoveRootToObservedDirectoryOutside();
                     TreeViewUpdateStream.OnNext(default);
                 });
+        }
+
+        /// <summary>
+        /// "Observe download folder" of the Cloud page made the download folder the observed one.
+        /// The folder tree only holds the folders below its root, so a download folder that lies
+        /// elsewhere becomes the root, as it did up to 1.7.x.
+        /// </summary>
+        private void MoveRootToObservedDirectoryOutside()
+        {
+            string observed = ResolveDocumentsPath(_appConfiguration.ObservedDirectory);
+            string root = ResolveDocumentsPath(_appConfiguration.CaptureRootDirectory);
+
+            if (Directory.Exists(observed) && !RecordFolderPath.IsInFolder(observed, root))
+                RootDirectory = observed;
         }
     }
 }

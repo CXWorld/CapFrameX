@@ -660,7 +660,6 @@
     "ControlView_GPU2": "GPU",
     "ControlView_GPUDescription": "GPU 설명",
     "ControlView_Game": "게임",
-    "ControlView_Loading": "로드 중...",
     "ControlView_LoadingRecords": "기록 로드 중...",
     "ControlView_MoveRecordingFileS": "기록 파일 이동",
     "ControlView_ObservedDirectoryMissingOpenThe": "감시 중인 폴더를 찾을 수 없습니다.\n위의 폴더 버튼을 열고 폴더를 선택하세요.",

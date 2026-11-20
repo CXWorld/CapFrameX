@@ -661,7 +661,6 @@
     "ControlView_GPU2": "GPU",
     "ControlView_GPUDescription": "GPU description",
     "ControlView_Game": "Game",
-    "ControlView_Loading": "Loading...",
     "ControlView_LoadingRecords": "Loading records...",
     "ControlView_MoveRecordingFileS": "Move recording file(s)",
     "ControlView_ObservedDirectoryMissingOpenThe": "Observed directory missing.\nOpen the folder chip above and select a folder.",

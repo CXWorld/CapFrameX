@@ -604,7 +604,6 @@
     "ControlView_GPU2": "ГП",
     "ControlView_GPUDescription": "Описание ГП",
     "ControlView_Game": "Игра",
-    "ControlView_Loading": "Загрузка...",
     "ControlView_LoadingRecords": "Загрузка записей...",
     "ControlView_MoveRecordingFileS": "Переместить файлы записей",
     "ControlView_ObservedDirectoryMissingOpenThe": "Наблюдаемая папка недоступна.\nОткройте кнопку папки выше и выберите каталог.",

@@ -661,7 +661,6 @@
     "ControlView_GPU2": "GPU",
     "ControlView_GPUDescription": "GPU-Beschreibung",
     "ControlView_Game": "Spiel",
-    "ControlView_Loading": "Wird geladen...",
     "ControlView_LoadingRecords": "Aufnahmen werden geladen...",
     "ControlView_MoveRecordingFileS": "Aufnahmedatei(en) verschieben",
     "ControlView_ObservedDirectoryMissingOpenThe": "Überwachter Ordner nicht gefunden.\nÖffne oben die Ordnerauswahl und wähle einen Ordner aus.",

@@ -45,25 +45,23 @@ namespace CapFrameX.Test.ViewModel
 
             var files = (listing ?? new DirectoryInfo(folder).GetFiles("*.json")).ToArray();
             _listing = new BehaviorSubject<IEnumerable<FileInfo>>(files);
-            var observer = new Mock<IRecordDirectoryObserver>();
-            observer.SetupGet(value => value.FileCreatedStream).Returns(_created);
-            observer.SetupGet(value => value.FileDeletedStream).Returns(new Subject<FileInfo>());
-            observer.SetupGet(value => value.FileChangedStream).Returns(_changed);
-            observer.SetupGet(value => value.DirectoryFilesStream).Returns(_listing);
-            observer.SetupGet(value => value.ObservingDirectoryStream)
+            Observer.SetupGet(value => value.FileCreatedStream).Returns(_created);
+            Observer.SetupGet(value => value.FileDeletedStream).Returns(new Subject<FileInfo>());
+            Observer.SetupGet(value => value.FileChangedStream).Returns(_changed);
+            Observer.SetupGet(value => value.DirectoryFilesStream).Returns(_listing);
+            Observer.SetupGet(value => value.ObservingDirectoryStream)
                 .Returns(new BehaviorSubject<DirectoryInfo>(new DirectoryInfo(folder)));
 
-            var events = new EventAggregator();
-            events.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
+            Events.GetEvent<PubSubEvent<ViewMessages.UpdateSession>>()
                 .Subscribe(LoadedSessions.Add, ThreadOption.PublisherThread, true);
-            events.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>()
+            Events.GetEvent<PubSubEvent<ViewMessages.UpdateRecordInfos>>()
                 .Subscribe(message => RecordInfoUpdates.Add(message.RecordInfo), ThreadOption.PublisherThread, true);
 
             var configuration = new Mock<IAppConfiguration>();
             configuration.SetupAllProperties();
             configuration.Object.ObservedDirectory = folder;
-            var pathService = new Mock<IPathService>();
-            pathService.Setup(service => service.ResolveDocumentsPlaceholder(It.IsAny<string>()))
+            Configuration = configuration.Object;
+            PathService.Setup(service => service.ResolveDocumentsPlaceholder(It.IsAny<string>()))
                 .Returns((string path) => path);
 
             var recordManager = new RecordManager(new Mock<ILogger<RecordManager>>().Object,
@@ -72,7 +70,7 @@ namespace CapFrameX.Test.ViewModel
                 FileAccessScheduler = Clock
             };
             // The listing reaches the list through the dispatcher, after these are set.
-            Model = new ControlViewModel(observer.Object, events, configuration.Object, pathService.Object,
+            Model = new ControlViewModel(Observer.Object, Events, Configuration, PathService.Object,
                 recordManager, Mock.Of<ISystemInfo>(), null, NullLogger<ControlViewModel>.Instance,
                 new ApplicationState(), Queue)
             {
@@ -87,6 +85,10 @@ namespace CapFrameX.Test.ViewModel
         public HistoricalScheduler Clock { get; } = new HistoricalScheduler();
         public RecordWriteQueue Queue { get; } = new RecordWriteQueue(null);
         public ControlViewModel Model { get; }
+        public IAppConfiguration Configuration { get; }
+        public Mock<IRecordDirectoryObserver> Observer { get; } = new Mock<IRecordDirectoryObserver>();
+        public Mock<IPathService> PathService { get; } = new Mock<IPathService>();
+        public EventAggregator Events { get; } = new EventAggregator();
         public List<ViewMessages.UpdateSession> LoadedSessions { get; } = new List<ViewMessages.UpdateSession>();
         public List<IFileRecordInfo> RecordInfoUpdates { get; } = new List<IFileRecordInfo>();
 
