@@ -86,7 +86,7 @@ Choose a renderer under **Overlay → OSD options**. The following describes 1.9
 | --- | --- |
 | **CapFrameX in-game** | The default for new configurations since 1.9.2, with DirectX and Vulkan integration and game compatibility profiles. Available again since v1.9.1. Direct3D 9 games, games with a detected anti-cheat and games on the injection blacklist, which it cannot draw in, get the hook-free overlay instead. |
 | **CapFrameX hook-free** | Built-in overlay without injecting into the game, with an output-display picker and chart refresh control. |
-| **RTSS** | Uses [RivaTuner Statistics Server](https://www.guru3d.com/content-page/rivatuner.html), which must be installed separately. |
+| **RTSS** | Uses [RivaTuner Statistics Server](https://www.guru3d.com/download/rtss-rivatuner-statistics-server-download/), which must be installed separately. |
 | **Off** | No overlay at all: CapFrameX injects nothing into games, creates no overlay window and does not feed RTSS. Captures, sensors and the remote API (`/api/osd`, `/ws/osd`) keep working. Use it for capture-only setups, or to rule out the overlay when a game misbehaves. |
 
 With **Off**, the overlay switches and the overlay hotkey have no effect. Two things stay outside its reach:
