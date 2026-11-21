@@ -133,7 +133,7 @@ The **Style** tab holds what all tiles share: **Tile opacity** fades the backgro
 
 A tile design can span the whole width of the screen: in the designer, enable **Layout → Span the full screen width**. The CapFrameX in-game and hook-free renderers then stretch every tile horizontally to the screen width between the left and right margin, at any resolution and aspect ratio. Heights and text keep their size, so charts get longer while values stay at the edge of their tiles. **Edge** below the switch puts the overlay at the top or the bottom of the screen whatever corner it is anchored to, or lets that corner decide; set the horizontal margin to 0 for a strip from edge to edge. The designer shows the design at its own width. RTSS is not affected.
 
-The **Performance Strip** design ([`overlay-templates/Performance-Strip.json`](overlay-templates/Performance-Strip.json), also in the design list) is such a strip along the bottom of the screen: a frame time graph on the left, average, 1% low and current FPS on the right, and the frame rate across the full width below them, both graphs with thick grid lines on a dark plot area that stays readable over bright scenes.
+The **Performance Strip** design ([`overlay-templates/Performance-Strip.json`](overlay-templates/Performance-Strip.json), also in the design list) is such a strip along the bottom of the screen: a frame time graph on the left, average, 1% low and current FPS on the right, and the frame rate across the full width below them, both graphs with wide green lines and thick grid lines on a dark plot area that stays readable over bright scenes.
 
 ### Frame rate graphs and grid lines
 

@@ -60,7 +60,7 @@ namespace CapFrameX.OSD.Integration
     /// </summary>
     public static class OverlayDesignStarterCatalog
     {
-        public const int Version = 34;
+        public const int Version = 35;
         private static readonly Lazy<IReadOnlyList<OverlayDesignStarterProfile>> Catalog = new Lazy<IReadOnlyList<OverlayDesignStarterProfile>>(Load);
         public static IReadOnlyList<OverlayDesignStarterProfile> Profiles => Catalog.Value;
 
@@ -175,6 +175,8 @@ namespace CapFrameX.OSD.Integration
                 // a canvas tile clips at its frame, which cut off the bottom of the digits and the descenders.
                 // Version thirty-four gave the Performance Strip's charts a darker plot and outlines and grid lines
                 // of two pixels in opaque white: its one-pixel lines on a 35 % plot were hard to see over bright scenes.
+                // Version thirty-five drew both of its charts in green and wider, the frame times 1 and the counted
+                // frame rate 2 design units (the chart's own line width), as the maintainer set them up.
                 // Never replace a renamed or edited profile.
                 string[] previousDesignHashes = entry.Id switch
                 {
@@ -230,7 +232,11 @@ namespace CapFrameX.OSD.Integration
                         "BD5DB1FD01A7D5D7B5FCE3BC2B6C39CD1B2CF16E399786C1798B3AC3B56A90FD"
                     },
                     "AQUALINE-GeForce-RTX" => new[] { "FE9A03B2EC3A022207C1C30787E3837CA9EC42AE73EBE436E039D7FBE00D13EF" },
-                    "Performance-Strip" => new[] { "BF5B45E85723D2F5EEDE79E7746951D0E0CE279B57B25894CB7D5365BAA40BC3" },
+                    "Performance-Strip" => new[]
+                    {
+                        "BF5B45E85723D2F5EEDE79E7746951D0E0CE279B57B25894CB7D5365BAA40BC3",
+                        "7F11D86EBE1DA587ACD9A8559AE0791D2261F6B92A235F089BFE299B93359D63"
+                    },
                     "turquoise-reference" => new[] { "8D87F7B59BA05436CA4968439662372DE4D6E14FFE199B1CE87598DDE181EB06" },
                     "hybrid-benchmark" => new[] { "7F7D44B0D8CE8CAAD9D448DA2265E6A192AD50DF2E0232882236D7B46C0629EB" },
                     "hybrid-compact" => new[] { "F5EEAC1DAF3BDDF9091F000217553F526FA4D47B3FE34769B39A5F0E74D7C6F3" },

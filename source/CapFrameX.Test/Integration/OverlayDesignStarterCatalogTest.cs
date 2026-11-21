@@ -758,6 +758,26 @@ namespace CapFrameX.Test.Integration
                 && chart.ChartBorderWidth == 1.5), "Both charts draw a dark plot with white lines.");
             Assert.IsTrue(scene.Descendants().OfType<JObject>().Where(widget => (string)widget["type"] == "chart")
                 .All(widget => (double?)widget["borderWidth"] == 1.5 * document.Scale), "The renderer receives the line width at the design's scale.");
+
+            // Version thirty-five: both charts draw their lines in green and wider than the one-pixel default, the frame
+            // times 1 and the counted frame rate 2 design units, a pixel and a half and three pixels at 1080p.
+            Assert.IsTrue(charts.All(chart => chart.Color == "#00FF40FF"), "Both charts draw green lines.");
+            CollectionAssert.AreEqual(new double?[] { 1, 2 }, charts.Select(chart => chart.ChartLineWidth).ToArray());
+            CollectionAssert.AreEqual(new double?[] { 1.5, 3 }, scene.Descendants().OfType<JObject>()
+                .Where(widget => (string)widget["type"] == "chart").Select(widget => (double?)widget["lineWidth"]).ToArray(),
+                "The renderer receives the graph line widths at the design's scale.");
+            Assert.IsTrue(values.All(value => value.Unit == "" && value.Key.StartsWith("fps", StringComparison.Ordinal)),
+                "The values stay semantic keys, bound on every PC, with the unit the binder adds.");
+
+            // Unmodified copies of earlier versions take the current one: version thirty-four had red one-pixel
+            // lines, version thirty also its light plot and one-pixel outlines.
+            foreach (var chart in charts)
+            {
+                chart.Color = "#FF3B30FF";
+                chart.ChartLineWidth = null;
+            }
+            Assert.IsTrue(starter.CanUpdate(new OverlayDesignProfile(starter.Id, starter.Name, document.ToJson(), DateTime.UtcNow)),
+                "An unmodified version-thirty-four Performance Strip gets the green and wider lines.");
             foreach (var chart in charts)
             {
                 chart.ChartBackgroundColor = "#00000059";
@@ -766,6 +786,9 @@ namespace CapFrameX.Test.Integration
             }
             Assert.IsTrue(starter.CanUpdate(new OverlayDesignProfile(starter.Id, starter.Name, document.ToJson(), DateTime.UtcNow)),
                 "An unmodified version-thirty Performance Strip gets the darker charts and the wider lines.");
+            charts[0].Color = "#00FF40FF";
+            Assert.IsFalse(starter.CanUpdate(new OverlayDesignProfile(starter.Id, starter.Name, document.ToJson(), DateTime.UtcNow)),
+                "An edited copy stays as it is.");
         }
 
         [TestMethod]

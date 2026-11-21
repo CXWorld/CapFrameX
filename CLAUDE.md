@@ -697,7 +697,12 @@ frame rate (`framespersecond`), both charts with grid lines; authored at 1280 ×
 Catalog version 34 (2026-11-20) darkened both plots (`#000000CC` instead of `#00000059`) and drew their
 outlines and grid lines in opaque white at 1.5 design units, two pixels at 1080p and 100 % (see "Counted
 frame rates and grid lines"): the one-pixel lines were hard to see over bright scenes. It replaces
-unmodified version-30 copies.
+unmodified version-30 copies. Catalog version 35 (2026-11-21) took over the maintainer's own setup: both
+charts draw their lines in green (`#00FF40FF`) and with a graph line width of their own, the frame times
+1 and the counted frame rate 2 design units (1.5 and 3 px at 1080p). Copied from the saved profile, whose
+values the editor had bound to this PC (`metric/OnlineAverage`, unit "FPS"), so they were mapped back to
+the semantic keys `fps`, `fps1pctLow` and `fpsCurrent` with an empty unit. It replaces unmodified
+version-30 and version-34 copies.
 Its values carry the unit the binder adds ("FPS"), and a menu shows four-digit frame rates: more than
 a tile may hold. Since 2026-11-06 a value wider than its tile shrinks with its unit until it fits, in
 every design and every CapFrameX renderer, instead of being clipped (OSD repo CLAUDE.md, "Values wider
@@ -753,9 +758,10 @@ empty width field, this one and the outline's, shows that pixel as a grey placeh
 design units, "0.67 (1 px)" at scale 1.5 (`OsdOnePixelWidthConverter`, 1 / scale; the renderer keeps the
 pixel at every zoom, a typed width grows with it): an empty field looked as if no width were in use
 (2026-11-21). The container scaling, the tile style copy and a change of kind treat it like the outline
-width. The Performance Strip starter does not set it. The prebuilt core, hooks, layers and Controls must
-contain this change: a Controls build without it rejects designs that set it, older renderers draw
-one-pixel lines. Tests: OSD `design_test` (`chartDataLineWidthTests`), the editor demo's `--verify`,
+width. The Performance Strip starter sets it since catalog version 35 (1 and 2 design units, see
+"Full-width designs"). The prebuilt core, hooks, layers and Controls must contain this change: a
+Controls build without it rejects designs that set it, older renderers draw one-pixel lines. Tests: OSD
+`design_test` (`chartDataLineWidthTests`), the editor demo's `--verify`,
 `AChartLineWidthIsATileFieldTheRendererDraws`, `EmptyChartWidthFieldsShowTheOnePixelTheRendererDraws`.
 
 ### Overlay fonts
