@@ -748,12 +748,15 @@ antialiased and unrounded, from 0.5 to 8 physical pixels, in every raster path (
 in-game D3D11, the CPU producer of the D3D12 hook and the Vulkan layer, the editor preview, × its fit
 there). The cap is the cost: the coverage raster of the 1920 px strip took 1.5× the time of a one-pixel
 line at 2 px, 3× at 4 px, 7× at 8 px and 24× at 16 px (`chart_perf_bench --line-widths`). Unset, nothing
-is exported and the line keeps the process-wide width (`chartLineWidth` in OsdDebug.json, 1 px). The
-container scaling, the tile style copy and a change of kind treat it like the outline width. The
-Performance Strip starter does not set it. The prebuilt core, hooks, layers and Controls must contain
-this change: a Controls build without it rejects designs that set it, older renderers draw one-pixel
-lines. Tests: OSD `design_test` (`chartDataLineWidthTests`), the editor demo's `--verify`,
-`AChartLineWidthIsATileFieldTheRendererDraws`.
+is exported and the line keeps the process-wide width (`chartLineWidth` in OsdDebug.json, 1 px). An
+empty width field, this one and the outline's, shows that pixel as a grey placeholder in the field's
+design units, "0.67 (1 px)" at scale 1.5 (`OsdOnePixelWidthConverter`, 1 / scale; the renderer keeps the
+pixel at every zoom, a typed width grows with it): an empty field looked as if no width were in use
+(2026-11-21). The container scaling, the tile style copy and a change of kind treat it like the outline
+width. The Performance Strip starter does not set it. The prebuilt core, hooks, layers and Controls must
+contain this change: a Controls build without it rejects designs that set it, older renderers draw
+one-pixel lines. Tests: OSD `design_test` (`chartDataLineWidthTests`), the editor demo's `--verify`,
+`AChartLineWidthIsATileFieldTheRendererDraws`, `EmptyChartWidthFieldsShowTheOnePixelTheRendererDraws`.
 
 ### Overlay fonts
 

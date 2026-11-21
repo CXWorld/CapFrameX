@@ -139,7 +139,8 @@ namespace CapFrameX.Test.Integration
         }
 
         // The editor in a window with the app's theme, which is where the slider and its halo come from.
-        private sealed class ThemedEditor : IDisposable
+        // The editor in the app's theme, in a window off the screen; OverlayChartWidthFieldTest uses it too.
+        internal sealed class ThemedEditor : IDisposable
         {
             public OsdEditorControl Editor { get; }
             public Window Window { get; }
