@@ -12,6 +12,39 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Simplified Chinese in the tile designer (2026-11-21)
+
+Controls was rebuilt in `Release|x64` for `net11.0-windows` (.NET SDK 11.0.100,
+`dotnet build CapFrameX.OSD.sln -c Release --no-incremental`) from the OSD working tree that is now
+commit `0e23a00e60e8239fb9e22f537c64c7e4e1d77abf` (`main`, on `d2c0b9f`, which the DLL's product
+version still names): the catalogs `Editor.zh.json` (529 texts) and `Templates.zh.json` (148 texts),
+and `zh` in the language list of `OsdLocalization.LoadCatalogs`.
+Controls loads a fixed list of languages and shows every other one in English, so a CapFrameX set
+to Simplified Chinese (pull request 484) showed the designer and its template gallery in English.
+
+The author of that pull request translated both catalogs and attached them to it as
+`CapFrameX-OSD-designer-zh.zip` (SHA-256
+`F19270D15BE5554082D987C8DDB4D4A1FC648049170ACF4E5A7C02FF959AE904`); they keep the keys, the order
+and the placeholders of the English catalogs. Four texts differ from the attachment:
+`Editor_PixelShift` takes the term of `OverlayView_PixelOrbit` in CapFrameX's `zh.json`, and
+`Editor_BarThickness`, `Editor_BarVerticalHint` and `Editor_BarOrientationInvalid` name a bar and
+its directions with the words of the catalog's other bar texts. `Editor.zh.json` and
+`Templates.zh.json` are copied here beside the English and Korean ones. Interop was rebuilt along
+but not copied (its sources are unchanged); the native DLLs, both Vulkan manifests and the
+catalogs of the other languages are unchanged by this entry.
+
+Verification: a CapFrameX Release build with `CfxOsdFromSource=false` staged exactly this DLL, the
+Interop and the native core of this folder into the test output and passed all 3755 tests outside
+the `Integration` category, among them `OverlayDesignerLocalizationTest` with `zh` in its languages
+(the keys and placeholders of the English catalogs, no key twice, the sidebar tabs at the minimum
+editor width). Off-screen renderings of the editor in Chinese (the Tile, Sources, Layout and Style
+tabs at 1280 × 900) showed no cut-off label. The running app, the template gallery and the profile
+dialogs were not looked at in Chinese yet.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net11.0-windows\CapFrameX.OSD.Controls.dll | `8EA440B108A57DE5840D3F20C05CB0692E2B973FEA5BF8F4BED28F9104E0864D` |
+
 ### Graph line width of charts (2026-11-20)
 
 All five native trees were rebuilt clean (VS 2026/v145 with MSVC 14.52, `RelWithDebInfo`,
@@ -2421,6 +2454,9 @@ As of the frame-generation telemetry rebuild (2026-10-14):
 
 - `net11.0-windows/` — `CapFrameX.OSD.Interop.dll` (managed P/Invoke bridge, x64) and
   `CapFrameX.OSD.Controls.dll` (reusable WPF design editor and native preview)
+- `Localization/` — copies of the English, Korean and Simplified Chinese editor and template
+  catalogs (`Editor.<code>.json`, `Templates.<code>.json`) for translators. The editor reads the
+  catalogs embedded in the Controls DLL, so these copies change only together with that DLL
 - `native/cfx_osd_core.dll` — native renderer (x64, RelWithDebInfo)
 - `native/cfx_osd_hook.dll` — x64 DXGI hook, including exact swapchain capture through
   Streamline's factory methods, FidelityFX frame-generation creation APIs, and XeSS-FG's public
