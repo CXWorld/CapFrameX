@@ -87,7 +87,7 @@ namespace CapFrameX.Test.Integration
             string language = OsdLocalization.Instance.Language;
             try
             {
-                foreach (string code in new[] { "en", "de", "es", "ru", "ko" })
+                foreach (string code in new[] { "en", "de", "es", "ru", "ko", "zh" })
                 {
                     OsdLocalization.SetLanguage(code);
                     foreach (string key in keys)

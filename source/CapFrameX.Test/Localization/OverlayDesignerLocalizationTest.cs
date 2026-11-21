@@ -25,7 +25,7 @@ namespace CapFrameX.Test.Localization
     [DoNotParallelize]
     public class OverlayDesignerLocalizationTest
     {
-        private static readonly string[] Languages = { "en", "de", "es", "ru", "ko" };
+        private static readonly string[] Languages = { "en", "de", "es", "ru", "ko", "zh" };
         private string _originalUiLanguage;
         private string _originalEditorLanguage;
 
@@ -171,7 +171,7 @@ namespace CapFrameX.Test.Localization
                 int changed = 0;
                 editor.DocumentEdited += (_, _) => changed++;
 
-                foreach (string language in new[] { "de", "es", "ru", "ko", "en" })
+                foreach (string language in new[] { "de", "es", "ru", "ko", "zh", "en" })
                 {
                     OsdLocalization.SetLanguage(language);
                     DrainBindings();
@@ -220,7 +220,7 @@ namespace CapFrameX.Test.Localization
                 var save = (Button)host.FindName("SaveProfileButton");
                 string english = save.Content.ToString();
 
-                foreach (string language in new[] { "de", "es", "ru", "ko" })
+                foreach (string language in new[] { "de", "es", "ru", "ko", "zh" })
                 {
                     CxLang.Instance.SetUiLanguage(language);
                     DrainBindings();
@@ -260,7 +260,7 @@ namespace CapFrameX.Test.Localization
                 string bytes = File.ReadAllText(path);
                 int changes = 0;
                 service.Changed += (_, _) => changes++;
-                foreach (string language in new[] { "de", "es", "ru", "ko" })
+                foreach (string language in new[] { "de", "es", "ru", "ko", "zh" })
                 {
                     CxLang.Instance.SetUiLanguage(language);
                     Assert.AreNotEqual(englishStatus, service.Status);
@@ -284,7 +284,7 @@ namespace CapFrameX.Test.Localization
             document.Name = "";
             var error = Assert.ThrowsExactly<FormatException>(() => document.ToJson());
             string english = error.Message;
-            foreach (string language in new[] { "de", "es", "ru", "ko" })
+            foreach (string language in new[] { "de", "es", "ru", "ko", "zh" })
             {
                 OsdLocalization.SetLanguage(language);
                 string translated = Assert.ThrowsExactly<FormatException>(() => document.ToJson()).Message;
@@ -302,6 +302,7 @@ namespace CapFrameX.Test.Localization
         [DataRow("es")]
         [DataRow("ru")]
         [DataRow("ko")]
+        [DataRow("zh")]
         public void TranslatedSidebarTabsFitAtTheMinimumEditorWidth(string language)
         {
             OsdLocalization.SetLanguage(language);

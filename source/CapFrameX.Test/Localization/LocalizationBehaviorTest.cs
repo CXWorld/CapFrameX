@@ -196,6 +196,28 @@ namespace CapFrameX.Test.Localization
         }
 
         [TestMethod]
+        [DataRow(936, true)]
+        [DataRow(65001, true)]
+        [DataRow(1252, false)]
+        public void RtssOutput_ChineseNeedsTheSimplifiedChineseCodePage(int codePage, bool supportsChinese)
+        {
+            CxLang.Instance.SetOverlayLanguage("zh");
+            using var entry = new OverlayEntryWrapper("CaptureServiceStatus")
+            {
+                GroupName = "CPU power", GroupNameFormat = "<C1>{0}<C>",
+                Value = "Ready to capture...", ValueFormat = "<S2><C3>{0}<C><S>"
+            };
+            string translatedGroup = CxLang.Instance.TranslateOverlay(entry.GroupName);
+            string translatedStatus = CxLang.Instance.TranslateOverlay((string)entry.Value);
+            Assert.AreNotEqual(entry.GroupName, translatedGroup, "zh.json translates sensor names through its phrases.");
+            Assert.AreNotEqual((string)entry.Value, translatedStatus, "zh.json has an exact entry for the capture status.");
+            Assert.AreEqual("<C1>" + (supportsChinese ? translatedGroup : entry.GroupName) + "<C>",
+                RtssTextFormatter.FormatGroupName(entry, codePage));
+            Assert.AreEqual("<S2><C3>" + (supportsChinese ? translatedStatus : (string)entry.Value) + "<C><S>",
+                RtssTextFormatter.FormatValue(entry, codePage));
+        }
+
+        [TestMethod]
         [DataRow("es", "listo para capturar...")]
         [DataRow("ru", "готов к захвату...")]
         [DataRow("de", "bereit zur Aufnahme...")]

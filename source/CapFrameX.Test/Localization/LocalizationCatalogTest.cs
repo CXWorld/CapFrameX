@@ -118,6 +118,38 @@ namespace CapFrameX.Test.Localization
 			Assert.AreEqual(0, missing.Count, "OSD status values without an \"overlay\" entry in en.json: " + string.Join(", ", missing));
 		}
 
+		// RTSS takes its text in the Windows ANSI code page, and RtssTextFormatter shows a label the
+		// code page cannot represent in English. On a Simplified Chinese Windows (code page 936) every
+		// Chinese label has to arrive, so none may use a character outside GBK.
+		[TestMethod]
+		public void EveryChineseOverlayTextFitsTheCodePageOfASimplifiedChineseWindows()
+		{
+			var root = FindRepositoryRoot();
+			var chinese = JObject.Parse(File.ReadAllText(Path.Combine(root, "source", "CapFrameX.Contracts", "Localization", "zh.json")));
+			var gbk = System.Text.CodePagesEncodingProvider.Instance.GetEncoding(936,
+				System.Text.EncoderFallback.ExceptionFallback, System.Text.DecoderFallback.ExceptionFallback);
+			Assert.IsNotNull(gbk, "Code page 936 is not available.");
+
+			var texts = ((JObject)chinese["overlay"]).Properties().Select(property => (string)property.Value)
+				.Concat(((JArray)chinese["phrases"]).Select(phrase => (string)phrase["replacement"]))
+				.ToList();
+			Assert.IsTrue(texts.Count > 100, "The overlay labels and phrases of zh.json were not found.");
+
+			var lost = new List<string>();
+			foreach (var text in texts)
+			{
+				try
+				{
+					gbk.GetByteCount(text ?? string.Empty);
+				}
+				catch (System.Text.EncoderFallbackException)
+				{
+					lost.Add(text);
+				}
+			}
+			Assert.AreEqual(0, lost.Count, "RTSS would show these labels in English on a Chinese Windows: " + string.Join(", ", lost.Take(20)));
+		}
+
 		private static bool IsBuildOutput(string path)
 			=> path.IndexOf(Path.DirectorySeparatorChar + "bin" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) >= 0
 				|| path.IndexOf(Path.DirectorySeparatorChar + "obj" + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase) >= 0;

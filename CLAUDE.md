@@ -1364,6 +1364,43 @@ RX 9070 XT beside the 9800X3D's iGPU (`FrameViewSensorImportAmdTest`). Its AMDPw
 to the iGPU, not the card: 79 W at full load against 292 W GPU TBP in a native capture, and NA with the
 iGPU off in the BIOS. The import keeps FrameView's values as reported.
 
+## Languages
+
+`CxLang` (`CapFrameX.Contracts/Localization`) loads every embedded `Localization\<code>.json` and
+lists it in the settings: en, de, es, ko, ru and, since pull request 484 (2026-11-21, 1.9.3), zh
+(Simplified Chinese, culture `zh-CN`). The interface and the overlay language are separate settings,
+both `en` by default; only the message about a start from a temporary folder, shown before any
+setting exists, takes the language of Windows by its two-letter code, so every Chinese Windows reads
+it in Simplified Chinese. A new catalog needs no code (README "Adding a new language"), and
+`LocalizationCatalogTest` checks every catalog it finds. What does not follow by itself:
+
+- **The tile designer.** `OsdLocalization` (OSD Controls) reads `Editor.<code>.json` and
+  `Templates.<code>.json`, embedded in `CapFrameX.OSD.Controls.dll`, for a fixed list of languages
+  (`LoadCatalogs`); any other language shows English. A new language needs both catalogs in the OSD
+  repo (`CapFrameX.OSD.Controls\Localization`), its code in that list and a prebuilt Controls that
+  contains them. The catalogs are plain JSON read into a dictionary in the type's static initializer:
+  a comment or a trailing comma would take the whole designer down, and only
+  `OverlayDesignerLocalizationTest` checks them (the keys and placeholders of the English catalogs,
+  no key twice).
+  `external/CapFrameX.OSD-prebuilt/Localization` holds copies of the en, ko and zh catalogs for
+  translators; they change only together with the Controls DLL. A contributor cannot add designer
+  catalogs through a pull request here: the Chinese ones came as a .zip attached to the pull request.
+- **Tests that name the languages.** `OverlayDesignerLocalizationTest` (`Languages`, the loops over
+  the translated languages, the rows of `TranslatedSidebarTabsFitAtTheMinimumEditorWidth`) and
+  `OverlayTileStyleTest` list the designer's languages.
+- **RTSS.** RTSS takes its text in the Windows ANSI code page. `RtssTextFormatter` shows a label the
+  code page cannot represent in English, label by label, so Chinese reaches RTSS only on a Windows
+  with code page 936 or UTF-8. `EveryChineseOverlayTextFitsTheCodePageOfASimplifiedChineseWindows`
+  keeps the overlay labels and phrase replacements of `zh.json` inside GBK;
+  `RtssOutput_ChineseNeedsTheSimplifiedChineseCodePage` covers the fallback.
+
+Metric names (`EMetric_*` and the matching `DataView_*` and `ReportView_*` entries) have to stay
+short in every language: the metric selections of the Aggregation and Comparison pages are 120 and
+125 px wide, those of the Capture page are narrow too, and a closed box shows about seven Chinese
+characters. `zh.json` shows technical terms as "中文 (English)" elsewhere, but not in these names, and
+its GPU and CPU Active metrics start with "GPU 活动" and "CPU 活动" so they differ within the visible
+part.
+
 ## Text field styles
 
 `CapFrameX.View/Styles/CxTextFields.xaml` (merged in `App.xaml`) replaces MDIX's implicit `TextBox`
