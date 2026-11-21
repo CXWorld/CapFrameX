@@ -12,6 +12,146 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Frame generation factor and frame generation recognized from the frame counts (2026-11-21)
+
+All five native trees were rebuilt clean (VS 2026/v145 with MSVC 14.52, `RelWithDebInfo`,
+`--clean-first`, x64 and x86) from the OSD working tree on commit
+`d2c0b9f538d83aa23cb56abd36731ec40f92c478` (`main`) with the hook change of the entry below and a
+second one on top of it: `hook_poc/src/frame_generation_counts.*` (new, part
+of the telemetry library, with its test), `frame_generation_telemetry.*` and its test,
+`fidelityfx_provider_version.cpp`, `upscaler_runtime_use.*` (comments and a test case),
+`present_hook.cpp` and `hook_poc/CMakeLists.txt`, documented in `hook_poc/README.md` and the OSD
+repo's CLAUDE.md. Both changes were committed after the build, unchanged, as OSD commit
+`7c236f803e4f209df8e0d5d79ab09ac387675c59` (`main`), on top of `0e23a00`, which changed the Controls
+only.
+
+- The hook counts the frames that reach the display (native Presents), the application's Presents to
+  the swapchain of a frame generation runtime where it hooks that swapchain, and the calls an
+  application makes once per frame for its frame generation: `slGetNewFrameToken` of
+  `sl.interposer.dll`, the FidelityFX frame generation prepare dispatch and
+  `xefgSwapChainTagFrameConstants` of `libxess_fg.dll`. The counters go to
+  `Local\CfxOsdHookFrameCountsV1_<pid>` (80 bytes), written by a displayed frame at most four times per
+  second. CapFrameX divides them for its "Frame generation factor" entry.
+- The control telemetry also takes XeSS-FG and FSR frame generation from these counters while it has
+  not seen the application's switch: an application that switched its frame generation on before the
+  hook attached may never call the switch again, and the status stayed at N/A for the session. From
+  1.5 displayed frames per application frame the runtime is reported as generating, up to 1.25 as
+  not; the first control call of the runtime takes over, and the counters never take the technology
+  from another runtime.
+- `nvngx_dlssg.dll` is never patched. With the evaluation export of DLSS-G 310.7.0 hooked, every
+  evaluation failed with `NVSDK_NGX_Result_FAIL_PlatformError` on an RTX 5090 at 2x, 3x and 4x; the
+  hooks of this entry and of the entry below leave that library alone.
+- `CFX_HOOK_LOG`: `frame counts in 2.0 s: displayed …, proxy presents …, Streamline frames …` every
+  2 s while a runtime is called, and `XeSS frame generation generates: seen in the frame counts, …`.
+
+CapFrameX reads the counters with `HookFrameCountsProbe` and measures with
+`FrameGenerationFactorTracker`; a hook from before this change has no such mapping, and its
+telemetry does not recognize XeSS-FG after a late attach. Core and Vulkan layer sources are unchanged
+since `d2c0b9f`. The layers differ from the previous ones in the build timestamps and in
+`CFX_VK_COMPATIBILITY_BUILD`, which hashes every `hook_poc` header. Controls was rebuilt along
+(`dotnet build CapFrameX.OSD.sln -c Release --no-incremental`) and is byte for byte the DLL of the
+entry "Simplified Chinese in the tile designer"; Interop was rebuilt along but not copied (its
+sources are unchanged since `b0243d6`). Both Vulkan manifests and the catalogs are unchanged.
+
+Verification: the core CTests pass apart from `chart_gpu_raster`, which fails on this machine's RTX 5090
+on unchanged sources as well ("retracing a line must not accumulate opacity"). The 38 hook CTests,
+among them the new `frame_generation_counts`, and the 10 Vulkan CTests pass on x64 and x86, all
+without compiler warnings; the link step of both layers reports LNK4199 for three delay-load options
+without imports (`d3d12.dll`, `dxgi.dll`, `windowscodecs.dll`). The editor demo's `--verify` (1778
+checks) and `--verify-native` (1241 checks for 68 templates) passed with these builds. Both hooks
+contain the names of the three mappings. A CapFrameX Release build with `CfxOsdFromSource=false`
+staged exactly these five binaries, the Controls and the Interop of this folder into the app and the
+test output and ran the tests outside the `Integration` category: all 3823 passed, among them
+`HookFrameCountsProbeTest` and `FrameGenerationFactorTrackerTest`.
+
+Unlike the entry below, a hook wrote the mappings that were read here: the real frame generation of
+CapFrameX.Test (`cfx_d3d12_x64.exe --fg-real …`, the x64 hook injected after the device was ready, the
+counters read from another process once per second) ran with this x64 hook for XeSS-FG (the telemetry
+unknown for two seconds, then XeSS on; 2.00 displayed frames per application frame) and FSR (FSR on
+from the control telemetry; 2.00). With the incremental build of the same sources it also ran for
+DLSS 2x, 3x and 4x (241, 360 and 480 displayed frames per 120 Streamline frames, no evaluation error
+in the Streamline log), for DLSS 4x and XeSS-FG on the generic route (compatibility flags `0x4`), and
+a probe evaluated DLSS Super Resolution 2.2.10 to 310.9.16, Ray Reconstruction and XeSS 2.0.2 through
+their SDKs with the hook's upscaler unit armed. No game ran with these binaries yet, and the x86
+hook ran in its CTests only.
+
+The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only CapFrameX
+registrations in both HKLM views) were not replaced: they are those of the entry of 2026-11-20
+(`26D35F50…`, `F2BD47D8…`), built from the same layer sources.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `5CF54DC4C385EDDB05B35613412F89E41FCAF518D78588AA6E1517C85BB0A05D` |
+| native\cfx_osd_hook.dll | `4DE08640E82C8993952D0013D242620A966F4575D1218F31AB0F65CB506B90E1` |
+| native\x86\cfx_osd_hook.dll | `9DA0FED0C150206F11D495F1833C4B69B749A9933B3E618DD35D0E8506468F66` |
+| native\vk\cfx_osd_vklayer.dll | `D5A78EB4A5B43317943ACDECF16C49DED12D1D8683CE6D4CB2BBDC05B74527E5` |
+| native\vk\x86\cfx_osd_vklayer.dll | `06A217ED261CFF2A81D85CF6EEBA050ED85C00AD61FF1CA66F21FB6A4AD82AF2` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
+### Upscaler and frame generation versions from the hook (2026-11-21)
+
+All five native trees were rebuilt clean (VS 2026/v145 with MSVC 14.52, `RelWithDebInfo`,
+`--clean-first`, x64 and x86) from the OSD working tree on commit
+`d2c0b9f538d83aa23cb56abd36731ec40f92c478` (`main`) with a hook change that was committed later,
+together with that of the entry above, as OSD commit `7c236f803e4f209df8e0d5d79ab09ac387675c59`:
+`hook_poc/src/fidelityfx_provider_version.*` and `upscaler_runtime_use.*` (new, part of the telemetry
+library, each with its test), `frame_generation_telemetry.*`, `present_hook.cpp` and
+`hook_poc/CMakeLists.txt`, documented in `hook_poc/README.md` and the OSD repo's CLAUDE.md. The
+binaries of this entry were replaced by those of the entry above before they were committed here; its
+table records the build this entry verified.
+
+- FSR: the hook observes `ffxDispatch` of every FidelityFX API library and, after a successful upscale
+  or frame generation dispatch, asks the library for the provider of that context (`ffxQuery`,
+  `GET_PROVIDER_VERSION`). Version and time of the last dispatch go to
+  `Local\CfxOsdHookFidelityFxV1_<pid>`.
+- DLSS and XeSS: the hook observes the evaluation a game asks for with every frame
+  (`NVSDK_NGX_D3D12_EvaluateFeature` and `NVSDK_NGX_D3D11_EvaluateFeature` of `nvngx_dlss.dll` and
+  `nvngx_dlssd.dll`, also as the `<id>.bin` the NGX updater downloaded; `xessD3D12Execute` and
+  `xessD3D11Execute` of `libxess.dll` and `libxess_dx11.dll`). The time of the last successful
+  evaluation and the file version of the library that ran it go to
+  `Local\CfxOsdHookUpscalerUseV1_<pid>`.
+- A library that is loaded but neither dispatched nor evaluated reports nothing. `CFX_HOOK_LOG` names
+  every change (`FidelityFX upscaler provider: …`, `upscaler in use: …`).
+
+CapFrameX reads both mappings for its "Upscaler version" and "Frame generation version" entries
+(`HookFidelityFxVersionProbe`, `HookUpscalerUseProbe`); a hook from before this change has neither
+mapping. Core and Vulkan layer sources are unchanged since `d2c0b9f`. The layers differ from the
+previous ones in the build timestamps and in `CFX_VK_COMPATIBILITY_BUILD`, which hashes every
+`hook_poc` header. Controls was rebuilt along (`dotnet build CapFrameX.OSD.sln -c Release
+--no-incremental`) and is byte for byte the DLL of the entry below; Interop was rebuilt along but not
+copied (its sources are unchanged). Both Vulkan manifests and the catalogs are unchanged.
+
+Verification: the core CTests pass apart from `chart_gpu_raster`, which fails on this machine's RTX 5090
+on unchanged sources as well ("retracing a line must not accumulate opacity"). The 37 hook CTests,
+among them the new `fidelityfx_provider_version` and `upscaler_runtime_use`, and the 10 Vulkan CTests
+pass on x64 and x86, all without compiler warnings; the link step of both layers reports LNK4199 for
+three delay-load options without imports (`d3d12.dll`, `dxgi.dll`, `windowscodecs.dll`). The editor
+demo's `--verify` (1778 checks) and `--verify-native` (1241 checks for 68 templates) passed with these
+builds. Both hooks contain the names of the two mappings. A CapFrameX Release build with
+`CfxOsdFromSource=false` staged exactly these five binaries, the Controls and the Interop of this folder
+into the test output and ran the tests outside the `Integration` category: all 3799 passed, among them
+the readers of both mappings (`HookFidelityFxVersionProbeTest`, `HookUpscalerUseProbeTest`) and
+`OverlayDesignerLocalizationTest` with the Chinese catalogs. Those readers are tested against mappings
+the tests write themselves: no game ran with these binaries yet, and no test reads a mapping a hook
+wrote.
+
+The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only CapFrameX
+registrations in both HKLM views) were not replaced: they are those of the entry of 2026-11-20
+(`26D35F50…`, `F2BD47D8…`), built from the same layer sources.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `DB308F4E87E66A97FD226F225DE53805567B97B5E4D0DC9DCFBC051111400CCC` |
+| native\cfx_osd_hook.dll | `D118E3201A3E1C0E57EA71CD39A84308E27BF50B73CAD35B7993A9FD9B5BD249` |
+| native\x86\cfx_osd_hook.dll | `B87E259A2900CC91C67D25511A1EAAEA9A272E20B50EA379FC193268261F3053` |
+| native\vk\cfx_osd_vklayer.dll | `A4F5908521C64AF2AB1B52E2A9A39B1F76C58B50FC2D521167A68273966A33DE` |
+| native\vk\x86\cfx_osd_vklayer.dll | `AEACC19B2CE60AA31EBF8301F81AA066C5EDAEA0FCDD0CB10F6E391A8E2F8D77` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Simplified Chinese in the tile designer (2026-11-21)
 
 Controls was rebuilt in `Release|x64` for `net11.0-windows` (.NET SDK 11.0.100,
