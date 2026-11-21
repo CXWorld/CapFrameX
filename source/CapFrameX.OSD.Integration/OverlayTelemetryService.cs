@@ -342,6 +342,9 @@ namespace CapFrameX.OSD.Integration
                 "HookOverlayStatus" => ("Performance", "Overlay", "", "hookStatus", true),
                 "FrameGenerationTechnology" => ("Performance", "Frame generation", "", "frameGenerationTechnology", true),
                 "FrameGenerationStatus" => ("Performance", "Frame generation", "", "frameGenerationStatus", true),
+                "FrameGenerationVersion" => ("Performance", "Frame generation", "", "frameGenerationVersion", true),
+                "FrameGenerationFactor" => ("Performance", "Frame generation", "", "frameGenerationFactor", true),
+                "UpscalerVersion" => ("Performance", "Upscaling", "", "upscalerVersion", true),
                 "CxAppCpuUsage" => ("System", "CapFrameX", "%", "appCpuLoad", false),
                 "SystemTime" => ("System", "Clock", "", "systemTime", true),
                 "CustomCPU" => ("Processor", "Information", "", "cpuName", true),
@@ -365,6 +368,7 @@ namespace CapFrameX.OSD.Integration
                 Subcategory = info.Item2, IsText = info.Item5, SemanticKey = info.Item4,
                 IsProcessSpecific = id is "Framerate" or "Frametime" or "DisplayTime" or "ProcessName" or "GraphicsAPI" or "Resolution"
                     or "HookOverlayStatus" or "FrameGenerationTechnology" or "FrameGenerationStatus"
+                    or "FrameGenerationVersion" or "FrameGenerationFactor" or "UpscalerVersion"
                     || id.StartsWith("Online", StringComparison.Ordinal),
                 // A renderer toggle controls live availability, never whether a source can be
                 // placed in a design intended for a different renderer or later session.

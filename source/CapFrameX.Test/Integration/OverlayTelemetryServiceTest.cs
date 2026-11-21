@@ -295,7 +295,9 @@ namespace CapFrameX.Test.Integration
                 "Online1PercentLow", "Online0dot1PercentLow", "Online0dot2PercentLow", "OnlineFrameTimeAverage",
                 "OnlineGpuActiveTimeAverage", "OnlineCpuActiveTimeAverage", "OnlineGpuActiveTimePercentageDeviation",
                 "OnlineStutteringPercentage", "OnlinePcLatency", "OnlinePresentMode", "OnlineAnimationError", "HookOverlayStatus",
-                "FrameGenerationTechnology", "FrameGenerationStatus", "Resolution"
+                "FrameGenerationTechnology", "FrameGenerationStatus", "FrameGenerationVersion",
+                "FrameGenerationFactor", "UpscalerVersion",
+                "Resolution"
             };
             if (includeOnlineMetrics) processSpecific.AddRange(new[] { "ProcessName", "GraphicsAPI" });
             CollectionAssert.AreEquivalent(processSpecific.ToArray(),

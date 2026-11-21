@@ -526,6 +526,105 @@ when nothing else was seen, and 2 s after the last present it is null (the entry
 is registered in `RealtimeMetricEntryDict`, so showing it makes the service evaluate rows, but it is
 not one of the numeric `ONLINE_METRIC_NAMES`. Tests: `PresentModeEntryTest`, `OnlineMetricTelemetryTest`.
 
+### Upscaler and frame generation versions, frame generation factor
+
+`UpscalerVersion` ("Upscaler version") and `FrameGenerationVersion` ("Frame generation version",
+issue 481) name what the target runs, as "FSR 3.1.5", "DLSS 310.7.130", "DLSS RR 310.7.130" or
+"XeSS 2.0.2", and `FrameGenerationFactor` ("Frame generation factor") how many frames reach the
+display per rendered one ("2x", "3x", "4x"), in the classic rows, tile designs (semantic keys
+`upscalerVersion`, `frameGenerationVersion`, `frameGenerationFactor`) and the remote API. Only what
+is proven to run is named, never what is merely loaded or set: games load the libraries of
+every technique they ship. The proof comes from the in-game hook, so both entries are renderer-gated
+like `FrameGenerationTechnology` and `FrameGenerationStatus` and read "N/A" with RTSS, the hook-free
+window and the Vulkan layer. Unlike those two, which the hook's OSD substitutes in its classic rows,
+CapFrameX fills in these values: `OverlayEntryProvider` asks `IUpscalingTechnologyVersionService`
+(`UpscalingTechnologyVersionService`, `CapFrameX.OSD.Integration`) for the target PID, for a shown
+row and for `GetTelemetryValues`; the texts come from `UpscalingVersionText` (pure).
+
+- **FSR** is a property of the context a game dispatches, not of its library: the
+  `amd_fidelityfx_upscaler_dx12.dll` of S.T.A.L.K.E.R. 2 has file version 4.0.2 and creates an
+  FSR 3.1.5 context on an RTX 5090 (2026-11-21), and a driver may put a newer provider behind an
+  older library. The hook observes `ffxDispatch` and asks the library for the provider of that
+  context (OSD repo CLAUDE.md, "FidelityFX provider versions"); `HookFidelityFxVersionProbe` reads
+  the result from `Local\CfxOsdHookFidelityFxV1_<pid>` (136 bytes, a publication counter that is odd
+  while written; the name is taken as printable ASCII only). A version counts while its last dispatch
+  is at most 3 s old on the hook's clock (`HookStatusProbe.CurrentTickCount`, see "Tick counts since
+  .NET 11"). A library from before the provider query (`amd_fidelityfx_dx12.dll` 1.0.x) only names
+  its default version, shown as "FSR 3.1.2 (DLL)": an override by the game or a provider of the
+  driver is not visible there.
+- **The DLSS and XeSS upscalers** are their library, so the version is the file version; the proof
+  is the evaluation the game asks for with every frame. The hook observes the evaluation exports of
+  `nvngx_dlss.dll` (Super Resolution and DLAA, "DLSS"), `nvngx_dlssd.dll` (Ray Reconstruction, which
+  upscales in its place, "DLSS RR") and `libxess.dll` / `libxess_dx11.dll`, also of a DLSS library
+  the NGX updater downloaded (OSD repo CLAUDE.md, "DLSS and XeSS upscaler use"), and publishes the
+  time of the last evaluation with the file version of the library that ran it.
+  `HookUpscalerUseProbe` reads `Local\CfxOsdHookUpscalerUseV1_<pid>` (72 bytes, same header and
+  publication counter; both probes copy their block through `HookSideChannel`). Three components
+  are shown, and a library without a version resource names nothing. NGX loads Ray Reconstruction
+  beside Super Resolution, so only the evaluated one counts.
+- **Which upscaler** (`UpscalingVersionText.Upscaler`): the one that ran last among those inside
+  the 3 s window, so the text follows a switch in the game's settings. Upscalers whose last
+  evaluations lie within 1 s of each other run at the same time, which only something that answers
+  one upscaler's interface with another one produces; then a fixed order decides (DLSS RR, DLSS,
+  XeSS, FSR), so the text does not alternate with every refresh.
+- **Frame generation** needs the hook's telemetry to report the technique as on (`FgActivity` 2,
+  heartbeat at most 3 s old). FSR then takes the version of its frame generation context from the
+  same mapping. DLSS and XeSS are their library: `FrameGenerationRuntimeModuleVersions` finds
+  `libxess_fg.dll` and `nvngx_dlssg.dll` among the target's modules (`HookModuleScanner`) and reads
+  the file version, three components. NGX loads a downloaded or overridden DLSS-G as `<id>.bin`
+  from `…\NVIDIA\NGX\models\dlssg…`, so that path counts too, and either one must carry
+  "NVIDIA DLSS-G" in its file description: a replacement that maps DLSS-G onto another technique
+  has the name but not the version. The scan runs in the background, only while that technique is
+  on, again after 2 s while its library is missing and after 30 s otherwise; the caller gets the last
+  finished scan.
+- **The frame generation factor** is measured, because nothing says it: the NVIDIA app overrides
+  the factor a game asks for, a dynamic factor changes by itself, and PresentMon marks every frame
+  of DLSS and FSR frame generation `Application` (all 2.9 million frames of the 130 capture files
+  on the development PC). The hook counts the frames that reach the display (native Presents) and
+  the frames the game renders, and publishes both about four times per second
+  (`Local\CfxOsdHookFrameCountsV1_<pid>`, 80 bytes, `HookFrameCountsProbe`; OSD repo CLAUDE.md,
+  "Frame generation factor"). `FrameGenerationFactorTracker` (pure) divides the differences of two
+  publications about 2 s apart (at least 900 ms; publications are kept 10 s for a slow refresh).
+  A rendered frame is the game's own Present to the runtime's swapchain where the hook counts it,
+  else the call the game makes once per frame for its frame generation: a Streamline frame token
+  for DLSS, the prepare dispatch for FSR, the frame constants for XeSS. A counter only counts for
+  a span it ran through: one that started or stopped inside covers a part of the span and would
+  yield too high a factor (hooks that arm, a context that is destroyed). The measurement ends
+  when the telemetry reports frame generation as off and starts over after it; fewer than 8
+  rendered frames, no publication for 1.5 s (the game presents nothing) and a factor below 0.75 or
+  above 8.5 name nothing. The telemetry may not know the state: it learns it from a control call,
+  and a game that switched XeSS-FG on before the hook attached never made one again. The hook then
+  recognizes XeSS-FG and FSR frame generation from the same counters within about two seconds and
+  reports them like a control call would, so the technology, status and version entries follow
+  (OSD repo CLAUDE.md, "Frame generation recognized from the frame counts"). Until it does, and
+  with a hook that does not, the measurement itself has to show generated frames (at least 1.5),
+  and only the game's Present to the runtime or the FSR and XeSS calls count rendered frames,
+  never Streamline frame tokens: a game asks for those without any frame generation, and a
+  loading screen presents without asking. `UpscalingVersionText.FrameGenerationFactor` shows a whole
+  factor within 6 % ("2x"), "1x" while frame generation is on but generates nothing (a visible
+  cursor in Control Resonant), and one decimal in between ("2.5x": a dynamic factor, the seconds
+  after a switch). The value needs regular calls: the measurement spans them, so the first value
+  comes with the third refresh.
+- **Not covered:** FSR 1, 2 and 3.0 linked into the game, Vulkan titles, DirectSR, the DLSS
+  preset, driver-side frame generation (AFMF, Smooth Motion: nothing is presented in the game's
+  process) and the factor of Streamline 1.x titles on the generic route (no frame tokens). A hook
+  from before this change has none of the three mappings, so the prebuilt hooks must contain them.
+
+No game ran with it yet. Checked on the RTX 5090 of the development PC (2026-11-21): a probe ran DLSS
+Super Resolution (2.2.10 to 310.9.16), Ray Reconstruction and XeSS 2.0.2 through their SDKs with the
+hook's unit armed; each was seen with the right version, and a library that was loaded but not
+evaluated was not. The real frame generation of CapFrameX.Test counted 241, 360 and 480 displayed
+frames per 120 rendered ones for DLSS 2x, 3x and 4x, 207 per 103 for FSR and 186 per 93 for XeSS,
+and on the generic route, read from another process as CapFrameX reads it, 240 per 60 in every
+second for DLSS 4x.
+**DLSS frame generation must not be hooked at its own library**: with `nvngx_dlssg.dll` patched every
+evaluation failed (OSD repo CLAUDE.md, "Never patch `nvngx_dlssg.dll`"), which is why its version
+still comes from the module scan. The PC has no Radeon: whether a context behind the driver's FSR 4
+upgrade reports 4.x is unverified. Tests: `HookFidelityFxVersionProbeTest`, `HookUpscalerUseProbeTest`,
+`HookFrameCountsProbeTest`, `FrameGenerationFactorTrackerTest`, `UpscalingVersionTextTest`,
+`FrameGenerationRuntimeModulesTest`, `UpscalingVersionEntryTest`; native: `fidelityfx_provider_version`,
+`upscaler_runtime_use`, `frame_generation_counts`.
+
 ### Online FPS metrics
 
 `OnlineMetricService` keeps the realtime window (`MetricInterval`, 20 s by default) of the target's

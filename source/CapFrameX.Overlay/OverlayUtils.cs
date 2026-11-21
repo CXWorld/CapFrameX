@@ -157,6 +157,58 @@ namespace CapFrameX.Overlay
                         IsEntryEnabled = appConfiguration.EnableHookOverlay
                     },
 
+                    // Version of the frame generation the game has switched on, and of the
+                    // upscaler it dispatches. CapFrameX reads both from the in-game hook: a
+                    // runtime that is only loaded into the game names nothing. RTSS and the
+                    // hook-free renderer have no source.
+                    new OverlayEntryWrapper("FrameGenerationVersion")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = appConfiguration.EnableHookOverlay,
+                        Description = "Frame generation version",
+                        GroupName = "Frame Generation",
+                        Value = "N/A",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = appConfiguration.EnableHookOverlay
+                    },
+
+                    // How many frames reach the display for every frame the game renders while
+                    // its frame generation is on ("2x", "3x", "4x"). Measured from what the
+                    // in-game hook counts, not read from a setting.
+                    new OverlayEntryWrapper("FrameGenerationFactor")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = appConfiguration.EnableHookOverlay,
+                        Description = "Frame generation factor",
+                        GroupName = "Frame Generation",
+                        Value = "N/A",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = appConfiguration.EnableHookOverlay
+                    },
+
+                    new OverlayEntryWrapper("UpscalerVersion")
+                    {
+                        OverlayEntryType = EOverlayEntryType.CX,
+                        ShowOnOverlay = false,
+                        ShowOnOverlayIsEnabled = appConfiguration.EnableHookOverlay,
+                        Description = "Upscaler version",
+                        GroupName = "Upscaler",
+                        Value = "N/A",
+                        ValueFormat = default,
+                        ShowGraph = false,
+                        ShowGraphIsEnabled = false,
+                        Color = string.Empty,
+                        IsEntryEnabled = appConfiguration.EnableHookOverlay
+                    },
+
 					// CaptureTimer
 					new OverlayEntryWrapper("CaptureTimer")
                     {

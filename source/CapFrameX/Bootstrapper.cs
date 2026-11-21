@@ -390,6 +390,8 @@ namespace CapFrameX
                     _hookOverlayStatusService = new OSD.Integration.HookOverlayStatusService();
                     Container.RegisterInstance<IHookOverlayStatusService>(
                         _hookOverlayStatusService);
+                    Container.RegisterInstance<IUpscalingTechnologyVersionService>(
+                        new OSD.Integration.UpscalingTechnologyVersionService());
                     // Same folder as the other per-user stores; portable mode redirects it.
                     _hookLearnedProfileStore =
                         OSD.Integration.HookLearnedProfileStore.Create(pathService.ConfigFolder);

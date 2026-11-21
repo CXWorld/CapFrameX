@@ -80,6 +80,9 @@ namespace CapFrameX.Overlay
                 { HOOK_OVERLAY_STATUS_IDENTIFIER, config => config.EnableHookOverlay },
                 { FRAME_GENERATION_TECHNOLOGY_IDENTIFIER, config => config.EnableHookOverlay },
                 { FRAME_GENERATION_STATUS_IDENTIFIER, config => config.EnableHookOverlay },
+                { FRAME_GENERATION_VERSION_IDENTIFIER, config => config.EnableHookOverlay },
+                { FRAME_GENERATION_FACTOR_IDENTIFIER, config => config.EnableHookOverlay },
+                { UPSCALER_VERSION_IDENTIFIER, config => config.EnableHookOverlay },
                 { DISPLAY_TIME_IDENTIFIER, config => config.EnableHookFreeOverlay
                     || (config.EnableHookOverlay && config.HookOverlayUsePresentMonFrametimes) },
                 { PRESENT_RESOLUTION_IDENTIFIER, config => !config.EnableHookFreeOverlay },
@@ -95,6 +98,9 @@ namespace CapFrameX.Overlay
         private const string HOOK_OVERLAY_STATUS_IDENTIFIER = "HookOverlayStatus";
         private const string FRAME_GENERATION_TECHNOLOGY_IDENTIFIER = "FrameGenerationTechnology";
         private const string FRAME_GENERATION_STATUS_IDENTIFIER = "FrameGenerationStatus";
+        private const string FRAME_GENERATION_VERSION_IDENTIFIER = "FrameGenerationVersion";
+        private const string FRAME_GENERATION_FACTOR_IDENTIFIER = "FrameGenerationFactor";
+        private const string UPSCALER_VERSION_IDENTIFIER = "UpscalerVersion";
         private const string DISPLAY_TIME_IDENTIFIER = "DisplayTime";
         private const string PRESENT_RESOLUTION_IDENTIFIER = "Resolution";
         private const string PRESENT_MODE_IDENTIFIER = "OnlinePresentMode";
@@ -111,6 +117,7 @@ namespace CapFrameX.Overlay
         private readonly IThreadAffinityController _threadAffinityController;
         private readonly Func<IReadOnlyList<DetectedDisplay>> _displayProvider;
         private readonly IOverlayProfileChangeTracker _profileChangeTracker;
+        private readonly IUpscalingTechnologyVersionService _upscalingTechnologyVersions;
 
         private readonly ILogger<OverlayEntryProvider> _logger;
         private readonly object _overlayEntriesGate = new object();
@@ -152,11 +159,12 @@ namespace CapFrameX.Overlay
             IPathService pathService,
             IHookOverlayStatusService hookOverlayStatusService,
             ILogger<OverlayEntryProvider> logger,
-            IOverlayProfileChangeTracker profileChangeTracker)
+            IOverlayProfileChangeTracker profileChangeTracker,
+            IUpscalingTechnologyVersionService upscalingTechnologyVersions)
             : this(sensorService, appConfiguration, eventAggregator, onlineMetricService,
                   systemInfo, rTSSService, sensorConfig, overlayEntryCore,
                   threadAffinityController, pathService, hookOverlayStatusService, logger,
-                  DisplayDetection.GetDisplays, profileChangeTracker)
+                  DisplayDetection.GetDisplays, profileChangeTracker, upscalingTechnologyVersions)
         {
         }
 
@@ -173,7 +181,8 @@ namespace CapFrameX.Overlay
             IHookOverlayStatusService hookOverlayStatusService,
             ILogger<OverlayEntryProvider> logger,
             Func<IReadOnlyList<DetectedDisplay>> displayProvider,
-            IOverlayProfileChangeTracker profileChangeTracker = null)
+            IOverlayProfileChangeTracker profileChangeTracker = null,
+            IUpscalingTechnologyVersionService upscalingTechnologyVersions = null)
         {
             _sensorService = sensorService;
             _appConfiguration = appConfiguration;
@@ -188,6 +197,7 @@ namespace CapFrameX.Overlay
             _logger = logger;
             _displayProvider = displayProvider ?? (() => Array.Empty<DetectedDisplay>());
             _profileChangeTracker = profileChangeTracker ?? new OverlayProfileChangeTracker();
+            _upscalingTechnologyVersions = upscalingTechnologyVersions;
 
             _hookOverlayStatus = hookOverlayStatusService?.Current;
             hookOverlayStatusService?.StatusStream
@@ -243,6 +253,7 @@ namespace CapFrameX.Overlay
                 UpdateThreadAffinityState();
                 UpdateNetworkPing();
                 UpdateHookOverlayStatus();
+                UpdateUpscalingTechnologyVersions();
 
                 if (updateFormats)
                 {
@@ -304,6 +315,12 @@ namespace CapFrameX.Overlay
                             ? _rTSSService.GetApiInfo(_currentProcessId) : null;
                 if (Requested(PRESENT_MODE_IDENTIFIER))
                     values[PRESENT_MODE_IDENTIFIER] = PresentModeLabel.Shorten(_onlineMetricService?.GetOnlinePresentMode());
+                if (Requested(FRAME_GENERATION_VERSION_IDENTIFIER))
+                    values[FRAME_GENERATION_VERSION_IDENTIFIER] = GetFrameGenerationVersion();
+                if (Requested(FRAME_GENERATION_FACTOR_IDENTIFIER))
+                    values[FRAME_GENERATION_FACTOR_IDENTIFIER] = GetFrameGenerationFactor();
+                if (Requested(UPSCALER_VERSION_IDENTIFIER))
+                    values[UPSCALER_VERSION_IDENTIFIER] = GetUpscalerVersion();
                 if (identifiers == null || identifiers.Any(identifier =>
                         identifier.StartsWith(DISPLAY_RESOLUTION_IDENTIFIER_PREFIX, StringComparison.Ordinal)))
                     foreach (var display in GetDetectedDisplays())
@@ -1764,6 +1781,37 @@ namespace CapFrameX.Overlay
                 ? HookOverlayStatusLabel.ForState(_hookOverlayStatus?.State ?? EHookOverlayStatus.Waiting)
                 : HookOverlayStatusLabel.ForState(EHookOverlayStatus.Disabled);
         }
+
+        private void UpdateUpscalingTechnologyVersions()
+        {
+            SetUpscalingTechnologyVersion(FRAME_GENERATION_VERSION_IDENTIFIER, GetFrameGenerationVersion);
+            SetUpscalingTechnologyVersion(FRAME_GENERATION_FACTOR_IDENTIFIER, GetFrameGenerationFactor);
+            SetUpscalingTechnologyVersion(UPSCALER_VERSION_IDENTIFIER, GetUpscalerVersion);
+        }
+
+        private void SetUpscalingTechnologyVersion(string identifier, Func<string> read)
+        {
+            _identifierOverlayEntryDict.TryGetValue(identifier, out IOverlayEntry entry);
+
+            if (entry != null && entry.ShowOnOverlay)
+            {
+                entry.Value = read() ?? "N/A";
+            }
+        }
+
+        // Only the in-game hook proves which upscaler and which frame generation a game runs, so
+        // the other renderers have no value. A runtime that is merely loaded names nothing.
+        private string GetUpscalerVersion()
+            => _appConfiguration.EnableHookOverlay && _currentProcessId > 0
+                ? _upscalingTechnologyVersions?.GetUpscalerVersion(_currentProcessId) : null;
+
+        private string GetFrameGenerationVersion()
+            => _appConfiguration.EnableHookOverlay && _currentProcessId > 0
+                ? _upscalingTechnologyVersions?.GetFrameGenerationVersion(_currentProcessId) : null;
+
+        private string GetFrameGenerationFactor()
+            => _appConfiguration.EnableHookOverlay && _currentProcessId > 0
+                ? _upscalingTechnologyVersions?.GetFrameGenerationFactor(_currentProcessId) : null;
 
         private void UpdateThreadAffinityState()
         {
