@@ -949,8 +949,9 @@ colors of a GPU and CPU vendor: Radeon + Ryzen, GeForce RTX + Ryzen, Radeon + In
 Intel Core, Arc + Intel Core. Each device has a block under a header bar in its vendor's color that names
 the installed model (`gpuNameShort`/`cpuNameShort`), the GPU above the CPU, with usage, temperature,
 clock, power and VRAM/RAM (label left, value right). Below them sit the frame time graph, the current
-FPS and the frame time. The native metric draws device names in the theme text color, so the dark text
-color is also the color of both header names. The files are stored as the editor saves them;
+FPS and the frame time. Both header names carry the dark color as their value color, and the design's
+text color is dark too: until 2026-11-21 the native metric drew every text reading in the theme's
+subtext (the design's text color) and ignored its value color. The files are stored as the editor saves them;
 `DuolineStarterShowsTheGpuAboveTheCpuInTheColorsOfTheirVendors` checks layout and colors.
 
 ### AQUALINE starter
