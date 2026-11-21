@@ -12,6 +12,28 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Placeholders in empty chart width fields (2026-11-21)
+
+Controls was rebuilt in `Release|x64` for `net11.0-windows` (.NET SDK 11.0.100, `dotnet build
+CapFrameX.OSD.sln -c Release --no-incremental`) from commit `55d0b6e7181525be1a1eee5e42c46ffad2456d22`
+(`main`, on `7bdafca`). Its sources changed since the Controls of the Simplified Chinese entry
+(`0e23a00`) only by this commit: an empty "Graph line width" or "Outline and grid line width" field of a
+chart shows the pixel the renderer then draws as a grey placeholder in the field's design units, "0.67
+(1 px)" at scale 1.5 (`OsdOnePixelWidthConverter`, the color fields' `StyleDefaultHint`). The empty field
+looked as if no width were in use. No text was added, so the localization files here are unchanged, as
+are Interop, the native DLLs, both Vulkan manifests and the template catalogs.
+
+Verification: the editor demo's `--verify` (1778 checks) and `--verify-native` (1241 checks for 68
+templates) passed with this build. A CapFrameX Release build with `CfxOsdFromSource=false` staged exactly
+this DLL, the Interop and the native core of this folder into the test output; the run of the tests
+outside the `Integration` category with them had not finished when this entry was committed. Built from
+the same sources, the 1993 overlay, starter and tile profile tests passed, among them
+`EmptyChartWidthFieldsShowTheOnePixelTheRendererDraws` (the placeholders in the app's theme).
+
+| Updated component | SHA-256 |
+| --- | --- |
+| net11.0-windows\CapFrameX.OSD.Controls.dll | `50A4BA587D123F97EE7B6C7951E3C0CD7FB908FC93F9967BC9BE3FD9F21DB2E0` |
+
 ### Text readings in their value color (2026-11-21)
 
 All five native trees were rebuilt clean (VS 2026/v145 with MSVC 14.52, `RelWithDebInfo`,
