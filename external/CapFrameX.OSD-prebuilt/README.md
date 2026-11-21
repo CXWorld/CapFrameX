@@ -12,6 +12,57 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Text readings in their value color (2026-11-21)
+
+All five native trees were rebuilt clean (VS 2026/v145 with MSVC 14.52, `RelWithDebInfo`,
+`--clean-first`, x64 and x86) from the OSD working tree on commit
+`7c236f803e4f209df8e0d5d79ab09ac387675c59` (`main`) with a core change that was committed after the
+build, unchanged, as OSD commit `7bdafcae34c23b22b8c8f711d45a1e66bbf35ca0` (`main`):
+`src/core/Widget.cpp` (`MetricWidget::shown`) and the new `design_test` case `metric_text_color.h`,
+documented in the OSD repo's CLAUDE.md ("Widget colors").
+
+- A metric's text reading (graphics API, process, GPU and CPU name) draws its tile's `valueColor`,
+  else `color`, else `theme.subtext`; only the dash of a missing reading always draws
+  `theme.subtext`. Before, every text reading drew `theme.subtext`, the design's text color in every
+  design the editor saved, so the tile designer's Value color of such a tile changed nothing.
+- None of the 48 designs in both repositories looks different: each one's text readings carry the
+  design's text color as their value color. A tile whose value color is changed now draws it.
+
+The hooks and both Vulkan layers compile the core sources and carry the change as well. Controls and
+Interop were rebuilt along (`dotnet build CapFrameX.OSD.sln -c Release --no-incremental`) but not
+copied: their sources are unchanged since `0e23a00` and `b0243d6`, and the rebuilt DLLs differ from
+those here only in the commit their product version names. Both Vulkan manifests and the catalogs are
+unchanged.
+
+Verification: the core CTests pass apart from `chart_gpu_raster`, which fails on this machine's RTX 5090
+on unchanged sources as well. `design_test` runs 639 checks, among them `metricTextColorTests`, two of
+whose four checks fail with the previous `Widget.cpp`. The 38 hook CTests and the 10 Vulkan CTests
+pass on x64 and x86, all without compiler warnings; the link step of both layers reports LNK4199 for
+three delay-load options without imports (`d3d12.dll`, `dxgi.dll`, `windowscodecs.dll`). The editor
+demo's `--verify` (1778 checks) and `--verify-native` (1241 checks for 68 templates) passed with these
+builds. A CapFrameX Release build with `CfxOsdFromSource=false` staged exactly these five binaries,
+the Controls and the Interop of this folder into the app and the test output and ran the tests
+outside the `Integration` category: 3822 of 3823 passed. The one failure,
+`PresentMonScalars_ReachHttpAndWebsocketBeforeRendererNotification`, timed out after 5 s in the full
+run and passed three runs on its own; it reads no native binary.
+
+The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only CapFrameX
+registrations in both HKLM views) were replaced by those of this entry; the replaced ones of the entry
+of 2026-11-20 (`26D35F50…`, `F2BD47D8…`) are in `backup-pre-text-value-color-20261121-200324` beside
+them. vkcube drew the classic rows through the installed x64 layer, the `<APP>` label in its group
+color; no game ran with these binaries yet.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `74500D2B344835828CEA117B82FB94BF6A982012924B207E4504FB134F0DF75C` |
+| native\cfx_osd_hook.dll | `75CC085907D370B7D50D43C5CAC1E029D4F21901E1E84B91D557A16B16B4DC23` |
+| native\x86\cfx_osd_hook.dll | `82C3BD3C8675BF979F5F5C6C3B6FF866B88A2BCD96BFDEFEC8372623874E986A` |
+| native\vk\cfx_osd_vklayer.dll | `29B5908591612D43A079ACAA2A63D8A32E6F64656253E74785A6D78F514941CA` |
+| native\vk\x86\cfx_osd_vklayer.dll | `FA2418EB2E214E9B1BC7F8D2C1DCA6C21A7BE6F051133AA225F2ADBDDCC9502C` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Frame generation factor and frame generation recognized from the frame counts (2026-11-21)
 
 All five native trees were rebuilt clean (VS 2026/v145 with MSVC 14.52, `RelWithDebInfo`,
