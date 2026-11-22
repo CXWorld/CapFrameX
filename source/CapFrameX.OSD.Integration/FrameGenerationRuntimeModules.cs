@@ -8,7 +8,7 @@ using Serilog;
 namespace CapFrameX.OSD.Integration
 {
     /// <summary>
-    /// A frame generation runtime whose version is the version of the library the game loaded.
+    /// A frame generation runtime whose version is the version of the library that runs it.
     /// FSR is not one of them: its library holds several providers, and which one runs is a
     /// property of the context (see <see cref="HookFidelityFxVersionProbe"/>).
     /// </summary>
@@ -21,13 +21,14 @@ namespace CapFrameX.OSD.Integration
     internal readonly struct RuntimeFileVersion : IComparable<RuntimeFileVersion>
     {
         internal RuntimeFileVersion(int major, int minor, int build, int revision,
-            string description)
+            string description, string module = null)
         {
             Major = major;
             Minor = minor;
             Build = build;
             Revision = revision;
             Description = description;
+            Module = module;
         }
 
         internal int Major { get; }
@@ -35,8 +36,13 @@ namespace CapFrameX.OSD.Integration
         internal int Build { get; }
         internal int Revision { get; }
         internal string Description { get; }
+        /// <summary>The file name of the module the version was read from, for the log.</summary>
+        internal string Module { get; }
 
         internal bool IsEmpty => Major == 0 && Minor == 0 && Build == 0 && Revision == 0;
+
+        internal RuntimeFileVersion WithModule(string module)
+            => new RuntimeFileVersion(Major, Minor, Build, Revision, Description, module);
 
         /// <summary>
         /// Three components, as NVIDIA and Intel name their releases (310.7.130, 1.3.1); the
@@ -61,19 +67,38 @@ namespace CapFrameX.OSD.Integration
     {
         internal const string DlssFrameGenerationModule = "nvngx_dlssg.dll";
         internal const string XessFrameGenerationModule = "libxess_fg.dll";
+        /// <summary>
+        /// The XeSS-FG runtime of the Intel driver, in its driver store folder. The SDK asks it
+        /// whether the driver runs the context and then hands every call to it; when the SDK
+        /// keeps the context, it unloads the driver's copy in the same millisecond.
+        /// </summary>
+        internal const string XessDriverFrameGenerationModule = "igxess_fg.dll";
         // NGX keeps the copies it downloads as ...\NVIDIA\NGX\models\dlssg\versions\<n>\files\
         // <id>.bin and loads them under that name; the folders of an override start alike.
         internal const string NgxDlssFrameGenerationFolder = @"\ngx\models\dlssg";
         internal const string DlssFrameGenerationDescription = "NVIDIA DLSS-G";
 
         internal static bool TryClassify(HookModuleRecord module, out EFrameGenerationRuntime runtime)
+            => TryClassify(module, out runtime, out _);
+
+        /// <param name="driverRuntime">The module is a driver's runtime, which runs the context
+        /// whenever it is loaded.</param>
+        internal static bool TryClassify(HookModuleRecord module, out EFrameGenerationRuntime runtime,
+            out bool driverRuntime)
         {
             runtime = default;
+            driverRuntime = false;
             string name = module.Name;
             if (string.IsNullOrWhiteSpace(name)) return false;
             if (string.Equals(name, XessFrameGenerationModule, StringComparison.OrdinalIgnoreCase))
             {
                 runtime = EFrameGenerationRuntime.XessFrameGeneration;
+                return true;
+            }
+            if (string.Equals(name, XessDriverFrameGenerationModule, StringComparison.OrdinalIgnoreCase))
+            {
+                runtime = EFrameGenerationRuntime.XessFrameGeneration;
+                driverRuntime = true;
                 return true;
             }
             if (string.Equals(name, DlssFrameGenerationModule, StringComparison.OrdinalIgnoreCase) ||
@@ -90,16 +115,20 @@ namespace CapFrameX.OSD.Integration
         /// The version of every runtime found. A DLSS frame generation library has to say so in
         /// its version resource: a replacement that maps DLSS-G onto another technique carries
         /// the name but not NVIDIA's description, and its version would name the wrong thing.
-        /// Of several copies the newest counts, as NGX loads the newest it finds.
+        /// Of several copies the newest counts, as NGX loads the newest it finds. A loaded driver
+        /// runtime comes before every library of the game, whatever their versions: it stays
+        /// loaded only while it runs the context (Intel driver 32.0.101.9175 for the 1.3.1.78
+        /// XeSS-FG SDK, 2026-11-22).
         /// </summary>
         internal static IReadOnlyDictionary<EFrameGenerationRuntime, RuntimeFileVersion> Find(
             IEnumerable<HookModuleRecord> modules, Func<string, RuntimeFileVersion?> readVersion)
         {
             var found = new Dictionary<EFrameGenerationRuntime, RuntimeFileVersion>();
             if (modules == null || readVersion == null) return found;
+            var foundInDriver = new HashSet<EFrameGenerationRuntime>();
             foreach (HookModuleRecord module in modules)
             {
-                if (!TryClassify(module, out EFrameGenerationRuntime runtime) ||
+                if (!TryClassify(module, out EFrameGenerationRuntime runtime, out bool driverRuntime) ||
                     string.IsNullOrWhiteSpace(module.Path))
                     continue;
                 RuntimeFileVersion? version = readVersion(module.Path);
@@ -108,9 +137,14 @@ namespace CapFrameX.OSD.Integration
                     version.Value.Description?.StartsWith(DlssFrameGenerationDescription,
                         StringComparison.OrdinalIgnoreCase) != true)
                     continue;
-                if (!found.TryGetValue(runtime, out RuntimeFileVersion known) ||
-                    version.Value.CompareTo(known) > 0)
-                    found[runtime] = version.Value;
+                bool known = found.TryGetValue(runtime, out RuntimeFileVersion knownVersion);
+                bool knownInDriver = foundInDriver.Contains(runtime);
+                bool replaces = !known
+                    || (driverRuntime && !knownInDriver)
+                    || (driverRuntime == knownInDriver && version.Value.CompareTo(knownVersion) > 0);
+                if (!replaces) continue;
+                found[runtime] = version.Value.WithModule(module.Name);
+                if (driverRuntime) foundInDriver.Add(runtime);
             }
             return found;
         }
@@ -235,7 +269,8 @@ namespace CapFrameX.OSD.Integration
             var parts = new List<string>();
             foreach (var pair in versions)
                 parts.Add($"{pair.Key} {pair.Value.Major}.{pair.Value.Minor}.{pair.Value.Build}." +
-                          $"{pair.Value.Revision}");
+                          $"{pair.Value.Revision}" +
+                          (string.IsNullOrEmpty(pair.Value.Module) ? "" : $" ({pair.Value.Module})"));
             return string.Join(", ", parts);
         }
 
