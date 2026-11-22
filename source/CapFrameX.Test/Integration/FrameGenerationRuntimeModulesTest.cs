@@ -14,6 +14,9 @@ namespace CapFrameX.Test.Integration
         private const string Game = @"E:\Games\Game\";
         private const string NgxCopy =
             @"C:\ProgramData\NVIDIA\NGX\models\dlssg\versions\20318480\files\160_E658700.bin";
+        // Intel driver 32.0.101.9175 on an Arc B390 (2026-11-22).
+        private const string IntelDriverRuntime =
+            @"C:\Windows\System32\DriverStore\FileRepository\iigd_dch.inf_amd64_413e993a06fd9302\igxess_fg.dll";
 
         private static readonly Dictionary<string, RuntimeFileVersion> Files =
             new Dictionary<string, RuntimeFileVersion>(StringComparer.OrdinalIgnoreCase)
@@ -24,6 +27,9 @@ namespace CapFrameX.Test.Integration
                     "NVIDIA DLSS-G - DVS PRODUCTION"),
                 [NgxCopy] = new RuntimeFileVersion(310, 9, 16, 0, "NVIDIA DLSS-G MFGLW - DVS PRODUCTION"),
                 [Game + "libxess_fg.dll"] = new RuntimeFileVersion(1, 3, 1, 78, "XeSS Frame Generation SDK"),
+                [Game + @"newer\libxess_fg.dll"] = new RuntimeFileVersion(1, 4, 0, 12, "XeSS Frame Generation SDK"),
+                // The driver's runtime carries the SDK's description, so only its name tells it apart.
+                [IntelDriverRuntime] = new RuntimeFileVersion(1, 3, 3, 93, "XeSS Frame Generation SDK"),
                 [Game + "nvngx_dlss.dll"] = new RuntimeFileVersion(310, 7, 130, 0, "NVIDIA DLSS - DVS PRODUCTION"),
                 [Game + "libxess.dll"] = new RuntimeFileVersion(2, 0, 2, 68, "XeSS SDK"),
                 [Game + "amd_fidelityfx_upscaler_dx12.dll"] = new RuntimeFileVersion(4, 0, 2, 44888,
@@ -40,6 +46,49 @@ namespace CapFrameX.Test.Integration
             Assert.AreEqual(2, found.Count, "Upscaler libraries and FSR are not frame generation runtimes.");
             Assert.AreEqual("310.2.1", found[EFrameGenerationRuntime.DlssFrameGeneration].ToDisplayString());
             Assert.AreEqual("1.3.1", found[EFrameGenerationRuntime.XessFrameGeneration].ToDisplayString());
+            Assert.AreEqual("libxess_fg.dll", found[EFrameGenerationRuntime.XessFrameGeneration].Module,
+                "The log names the module the version came from.");
+        }
+
+        [TestMethod]
+        public void Find_NamesTheDriverRuntimeThatRunsTheXessContext()
+        {
+            // Driver 9175 takes the context of the 1.3.1.78 SDK (Dying Light: The Beast,
+            // CapFrameX.Test's cfx_d3d12): the driver's copy stays loaded and runs it.
+            foreach (var modules in new[]
+                     {
+                         Modules(Game + "libxess_fg.dll", IntelDriverRuntime),
+                         Modules(IntelDriverRuntime, Game + "libxess_fg.dll")
+                     })
+            {
+                var found = FrameGenerationRuntimeModuleClassifier.Find(modules, Read);
+
+                RuntimeFileVersion xess = found[EFrameGenerationRuntime.XessFrameGeneration];
+                Assert.AreEqual("1.3.3", xess.ToDisplayString(), "Whatever the module order.");
+                Assert.AreEqual("igxess_fg.dll", xess.Module);
+            }
+            Assert.IsTrue(FrameGenerationRuntimeModuleClassifier.TryClassify(
+                new HookModuleRecord("IGXESS_FG.DLL", IntelDriverRuntime), out var runtime, out bool driver));
+            Assert.AreEqual(EFrameGenerationRuntime.XessFrameGeneration, runtime);
+            Assert.IsTrue(driver);
+            Assert.IsTrue(FrameGenerationRuntimeModuleClassifier.TryClassify(
+                new HookModuleRecord("libxess_fg.dll", Game + "libxess_fg.dll"), out _, out driver));
+            Assert.IsFalse(driver);
+        }
+
+        [TestMethod]
+        public void Find_ALoadedDriverRuntimeComesBeforeANewerGameLibrary()
+        {
+            // The driver decides whether it runs the context, not the versions: a loaded copy of
+            // its runtime runs it, as the SDK unloads it at once when it keeps the context.
+            var found = FrameGenerationRuntimeModuleClassifier.Find(Modules(
+                Game + @"newer\libxess_fg.dll", IntelDriverRuntime, Game + "libxess_fg.dll"), Read);
+
+            Assert.AreEqual("1.3.3", found[EFrameGenerationRuntime.XessFrameGeneration].ToDisplayString());
+            Assert.AreEqual("1.4.0", FrameGenerationRuntimeModuleClassifier.Find(Modules(
+                    Game + "libxess_fg.dll", Game + @"newer\libxess_fg.dll"), Read)
+                [EFrameGenerationRuntime.XessFrameGeneration].ToDisplayString(),
+                "Without the driver's runtime the newest library of the game counts, as before.");
         }
 
         [TestMethod]

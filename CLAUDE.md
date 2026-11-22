@@ -574,9 +574,18 @@ row and for `GetTelemetryValues`; the texts come from `UpscalingVersionText` (pu
   the file version, three components. NGX loads a downloaded or overridden DLSS-G as `<id>.bin`
   from `…\NVIDIA\NGX\models\dlssg…`, so that path counts too, and either one must carry
   "NVIDIA DLSS-G" in its file description: a replacement that maps DLSS-G onto another technique
-  has the name but not the version. The scan runs in the background, only while that technique is
-  on, again after 2 s while its library is missing and after 30 s otherwise; the caller gets the last
-  finished scan.
+  has the name but not the version. XeSS-FG may run in the Intel driver instead: the SDK asks the
+  driver's `igxess_fg.dll` (in the driver store) whether it runs the context and then hands every
+  call to it, and that copy stays loaded; when the SDK keeps the context, it unloads the driver's
+  copy in the same millisecond (OSD repo CLAUDE.md, "XeSS-FG in the driver's runtime"). So a loaded
+  `igxess_fg.dll` names the version, before every library of the game whatever their versions:
+  driver 32.0.101.9175 runs the 1.3.1.78 SDK's context with its 1.3.3.93 (Dying Light: The Beast,
+  CapFrameX.Test's `cfx_d3d12`, 2026-11-22), so the entry reads "XeSS 1.3.3", not "XeSS 1.3.1" as
+  before; 32.0.101.8724 leaves the context to the SDK. The file descriptions are the same, so only
+  the module name tells them apart, and the log line `Frame generation runtimes of pid …` names the
+  module of each version. The scan runs in the background, only while that technique is on, again
+  after 2 s while its library is missing and after 30 s otherwise; the caller gets the last finished
+  scan.
 - **The frame generation factor** is measured, because nothing says it: the NVIDIA app overrides
   the factor a game asks for, a dynamic factor changes by itself, and PresentMon marks every frame
   of DLSS and FSR frame generation `Application` (all 2.9 million frames of the 130 capture files
