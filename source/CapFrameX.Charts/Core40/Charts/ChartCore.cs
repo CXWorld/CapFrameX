@@ -285,17 +285,22 @@ namespace LiveCharts.Charts
                 var biggest = xi.PrepareChart(AxisOrientation.X, this);
                 var top = curSize.Top;
 
+                // LabelEvaluation places the labels `padding` away from the plot area, so the
+                // axis takes that room too, as the Y axes above do. Without it the labels of a
+                // bottom axis ended 4 px below the control, where its clip cut them off.
+                var labelsHeight = biggest.Height > 0 ? biggest.Height + padding : 0;
+
                 if (xi.Position == AxisPosition.LeftBottom)
                 {
                     xi.View.SetTitleTop(top + curSize.Height - titleSize.Height);
-                    curSize.Height -= (titleSize.Height + biggest.Height);
+                    curSize.Height -= (titleSize.Height + labelsHeight);
                     xi.Tab = curSize.Top + curSize.Height;
                 }
                 else
                 {
                     xi.View.SetTitleTop(top);
-                    curSize.Top += titleSize.Height + biggest.Height;
-                    curSize.Height -= (titleSize.Height + biggest.Height);
+                    curSize.Top += titleSize.Height + labelsHeight;
+                    curSize.Height -= (titleSize.Height + labelsHeight);
                     xi.Tab = curSize.Top;
                 }
 
