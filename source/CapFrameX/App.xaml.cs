@@ -161,6 +161,23 @@ namespace CapFrameX
                 if (previousInstanceResult != null)
                     Log.Logger.Information(previousInstanceResult);
 
+                // An autostart task registered by an older version starts CapFrameX below normal
+                // priority, which PresentMon would inherit. Raised before anything is started.
+                using (StartupPerformanceLogger.Measure("Process priority check"))
+                {
+                    try
+                    {
+                        var previousPriority = StartupProcessPriority.RaiseCurrentProcess();
+                        if (previousPriority != null)
+                            Log.Logger.Information("Started with process priority {previous}, raised to Normal.",
+                                previousPriority.Value);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.Logger.Warning(ex, "Could not raise the process priority to Normal.");
+                    }
+                }
+
                 // An update staged by a previous session is installed here, before anything else
                 // is built: the installer replaces the files of the running app, so CapFrameX has
                 // to be on its way out by the time it starts.

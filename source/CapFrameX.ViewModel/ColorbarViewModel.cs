@@ -940,13 +940,14 @@ namespace CapFrameX.ViewModel
             if (PortableModeDetector.IsPortableMode)
                 return;
 
-            const string appName = "CapFrameX";
+            const string appName = AutostartTask.Name;
 
             try
             {
                 using (TaskService ts = new TaskService())
                 {
-                    // Refresh existing tasks as well to repair DLL targets and stale installation paths.
+                    // Refresh existing tasks as well to repair DLL targets, stale installation paths
+                    // and the settings of tasks registered by older versions.
                     if (Autostart)
                     {
                         // On modern .NET, the entry assembly is CapFrameX.dll; Windows must launch the apphost EXE.
@@ -955,17 +956,7 @@ namespace CapFrameX.ViewModel
                         string userId = Environment.UserDomainName + "\\" + Environment.UserName;
 
                         TaskDefinition td = ts.NewTask();
-                        td.RegistrationInfo.Description = "Autostart";
-                        td.Settings.DisallowStartIfOnBatteries = false;
-                        td.Settings.StopIfGoingOnBatteries = false;
-                        td.Principal.RunLevel = TaskRunLevel.Highest;
-
-                        var trigger = new LogonTrigger();
-                        trigger.UserId = userId;
-                        trigger.Delay = TimeSpan.FromSeconds(20);
-
-                        td.Triggers.Add(trigger);
-                        td.Actions.Add(new ExecAction(appPath, workingDirectory: appDirectory));
+                        AutostartTask.Configure(td, appPath, appDirectory, userId);
 
                         using var task = ts.RootFolder.RegisterTaskDefinition(appName, td, TaskCreation.CreateOrUpdate,
                             userId, null, TaskLogonType.InteractiveToken);

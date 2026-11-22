@@ -202,8 +202,8 @@ namespace CapFrameX.CustomInstallerActions
         /// application (for example from "Program Files (x86)" to "Program Files"), and the task
         /// would keep launching the removed executable until the app re-registers it on its next
         /// start. A manual upgrade does not start the app (LAUNCHAPP defaults to 0), so the
-        /// installer has to repair the task itself. If the task does not exist, autostart was
-        /// never enabled and there is nothing to do.
+        /// installer has to repair the task itself, its priority and time limit included. If the
+        /// task does not exist, autostart was never enabled and there is nothing to do.
         /// </summary>
         [CustomAction]
         public static ActionResult UpdateAutoStartTaskPath(Session session)
@@ -231,6 +231,12 @@ namespace CapFrameX.CustomInstallerActions
                         action.Path = appPath;
                         action.WorkingDirectory = installFolder;
                     }
+
+                    // Tasks of older versions kept the Task Scheduler defaults: priority 7 (below
+                    // normal, inherited by PresentMon) and an end after 72 hours. The app sets the
+                    // same values when it registers the task (AutostartTask).
+                    definition.Settings.Priority = System.Diagnostics.ProcessPriorityClass.Normal;
+                    definition.Settings.ExecutionTimeLimit = TimeSpan.Zero;
 
                     // Keep the task's user, logon type and run level as the app registered them.
                     ts.RootFolder.RegisterTaskDefinition(APPNAME, definition, TaskCreation.Update,
