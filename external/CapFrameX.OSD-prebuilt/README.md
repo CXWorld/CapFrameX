@@ -12,6 +12,44 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Fresh rebuild of the merge (2026-11-22)
+
+The whole folder was rebuilt fresh from OSD commit `0084f7206c644d422f803f0e942d9726c049eacf` (`main`,
+working tree clean), the commit of the entry below: all five native trees clean (VS 2026/v145 with MSVC
+14.52, `RelWithDebInfo`, `--clean-first`, x64 and x86), then Controls and Interop (.NET SDK 11.0.100,
+`dotnet build CapFrameX.OSD.sln -c Release --no-incremental`), and every file was copied. The sources are
+those of the entry below. The native DLLs differ from its binaries because these builds are not
+reproducible byte for byte; Controls and Interop now name `0084f72` as their product version instead of
+`98d5429` and `b0243d6`. The catalogs here and both Vulkan manifests are unchanged.
+
+Verification: the core CTests pass apart from `chart_gpu_raster`, which fails on this machine's RTX 5090
+on unchanged sources as well, and `design_test` runs 689 checks without a failure. The 38 hook CTests and
+the 10 Vulkan CTests pass on x64 and x86, all without compiler warnings; the link step of both layers
+reports LNK4199 for three delay-load options without imports (`d3d12.dll`, `dxgi.dll`,
+`windowscodecs.dll`). The editor demo's `--verify` (1782 checks) and `--verify-native` (1241 checks for 68
+templates) passed with these builds. A CapFrameX Release build with `CfxOsdFromSource=false` staged
+exactly these seven binaries into the app and the test output and ran the tests outside the `Integration`
+category: all 3847 passed.
+
+The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` of the RTX 5090 PC (the only
+CapFrameX registrations in both HKLM views) were replaced by those of this entry; the replaced ones of the
+entry below (`2062E51F…`, `C58C5ADF…`) are in `backup-pre-fresh-rebuild-20261122-114747` beside them.
+vkcube loaded the installed x64 layer and the x86 `cfx_vk_host` the installed x86 layer; no game ran with
+these binaries yet.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `05493C8F35FC4F15932A17FA2039B1DF0647D9416E8C61F551760F018D38DCD1` |
+| native\cfx_osd_hook.dll | `97EBF06F6E6D37A4B3FCAA1258C723D6CF45D553F212CD6C494365C79CC70113` |
+| native\x86\cfx_osd_hook.dll | `3AF8C1D224B9BD6E32953C99A9F2102507004D05A8E77606B47CB5E38548D26E` |
+| native\vk\cfx_osd_vklayer.dll | `B3299A4D0D266CBE35A1FD4A7D735D98A2C911F28B1FCAADA0EA4C8CA07BEA7E` |
+| native\vk\x86\cfx_osd_vklayer.dll | `CF3E6F0936185514AD5192189CC64626B975225C485D82423F11C61AA51ED4EB` |
+| net11.0-windows\CapFrameX.OSD.Controls.dll | `0CD7F8CE567A9A670FDE428ABD97C3CB43F747744D97C813FB537589BAA209C7` |
+| net11.0-windows\CapFrameX.OSD.Interop.dll | `2F2AE122295532F7682127170321689AA49086AD1F601F71AD2B22CB57C55F87` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Run history tables with the in-game target size fix and XeSS-FG in the driver's runtime (2026-11-22)
 
 All five native trees were rebuilt clean (VS 2026/v145 with MSVC 14.52, `RelWithDebInfo`,
