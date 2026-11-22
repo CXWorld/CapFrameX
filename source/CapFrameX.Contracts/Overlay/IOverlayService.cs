@@ -26,6 +26,9 @@ namespace CapFrameX.Contracts.Overlay
 
 		string RunHistoryAggregation { get; }
 
+		/// <summary>The run history with its numbers, for the run history tile; replaced as a whole on every change.</summary>
+		RunHistorySnapshot RunHistoryTable { get; }
+
 		void UpdateNumberOfRuns(int numberOfRuns);
 
 		void SetCaptureTimerValue(int t);

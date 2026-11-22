@@ -8,6 +8,8 @@ using System.Reactive.Linq;
 using System.Reactive.Subjects;
 using System.Threading;
 using System.Threading.Tasks;
+using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Localization;
 using CapFrameX.Contracts.Sensor;
 using CapFrameX.Contracts.Overlay;
 using CapFrameX.Monitoring.Contracts;
@@ -32,6 +34,7 @@ namespace CapFrameX.OSD.Integration
         private readonly IOverlayEntryProvider _classic;
         private readonly IOverlayService _overlay;
         private readonly IHookOverlayStatusService _hookStatus;
+        private readonly IAppConfiguration _appConfiguration;
         private readonly SemaphoreSlim _catalogLock = new SemaphoreSlim(1, 1);
         private readonly object _lifecycleLock = new object();
         // Each lease with the sources it needs; a null function needs all of them.
@@ -45,7 +48,8 @@ namespace CapFrameX.OSD.Integration
 
         public OverlayTelemetryService(ISensorService sensors, ISensorConfig config,
             IOnlineMetricService metrics = null, IOverlayEntryProvider classic = null,
-            IOverlayService overlay = null, IHookOverlayStatusService hookStatus = null)
+            IOverlayService overlay = null, IHookOverlayStatusService hookStatus = null,
+            IAppConfiguration appConfiguration = null)
         {
             _sensors = sensors ?? throw new ArgumentNullException(nameof(sensors));
             _config = config ?? throw new ArgumentNullException(nameof(config));
@@ -53,6 +57,7 @@ namespace CapFrameX.OSD.Integration
             _classic = classic;
             _overlay = overlay;
             _hookStatus = hookStatus;
+            _appConfiguration = appConfiguration;
             Snapshots = sensors.SensorSnapshotStream
                 // Formatting and statistics must not hold up the single hardware polling worker.
                 .ObserveOn(TaskPoolScheduler.Default)
@@ -99,6 +104,9 @@ namespace CapFrameX.OSD.Integration
                     sources.Add(AdditionalSource("RunHistoryCount", "Completed runs", "Capture", "Results", "", "runCount", false));
                     sources.Add(AdditionalSource("RunHistoryAggregation", "Aggregated capture result", "Capture", "Results", "", "runAggregation", true));
                     sources.Add(AdditionalSource("RunHistoryOutlierCount", "Outlier runs", "Capture", "Results", "", "runOutlierCount", false));
+                    // The run history tile's table; the editor offers it to that tile only.
+                    sources.Add(AdditionalSource(RunHistoryTablePayload.SourceIdentifier, "Run history (table)", "Capture", "Results", "",
+                        RunHistoryTablePayload.SemanticKey, true));
                 }
                 OverlaySemanticKeys.Assign(sources);
                 ThrowIfDisposed();
@@ -608,6 +616,10 @@ namespace CapFrameX.OSD.Integration
                 textValues["metric/RunHistoryAggregation"] = NormalizeText(_overlay.RunHistoryAggregation);
                 if (!string.IsNullOrWhiteSpace(_overlay.RunHistoryAggregation)) runs.Add(_overlay.RunHistoryAggregation);
                 textValues["metric/RunHistory"] = runs.Count == 0 ? null : string.Join("\n", runs);
+                if (IsIncluded(MetricPrefix + RunHistoryTablePayload.SourceIdentifier))
+                    textValues[MetricPrefix + RunHistoryTablePayload.SourceIdentifier] = RunHistoryTablePayload.Build(
+                        _overlay.RunHistoryTable, _appConfiguration?.UseRunHistory ?? true,
+                        _appConfiguration?.FpsValuesRoundingDigits ?? 1, CxLang.Instance.TranslateOverlay);
             }
             var hook = IsRequired(MetricPrefix + "FrameGenerationTechnology")
                 || IsRequired(MetricPrefix + "FrameGenerationStatus") ? _hookStatus?.Current : null;

@@ -1,4 +1,4 @@
-﻿using CapFrameX.Contracts.Configuration;
+using CapFrameX.Contracts.Configuration;
 using CapFrameX.Contracts.Data;
 using CapFrameX.Contracts.Logging;
 using CapFrameX.Contracts.Overlay;
@@ -53,6 +53,10 @@ namespace CapFrameX.Overlay
         private bool[] _runHistoryOutlierFlags;
         private volatile bool[] _runHistoryOutlierFlagsSnapshot = Array.Empty<bool>();
         private volatile string _runHistoryAggregation = string.Empty;
+        // The metrics each completed run was measured in, parallel to _metricAnalysis.
+        private IList<(string Second, string Third)> _runMetricNames = new List<(string Second, string Third)>();
+        private IMetricAnalysis _runHistoryResult;
+        private volatile RunHistorySnapshot _runHistoryTable = RunHistorySnapshot.Empty;
         private int _numberOfRuns;
         private IList<IMetricAnalysis> _metricAnalysis = new List<IMetricAnalysis>();
         private ISubject<IOverlayEntry[]> _onDictionaryUpdated = new Subject<IOverlayEntry[]>();
@@ -77,6 +81,8 @@ namespace CapFrameX.Overlay
         public IReadOnlyList<bool> RunHistoryOutlierFlags => _runHistoryOutlierFlagsSnapshot;
 
         public string RunHistoryAggregation => _runHistoryAggregation;
+
+        public RunHistorySnapshot RunHistoryTable => _runHistoryTable;
 
         public IObservable<IOverlayEntry[]> OnDictionaryUpdated => _onDictionaryUpdated;
 
@@ -338,7 +344,7 @@ namespace CapFrameX.Overlay
 
             _runHistory = Enumerable.Repeat("N/A", _numberOfRuns).ToList();
             PublishRunHistory();
-            PublishRunHistoryAggregation(string.Empty);
+            PublishRunHistoryAggregation(null);
             PublishRunHistoryOutlierFlags();
             _rTSSService.SetIsCaptureTimerActive(false);
         }
@@ -572,8 +578,9 @@ namespace CapFrameX.Overlay
             _frametimeHistory.Clear();
             _displaytimeHistory.Clear();
             _metricAnalysis.Clear();
+            _runMetricNames.Clear();
             PublishRunHistory();
-            PublishRunHistoryAggregation(string.Empty);
+            PublishRunHistoryAggregation(null);
             PublishRunHistoryOutlierFlags();
         }
 
@@ -599,17 +606,19 @@ namespace CapFrameX.Overlay
                     var validFrametimes = _frametimeHistory.Where((run, i) => _runHistoryOutlierFlags[i] == false);
                     var validDisplaytimes = _displaytimeHistory.Where((run, i) => _runHistoryOutlierFlags[i] == false);
                     var validMetricAnalysis = _metricAnalysis.Where((run, i) => _runHistoryOutlierFlags[i] == false);
+                    var validMetricNames = _runMetricNames.Where((run, i) => _runHistoryOutlierFlags[i] == false);
 
                     _runHistory = historyDefault.ToList();
                     _captureDataHistory = validCaptureData.ToList();
                     _frametimeHistory = validFrametimes.ToList();
                     _displaytimeHistory = validDisplaytimes.ToList();
                     _metricAnalysis = validMetricAnalysis.ToList();
+                    _runMetricNames = validMetricNames.ToList();
 
                     // local reset
                     _runHistoryOutlierFlags = Enumerable.Repeat(false, _numberOfRuns).ToArray();
                     PublishRunHistory();
-                    PublishRunHistoryAggregation(string.Empty);
+                    PublishRunHistoryAggregation(null);
                     PublishRunHistoryOutlierFlags();
                 }
                 else
@@ -625,6 +634,7 @@ namespace CapFrameX.Overlay
                     _appConfiguration.UseDisplayChangeMetrics, SecondMetric, ThirdMetric);
 
                 _metricAnalysis.Add(currentAnalysis);
+                _runMetricNames.Add((SecondMetric, ThirdMetric));
                 _runHistory[RunHistoryCount] = currentAnalysis.ResultString;
                 PublishRunHistory();
 
@@ -687,6 +697,7 @@ namespace CapFrameX.Overlay
             var snapshot = _runHistory.ToArray();
             _runHistorySnapshot = snapshot;
             _rTSSService.SetRunHistory(snapshot);
+            PublishRunHistoryTable();
         }
 
         private void PublishRunHistoryOutlierFlags()
@@ -694,12 +705,46 @@ namespace CapFrameX.Overlay
             var snapshot = _runHistoryOutlierFlags?.ToArray() ?? Array.Empty<bool>();
             _runHistoryOutlierFlagsSnapshot = snapshot;
             _rTSSService.SetRunHistoryOutlierFlags(snapshot);
+            PublishRunHistoryTable();
         }
 
-        private void PublishRunHistoryAggregation(string aggregation)
+        private void PublishRunHistoryAggregation(IMetricAnalysis aggregation)
         {
-            _runHistoryAggregation = aggregation ?? string.Empty;
+            _runHistoryResult = aggregation;
+            _runHistoryAggregation = aggregation?.ResultString ?? string.Empty;
             _rTSSService.SetRunHistoryAggregation(_runHistoryAggregation);
+            PublishRunHistoryTable();
+        }
+
+        // The run history tile's picture of the history, replaced as a whole. The deviations compare the
+        // metric and the median the outlier detection compares (GetOutlierAnalysis), so a run is an
+        // outlier exactly when its deviation exceeds the outlier percentage.
+        private void PublishRunHistoryTable()
+        {
+            var analyses = _metricAnalysis.ToArray();
+            var names = _runMetricNames.ToArray();
+            var flags = _runHistoryOutlierFlags ?? Array.Empty<bool>();
+            string reference = _appConfiguration.RelatedMetricOverlay;
+            Func<IMetricAnalysis, double> pick = reference == "Second" ? analysis => analysis.Second
+                : reference == "Third" ? analysis => analysis.Third : analysis => analysis.Average;
+            double median = double.NaN;
+            if (analyses.Length >= 2)
+            {
+                try { median = _statisticProvider.GetPQuantileSequence(analyses.Select(pick).ToList(), 0.5); }
+                catch (Exception) { median = double.NaN; }
+            }
+            var runs = analyses.Select((analysis, index) =>
+            {
+                double value = pick(analysis);
+                double deviation = double.IsFinite(median) && median > 0 && double.IsFinite(value)
+                    ? (value - median) / median * 100d : double.NaN;
+                var (second, third) = index < names.Length ? names[index] : (SecondMetric, ThirdMetric);
+                return new RunHistoryRun(analysis.Average, analysis.Second, analysis.Third, second, third,
+                    deviation, index < flags.Length && flags[index]);
+            }).ToArray();
+            var result = _runHistoryResult;
+            _runHistoryTable = new RunHistorySnapshot(_numberOfRuns, SecondMetric, ThirdMetric, reference, runs,
+                result == null ? null : new RunHistoryRun(result.Average, result.Second, result.Third, SecondMetric, ThirdMetric));
         }
 
         public IOverlayEntry GetSensorOverlayEntry(string identifier)
@@ -795,7 +840,7 @@ namespace CapFrameX.Overlay
                 });
         }
 
-        private string GetAggregation()
+        private IMetricAnalysis GetAggregation()
         {
             var concatedFrametimes = new List<double>(_frametimeHistory.Sum(set => set.Count));
             var concatedDisplaytimes = new List<double>(_displaytimeHistory.Sum(set => set.Count));
@@ -811,7 +856,7 @@ namespace CapFrameX.Overlay
             }
 
             return _statisticProvider.GetMetricAnalysis(concatedFrametimes, concatedDisplaytimes,
-                _appConfiguration.UseDisplayChangeMetrics, SecondMetric, ThirdMetric).ResultString;
+                _appConfiguration.UseDisplayChangeMetrics, SecondMetric, ThirdMetric);
         }
     }
 }
