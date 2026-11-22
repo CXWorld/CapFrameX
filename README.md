@@ -104,7 +104,7 @@ Besides the row overlay of **Overlay items**, the CapFrameX in-game and hook-fre
 
 - **Overlay → Tile overlay** lists the saved tile profiles. **Show in overlay** activates one, **Use row overlay** returns to the rows.
 - **Open tile editor** opens the editor with a live preview: add tiles from the palette, set their source, size and colors, and save the design as a profile.
-- CapFrameX ships 46 starter designs, from compact corner layouts to hardware themes that name the installed CPU and GPU. Later updates of the starters leave a profile you changed untouched.
+- CapFrameX ships 47 starter designs, from compact corner layouts to hardware themes that name the installed CPU and GPU. Later updates of the starters leave a profile you changed untouched.
 - **Export…** and **Import…** share a design as a JSON file. An imported design is mapped onto the sensors of this PC, and the editor lists what it could not match.
 - **Ctrl + click** selects several tiles in the preview or the layer list. **Place into container** puts them into a new container of exactly their size; nothing moves, and the container then moves, scales and copies them as one.
 - **Merge…** adds tiles of another saved profile below the tiles of the design you are editing: all of them to merge two profiles, or just the containers and tiles you tick. They keep their arrangement and colors; scale, font, corner radius and tile opacity of your design apply. Nothing is saved until you save, and one Undo takes them out again.
@@ -138,6 +138,12 @@ The **Performance Strip** design ([`overlay-templates/Performance-Strip.json`](o
 ### Frame rate graphs and grid lines
 
 A chart tile can draw the frame rate in two ways: **Framerates** shows 1000 / frame time of every frame, **Frames per second (counted)** the frames presented in the second before every moment, as a frame counter counts them, drawn as a smooth curve that shows no peak or dip the counts do not have. **Grid lines** in a chart's options draws horizontal lines at round values, labelled at the right of the chart. **Outline and grid line width** below it makes the chart's outline and grid lines thicker (in design units, drawn in whole pixels); left empty they stay one pixel wide.
+
+### Run history tile
+
+The **Run history** tile shows the run history of the Capture page as a table: a row per run with the average and the second and third metric of the run history, each run's deviation from the median of the metric the outlier detection uses (Δ), and the aggregated result. Dots and a count such as (3/5) in the title row show how far the session is; outliers appear in red. The tile reserves a row for each of its **Runs**, so it keeps its height during a session, and the tiles below it move when you change the number in the editor. Turn on the run history on the Capture page; until then the title row reads "Off".
+
+The **Capture Session** design ([`overlay-templates/Capture-Session.json`](overlay-templates/Capture-Session.json), also in the design list) is made for benchmark sessions: the capture status and timer with the game, graphics API, present mode, frame generation factor and upscaler version; the current frame rate with average, 1% and 0.1% low, P1, P0.2 and frame times; GPU and CPU busy time, PC latency, animation error, stuttering and GPU busy deviation; a frame pacing graph with its stutter threshold; and a run history of three runs.
 
 ### Custom in-game compatibility profiles
 

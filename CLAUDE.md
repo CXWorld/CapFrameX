@@ -960,6 +960,33 @@ telemetry source), `OverlayRunHistoryTileTest` (reserved room, translation both 
 validation, flow designs, styles, MCP document, the renderer's pixels); OSD `design_test`
 (`runHistoryTests`, `partial_repaint`).
 
+### Capture Session starter
+
+"Capture Session" (`overlay-templates/Capture-Session.json`, catalog version 36, listed after the
+Performance Strip) is the metric-heavy design for benchmark sessions around the run history tile: a
+column of dark cards (`#0A101AE6`, outlined in the brand blue at 35 %), 360 × 670 design units at
+scale 1, in Bahnschrift. From the top: a header in the brand blue `#0271F9` with the CapFrameX banner
+(`OsdLogoPresets`) and "CAPTURE SESSION"; the capture status and timer, the game and graphics API, and
+cells for present mode, frame generation factor and upscaler version (the last two need the in-game
+renderer and read "N/A" elsewhere); the current frame rate large with the current frame time, then
+average, 1% and 0.1% low, P1, P0.2 and the average frame time; GPU and CPU busy time, PC latency,
+animation error, stuttering and GPU busy deviation; a frame pacing chart with the stutter threshold
+(× 2.5) over labelled grid lines; last the run history, which reserves three runs, the default of
+`SelectedHistoryRuns`. Every cell is a metric with its caption on top (10 units, `#8EA2BD`) over its
+white value; the frame rate statistics keep their empty unit through `valueScale` 1 when the binder
+adopts the source's "FPS". It binds semantic keys only. The file was generated through the editor's
+model (`OsdDesignDocument`), so it is stored as the editor saves it; change it in the designer. Its
+frames leave room below every text: at 100 and 110 % zoom the session cells, 32 units high at first,
+cut one pixel row off the descender of "Composed: Flip"; they are 36 high now.
+
+The design made a gap visible: `OverlayService.SetCaptureTimerValue` keeps the classic entry's text
+with its unit ("12 s"), which RTSS shows as it is, and `OverlayTelemetryService` read no number from it,
+so a tile bound to `captureTimer` never showed a value. It now drops the source's unit before it reads
+a classic number: the tile shows the seconds of a capture, the countdown before a delayed one ("-3 s")
+and "0 s" between captures. Tests: `CaptureSessionShowsTheCaptureItsMetricsAndTheRunHistory`,
+`CaptureSessionTilesDoNotCutOffTheirTexts` (renders it at 100, 110 and 150 % with and without more
+room below every text), `TheCaptureTimerReadsTheSecondsOfTheTextTheOverlayServiceWrites`.
+
 ### Multi-line charts and stutter thresholds
 
 A chart tile may carry `chartLines` (`OsdChartLine`, 1..4), the renderer's `lines`, drawn in order on
