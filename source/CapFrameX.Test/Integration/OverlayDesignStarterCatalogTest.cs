@@ -830,15 +830,26 @@ namespace CapFrameX.Test.Integration
                 "gpuActiveDeviation" }, Keys(document.Tiles[3]));
             CollectionAssert.AreEqual(new[] { "ms", "ms", "ms", "ms", "%", "%" }, document.Tiles[3].Children.Select(tile => tile.Unit).ToArray());
 
-            // The current frame rate is the largest value. The statistics below it are named by their captions: a
-            // scale keeps their unit empty when the binder adopts the source's "FPS".
+            // The current frame rate and frame time are the largest values, the frame rate in the first column and the
+            // frame time from the second to the end of the third, under one line of captions and in one size, so their
+            // digits and units share a baseline; the cells below them a wider gap away. The statistics are named by
+            // their captions: a scale keeps their unit empty when the binder adopts the source's "FPS".
             var rates = document.Tiles[2].Children;
-            Assert.IsTrue(rates.Skip(1).All(tile => tile.ValueSize < rates[0].ValueSize), "The current frame rate is the largest value.");
+            Assert.IsTrue(rates.Skip(2).All(tile => tile.ValueSize < rates[0].ValueSize), "The current values are the largest.");
+            Assert.AreEqual((rates[0].Y, rates[0].FrameHeight, rates[0].LabelSize, rates[0].ValueSize, rates[0].UnitSize),
+                (rates[1].Y, rates[1].FrameHeight, rates[1].LabelSize, rates[1].ValueSize, rates[1].UnitSize),
+                "Frame rate and frame time share their captions and the baseline of their values.");
+            Assert.AreEqual((rates[2].X, rates[2].FrameWidth), (rates[0].X, rates[0].FrameWidth), "The frame rate stands in the first column.");
+            Assert.AreEqual((rates[3].X, rates[3].Align), (rates[1].X, rates[1].Align), "The frame time starts in the second column.");
+            Assert.AreEqual(rates[4].X + rates[4].FrameWidth, rates[1].X + rates[1].FrameWidth,
+                "The frame time takes the third column too, so 16.67 ms keeps the size of the frame rate.");
+            Assert.IsTrue(rates[2].Y - (rates[0].Y + rates[0].FrameHeight) > rates[5].Y - (rates[2].Y + rates[2].FrameHeight),
+                "The cells below keep more room to the large values than to each other.");
             foreach (var statistic in rates.Where(tile => tile.Key.StartsWith("fps", StringComparison.Ordinal) && tile.Key != "fpsCurrent"))
                 Assert.AreEqual(("", (double?)1), (statistic.Unit, statistic.ValueScale), statistic.Key);
             // Every cell of the grids names its value above it, in the captions' color.
             var cells = document.Tiles.Skip(1).Take(3).SelectMany(card => card.Children).Where(tile => tile.LabelPosition == "top").ToArray();
-            Assert.AreEqual(16, cells.Length);
+            Assert.AreEqual(17, cells.Length);
             Assert.IsTrue(cells.All(cell => !string.IsNullOrWhiteSpace(cell.Label) && cell.LabelColor == cells[0].LabelColor
                 && cell.LabelSize < cell.ValueSize), "Captions are smaller than their values and share one color.");
 
