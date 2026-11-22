@@ -12,6 +12,90 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Target size of in-game CPU producers, XeSS-FG in the driver's runtime (2026-11-22)
+
+All five native trees were rebuilt clean (VS 2026/v145 with MSVC 14.52, `RelWithDebInfo`,
+`--clean-first`, x64 and x86) from the OSD working tree on commit
+`55d0b6e7181525be1a1eee5e42c46ffad2456d22` (`main`) with two changes that were committed after the
+build, unchanged, as OSD commits `ea20c863a839740417eaade0ae4b8d587d2a65e0` and
+`7d8e98d42084efe2a85b869249cba307e3509b69` (branch `fix/target-size-xess-driver`); after the build
+only the OSD repo's CLAUDE.md changed, where both are documented:
+
+- **Target size of in-game CPU producers** (`ea20c86`: `src/core/OsdInstance.cpp`, `OsdInstance.h`,
+  `Diagnostics.h`; "Resolution-relative sizing"): `setPosition` read the monitor in for the CPU
+  producer of the D3D12 hook and the Vulkan layer as for the hook-free window, so every new
+  placement (a show, an OLED pixel orbit step) replaced the back buffer with the monitor until the
+  next present. In Dying Light: The Beast (D3D12 hook, 1600x900 on a 1920x1200 monitor, "Scale
+  with resolution") the target height went 900 -> 1200 -> 900 within 13 ms of the show after
+  ALT+O, and the scene was built at 1.11 instead of 0.83 and rebuilt twice (2026-11-21); a
+  full-width scene also took the monitor's width. `setPosition` now only stores their placement.
+  The extended OSD logging names the setter: the `resolution scale` line of `cfx_osd.log` adds
+  the new and the previous size with their sources (`host`, `render target`, `monitor at create`,
+  `monitor at placement`, `monitor at display change`) and the time between them, a new
+  `full-width target width` line does the same for the relayout of a full-width scene, and the
+  D3D12 hook writes `native D3D12 OSD target size A -> B from swapchain P` to `cfxhook.log` (each
+  at most 8 lines per 10 s). The hooks and both layers compile the core sources and carry the fix.
+- **XeSS-FG in the driver's runtime** (`7d8e98d`: `hook_poc/src/present_hook.cpp`; "XeSS-FG in the
+  driver's runtime"): the SDK's `libxess_fg.dll` (1.3.1.78) asks the Intel driver's `igxess_fg.dll`
+  whether to hand the frame-generation context over. Driver 32.0.101.9175 (`igxess_fg.dll`
+  1.3.3.93) takes it, and the game then presents through the driver's `XefgInterpolationSwapChain`
+  while the hook had patched only the unused class of the SDK library: on an Arc B390 the
+  vendor-aware route declined every present and never published `EarlyInjectionRequired`
+  (2026-11-21). The hook now keeps one set of proxy hooks per implementing module (the SDK library
+  and the driver's copy), also hooks the class of the object `GetSwapChainPtr` returns, and drops a
+  set when its module unloads. The generic route, on which CapFrameX starts a late attach with
+  frame-generation evidence, hooks none of these classes. The ~20 s stalls of the same test runs
+  were XeSS-FG compiling its kernels at the first start of an executable, not the hook.
+
+Verification: all 17 core CTests pass, `chart_gpu_raster` included, with `design_test` at 642
+checks (its new `cpuProducerPlacementTests` fails three of them without the fix) and the new
+`TargetSizeHistory` checks of `diagnostics_test`. The 38 hook CTests and the 10 Vulkan CTests pass
+on x64 and x86, all without compiler warnings; the link step of both layers reports LNK4199 for
+three delay-load options without imports (`d3d12.dll`, `dxgi.dll`, `windowscodecs.dll`). The editor
+demo's `--verify` (1778 checks) and `--verify-native` (1241 checks for 68 templates) passed with
+this core. Controls and Interop were rebuilt along (`dotnet build CapFrameX.OSD.sln -c Release`,
+.NET SDK 11.0.100) but not copied: no managed source changed since the Controls of the entry
+below. Both Vulkan manifests and the catalogs are unchanged.
+
+On this PC (Intel Arc B390 integrated graphics, driver 32.0.101.8724), CapFrameX.Test ran against
+these trees, on commit `5bbe10a794afdc6123e9a6b77357ef0ce91fc5ea` (branch
+`test/xess-driver-runtime`), which adds for the driver's runtime: a stand-in SDK library that hands every call to the driver's `igxess_fg.dll`
+(`stubs/libxess_fg_driver.cpp`), the routing cases `driver-runtime-late-attach` and
+`driver-runtime-early-attach`, and a first start of every app without the hook. These passed:
+`verify-osd-xess-routing` (all five cases), `verify-osd-xess-application-native`,
+`verify-osd-fsr-routing`, `verify-osd-late-attach`, `verify-osd-generic-d3d11`,
+`verify-osd-frame-cadence`, `verify-osd-chart-motion`, `verify-osd-fonts` and
+`verify-osd-vulkan-learning`. `verify-osd-tiles` passed for D3D11 and D3D12 on x64 and x86; its
+Vulkan cases fail on `wrong-target: inactive design was not cleared` as they did before these
+changes: the layer has kept its design through a retarget since 2026-10-31 ("Keep the in-game
+renderer through a hide"), and the suite still expects it cleared. With the hook of the entry
+below, `driver-runtime-late-attach` fails with "Late attach did not publish
+EarlyInjectionRequired" and the early attach on the stand-in draws nothing. With the generic driver
+32.0.101.9175 installed again over the OEM driver (`igxess_fg.dll` 1.3.3.93, same day), these
+binaries passed `verify-osd-xess-routing` (all five cases), `verify-osd-xess-application-native`
+and the `xess-real` case of `verify-osd-frame-cadence` (graph 1.00x, 120 FPS, factor 2) as well. In
+the early attach `GetSwapChainPtr` returned an object of the driver's class, on which the hook drew,
+so the real hand-over is covered, not only the stand-in. A CapFrameX Release build with
+`CfxOsdFromSource=false` staged exactly these five binaries into the app and the test output and
+ran the tests outside the `Integration` category: all 3824 passed.
+
+The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` of this PC (the only
+CapFrameX registrations in both HKLM views) were replaced by those of this entry; the replaced ones
+of the entry below (`29B59085…`, `FA2418EB…`) are in `backup-pre-target-size-20261122-094332`
+beside them. vkcube loaded the installed x64 layer and `cfx_vulkan_x86` the installed x86 layer; no
+game ran with these binaries yet.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `F643E5C3C11A81DCADF2D386A6A079BE073B6CD041A53A40537DE75A7B4E09CC` |
+| native\cfx_osd_hook.dll | `329C9B5F45CC1C3D5AB9B7C47E9EA9A30A99CDDCC251BDC6483F512691716708` |
+| native\x86\cfx_osd_hook.dll | `F1E019949EA4FEE383854D9C2C787468D0DB384A5FC03CD9EFC7736707BFB213` |
+| native\vk\cfx_osd_vklayer.dll | `392E8A68B2E524E19BCC024544AC859B4E4CB0AC52DBFBFB4D968F7823E7E1CE` |
+| native\vk\x86\cfx_osd_vklayer.dll | `C652D122C355FE46F3A9B837E13D301798EB5DBC9AE351C6847BCB9D9F864A33` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Placeholders in empty chart width fields (2026-11-21)
 
 Controls was rebuilt in `Release|x64` for `net11.0-windows` (.NET SDK 11.0.100, `dotnet build
