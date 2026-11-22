@@ -906,6 +906,51 @@ cell keys (`SavedHeatmapWindow`), so designs saved while the default was 60 s ke
 Controls must contain the heatmap: a Controls build without it rejects FUSION. Block and row rules:
 the OSD repo's CLAUDE.md.
 
+### Run history tiles
+
+A `runHistory` tile (the editor's "Run history", MCP kind `runHistory`, issue 487) shows the run
+history of a benchmark session (Capture tab: Run history, Aggregation) as a table: the title on the
+left and, right-aligned, one progress dot per run of the session (the tile's accent for a completed
+run, red for an outlier, the caption color for a pending one) and the count "(3/5)"; the captions
+(Avg and the run history's second and third metric, short names through CxLang), one row per run, a
+column of each run's deviation from the median ("Δ P1"), and the aggregated result. The newest run reads in bold, outliers in theme red,
+pending runs as dashes. The deviation is the outlier detection's own quantity: the related metric
+(`RelatedMetricOverlay`) against `GetPQuantileSequence(…, 0.5)` of every completed run, so a run is an
+outlier exactly when |Δ| exceeds `OutlierPercentageOverlay` (one run: no deviation).
+
+- **Data.** `OverlayService` publishes `RunHistoryTable` (`RunHistorySnapshot`, CapFrameX.Contracts:
+  slots, every run's three values with the metrics it was measured in, deviation and outlier flag,
+  the aggregation's numbers) as a whole on every change of the history. `OverlayTelemetryService`
+  offers it as the text source `metric/RunHistoryTable` (semantic key `runHistoryTable`, not process
+  specific), built by `RunHistoryTablePayload` (pure) in the renderer's line format (OSD
+  `RunHistory.h`, `RH1` header, tab-separated, at most 2048 bytes, the renderer's limit for a text
+  reading). A run measured in another metric than the history shows now (changed mid-session) leaves
+  those cells empty. Digits follow `FpsValuesRoundingDigits`; with `UseRunHistory` off the title row
+  shows "Off" (CxLang) and no dots. The editor hides the source from every other tile's picker
+  (`OsdDesignDocument.IsRunHistorySource`) and binds the tile to it like a semantic key.
+- **Reserved room.** The tile reserves `Runs` rows (1..20, a new tile takes `SelectedHistoryRuns`
+  through `OsdEditorControl.DefaultRunHistoryRuns`), so a session never changes its height. Heights
+  are fixed shares of the text size (`ValueSize`, default 14), never measured text: title 1.6, captions
+  1.3, a run 1.4, result 0.4 + 1.4 (`OsdDesignDocument.RunHistoryContentHeight`, the same constants as
+  the native widget). On a canvas the frame is exactly that plus the padding, rounded up to the grid
+  (`RunHistoryFrameHeight`); `Validate` refuses a shorter frame, a resize changes only the width.
+  A session of more runs than reserved rows shows the latest runs through the next pending one.
+- **Vertical auto-translation.** Changing the runs, the text size, the result row or the padding fits
+  the tile (`OsdDesignDocument.FitRunHistory`, called by the editor state and by the MCP tile document):
+  every tile below it that it overlaps horizontally, and every tile below one of those, moves by the
+  change, down when it grew and back up when it shrank. Shrinking moves them up only as far as no tile
+  above them that stays comes closer than the design's gap. The canvas, or the container (as
+  `GrowTileToHeight`), grows when needed; in a flow design the tile's height follows its runs anyway.
+- **Renderers.** The native widget draws in every CapFrameX renderer and preview; a design with it
+  needs the prebuilt core, hooks, Vulkan layers and Controls of this change (older ones reject the
+  scene: unknown widget type). Its signature is the payload text, so the hook-free window repaints the
+  tile only when the history changes. RTSS and the classic rows keep their run history rows.
+
+Tests: `RunHistoryTableTest` (payload, `OverlayService` with outlier replacement and aggregation,
+telemetry source), `OverlayRunHistoryTileTest` (reserved room, translation both ways, the gap rule,
+validation, flow designs, styles, MCP document, the renderer's pixels); OSD `design_test`
+(`runHistoryTests`, `partial_repaint`).
+
 ### Multi-line charts and stutter thresholds
 
 A chart tile may carry `chartLines` (`OsdChartLine`, 1..4), the renderer's `lines`, drawn in order on
