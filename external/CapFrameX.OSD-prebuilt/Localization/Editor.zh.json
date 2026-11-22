@@ -527,5 +527,14 @@
   "Editor_MergeNothing": "请选择要添加的磁贴。",
   "Editor_MergeTooTall": "添加这些磁贴后设计高度将超过 4096 px。请减少磁贴数量或先腾出空间。",
   "Editor_Merged": "已从“{1}”添加 {0} 个磁贴到其他磁贴下方。它们已被选中：使用“放入容器”可将其合为一体。",
-  "Editor_FitCanvasHint": "使画布适应磁贴：宽度对齐最右侧的磁贴，高度对齐最下方的磁贴再加两个网格单元。"
+  "Editor_FitCanvasHint": "使画布适应磁贴：宽度对齐最右侧的磁贴，高度对齐最下方的磁贴再加两个网格单元。",
+  "Editor_RunHistoryKind": "运行历史",
+  "Editor_RunHistoryRuns": "预留运行次数",
+  "Editor_RunHistoryRunsHint": "每次运行一行。磁贴在整个会话中保持此高度：待完成的运行显示短横线，更改次数时下方的磁贴随之移动。运行次数更多的会话显示最近的运行。",
+  "Editor_RunHistoryResult": "汇总结果行",
+  "Editor_RunHistoryDeviation": "与中位数的偏差",
+  "Editor_RunHistoryDeviationHint": "每次运行与所有运行中位数的百分比偏差，采用离群值 (Outlier) 判定所比较的指标（捕获设置）。",
+  "Editor_StyleResult": "进度和结果",
+  "Editor_RunHistoryTooShort": "运行历史需要容纳其全部运行的空间。请增加磁贴高度或减少预留运行次数。",
+  "Editor_RunHistoryFields": "只有运行历史可以预留运行次数。"
 }

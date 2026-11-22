@@ -527,5 +527,14 @@
   "Editor_MergeNothing": "추가할 타일을 선택하세요.",
   "Editor_MergeTooTall": "이 타일들을 추가하면 디자인 높이가 4096 px를 넘습니다. 타일을 줄이거나 먼저 공간을 만드세요.",
   "Editor_Merged": "“{1}”의 타일 {0}개를 다른 타일 아래에 추가했습니다. 추가한 타일이 선택되어 있으며, “컨테이너에 넣기”로 하나로 묶을 수 있습니다.",
-  "Editor_FitCanvasHint": "캔버스를 타일에 맞춥니다. 너비는 가장 오른쪽 타일까지, 높이는 가장 아래 타일에 격자 두 칸을 더한 만큼입니다."
+  "Editor_FitCanvasHint": "캔버스를 타일에 맞춥니다. 너비는 가장 오른쪽 타일까지, 높이는 가장 아래 타일에 격자 두 칸을 더한 만큼입니다.",
+  "Editor_RunHistoryKind": "실행 이력",
+  "Editor_RunHistoryRuns": "예약된 실행 횟수",
+  "Editor_RunHistoryRunsHint": "실행마다 한 행입니다. 타일은 세션 내내 이 높이를 유지합니다. 대기 중인 실행은 대시로 표시되고, 횟수를 바꾸면 아래 타일이 함께 이동합니다. 실행 횟수가 더 많은 세션은 최신 실행을 표시합니다.",
+  "Editor_RunHistoryResult": "집계 결과 행",
+  "Editor_RunHistoryDeviation": "중앙값 대비 편차",
+  "Editor_RunHistoryDeviationHint": "이상값 판단에 사용할 지표(캡처 설정)에서 각 실행이 전체 실행의 중앙값과 다른 정도를 백분율로 표시합니다.",
+  "Editor_StyleResult": "진행 상황 및 결과",
+  "Editor_RunHistoryTooShort": "실행 이력에는 모든 실행을 위한 공간이 필요합니다. 타일을 높이거나 예약된 실행 횟수를 줄이세요.",
+  "Editor_RunHistoryFields": "실행 횟수는 실행 이력만 예약합니다."
 }

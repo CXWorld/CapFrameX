@@ -527,5 +527,14 @@
   "Editor_MergeNothing": "Choose the tiles to add.",
   "Editor_MergeTooTall": "With these tiles the design would be taller than 4096 px. Add fewer tiles or make room first.",
   "Editor_Merged": "Added {0} tiles from “{1}” below the others. They are selected: “Place into container” makes them one.",
-  "Editor_FitCanvasHint": "Fits the canvas to its tiles: the width to the rightmost tile, the height to the lowest tile plus two grid cells."
+  "Editor_FitCanvasHint": "Fits the canvas to its tiles: the width to the rightmost tile, the height to the lowest tile plus two grid cells.",
+  "Editor_RunHistoryKind": "Run history",
+  "Editor_RunHistoryRuns": "Reserved runs",
+  "Editor_RunHistoryRunsHint": "One row per run. The tile keeps this height for the whole session: pending runs show dashes, and the tiles below it move along when you change the count. A session of more runs shows the latest ones.",
+  "Editor_RunHistoryResult": "Row of the aggregated result",
+  "Editor_RunHistoryDeviation": "Deviation from the median",
+  "Editor_RunHistoryDeviationHint": "Each run's difference to the median of all runs in percent, in the metric the outlier detection compares (capture settings).",
+  "Editor_StyleResult": "Progress and result",
+  "Editor_RunHistoryTooShort": "A run history needs the room of all its runs. Make the tile taller or reserve fewer runs.",
+  "Editor_RunHistoryFields": "Only a run history reserves runs."
 }

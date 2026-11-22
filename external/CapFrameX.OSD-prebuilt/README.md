@@ -12,6 +12,67 @@ only prebuilts even when OSD sources are available.
 
 ## Build provenance
 
+### Run history tables (2026-11-22)
+
+All five native trees were rebuilt clean (VS 2026/v145 with MSVC 14.52, `RelWithDebInfo`,
+`--clean-first`, x64 and x86) and Controls (.NET SDK 11.0.100, `dotnet build CapFrameX.OSD.sln -c Release
+--no-incremental`) from commit `98d5429a329be9dc7ee6351a09c72531c2abe922` (`main`), on `55d0b6e`:
+`81dd740` adds the core's `runHistory` widget (`src/core/RunHistory.h`, `Widget.*`, `Config.cpp`,
+`Scene.cpp`, the `design_test` cases `run_history.h` and the widget in `partial_repaint.h`'s scene),
+`2c31b94` the editor's run history tile (Controls and its editor catalogs), `98d5429` documents both (the
+OSD repo's CLAUDE.md, "Run history tables").
+
+- `runHistory` draws a benchmark session from one text reading (`key`, default `runHistoryTable`) in the
+  line format of `RunHistory.h` (`RH1`): a title row with the title on the left and, right-aligned, one
+  dot per run of the session (accent for a completed run, `bad` for an outlier, the caption color for a
+  pending one) and the count "(3/5)"; the captions (Avg, the run history's two metrics, "Δ" and the
+  reference metric); `runs` reserved rows (1..20) with dashes for pending runs; the aggregated result.
+  Every height is a fixed share of `size`, so a session never changes the tile's height, and the
+  overlay zoom scales it like the other widgets. Cores, hooks and layers before this entry reject a
+  scene that contains it (unknown widget type).
+- The editor's "Run history" tile reserves the room of its runs on the canvas and moves the tiles below
+  it when the runs, the text size, the result row or the padding change. A Controls build before this
+  entry rejects designs with such a tile. The catalogs here (en, ko, zh) are those of `2c31b94`; the
+  other languages are in the DLL.
+
+Interop was rebuilt along but not copied: its sources are unchanged since `b0243d6`. Both Vulkan
+manifests and the template catalogs are unchanged.
+
+Verification: the core CTests pass apart from `chart_gpu_raster`, which fails on this machine's RTX 5090
+on unchanged sources as well. `design_test` runs 686 checks, among them `runHistoryTests` and the run
+history widget in `partial_repaint`'s byte-exact chain of partial repaints. The 38 hook CTests and the
+10 Vulkan CTests pass on x64 and x86, all without compiler warnings; the link step of both layers
+reports LNK4199 for three delay-load options without imports (`d3d12.dll`, `dxgi.dll`,
+`windowscodecs.dll`). The editor demo's `--verify` (1782 checks) and `--verify-native` (1241 checks for
+68 templates) passed with these builds. A CapFrameX Release build with `CfxOsdFromSource=false` staged
+exactly these five binaries, the Controls and the Interop of this folder into the app and the test
+output and ran the tests outside the `Integration` category; that run had not finished when this entry
+was committed, with 2812 tests passed and none failed by then. Run on their own with this build, the 21
+run history tests passed, among them the inspector's reserved runs moving the tiles below
+(`TheRunsPickerOfTheInspectorMovesTheTilesBelowAlong`) and the renderer's pixels of a session. Built
+from the same sources, the whole run outside the `Integration` category had passed (3842 tests) before
+the title row's progress dots, the overlay zoom of the widget and the inspector tests were added.
+
+The installed layers in `C:\Program Files\CapFrameX\vulkan` and `vulkan\x86` (the only CapFrameX
+registrations in both HKLM views) were replaced by those of this entry; the replaced ones of the entry
+of 2026-11-21 (`29B59085…`, `FA2418EB…`) are in `backup-pre-run-history-20261122-111513` beside them.
+vkcube loaded the installed x64 layer (`057CD2BD…`); no game ran with these binaries yet.
+
+| Updated component | SHA-256 |
+| --- | --- |
+| native\cfx_osd_core.dll | `9E6CA6EFA5318DCD3AA2F622C00DC98D66C8F393F3EDE33959717DF8E1B95979` |
+| native\cfx_osd_hook.dll | `35133859F2362ED0C4CD67B31DB5F0C5A5598FB8FED63B19084BE96F3106C6FC` |
+| native\x86\cfx_osd_hook.dll | `473907B60A29D4B5312AF07D3E9C138E7891A2F8120D17DAE37481BCAB479761` |
+| native\vk\cfx_osd_vklayer.dll | `057CD2BDC7B285F576526B6C8ABC2D93F0F45B87ADFDBF0E29D73B02D9ECF993` |
+| native\vk\x86\cfx_osd_vklayer.dll | `631A15B392F567EEA0510610E032E59BF2283F9565A55AB7CC1A4DDB84460990` |
+| net11.0-windows\CapFrameX.OSD.Controls.dll | `AFF81C058E0A69B87A4D1BC8C6FC3C26E445150AF9D9C773426484467B728089` |
+| Localization\Editor.en.json | `FF3B9CCCA90DCCD060EEA63CD4F97A73113BC0C64F39C7E7D941172F0FE677F9` |
+| Localization\Editor.ko.json | `6A858978DD50CA8FFF4BB233D5AC75711BE4130BAC23CE0148CCDC54EC96C0C0` |
+| Localization\Editor.zh.json | `0E239DDD0E5A367D2302F0E2C8248D56B2EE3A4F21B91308BBD290779ADF2D42` |
+
+Learned compatibility profiles are bound to the hook build hash, so CapFrameX re-verifies learned
+routes once with these hooks. These are unsigned development binaries.
+
 ### Placeholders in empty chart width fields (2026-11-21)
 
 Controls was rebuilt in `Release|x64` for `net11.0-windows` (.NET SDK 11.0.100, `dotnet build
