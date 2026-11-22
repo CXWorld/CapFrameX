@@ -1684,6 +1684,27 @@ drive root) or below any `\AppData\Local\Temp\`. `App.OnStartup` then explains i
 (`Appxaml_TemporaryFolder*`, in the configured language, else in the one of Windows) and exits before
 anything is written. Tests: `JsonSettingsStorageSaveFailureTest`, `TemporaryFolderStartTest`.
 
+## Autostart task
+
+"Autostart" registers the scheduled task `CapFrameX` (`AutostartTask`, `CapFrameX.ViewModel`): at the
+user's logon plus 20 s, elevated, with the app folder as working directory. The app registers it again
+at every start (`ColorbarViewModel.OnAutostartChanged`), so changes made to the task by hand do not
+last. The Task Scheduler's defaults for a new task do not suit CapFrameX, so the task sets two of them:
+
+- **Priority** `Normal` (`<Priority>5</Priority>`). The default is 7, below normal, and PresentMon
+  inherits the priority class of CapFrameX. A user reported on 2026-11-22 that the hook-free frame time
+  and frame rate charts did not work after an autostart until CapFrameX was started by hand. The likely
+  cause, not reproduced: under a game's load PresentMon and the overlay's render thread fall behind the
+  game's threads, rows arrive late and in waves, and the replay clock holds; the values, refreshed once
+  per second, barely show it.
+  Tasks registered before 1.9.3 have no priority, so `App.OnStartup` raises the process to normal
+  priority when it starts below it, before PresentMon starts (`StartupProcessPriority`, log `Started
+  with process priority BelowNormal, raised to Normal.`), and the installer's
+  `UpdateAutoStartTaskPath` sets both values in an existing task.
+- **Execution time limit** none (`PT0S`). The default ends the task, and CapFrameX, after 72 hours.
+
+Tests: `AutostartTaskTest` (a definition only, nothing is registered), `StartupProcessPriorityTest`.
+
 ## Record list folders
 
 The folder tree of the record list (`RecordFolderTree`, `CapFrameX.View/Controls`) holds the capture
