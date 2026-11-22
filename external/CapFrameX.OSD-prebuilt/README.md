@@ -18,8 +18,8 @@ All five native trees were rebuilt clean (VS 2026/v145 with MSVC 14.52, `RelWith
 `--clean-first`, x64 and x86) from the OSD working tree on commit
 `55d0b6e7181525be1a1eee5e42c46ffad2456d22` (`main`) with two changes that were committed after the
 build, unchanged, as OSD commits `ea20c863a839740417eaade0ae4b8d587d2a65e0` and
-`7d8e98d42084efe2a85b869249cba307e3509b69` (branch `fix/target-size-xess-driver`); after the build
-only the OSD repo's CLAUDE.md changed, where both are documented:
+`7d8e98d42084efe2a85b869249cba307e3509b69` (`main`); after the build only the OSD repo's CLAUDE.md
+changed, where both are documented:
 
 - **Target size of in-game CPU producers** (`ea20c86`: `src/core/OsdInstance.cpp`, `OsdInstance.h`,
   `Diagnostics.h`; "Resolution-relative sizing"): `setPosition` read the monitor in for the CPU
@@ -58,8 +58,8 @@ this core. Controls and Interop were rebuilt along (`dotnet build CapFrameX.OSD.
 below. Both Vulkan manifests and the catalogs are unchanged.
 
 On this PC (Intel Arc B390 integrated graphics, driver 32.0.101.8724), CapFrameX.Test ran against
-these trees, on commit `5bbe10a794afdc6123e9a6b77357ef0ce91fc5ea` (branch
-`test/xess-driver-runtime`), which adds for the driver's runtime: a stand-in SDK library that hands every call to the driver's `igxess_fg.dll`
+these trees, on commit `5bbe10a794afdc6123e9a6b77357ef0ce91fc5ea` (`main`), which adds for the
+driver's runtime: a stand-in SDK library that hands every call to the driver's `igxess_fg.dll`
 (`stubs/libxess_fg_driver.cpp`), the routing cases `driver-runtime-late-attach` and
 `driver-runtime-early-attach`, and a first start of every app without the hook. These passed:
 `verify-osd-xess-routing` (all five cases), `verify-osd-xess-application-native`,
