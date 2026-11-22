@@ -178,6 +178,7 @@ namespace CapFrameX.Test.Integration
         [DataRow(31, 32)]
         [DataRow(32, 33)]
         [DataRow(33, 34)]
+        [DataRow(35, 36)]
         public void VersionUpgradeAddsOnlyNewProfilesAndPreservesTheExistingLibrary(int previousVersion, int targetVersion)
         {
             var catalog = OverlayDesignStarterCatalog.Profiles.Where(profile => profile.IntroducedInVersion <= targetVersion).ToArray();
@@ -198,6 +199,7 @@ namespace CapFrameX.Test.Integration
                 29 => new[] { "BLUELINE-Nova-Lake" },
                 30 => new[] { "Performance-Strip" },
                 32 => new[] { "AQUALINE-GeForce-RTX" },
+                36 => new[] { "Capture-Session" },
                 _ =>new[] { "NVIDIA-GeForce-RTX-GREENLINE", "ICELINE-Vertical" }
             };
             CollectionAssert.AreEquivalent(expectedIds,
@@ -304,6 +306,7 @@ namespace CapFrameX.Test.Integration
         [DataRow("BLUELINE-Nova-Lake", "BLUELINE - Nova Lake", false, 29)]
         [DataRow("OLED-Minimal", "OLED Minimal", false, 6)]
         [DataRow("Performance-Strip", "Performance Strip", false, 30)]
+        [DataRow("Capture-Session", "Capture Session", true, 36)]
         [DataRow("NVIDIA-GeForce-RTX-GREENLINE", "GREENLINE - GeForce RTX", true, 7)]
         [DataRow("ICELINE-Vertical", "ICELINE - Vertical", true, 7)]
         [DataRow("AQUALINE-GeForce-RTX", "AQUALINE - GeForce RTX", true, 32)]
@@ -543,6 +546,7 @@ namespace CapFrameX.Test.Integration
         [DataRow("Blackwell-Thermals-RTX-5060", new[] { "gpuNameShort" })]
         [DataRow("BLUELINE-Nova-Lake", new[] { "gpuNameShort", "cpuNameShort" })]
         [DataRow("Performance-Strip", new string[0])]
+        [DataRow("Capture-Session", new string[0])]
         [DataRow("Anime-Cherry-Blossom", new string[0])]
         [DataRow("Anime-Neon-Night", new string[0])]
         [DataRow("Anime-Lunar", new string[0])]
@@ -789,6 +793,71 @@ namespace CapFrameX.Test.Integration
             charts[0].Color = "#00FF40FF";
             Assert.IsFalse(starter.CanUpdate(new OverlayDesignProfile(starter.Id, starter.Name, document.ToJson(), DateTime.UtcNow)),
                 "An edited copy stays as it is.");
+        }
+
+        [TestMethod]
+        public void CaptureSessionShowsTheCaptureItsMetricsAndTheRunHistory()
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "Capture-Session");
+            var document = OsdDesignDocument.FromJson(starter.DesignJson);
+            document.Validate();
+            Assert.AreEqual(starter.DesignJson, OverlayRuntimeDesign.Canonicalize(document.ToJson()), "The starter is stored as the editor saves it.");
+
+            // A column of cards a gap apart, each across the design: the CapFrameX header, the capture and its game,
+            // the frame rate, timing and latency, the frame pacing and, last, the run history.
+            CollectionAssert.AreEqual(new[] { "Header", "Session", "Frame rate", "Timing", "FRAME PACING", "Run History" },
+                document.Tiles.Select(tile => tile.Label).ToArray());
+            Assert.IsTrue(document.Tiles.All(tile => tile.X == 0 && tile.FrameWidth == document.Width), "Every card spans the design.");
+            for (int index = 1; index < document.Tiles.Count; index++)
+                Assert.AreEqual(document.Tiles[index - 1].Y + document.Tiles[index - 1].FrameHeight + document.Gap, document.Tiles[index].Y,
+                    document.Tiles[index].Label + " keeps the gap to the card above it.");
+            Assert.AreEqual(document.CanvasHeight, document.Tiles[^1].Y + document.Tiles[^1].FrameHeight);
+
+            // The CapFrameX banner on the brand blue beside the design's name.
+            var header = document.Tiles[0];
+            Assert.AreEqual("#0271F9FF", header.BackgroundColor);
+            var banner = header.Children.Single(tile => tile.Kind == "image");
+            Assert.AreEqual(("contain", 5.0), (banner.Fit, banner.FrameWidth.Value / banner.FrameHeight.Value), "The banner keeps its ratio.");
+            Assert.AreEqual("CAPTURE SESSION", header.Children.Single(tile => tile.Kind == "text").Text);
+
+            string[] Keys(OsdDesignTile card) => card.Children.Where(tile => tile.Kind == "metric").Select(tile => tile.Key).ToArray();
+            CollectionAssert.AreEqual(new[] { "captureStatus", "captureTimer", "processName", "graphicsApi", "presentMode",
+                "frameGenerationFactor", "upscalerVersion" }, Keys(document.Tiles[1]));
+            Assert.AreEqual("s", document.Tiles[1].Children.Single(tile => tile.Key == "captureTimer").Unit);
+            CollectionAssert.AreEqual(new[] { "fpsCurrent", "frametimeCurrent", "fps", "fps1pctLow", "fps0dot1pctLow", "fpsP1",
+                "fpsP0dot2", "frametime" }, Keys(document.Tiles[2]));
+            CollectionAssert.AreEqual(new[] { "gpuActiveTime", "cpuActiveTime", "pcLatency", "animationError", "stuttering",
+                "gpuActiveDeviation" }, Keys(document.Tiles[3]));
+            CollectionAssert.AreEqual(new[] { "ms", "ms", "ms", "ms", "%", "%" }, document.Tiles[3].Children.Select(tile => tile.Unit).ToArray());
+
+            // The current frame rate is the largest value. The statistics below it are named by their captions: a
+            // scale keeps their unit empty when the binder adopts the source's "FPS".
+            var rates = document.Tiles[2].Children;
+            Assert.IsTrue(rates.Skip(1).All(tile => tile.ValueSize < rates[0].ValueSize), "The current frame rate is the largest value.");
+            foreach (var statistic in rates.Where(tile => tile.Key.StartsWith("fps", StringComparison.Ordinal) && tile.Key != "fpsCurrent"))
+                Assert.AreEqual(("", (double?)1), (statistic.Unit, statistic.ValueScale), statistic.Key);
+            // Every cell of the grids names its value above it, in the captions' color.
+            var cells = document.Tiles.Skip(1).Take(3).SelectMany(card => card.Children).Where(tile => tile.LabelPosition == "top").ToArray();
+            Assert.AreEqual(16, cells.Length);
+            Assert.IsTrue(cells.All(cell => !string.IsNullOrWhiteSpace(cell.Label) && cell.LabelColor == cells[0].LabelColor
+                && cell.LabelSize < cell.ValueSize), "Captions are smaller than their values and share one color.");
+
+            // The frame pacing: the frame times and their stutter threshold over labelled grid lines.
+            var chart = document.Tiles[4];
+            Assert.AreEqual(("chart", "frametimes", true), (chart.Kind, chart.Key, chart.ShowGridLines == true));
+            CollectionAssert.AreEqual(new[] { OsdChartLine.ValueKind, OsdChartLine.StutterKind }, chart.ChartLines.Select(line => line.Kind).ToArray());
+            Assert.AreEqual(OsdChartLine.DefaultStutterFactor, chart.ChartLines[1].Factor);
+
+            // The run history reserves the three runs the run history setting starts with, so its height never changes
+            // during a session; a session of more runs shows the latest ones.
+            var runs = document.Tiles[5];
+            Assert.IsTrue(runs.IsRunHistory);
+            Assert.AreEqual((OsdDesignDocument.RunHistorySourceKey, 3), (runs.Key, runs.RunRows));
+            Assert.AreEqual(document.RunHistoryFrameHeight(runs), runs.FrameHeight.Value, 1e-9, "The table reserves the room of every run.");
+
+            var runtime = OverlayRuntimeDesign.Parse(starter.Id, starter.Name, starter.DesignJson);
+            Assert.IsTrue(runtime.NeedsFrametimes, "The chart draws from the frame feed.");
+            CollectionAssert.Contains(runtime.MetricKeys.ToArray(), OsdDesignDocument.RunHistorySourceKey);
         }
 
         [TestMethod]

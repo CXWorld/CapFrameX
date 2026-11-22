@@ -90,7 +90,38 @@ namespace CapFrameX.Test.Integration
             // 1.03 x its font size below that top: in a frame as high as the font the large frame rate lost the
             // bottom of its digits (2026-11-15, most visible at 110 % zoom). With more room below every text the
             // design must draw the same pixels. The names carry descenders, the digits round bottoms.
-            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == "AQUALINE-GeForce-RTX");
+            AssertNoTileCutsOffItsText("AQUALINE-GeForce-RTX", zoom, new Dictionary<string, object>
+            {
+                ["fpsCurrent"] = 888.0, ["fps1pctLow"] = 88.0, ["fps"] = 888.0, ["frametimeCurrent"] = 8.8,
+                ["gpuNameShort"] = "Arc Graphics", ["gpuLoad"] = 88.0, ["gpuTemp"] = 88.0, ["gpuPower"] = 888.0,
+                ["gpuClock"] = 8888.0, ["vramUsed"] = 88.88,
+                ["cpuNameShort"] = "Ryzen 9 9950X3D", ["cpuLoad"] = 88.0, ["cpuTemp"] = 88.0, ["cpuPower"] = 888.0,
+                ["cpuClock"] = 8888.0, ["ramUsed"] = 88.88
+            });
+        }
+
+        [TestMethod]
+        [DataRow(1.0)]
+        [DataRow(1.1)]
+        [DataRow(1.5)]
+        public void CaptureSessionTilesDoNotCutOffTheirTexts(double zoom)
+        {
+            // Texts with descenders in every row of the session card, the widest digits in the grids.
+            AssertNoTileCutsOffItsText("Capture-Session", zoom, new Dictionary<string, object>
+            {
+                ["captureStatus"] = "Recording frametimes", ["captureTimer"] = 888.0, ["processName"] = "Plague Tale Requiem",
+                ["graphicsApi"] = "Vulkan", ["presentMode"] = "Composed: Flip", ["frameGenerationFactor"] = "4x",
+                ["upscalerVersion"] = "XeSS 2.0.2", ["fpsCurrent"] = 888.0, ["frametimeCurrent"] = 88.88, ["fps"] = 888.8,
+                ["fps1pctLow"] = 888.8, ["fps0dot1pctLow"] = 888.8, ["fpsP1"] = 888.8, ["fpsP0dot2"] = 888.8, ["frametime"] = 88.88,
+                ["gpuActiveTime"] = 88.88, ["cpuActiveTime"] = 88.88, ["pcLatency"] = 88.8, ["animationError"] = 8.88,
+                ["stuttering"] = 88.8, ["gpuActiveDeviation"] = 88.8
+            });
+        }
+
+        // With more room below every metric and text the design must draw the same pixels.
+        private static void AssertNoTileCutsOffItsText(string presetId, double zoom, IDictionary<string, object> metrics)
+        {
+            var starter = OverlayDesignStarterCatalog.Profiles.Single(profile => profile.PresetId == presetId);
             byte[] Render(double room, out int stride)
             {
                 var design = OsdDesignDocument.FromJson(starter.DesignJson);
@@ -102,14 +133,7 @@ namespace CapFrameX.Test.Integration
                 using var preview = new OsdPreview();
                 Assert.IsTrue(preview.CreateBitmap(width, height));
                 Assert.IsTrue(preview.LoadTemplateJson(design.ToJson()));
-                Assert.IsTrue(preview.SetMetricsJson(JsonConvert.SerializeObject(new Dictionary<string, object>
-                {
-                    ["fpsCurrent"] = 888.0, ["fps1pctLow"] = 88.0, ["fps"] = 888.0, ["frametimeCurrent"] = 8.8,
-                    ["gpuNameShort"] = "Arc Graphics", ["gpuLoad"] = 88.0, ["gpuTemp"] = 88.0, ["gpuPower"] = 888.0,
-                    ["gpuClock"] = 8888.0, ["vramUsed"] = 88.88,
-                    ["cpuNameShort"] = "Ryzen 9 9950X3D", ["cpuLoad"] = 88.0, ["cpuTemp"] = 88.0, ["cpuPower"] = 888.0,
-                    ["cpuClock"] = 8888.0, ["ramUsed"] = 88.88
-                })));
+                Assert.IsTrue(preview.SetMetricsJson(JsonConvert.SerializeObject(metrics)));
                 var pixels = new byte[stride * height];
                 var handle = GCHandle.Alloc(pixels, GCHandleType.Pinned);
                 try
