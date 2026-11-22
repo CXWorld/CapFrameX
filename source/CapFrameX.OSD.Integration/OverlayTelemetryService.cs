@@ -597,8 +597,7 @@ namespace CapFrameX.OSD.Integration
                         var text = NormalizeText(raw);
                         if (source.Identifier != "GraphicsAPI" || text != null) textValues[source.Id] = text;
                     }
-                    else if (raw != null && double.TryParse(Convert.ToString(raw, CultureInfo.InvariantCulture),
-                        NumberStyles.Float, CultureInfo.InvariantCulture, out double scalar))
+                    else if (raw != null && TryParseReading(raw, source.Unit, out double scalar))
                         values[source.Id] = Finite(scalar);
                 }
                 SetShortName(GpuShortName, "CustomGPU", HardwareShortNames.Gpu);
@@ -663,6 +662,16 @@ namespace CapFrameX.OSD.Integration
         {
             string text = value?.ToString();
             return string.IsNullOrWhiteSpace(text) || text == "N/A" || text == "Not available" ? null : text;
+        }
+
+        // A classic entry's number. The capture timer keeps its text with the unit, as RTSS shows it
+        // ("12 s", OverlayService.SetCaptureTimerValue), so the unit of the source is dropped first.
+        private static bool TryParseReading(object raw, string unit, out double value)
+        {
+            string text = Convert.ToString(raw, CultureInfo.InvariantCulture)?.Trim();
+            if (!string.IsNullOrEmpty(text) && !string.IsNullOrEmpty(unit) && text.EndsWith(unit, StringComparison.Ordinal))
+                text = text.Substring(0, text.Length - unit.Length).TrimEnd();
+            return double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
         }
 
         private void ThrowIfDisposed()

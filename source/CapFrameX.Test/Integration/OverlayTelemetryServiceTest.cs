@@ -320,6 +320,24 @@ namespace CapFrameX.Test.Integration
         }
 
         [TestMethod]
+        [DataRow("12 s", 12d)]
+        [DataRow("-3 s", -3d)] // the countdown before a delayed capture
+        [DataRow("0 s", 0d)]
+        public async Task TheCaptureTimerReadsTheSecondsOfTheTextTheOverlayServiceWrites(string text, double seconds)
+        {
+            // OverlayService.SetCaptureTimerValue keeps the entry's text with its unit, as RTSS shows it;
+            // a tile read nothing from it and stayed empty.
+            var classic = new Mock<IOverlayEntryProvider>();
+            classic.Setup(p => p.GetTelemetrySourcesAsync()).ReturnsAsync(
+                OverlayUtils.GetOverlayEntryDefaults(Mock.Of<IAppConfiguration>()).Cast<IOverlayEntry>().ToArray());
+            classic.Setup(p => p.GetTelemetryValues()).Returns(new Dictionary<string, object> { ["CaptureTimer"] = text });
+            using var fixture = new Fixture(Array.Empty<ISensorEntry>(), Mock.Of<IOnlineMetricService>(), classic.Object, new Mock<IOverlayService>().Object);
+            await fixture.Service.GetSourcesAsync();
+            var snapshot = await fixture.Next(new Dictionary<ISensorEntry, float>());
+            Assert.AreEqual(seconds, snapshot.Values["metric/CaptureTimer"]);
+        }
+
+        [TestMethod]
         public async Task ClassicTextAndNumericValuesStayTypedAndRunHistoryIsCopiedWithoutProfileMutation()
         {
             var classic = new Mock<IOverlayEntryProvider>();
