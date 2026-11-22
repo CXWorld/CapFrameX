@@ -134,6 +134,9 @@ Every tile owns its colors. A field left out draws the default named after it.
   valueColor (color, then textColor) and unitColor. As bars: color, the fill (accent), trackColor and
   valueColor (textColor). As a heatmap: valueColor, the fully loaded cells (textColor), and
   labelColor, the legend and core type labels (textColor).
+- runHistory: titleColor (color, then accent); color, the progress dots of completed runs and the
+  result row (accent); labelColor, the count, pending dots, column captions, run numbers and deviations
+  (textColor); valueColor, the runs' values (textColor). Outliers draw in red.
 - classicRows, image and container: backgroundColor and borderColor only; the classic rows keep the
   colors of the Overlay tab.
 
@@ -198,6 +201,16 @@ Kinds:
   true makes the block as tall as its rows and graphs, so a long profile never clips; it grows
   downward, so on a canvas no tile may sit below it (frameHeight only reserves room in the editor)
   and it cannot sit in a container.
+- runHistory: the run history of a benchmark session (capture settings: Run history, Aggregation) as
+  a table: label is the title on the left, and right-aligned beside it the session's progress, a dot
+  per run (filled for completed runs, red for outliers) and the count ""(3/5)""; then one row per run with its
+  average and the two further metrics of the run history, a column of each run's deviation from the
+  median in the metric the outlier detection compares, and the aggregated result. runs (1..20,
+  default 3) reserves the rows; pending runs show dashes, so the tile keeps its height through a
+  session, and a session of more runs shows the latest ones. showResult and showDeviation (default
+  true) hide the result row and the deviation column. valueSize (10..72, default 14) is the text
+  size. key stays runHistoryTable. On a canvas the tile is exactly as tall as its rows: frameHeight
+  is computed from runs, valueSize and the padding, and a smaller one is refused.
 
 Omitted fields get the editor's defaults: a metric takes label and unit from its reading, a chart
 defaults to frametimes, an icon to Segoe MDL2 Assets.

@@ -145,6 +145,9 @@ namespace CapFrameX.View.OverlayDesignAuthoring
                     foreach (var member in tile.GroupMembers.Where(member => member?.IsEnabled == true))
                         Add(member.Key, tile.Unit, ranged ? tile.Minimum : null, ranged ? tile.Maximum : null);
                 }
+                // A sample session in the table format the run history tile reads.
+                else if (tile.IsRunHistory && !string.IsNullOrWhiteSpace(tile.Key) && !values.ContainsKey(tile.Key))
+                    values[tile.Key] = OsdDesignDocument.RunHistoryDemoTable(tile.RunRows);
             }
             return values;
         }

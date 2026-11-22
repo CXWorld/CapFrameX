@@ -166,7 +166,12 @@ namespace CapFrameX.View.OverlayDesignAuthoring
             // Roles and portable keys resolve exactly as when the editor applies a template.
             document.BindPresetSources(sources);
             if (document.IsCanvas)
+            {
                 LayOutCanvas(document, placement, autoWidth, autoHeight, warnings);
+                // A run history is as tall as its rows, as in the editor; the tiles below it follow.
+                try { document.FitRunHistories(); }
+                catch (Exception error) when (IsEditorError(error)) { throw Error("The design is invalid: " + error.Message, error); }
+            }
             Validate(document);
             return document;
         }
@@ -612,6 +617,13 @@ namespace CapFrameX.View.OverlayDesignAuthoring
                     break;
                 case "image":
                     if (Missing("label")) json["label"] = "Image";
+                    break;
+                case "runHistory":
+                    // The host's run history table; the room of the runs follows from runs and valueSize.
+                    if (Missing("key")) json["key"] = OsdDesignDocument.RunHistorySourceKey;
+                    if (Missing("unit")) json["unit"] = "";
+                    if (Missing("label")) json["label"] = "Run History";
+                    if (Missing("valueSize")) json["valueSize"] = OsdDesignDocument.DefaultRunHistoryTextSize;
                     break;
             }
         }

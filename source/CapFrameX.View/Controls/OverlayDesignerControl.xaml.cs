@@ -56,6 +56,8 @@ namespace CapFrameX.View.Controls
             _classicPreview = feed;
             _editClassicProfile = editProfile;
             Editor.CanEditClassicProfile = editProfile != null;
+            // A new run history tile reserves the runs of a session as the capture settings have them.
+            if (feed != null) Editor.DefaultRunHistoryRuns = feed.RunHistoryRuns;
         }
 
         public IOverlayTelemetryService TelemetryService

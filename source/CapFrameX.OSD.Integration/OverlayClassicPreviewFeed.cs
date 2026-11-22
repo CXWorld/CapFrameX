@@ -23,6 +23,9 @@ namespace CapFrameX.OSD.Integration
             _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
         }
 
+        /// <summary>The runs of a capture session, which a new run history tile reserves.</summary>
+        public int RunHistoryRuns => _configuration?.SelectedHistoryRuns ?? 3;
+
         public async Task<IReadOnlyList<OsdEntry>> ReadAsync(OverlayTelemetrySnapshot snapshot,
             IReadOnlyList<OverlayTelemetrySource> sources)
         {
